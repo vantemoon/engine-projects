@@ -16,12 +16,24 @@
     <ClInclude Include="UnitTests_MP1A01.hpp">
       <Filter>Unit Tests</Filter>
     </ClInclude>
+    <ClInclude Include="UnitTests_Custom.hpp">
+      <Filter>Unit Tests</Filter>
+    </ClInclude>
+    <ClInclude Include="UnitTests_MP1A02.hpp">
+      <Filter>Unit Tests</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
       <Filter>Framework</Filter>
     </ClCompile>
     <ClCompile Include="UnitTests_MP1A01.cpp">
+      <Filter>Unit Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="UnitTests_Custom.cpp">
+      <Filter>Unit Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="UnitTests_MP1A02.cpp">
       <Filter>Unit Tests</Filter>
     </ClCompile>
   </ItemGroup>
