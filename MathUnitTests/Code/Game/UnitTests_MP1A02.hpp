@@ -13,9 +13,9 @@ void RunTests_MP1A02();
 // YOU MAY COMMENT THESE OUT TEMPORARILY to disable certain test sets while you work.
 // For every assignment submission, all test sets must be enabled.
 //
-//#define ENABLE_TestSet_MP1A02_MathUtils_Angles
-//#define ENABLE_TestSet_MP1A02_MathUtils_Queries
-//#define ENABLE_TestSet_MP1A02_Vec2_Methods
+#define ENABLE_TestSet_MP1A02_MathUtils_Angles
+#define ENABLE_TestSet_MP1A02_MathUtils_Queries
+#define ENABLE_TestSet_MP1A02_Vec2_Methods
 //#define ENABLE_TestSet_MP1A02_Vec3_Basics
 //#define ENABLE_TestSet_MP1A02_Vec3_Methods
 #define ENABLE_TestSet_MP1A02_RandomNumberGenerator_Ints
