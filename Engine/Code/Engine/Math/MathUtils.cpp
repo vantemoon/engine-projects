@@ -124,3 +124,32 @@ bool DoSpheresOverlap( Vec3 const& centerA, float radiusA, Vec3 const& centerB, 
 }
 
 
+//-----------------------------------------------------------------------------------------------
+void TransformPosition2D( Vec2& posToTransform, float uniformScale, float rotationDegrees, Vec2 const& translation )
+{
+	// Scale
+	posToTransform *= uniformScale;
+
+	// Rotate
+	posToTransform = posToTransform.GetRotatedByDegrees( rotationDegrees );
+	
+	// Translate
+	posToTransform += translation;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void TransformPositionXY3D( Vec3& posToTransform, float uniformScale, float zRotationDegrees, Vec2 const& xyTranslation )
+{
+	// Scale (only x and y)
+	posToTransform.x *= uniformScale;
+	posToTransform.y *= uniformScale;
+
+	// Rotate
+	posToTransform = posToTransform.GetRotatedAboutZDegrees( zRotationDegrees );
+	
+
+	// Translate
+	posToTransform.x += xyTranslation.x;
+	posToTransform.y += xyTranslation.y;
+}
