@@ -1,17 +1,15 @@
 #pragma once
+#include "Engine/Core/Vertex.hpp"
 #include "Engine/Math/Vec2.hpp"
-
+#include "Game/Entity.hpp"
 
 //-----------------------------------------------------------------------------------------------
-class PlayerShip
+class PlayerShip : public Entity
 {
 public:
-	Vec2    m_position;
-	Vec2    m_velocity;
-
-public:
-	PlayerShip(Vec2 const& startingPosition, Vec2 const& startingVelocity);
-	~PlayerShip() = default;
-	void Update(float deltaSeconds);
-	void Render() const;
+	PlayerShip(Game* game, Vec2 const& startingPosition, Vec2 const& startingVelocity);
+	~PlayerShip() override;
+	void Update(float deltaSeconds) override;
+	void Render() const override;
+	void Die() override;
 };

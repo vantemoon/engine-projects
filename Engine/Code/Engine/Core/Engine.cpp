@@ -1,39 +1,38 @@
-#include "Engine/Renderer/Camera.hpp"
+#include "Engine/Core/Engine.hpp"
+#include "Engine/Renderer/Renderer.hpp"
 
 
 //-----------------------------------------------------------------------------------------------
-Camera::Camera()
-	: m_orthoBottomLeft( Vec2( 0.f, 0.f ) )
-	, m_orthoTopRight( Vec2( 10.f, 10.f ) )
+Engine* g_engine = nullptr;
+
+
+//-----------------------------------------------------------------------------------------------
+Engine::Engine()
 {
-	// Do nothing
+	g_engine = this;
+	m_renderer = new Renderer();
+	m_renderer->Startup();
 }
 
 
 //-----------------------------------------------------------------------------------------------
-Camera::~Camera()
+Engine::~Engine()
 {
-	// Do nothing
+	m_renderer->Shutdown();
+	delete m_renderer;
+	m_renderer = nullptr;
 }
 
 
 //-----------------------------------------------------------------------------------------------
-void Camera::SetOrthoView( Vec2 const& bottomLeft, Vec2 const& topRight )
+void Engine::BeginFrame()
 {
-	m_orthoBottomLeft = bottomLeft;
-	m_orthoTopRight = topRight;
+	m_renderer->BeginFrame();
 }
 
 
 //-----------------------------------------------------------------------------------------------
-Vec2 Camera::GetOrthoBottomLeft() const
+void Engine::EndFrame()
 {
-	return m_orthoBottomLeft;
-}
-
-
-//-----------------------------------------------------------------------------------------------
-Vec2 Camera::GetOrthoTopRight() const
-{
-	return m_orthoTopRight;
+	m_renderer->EndFrame();
 }
