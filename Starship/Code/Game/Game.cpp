@@ -36,12 +36,23 @@ Game::~Game()
 {
 	delete m_playerShip;
 	m_playerShip = nullptr;
-	// Add more shutdown logic here (e.g. delete asteroids, bullets, etc.)
+	
+	for ( int bulletIndex = 0; bulletIndex < MAX_BULLETS; ++bulletIndex )
+	{
+		delete m_bullets[bulletIndex];
+		m_bullets[bulletIndex] = nullptr;
+	}
+
+	for ( int asteroidIndex = 0; asteroidIndex < MAX_ASTEROIDS; ++asteroidIndex )
+	{
+		delete m_asteroids[asteroidIndex];
+		m_asteroids[asteroidIndex] = nullptr;
+	}
 }
 
 
 //-----------------------------------------------------------------------------------------------
-void DeleteGarbageEntities()
+void Game::DeleteGarbageEntities()
 {
 	if(g_app->m_game == nullptr)
 		return;
@@ -58,6 +69,15 @@ void DeleteGarbageEntities()
 		{
 			delete g_app->m_game->m_bullets[bulletIndex];
 			g_app->m_game->m_bullets[bulletIndex] = nullptr;
+		}
+	}
+
+	for(int asteroidIndex = 0; asteroidIndex < Game::MAX_ASTEROIDS; ++asteroidIndex)
+	{
+		if(g_app->m_game->m_asteroids[asteroidIndex] != nullptr && g_app->m_game->m_asteroids[asteroidIndex]->m_isGarbage)
+		{
+			delete g_app->m_game->m_asteroids[asteroidIndex];
+			g_app->m_game->m_asteroids[asteroidIndex] = nullptr;
 		}
 	}
 }
@@ -84,7 +104,7 @@ void Game::Update( float deltaSeconds )
 		}
 	}
 
-	DeleteGarbageEntities();
+	g_app->m_game->DeleteGarbageEntities();
 }
 
 
@@ -112,4 +132,53 @@ void Game::Render() const
 	}
 
 	g_engine->m_renderer->EndCamera( *m_gameCamera );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game::SpawnRandomAsteroid()
+{
+	if ( m_playerShip == nullptr || m_playerShip->m_isDead )
+		return;
+
+	for ( int asteroidIndex = 0; asteroidIndex < Game::MAX_ASTEROIDS; ++asteroidIndex )
+	{
+		if ( m_asteroids[asteroidIndex] == nullptr )
+		{
+			RandomNumberGenerator rng;
+			float randomX = rng.RollRandomFloatInRange( 0.f, 200.f );
+			float randomY = rng.RollRandomFloatInRange( 0.f, 100.f );
+			float randomOrientation = rng.RollRandomFloatInRange( 0.f, 360.f );
+			Vec2 randomDirection = Vec2::MakeFromPolarDegrees( rng.RollRandomFloatInRange( 0.f, 360.f ), 1.f );
+			Vec2 randomVelocity = randomDirection * 10.f;
+			float randomAngularVelocity = rng.RollRandomFloatInRange( -200.f, 200.f );
+			m_asteroids[asteroidIndex] = new Asteroid( this, Vec2( randomX, randomY ), randomOrientation, randomVelocity, randomAngularVelocity );
+			break;
+		}
+		else
+		{
+			// ERROR_RECOVERABLE
+		}
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game::SpawnBulletFromPlayerShip()
+{
+	if ( m_playerShip == nullptr || m_playerShip->m_isDead )
+		return;
+
+	for ( int bulletIndex = 0; bulletIndex < Game::MAX_BULLETS; ++bulletIndex )
+	{
+		if ( m_bullets[bulletIndex] == nullptr )
+		{
+			m_bullets[bulletIndex] = new Bullet( this, m_playerShip );
+			break;
+		}
+		else
+		{
+			// ERROR_RECOVERABLE
+		}
+	}
 }

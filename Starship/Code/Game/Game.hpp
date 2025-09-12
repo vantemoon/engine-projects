@@ -25,4 +25,7 @@ public:
 
 	void Update( float deltaSeconds);
 	void Render() const;
+	void DeleteGarbageEntities();
+	void SpawnRandomAsteroid();
+	void SpawnBulletFromPlayerShip();
 };

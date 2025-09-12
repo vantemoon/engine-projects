@@ -65,7 +65,7 @@ void Bullet::Render() const
 //-----------------------------------------------------------------------------------------------
 void Bullet::Die()
 {
-	Entity::Die();
+	Entity::Die(); //m_isDead = true;
 	m_isGarbage = true;
 }
 

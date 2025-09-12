@@ -1,8 +1,10 @@
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/Rgba8.hpp"
+#include "Engine/Math/RandomNumberGenerator.hpp"
 #include "Engine/Renderer/Camera.hpp"
 #include "Engine/Renderer/Renderer.hpp"
 #include "Game/App.hpp"
+#include "Game/Asteroid.hpp"
 #include "Game/Bullet.hpp"
 #include "Game/Game.hpp"
 #include "Game/PlayerShip.hpp"
@@ -42,48 +44,39 @@ void App::RunFrame()
 //-----------------------------------------------------------------------------------------------
 void CheckKeyboardInput()
 {
-	if(g_app->IsKeyDown( 'Q' ))
+	if ( g_app->IsKeyDown( 'Q' ) )
 	{
 		g_app->SetIsQuitting();
 	}
 
-	if(g_app->WasKeyJustPressed( 'P' ))
+	if ( g_app->WasKeyJustPressed( 'P' ) )
 	{
 		g_app->m_isPaused = !g_app->m_isPaused;
 	}
 
-	if(g_app->WasKeyJustPressed( 'O' ))
+	if ( g_app->WasKeyJustPressed( 'O' ) )
 	{
 		g_app->m_isPaused = false;
 		g_app->m_pauseAfterNextUpdate = true;
 	}
 
-	if(g_app->WasKeyJustPressed( 'T' ))
+	if ( g_app->WasKeyJustPressed( 'T' ) )
 	{
 		g_app->m_isSlowMo = true;
 	}
-	else if(g_app->WasKeyJustReleased( 'T' ))
+	else if ( g_app->WasKeyJustReleased( 'T' ) )
 	{
 		g_app->m_isSlowMo = false;
 	}
 
-	if(g_app->WasKeyJustPressed( 32 )) // Space
+	if ( g_app->WasKeyJustPressed( 32 ) ) // Space
 	{
-		if(!g_app->m_game->m_playerShip->m_isDead)
-		{
-			for(int bulletIndex = 0; bulletIndex < Game::MAX_BULLETS; ++bulletIndex)
-			{
-				if(g_app->m_game->m_bullets[bulletIndex] == nullptr)
-				{
-					g_app->m_game->m_bullets[bulletIndex] = new Bullet( g_app->m_game, g_app->m_game->m_playerShip );
-					break;
-				}
-				else
-				{
-					// TODO: ERROR_RECOVERABLE
-				}
-			}
-		}
+		g_app->m_game->SpawnBulletFromPlayerShip();
+	}
+
+	if ( g_app->WasKeyJustPressed( 'I' ) )
+	{
+		g_app->m_game->SpawnRandomAsteroid();
 	}
 }
 

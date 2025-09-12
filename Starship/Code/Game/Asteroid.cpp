@@ -194,9 +194,6 @@ void Asteroid::CheckCollisionWithPlayerShip()
 //-----------------------------------------------------------------------------------------------
 void Asteroid::Update( float deltaSeconds )
 {
-	if ( m_isDead )
-		return;
-
 	Entity::Update( deltaSeconds );
 
 	if( m_health <= 0 )
@@ -209,8 +206,8 @@ void Asteroid::Update( float deltaSeconds )
 		Die();
 	}
 
-	CheckCollisionWithBullets();
-	CheckCollisionWithPlayerShip();
+	this->CheckCollisionWithBullets();
+	this->CheckCollisionWithPlayerShip();
 }
 
 
