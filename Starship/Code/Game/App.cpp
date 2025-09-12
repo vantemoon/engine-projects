@@ -5,6 +5,7 @@
 #include "Game/App.hpp"
 #include "Game/Bullet.hpp"
 #include "Game/Game.hpp"
+#include "Game/PlayerShip.hpp"
 
 
 //-----------------------------------------------------------------------------------------------
@@ -31,38 +32,84 @@ void App::RunFrame()
 {
 	// One "frame" of the game.  Generally: Input, Update, Render.  We call this 60+ times per second.
 	g_engine->BeginFrame(); // Allow engine subsystems to do pre-frame stuff
-
-	if ( !m_isPaused )
-	{
-		float deltaSeconds = 0.0167f; // Normal speed: ~60 FPS
-		if ( m_isSlowMo )
-			Update( deltaSeconds * 0.1f ); // Slow motion: ~1/10th speed
-		else
-			Update( deltaSeconds ); // Normal speed: ~60 FPS
-	}
-	else 
-	{
-		Update( 0.f ); // If paused, update with no time having passed
-	}
+	float deltaSeconds = 0.0167f;
+	Update( deltaSeconds );
 	Render(); // Draw the current state of the game
 	g_engine->EndFrame(); // Allow engine subsystems to do post-frame stuff
 }
 
 
 //-----------------------------------------------------------------------------------------------
+void CheckKeyboardInput()
+{
+	if(g_app->IsKeyDown( 'Q' ))
+	{
+		g_app->SetIsQuitting();
+	}
+
+	if(g_app->WasKeyJustPressed( 'P' ))
+	{
+		g_app->m_isPaused = !g_app->m_isPaused;
+	}
+
+	if(g_app->WasKeyJustPressed( 'O' ))
+	{
+		g_app->m_isPaused = false;
+		g_app->m_pauseAfterNextUpdate = true;
+	}
+
+	if(g_app->WasKeyJustPressed( 'T' ))
+	{
+		g_app->m_isSlowMo = true;
+	}
+	else if(g_app->WasKeyJustReleased( 'T' ))
+	{
+		g_app->m_isSlowMo = false;
+	}
+
+	if(g_app->WasKeyJustPressed( 32 )) // Space
+	{
+		if(!g_app->m_game->m_playerShip->m_isDead)
+		{
+			for(int bulletIndex = 0; bulletIndex < Game::MAX_BULLETS; ++bulletIndex)
+			{
+				if(g_app->m_game->m_bullets[bulletIndex] == nullptr)
+				{
+					g_app->m_game->m_bullets[bulletIndex] = new Bullet( g_app->m_game, g_app->m_game->m_playerShip );
+					break;
+				}
+				else
+				{
+					// TODO: ERROR_RECOVERABLE
+				}
+			}
+		}
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
 void App::Update( float deltaSeconds )
 {
-	// Update the game world by the given time step (deltaSeconds)
-	m_game->Update( deltaSeconds );
+	CheckKeyboardInput();
 
-	if ( m_pauseAfterNextUpdate )
+	if ( !m_isPaused )
+	{
+		float timeScale = 1.f;
+
+		if(m_isSlowMo)
+			timeScale = 0.1f;
+
+		m_game->Update( deltaSeconds * timeScale );
+	}
+
+	if(m_pauseAfterNextUpdate)
 	{
 		m_isPaused = true;
 		m_pauseAfterNextUpdate = false;
 	}
 
-	// Update "wasKeyJustPressed" states
-	for( int keyIndex = 0; keyIndex < 256; ++keyIndex )
+	for(int keyIndex = 0; keyIndex < 256; ++keyIndex)
 	{
 		m_wasKeyJustPressed[keyIndex] = m_isKeyDown[keyIndex];
 	}
@@ -95,48 +142,6 @@ bool App::IsQuitting() const
 void App::OnKeyDown( unsigned char keyCode )
 {
 	m_isKeyDown[keyCode] = true;
-
-	switch( keyCode )
-	{
-		case 'Q':
-			g_app->SetIsQuitting();
-			break;
-
-		case 'T':
-			m_isSlowMo = true;
-			break;
-
-		case 'P':
-			m_isPaused = !m_isPaused;
-			break;
-
-		case 'O':
-			m_isPaused = false;
-			m_pauseAfterNextUpdate = true;
-			break;
-
-		case 32: // Space
-			if ( m_game->m_playerShip != nullptr )
-			{
-				for ( int bulletIndex = 0; bulletIndex < Game::MAX_BULLETS; ++bulletIndex )
-				{
-					if ( m_game->m_bullets[bulletIndex] == nullptr )
-					{
-						m_game->m_bullets[bulletIndex] = new Bullet( m_game, m_game->m_playerShip );
-						break;
-					}
-
-					else
-					{
-						// TODO: ERROR_RECOVERABLE 
-					}
-				}
-			}
-			break;
-
-		default:
-			break;
-	}
 }
 
 
@@ -144,16 +149,6 @@ void App::OnKeyDown( unsigned char keyCode )
 void App::OnKeyUp( unsigned char keyCode )
 {
 	m_isKeyDown[keyCode] = false;
-
-	switch( keyCode )
-	{
-		case 'T':
-			m_isSlowMo = false;
-			break;
-
-		default:
-			break;
-	}
 }
 
 

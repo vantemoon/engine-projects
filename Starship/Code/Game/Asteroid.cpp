@@ -8,16 +8,20 @@
 #include "Game/Bullet.hpp"
 #include "Game/Game.hpp"
 #include "Game/PlayerShip.hpp"
+#include "App.hpp"
 
 
 //-----------------------------------------------------------------------------------------------
-Asteroid::Asteroid( Game* game, Vec2 const& startingPosition, Vec2 const& startingVelocity, float startingAngularVelocity )
+Asteroid::Asteroid( Game* game, Vec2 const& startingPosition, float orientationDegrees, Vec2 const& startingVelocity, float startingAngularVelocity )
 	: Entity( game, startingPosition )
 {
 	m_velocity = startingVelocity;
+	m_orientationDegrees = orientationDegrees;
 	m_angularVelocityDegreesPerSecond = startingAngularVelocity;
 	m_physicsRadius = 1.6f;
 	m_cosmeticRadius = 2.0f;
+	m_health = 3;
+
 	RandomNumberGenerator rng;
 	m_vertexArray = new Vertex[NUM_ASTEROID_VERTS];
 
@@ -148,14 +152,65 @@ Asteroid::Asteroid( Game* game, Vec2 const& startingPosition, Vec2 const& starti
 Asteroid::~Asteroid() = default;
 
 
+//--------------------------------------------------------------------------------
+void Asteroid::CheckCollisionWithBullets()
+{
+	if(g_app->m_game == nullptr)
+		return;
+
+	for(int bulletIndex = 0; bulletIndex < Game::MAX_BULLETS; ++bulletIndex)
+	{
+		Bullet* bullet = g_app->m_game->m_bullets[bulletIndex];
+		if(bullet == nullptr || bullet->m_isDead)
+			continue;
+		float distanceSquared = GetDistanceSquared2D( m_position, bullet->m_position );
+		float combinedRadii = m_physicsRadius + bullet->m_physicsRadius;
+		if(distanceSquared < (combinedRadii * combinedRadii))
+		{
+			bullet->Die();
+			m_health -= 1;
+		}
+	}
+}
+
+
+//--------------------------------------------------------------------------------
+void Asteroid::CheckCollisionWithPlayerShip()
+{
+	if(g_app->m_game == nullptr || g_app->m_game->m_playerShip == nullptr)
+		return;
+
+	PlayerShip* playerShip = g_app->m_game->m_playerShip;
+	float distanceSquared = GetDistanceSquared2D( m_position, playerShip->m_position );
+	float combinedRadii = m_physicsRadius + playerShip->m_physicsRadius;
+	if (distanceSquared < ( combinedRadii * combinedRadii ) )
+	{
+		playerShip->Die();
+		m_health -= 1;
+	}
+}
+
+
 //-----------------------------------------------------------------------------------------------
 void Asteroid::Update( float deltaSeconds )
 {
+	if ( m_isDead )
+		return;
+
 	Entity::Update( deltaSeconds );
-	if ( IsOffScreen() )
+
+	if( m_health <= 0 )
 	{
 		Die();
 	}
+
+	if( IsOffScreen() )
+	{
+		Die();
+	}
+
+	CheckCollisionWithBullets();
+	CheckCollisionWithPlayerShip();
 }
 
 
@@ -177,7 +232,7 @@ void Asteroid::Render() const
 //-----------------------------------------------------------------------------------------------
 void Asteroid::Die()
 {
-	Entity::Die();
+	Entity::Die(); // m_isDead = true;
 	m_isGarbage = true;
 
 }

@@ -51,10 +51,13 @@ PlayerShip::~PlayerShip() = default;
 //-----------------------------------------------------------------------------------------------
 void PlayerShip::Update( float deltaSeconds )
 {
+	if ( m_isDead )
+		return;
+
 	Entity::Update( deltaSeconds );
 	// Add PlayerShip-specific update logic here
 	// Check if the player ship has gone off the screen
-	if ( IsOffScreen() )
+	if(IsOffScreen())
 	{
 		// TODO: clamp to screen bounds
 	}
@@ -80,7 +83,7 @@ void PlayerShip::Render() const
 //-----------------------------------------------------------------------------------------------
 void PlayerShip::Die()
 {
-	Entity::Die();
+	Entity::Die(); // m_isDead = true;
 	// Add PlayerShip-specific death logic here
 }
 

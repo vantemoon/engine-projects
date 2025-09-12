@@ -1,4 +1,5 @@
 #include "Engine/Core/Engine.hpp"
+#include "Engine/Math/RandomNumberGenerator.hpp"
 #include "Engine/Renderer/Camera.hpp"
 #include "Engine/Renderer/Renderer.hpp"
 #include "Game/App.hpp"
@@ -12,7 +13,20 @@
 Game::Game()
 {
 	m_playerShip = new PlayerShip( this, Vec2(100.f, 50.f), Vec2(0.f, 0.f));
-	m_asteroids[0] = new Asteroid( this, Vec2( 20.f, 50.f ), Vec2( 10.f, 0.f ), 15.f );
+	
+	// Spawn 6 asteroids in the game world
+	RandomNumberGenerator rng;
+	for ( int asteroidIndex = 0; asteroidIndex < 6; ++asteroidIndex )
+	{
+		float randomX = rng.RollRandomFloatInRange( 0.f, 200.f );
+		float randomY = rng.RollRandomFloatInRange( 0.f, 100.f );
+		float randomOrientation = rng.RollRandomFloatInRange( 0.f, 360.f );
+		Vec2 randomDirection = Vec2::MakeFromPolarDegrees( rng.RollRandomFloatInRange( 0.f, 360.f ), 1.f );
+		Vec2 randomVelocity = randomDirection * 10.f;
+		float randomAngularVelocity = rng.RollRandomFloatInRange( -200.f, 200.f );
+		m_asteroids[asteroidIndex] = new Asteroid( this, Vec2( randomX, randomY ), randomOrientation, randomVelocity, randomAngularVelocity );
+	}
+	
 	m_gameCamera = new Camera();
 }
 
