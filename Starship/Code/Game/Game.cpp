@@ -1,4 +1,5 @@
 #include "Engine/Core/Engine.hpp"
+#include "Engine/Core/ErrorWarningAssert.hpp"
 #include "Engine/Math/RandomNumberGenerator.hpp"
 #include "Engine/Renderer/Camera.hpp"
 #include "Engine/Renderer/Renderer.hpp"
@@ -141,10 +142,12 @@ void Game::SpawnRandomAsteroid()
 	if ( m_playerShip == nullptr || m_playerShip->m_isDead )
 		return;
 
+	bool hasFreeSlot = false;
 	for ( int asteroidIndex = 0; asteroidIndex < Game::MAX_ASTEROIDS; ++asteroidIndex )
 	{
 		if ( m_asteroids[asteroidIndex] == nullptr )
 		{
+			hasFreeSlot = true;
 			RandomNumberGenerator rng;
 			float randomX = rng.RollRandomFloatInRange( 0.f, 200.f );
 			float randomY = rng.RollRandomFloatInRange( 0.f, 100.f );
@@ -155,10 +158,10 @@ void Game::SpawnRandomAsteroid()
 			m_asteroids[asteroidIndex] = new Asteroid( this, Vec2( randomX, randomY ), randomOrientation, randomVelocity, randomAngularVelocity );
 			break;
 		}
-		else
-		{
-			// ERROR_RECOVERABLE
-		}
+	}
+	if ( !hasFreeSlot )
+	{
+		ERROR_RECOVERABLE( "No available asteroid slots!" );
 	}
 }
 
@@ -169,16 +172,18 @@ void Game::SpawnBulletFromPlayerShip()
 	if ( m_playerShip == nullptr || m_playerShip->m_isDead )
 		return;
 
+	bool hasFreeSlot = false;
 	for ( int bulletIndex = 0; bulletIndex < Game::MAX_BULLETS; ++bulletIndex )
 	{
 		if ( m_bullets[bulletIndex] == nullptr )
 		{
+			hasFreeSlot = true;
 			m_bullets[bulletIndex] = new Bullet( this, m_playerShip );
 			break;
 		}
-		else
-		{
-			// ERROR_RECOVERABLE
-		}
+	}
+	if ( !hasFreeSlot )
+	{
+		ERROR_RECOVERABLE( "No available bullet slots!" );
 	}
 }

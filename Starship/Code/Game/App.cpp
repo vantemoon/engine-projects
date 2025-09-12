@@ -78,6 +78,41 @@ void CheckKeyboardInput()
 	{
 		g_app->m_game->SpawnRandomAsteroid();
 	}
+
+	if ( g_app->WasKeyJustPressed( 'S' ) && !g_app->WasKeyJustPressed( 'F' ) )
+	{
+		g_app->m_game->m_playerShip->m_isTurningLeft = true;
+	}
+
+	if ( g_app->WasKeyJustReleased( 'S' ) )
+	{
+		g_app->m_game->m_playerShip->m_isTurningLeft = false;
+	}
+
+	if(g_app->WasKeyJustPressed( 'F' ) && !g_app->WasKeyJustPressed( 'S' ))
+	{
+		g_app->m_game->m_playerShip->m_isTurningRight = true;
+	}
+
+	if ( g_app->WasKeyJustReleased( 'F' ) )
+	{
+		g_app->m_game->m_playerShip->m_isTurningRight = false;
+	}
+
+	if ( g_app->WasKeyJustPressed( 'E' ) )
+	{
+		g_app->m_game->m_playerShip->m_isAccelerating = true;
+	}
+
+	if ( g_app->WasKeyJustReleased( 'E' ) )
+	{
+		g_app->m_game->m_playerShip->m_isAccelerating = false;
+	}
+
+	if ( g_app->WasKeyJustPressed( 'N' ) && g_app->m_game->m_playerShip->m_isDead )
+	{
+		g_app->m_game->m_playerShip->Respawn();
+	}
 }
 
 
@@ -112,7 +147,7 @@ void App::Update( float deltaSeconds )
 //-----------------------------------------------------------------------------------------------
 void App::Render() const
 {
-	g_engine->m_renderer->ClearScreen( Rgba8( 100, 50, 0, 255 ) );
+	g_engine->m_renderer->ClearScreen( Rgba8( 0, 0, 0, 255 ) );
 	m_game->Render();
 }
 

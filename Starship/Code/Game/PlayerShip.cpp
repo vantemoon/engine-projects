@@ -51,15 +51,29 @@ PlayerShip::~PlayerShip() = default;
 //-----------------------------------------------------------------------------------------------
 void PlayerShip::Update( float deltaSeconds )
 {
-	if ( m_isDead )
+	if(m_isDead)
 		return;
 
 	Entity::Update( deltaSeconds );
-	// Add PlayerShip-specific update logic here
-	// Check if the player ship has gone off the screen
-	if(IsOffScreen())
+
+	if(m_isAccelerating)
 	{
-		// TODO: clamp to screen bounds
+		Accelerate( deltaSeconds );
+	}
+
+	BounceOffWorldEdges();
+
+	if(m_isTurningLeft)
+	{
+		TurnLeft();
+	}
+	else if(m_isTurningRight)
+	{
+		TurnRight();
+	}
+	else
+	{
+		m_angularVelocityDegreesPerSecond = 0.f;
 	}
 }
 
@@ -67,14 +81,15 @@ void PlayerShip::Update( float deltaSeconds )
 //-----------------------------------------------------------------------------------------------
 void PlayerShip::Render() const
 {
-	// Create a copy of the ship's vertex array to transform
+	if ( m_isDead )
+		return;
+
 	Vertex tempShipWorldVerts[NUM_SHIP_VERTS];
-	for( int vertIndex = 0; vertIndex < NUM_SHIP_VERTS; ++vertIndex )
+	for(int vertIndex = 0; vertIndex < NUM_SHIP_VERTS; ++vertIndex)
 	{
 		tempShipWorldVerts[vertIndex] = m_vertexArray[vertIndex];
 	}
 
-	// Transform the copy to world space and render the vertexes
 	TransformVertexArrayXY3D( NUM_SHIP_VERTS, tempShipWorldVerts, 1.f, m_orientationDegrees, m_position );
 	g_engine->m_renderer->DrawVertexArray( NUM_SHIP_VERTS, tempShipWorldVerts );
 }
@@ -84,13 +99,72 @@ void PlayerShip::Render() const
 void PlayerShip::Die()
 {
 	Entity::Die(); // m_isDead = true;
-	// Add PlayerShip-specific death logic here
+	m_health = 0;
+	m_velocity = Vec2( 0.f, 0.f );
+	m_angularVelocityDegreesPerSecond = 0.f;
 }
 
 
 //-----------------------------------------------------------------------------------------------
-bool PlayerShip::IsOffScreen() const
+void PlayerShip::BounceOffWorldEdges()
 {
-	//TODO: Implement this function
-	return false;
-};
+	float screenLeft = 0.f + m_physicsRadius;
+	float screenRight = 200.f - m_physicsRadius;
+	float screenBottom = 0.f + m_physicsRadius;
+	float screenTop = 100.f - m_physicsRadius;
+
+	if ( m_position.x < screenLeft )
+	{
+		m_position.x = screenLeft;
+		m_velocity.x = -m_velocity.x;
+	}
+	else if ( m_position.x > screenRight )
+	{
+		m_position.x = screenRight;
+		m_velocity.x = -m_velocity.x;
+	}
+	if ( m_position.y < screenBottom )
+	{
+		m_position.y = screenBottom;
+		m_velocity.y = -m_velocity.y;
+	}
+	else if ( m_position.y > screenTop )
+	{
+		m_position.y = screenTop;
+		m_velocity.y = -m_velocity.y;
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void PlayerShip::Accelerate( float deltaSeconds )
+{
+	Vec2 forwardNormal = GetForwardNormal();
+	float accelerationRate = 30.f;
+	m_velocity += forwardNormal * accelerationRate * deltaSeconds;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void PlayerShip::TurnLeft()
+{
+	m_angularVelocityDegreesPerSecond = 300.f;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void PlayerShip::TurnRight()
+{
+	m_angularVelocityDegreesPerSecond = -300.f;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void PlayerShip::Respawn()
+{
+	m_isDead = false;
+	m_health = 1;
+	m_position = Vec2( 100.f, 50.f );
+	m_velocity = Vec2( 0.f, 0.f );
+	m_orientationDegrees = 0.f;
+}

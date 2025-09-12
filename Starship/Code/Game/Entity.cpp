@@ -42,7 +42,16 @@ void Entity::Die()
 //
 bool Entity::IsOffScreen() const
 {
-	// Do nothing
+	float screenLeft = 0.f;
+	float screenRight = 200.f;
+	float screenBottom = 0.f;
+	float screenTop = 100.f;
+
+	if ( m_position.x + m_cosmeticRadius < screenLeft || m_position.x - m_cosmeticRadius > screenRight ||
+		m_position.y + m_cosmeticRadius < screenBottom || m_position.y - m_cosmeticRadius > screenTop )
+	{
+		return true;
+	}
 	return false;
 }
 
@@ -50,7 +59,7 @@ bool Entity::IsOffScreen() const
 //-----------------------------------------------------------------------------------------------
 Vec2 Entity::GetForwardNormal() const
 {
-	Vec2 forwardNormal = Vec2::MakeFromPolarDegrees( m_orientationDegrees );
+	Vec2 forwardNormal = Vec2::MakeFromPolarDegrees( m_orientationDegrees, 1.f );
 	return forwardNormal;
 }
 

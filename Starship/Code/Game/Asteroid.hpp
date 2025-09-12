@@ -15,7 +15,6 @@ public:
 	void Render() const override;
 	void Die() override;
 
-	bool IsOffScreen() const override;
 	void CheckCollisionWithBullets();
 	void CheckCollisionWithPlayerShip();
 };

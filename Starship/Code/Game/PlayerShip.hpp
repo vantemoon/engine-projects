@@ -12,6 +12,9 @@ class PlayerShip : public Entity
 {
 public:
 	static constexpr int NUM_SHIP_VERTS = 15;
+	bool m_isAccelerating = false;
+	bool m_isTurningLeft = false;
+	bool m_isTurningRight = false;
 
 public:
 	PlayerShip(Game* game, Vec2 const& startingPosition, Vec2 const& startingVelocity);
@@ -21,5 +24,9 @@ public:
 	void Render() const override;
 	void Die() override;
 
-	bool IsOffScreen() const override;
+	void BounceOffWorldEdges();
+	void Accelerate(float deltaSeconds);
+	void TurnLeft();
+	void TurnRight();
+	void Respawn();
 };

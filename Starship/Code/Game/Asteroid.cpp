@@ -233,18 +233,3 @@ void Asteroid::Die()
 	m_isGarbage = true;
 
 }
-
-//-----------------------------------------------------------------------------------------------
-bool Asteroid::IsOffScreen() const
-{
-	float screenLeft = 0.f;
-	float screenRight = 200.f;
-	float screenBottom = 0.f;
-	float screenTop = 100.f;
-	if ( m_position.x < screenLeft - m_cosmeticRadius || m_position.x > screenRight + m_cosmeticRadius ||
-		 m_position.y < screenBottom - m_cosmeticRadius || m_position.y > screenTop + m_cosmeticRadius )
-	{
-		return true;
-	}
-	return false;
-}

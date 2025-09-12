@@ -73,15 +73,5 @@ void Bullet::Die()
 //-----------------------------------------------------------------------------------------------
 bool Bullet::IsOffScreen() const
 {
-	float screenLeft = 0.f;
-	float screenRight = 200.f;
-	float screenBottom = 0.f;
-	float screenTop = 100.f;
-
-	if ( m_position.x + m_cosmeticRadius < screenLeft || m_position.x - m_cosmeticRadius > screenRight ||
-		 m_position.y + m_cosmeticRadius < screenBottom || m_position.y - m_cosmeticRadius > screenTop )
-	{
-		return true;
-	}
-	return false;
+	return Entity::IsOffScreen();
 }
