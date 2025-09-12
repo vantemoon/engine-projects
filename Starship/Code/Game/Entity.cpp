@@ -1,4 +1,6 @@
 #include "Game/Entity.hpp"
+#include "Engine/Math/MathUtils.hpp"
+#include "Engine/Math/Vec2.hpp"
 
 
 //-----------------------------------------------------------------------------------------------
@@ -26,7 +28,7 @@ void Entity::Update( float deltaSeconds )
 //-----------------------------------------------------------------------------------------------
 void Entity::Render() const
 {
-	// Do nothing; base entity does not render anything.
+	// Do nothing
 }
 
 
@@ -40,7 +42,7 @@ void Entity::Die()
 //
 bool Entity::IsOffScreen() const
 {
-	// TODO: Implement this function
+	// Do nothing
 	return false;
 }
 
@@ -48,8 +50,8 @@ bool Entity::IsOffScreen() const
 //-----------------------------------------------------------------------------------------------
 Vec2 Entity::GetForwardNormal() const
 {
-	// TODO: Implement this function
-	return Vec2( 1.f, 0.f );
+	Vec2 forwardNormal = Vec2::MakeFromPolarDegrees( m_orientationDegrees );
+	return forwardNormal;
 }
 
 

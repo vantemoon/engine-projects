@@ -25,6 +25,12 @@
     <ClCompile Include="Entity.cpp">
       <Filter>Gameplay</Filter>
     </ClCompile>
+    <ClCompile Include="Bullet.cpp">
+      <Filter>Gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="Asteroid.cpp">
+      <Filter>Gameplay</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.hpp">
@@ -37,6 +43,12 @@
       <Filter>Gameplay</Filter>
     </ClInclude>
     <ClInclude Include="Entity.hpp">
+      <Filter>Gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="Bullet.hpp">
+      <Filter>Gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="Asteroid.hpp">
       <Filter>Gameplay</Filter>
     </ClInclude>
   </ItemGroup>

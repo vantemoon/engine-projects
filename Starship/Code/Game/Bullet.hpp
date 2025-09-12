@@ -3,19 +3,21 @@
 
 
 //-----------------------------------------------------------------------------------------------
-class Game; // Forward declaration
-struct Vec2; // Forward declaration
+class Game;       // Forward declaration
+class PlayerShip; // Forward declaration
+struct Vec2;      // Forward declaration
 
 
 //-----------------------------------------------------------------------------------------------
-class PlayerShip : public Entity
+class Bullet : public Entity
 {
 public:
-	static constexpr int NUM_SHIP_VERTS = 15;
+	PlayerShip* m_shooter = nullptr;
+	static constexpr int NUM_BULLET_VERTS = 6;
 
 public:
-	PlayerShip(Game* game, Vec2 const& startingPosition, Vec2 const& startingVelocity);
-	~PlayerShip() override;
+	Bullet(Game* game, PlayerShip* shooter);
+	~Bullet() override;
 
 	void Update(float deltaSeconds) override;
 	void Render() const override;

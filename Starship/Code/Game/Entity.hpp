@@ -1,9 +1,13 @@
 #pragma once
-#include "Engine/Core/Vertex.hpp"
 #include "Engine/Math/Vec2.hpp"
 
-class Game; // Forward declaration
 
+//-----------------------------------------------------------------------------------------------
+class Game; // Forward declaration
+struct Vertex; // Forward declaration
+
+
+//-----------------------------------------------------------------------------------------------
 class Entity
 {
 public:

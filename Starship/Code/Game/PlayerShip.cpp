@@ -1,11 +1,13 @@
 #include "Engine/Core/Engine.hpp"
+#include "Engine/Core/Rgba8.hpp"
+#include "Engine/Math/Vec2.hpp"
+#include "Engine/Math/Vec3.hpp"
+#include "Engine/Core/Vertex.hpp"
 #include "Engine/Core/VertexUtils.hpp"
 #include "Engine/Renderer/Renderer.hpp"
+#include "Game/App.hpp"
 #include "Game/PlayerShip.hpp"
 
-
-//-----------------------------------------------------------------------------------------------
-static const int NUM_SHIP_VERTS = 15;
 
 //-----------------------------------------------------------------------------------------------
 PlayerShip::PlayerShip( Game* game, Vec2 const& startingPosition, Vec2 const& startingVelocity )
@@ -52,14 +54,16 @@ void PlayerShip::Update( float deltaSeconds )
 	Entity::Update( deltaSeconds );
 	// Add PlayerShip-specific update logic here
 	// Check if the player ship has gone off the screen
+	if ( IsOffScreen() )
+	{
+		// TODO: clamp to screen bounds
+	}
 }
 
 
 //-----------------------------------------------------------------------------------------------
 void PlayerShip::Render() const
 {
-	Entity::Render();
-
 	// Create a copy of the ship's vertex array to transform
 	Vertex tempShipWorldVerts[NUM_SHIP_VERTS];
 	for( int vertIndex = 0; vertIndex < NUM_SHIP_VERTS; ++vertIndex )
@@ -79,3 +83,11 @@ void PlayerShip::Die()
 	Entity::Die();
 	// Add PlayerShip-specific death logic here
 }
+
+
+//-----------------------------------------------------------------------------------------------
+bool PlayerShip::IsOffScreen() const
+{
+	//TODO: Implement this function
+	return false;
+};

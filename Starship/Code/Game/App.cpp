@@ -3,6 +3,7 @@
 #include "Engine/Renderer/Camera.hpp"
 #include "Engine/Renderer/Renderer.hpp"
 #include "Game/App.hpp"
+#include "Game/Bullet.hpp"
 #include "Game/Game.hpp"
 
 
@@ -60,10 +61,10 @@ void App::Update( float deltaSeconds )
 		m_pauseAfterNextUpdate = false;
 	}
 
-	// Clear out "wasKeyJustPressed" state for all keys
-	for ( int keyIndex = 0; keyIndex < 256; ++keyIndex )
+	// Update "wasKeyJustPressed" states
+	for( int keyIndex = 0; keyIndex < 256; ++keyIndex )
 	{
-		m_wasKeyJustPressed[keyIndex] = false;
+		m_wasKeyJustPressed[keyIndex] = m_isKeyDown[keyIndex];
 	}
 }
 
@@ -71,10 +72,7 @@ void App::Update( float deltaSeconds )
 //-----------------------------------------------------------------------------------------------
 void App::Render() const
 {
-	Camera gameCamera = *(m_game->m_gameCamera);
-	g_engine->m_renderer->BeginCamera( gameCamera );
 	g_engine->m_renderer->ClearScreen( Rgba8( 100, 50, 0, 255 ) );
-
 	m_game->Render();
 }
 
@@ -90,4 +88,91 @@ void App::SetIsQuitting()
 bool App::IsQuitting() const
 {
 	return m_isQuitting;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void App::OnKeyDown( unsigned char keyCode )
+{
+	m_isKeyDown[keyCode] = true;
+
+	switch( keyCode )
+	{
+		case 'Q':
+			g_app->SetIsQuitting();
+			break;
+
+		case 'T':
+			m_isSlowMo = true;
+			break;
+
+		case 'P':
+			m_isPaused = !m_isPaused;
+			break;
+
+		case 'O':
+			m_isPaused = false;
+			m_pauseAfterNextUpdate = true;
+			break;
+
+		case 32: // Space
+			if ( m_game->m_playerShip != nullptr )
+			{
+				for ( int bulletIndex = 0; bulletIndex < Game::MAX_BULLETS; ++bulletIndex )
+				{
+					if ( m_game->m_bullets[bulletIndex] == nullptr )
+					{
+						m_game->m_bullets[bulletIndex] = new Bullet( m_game, m_game->m_playerShip );
+						break;
+					}
+
+					else
+					{
+						// TODO: ERROR_RECOVERABLE 
+					}
+				}
+			}
+			break;
+
+		default:
+			break;
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void App::OnKeyUp( unsigned char keyCode )
+{
+	m_isKeyDown[keyCode] = false;
+
+	switch( keyCode )
+	{
+		case 'T':
+			m_isSlowMo = false;
+			break;
+
+		default:
+			break;
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool App::IsKeyDown( unsigned char keyCode ) const
+{
+	return m_isKeyDown[keyCode];
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool App::WasKeyJustPressed( unsigned char keyCode ) const
+{
+	return m_isKeyDown[keyCode] && !m_wasKeyJustPressed[keyCode];
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool App::WasKeyJustReleased( unsigned char keyCode ) const
+{
+	return !m_isKeyDown[keyCode] && m_wasKeyJustPressed[keyCode];
 }

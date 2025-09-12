@@ -30,10 +30,8 @@ constexpr float CLIENT_ASPECT = 2.0f; // We are requesting a 2:1 aspect (square)
 //-----------------------------------------------------------------------------------------------
 // #SD1ToDo: We will move each of these items to its proper place, once that place is established later on
 // 
-bool g_isQuitting = false;							// ...becomes App::m_isQuitting instead
 HWND g_hWnd = nullptr;								// ...becomes void* Window::m_windowHandle
 HDC g_displayDeviceContext = nullptr;				// ...becomes void* Window::m_displayContext
-// HGLRC g_openGLRenderingContext = nullptr;			// ...becomes void* Renderer::m_apiRenderingContext
 char const* APP_NAME = "SD1-A02: Starship Prototype";	// ...becomes ??? (Change this per project!)
 
 
@@ -63,31 +61,7 @@ LRESULT CALLBACK WindowsMessageHandlingProcedure( HWND windowHandle, UINT wmMess
 		{
 			unsigned char asKey = (unsigned char)wParam;
 
-			// #SD1ToDo: Tell the App (or InputSystem later) about this key-pressed event...
-			if (asKey == 'Q') // #SD1ToDo: move this "check for ESC pressed" code to App
-			{
-				g_app->SetIsQuitting();
-				return 0; // "Consumes" this message (tells Windows "okay, we handled it")
-			}
-			
-			if (asKey == 'T' ) // Slow simulation time to 1/10th the normal rate
-			{
-				// fakeDeltaSeconds = 0.0016f;
-				// TODO: Implement slow motion feature
-			}
-
-			if( asKey == 'P' ) // Toggle between paused and unpaused simulation
-			{
-				// isPaused = !isPaused;
-				// TODO: Implement pause feature
-			}
-
-			if( asKey == 'O' ) // Runs a single unpaused Update (simulation step) and then pauses
-			{
-				// isPaused = false;
-				// pauseAfterNextUpdate = true;
-				// TODO: Implement single-step feature
-			}
+			g_app->OnKeyDown( asKey );
 			break;
 		}
 
@@ -96,12 +70,7 @@ LRESULT CALLBACK WindowsMessageHandlingProcedure( HWND windowHandle, UINT wmMess
 		{
 			unsigned char asKey = (unsigned char) wParam;
 
-			// #SD1ToDo: Tell the App (or InputSystem later) about this key-released event...
-			if( asKey == 'T' ) // Restore normal simulation time
-			{
-				// fakeDeltaSeconds = 0.016f;
-				// TODO: Implement normal time feature
-			}
+			g_app->OnKeyUp( asKey );
 			break;
 		}
 	}

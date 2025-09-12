@@ -1,9 +1,9 @@
 #pragma once
+#include "Engine/Renderer/Camera.hpp"
 
 
 //-----------------------------------------------------------------------------------------------
 class App;        // Forward declaration
-class Camera;     // Forward declaration
 class Engine;     // Forward declaration
 class Game;       // Forward declaration
 class PlayerShip; // Forward declaration
@@ -30,6 +30,7 @@ public:
 	void OnKeyUp( unsigned char keyCode );
 	bool IsKeyDown( unsigned char keyCode ) const;
 	bool WasKeyJustPressed( unsigned char keyCode ) const;
+	bool WasKeyJustReleased( unsigned char keyCode ) const;
 
 public:
 	Game*			m_game = nullptr;
