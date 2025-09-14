@@ -6,6 +6,7 @@
 #include "Engine/Core/VertexUtils.hpp"
 #include "Engine/Renderer/Renderer.hpp"
 #include "Game/App.hpp"
+#include "Game/GameCommon.hpp"
 #include "Game/PlayerShip.hpp"
 
 
@@ -14,8 +15,8 @@ PlayerShip::PlayerShip( Game* game, Vec2 const& startingPosition, Vec2 const& st
 	: Entity( game, startingPosition )
 {
 	m_velocity = startingVelocity;
-	m_physicsRadius = 1.75f;
-	m_cosmeticRadius = 2.25f;
+	m_physicsRadius = PLAYER_SHIP_PHYSICS_RADIUS;
+	m_cosmeticRadius = PLAYER_SHIP_COSMETIC_RADIUS;
 	m_vertexArray = new Vertex[NUM_SHIP_VERTS];
 
 	// Triangle A
@@ -109,9 +110,9 @@ void PlayerShip::Die()
 void PlayerShip::BounceOffWorldEdges()
 {
 	float screenLeft = 0.f + m_physicsRadius;
-	float screenRight = 200.f - m_physicsRadius;
+	float screenRight = WORLD_SIZE_X - m_physicsRadius;
 	float screenBottom = 0.f + m_physicsRadius;
-	float screenTop = 100.f - m_physicsRadius;
+	float screenTop = WORLD_SIZE_Y - m_physicsRadius;
 
 	if ( m_position.x < screenLeft )
 	{
@@ -148,14 +149,14 @@ void PlayerShip::Accelerate( float deltaSeconds )
 //-----------------------------------------------------------------------------------------------
 void PlayerShip::TurnLeft()
 {
-	m_angularVelocityDegreesPerSecond = 300.f;
+	m_angularVelocityDegreesPerSecond = PLAYER_SHIP_TURN_SPEED;
 }
 
 
 //-----------------------------------------------------------------------------------------------
 void PlayerShip::TurnRight()
 {
-	m_angularVelocityDegreesPerSecond = -300.f;
+	m_angularVelocityDegreesPerSecond = -PLAYER_SHIP_TURN_SPEED;
 }
 
 
@@ -164,7 +165,7 @@ void PlayerShip::Respawn()
 {
 	m_isDead = false;
 	m_health = 1;
-	m_position = Vec2( 100.f, 50.f );
+	m_position = Vec2( WORLD_CENTER_X, WORLD_CENTER_Y );
 	m_velocity = Vec2( 0.f, 0.f );
 	m_orientationDegrees = 0.f;
 }

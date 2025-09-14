@@ -1,6 +1,7 @@
-#include "Game/Entity.hpp"
 #include "Engine/Math/MathUtils.hpp"
 #include "Engine/Math/Vec2.hpp"
+#include "Game/Entity.hpp"
+#include "Game/GameCommon.hpp"
 
 
 //-----------------------------------------------------------------------------------------------
@@ -43,9 +44,9 @@ void Entity::Die()
 bool Entity::IsOffScreen() const
 {
 	float screenLeft = 0.f;
-	float screenRight = 200.f;
+	float screenRight = WORLD_SIZE_X;
 	float screenBottom = 0.f;
-	float screenTop = 100.f;
+	float screenTop = WORLD_SIZE_Y;
 
 	if ( m_position.x + m_cosmeticRadius < screenLeft || m_position.x - m_cosmeticRadius > screenRight ||
 		m_position.y + m_cosmeticRadius < screenBottom || m_position.y - m_cosmeticRadius > screenTop )

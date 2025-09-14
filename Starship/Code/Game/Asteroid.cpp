@@ -7,6 +7,7 @@
 #include "Game/Asteroid.hpp"
 #include "Game/Bullet.hpp"
 #include "Game/Game.hpp"
+#include "Game/GameCommon.hpp"
 #include "Game/PlayerShip.hpp"
 #include "App.hpp"
 
@@ -18,8 +19,8 @@ Asteroid::Asteroid( Game* game, Vec2 const& startingPosition, float orientationD
 	m_velocity = startingVelocity;
 	m_orientationDegrees = orientationDegrees;
 	m_angularVelocityDegreesPerSecond = startingAngularVelocity;
-	m_physicsRadius = 1.6f;
-	m_cosmeticRadius = 2.0f;
+	m_physicsRadius = ASTEROID_PHYSICS_RADIUS;
+	m_cosmeticRadius = ASTEROID_COSMETIC_RADIUS;
 	m_health = 3;
 
 	RandomNumberGenerator rng;
@@ -158,7 +159,7 @@ void Asteroid::CheckCollisionWithBullets()
 	if(g_app->m_game == nullptr)
 		return;
 
-	for(int bulletIndex = 0; bulletIndex < Game::MAX_BULLETS; ++bulletIndex)
+	for(int bulletIndex = 0; bulletIndex < MAX_BULLETS; ++bulletIndex)
 	{
 		Bullet* bullet = g_app->m_game->m_bullets[bulletIndex];
 		if(bullet == nullptr || bullet->m_isDead)

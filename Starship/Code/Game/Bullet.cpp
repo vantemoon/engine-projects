@@ -4,6 +4,7 @@
 #include "Engine/Renderer/Renderer.hpp"
 #include "Game/Bullet.hpp"
 #include "Game/Game.hpp"
+#include "Game/GameCommon.hpp"
 #include "Game/PlayerShip.hpp"
 
 
@@ -13,9 +14,9 @@ Bullet::Bullet( Game* game, PlayerShip* shooter )
 {
 	m_shooter = shooter;
 	m_orientationDegrees = shooter->m_orientationDegrees;
-	m_velocity = 50.f * shooter->GetForwardNormal();
-	m_physicsRadius = 0.5f;
-	m_cosmeticRadius = 2.0f;
+	m_velocity = BULLET_SPEED * shooter->GetForwardNormal();
+	m_physicsRadius = BULLET_PHYSICS_RADIUS;
+	m_cosmeticRadius = BULLET_COSMETIC_RADIUS;
 	m_vertexArray = new Vertex[NUM_BULLET_VERTS];
 
 	// Triangle A

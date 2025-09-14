@@ -40,6 +40,7 @@ public:
 	bool			m_isPaused = false;
 	bool            m_isSlowMo = false;
 	bool			m_pauseAfterNextUpdate = false;
+	bool            m_debugDraw = false;
 
 private:
 	bool            m_isKeyDown[256] = { false };

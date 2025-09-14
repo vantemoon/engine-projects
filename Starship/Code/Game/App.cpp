@@ -113,6 +113,11 @@ void CheckKeyboardInput()
 	{
 		g_app->m_game->m_playerShip->Respawn();
 	}
+
+	if( g_app->WasKeyJustPressed( 112 ) ) // F1
+	{
+		g_app->m_debugDraw = !g_app->m_debugDraw;
+	}
 }
 
 
