@@ -114,10 +114,28 @@ void CheckKeyboardInput()
 		g_app->m_game->m_playerShip->Respawn();
 	}
 
-	if( g_app->WasKeyJustPressed( 112 ) ) // F1
+	if ( g_app->WasKeyJustPressed( 112 ) ) // F1
 	{
 		g_app->m_debugDraw = !g_app->m_debugDraw;
 	}
+
+	if(g_app->WasKeyJustPressed( 119 )) // F8
+	{
+		g_app->HardReset();
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void App::HardReset()
+{
+	if ( m_game != nullptr )
+	{
+		delete m_game;
+		m_game = nullptr;
+	}
+
+	m_game = new Game();
 }
 
 

@@ -65,22 +65,22 @@ void DebugDrawRing( Vec2 center, float radius, float thickness /*= 1*/, const Rg
 
 
 //-----------------------------------------------------------------------------------------------
-void DebugDrawLine( Vec2 start, float endX, float endY, float thickness /*= 1*/, const Rgba8& color )
+void DebugDrawLine( Vec2 start, Vec2 end, float thickness, const Rgba8& color )
 {
 	constexpr int NUM_TRIANGLES = 2;
 	constexpr int NUM_VERTS = NUM_TRIANGLES * 3;
 
 	Vertex verts[NUM_VERTS];
 
-	Vec2 direction = Vec2( endX - start.x, endY - start.y );
+	Vec2 direction = end - start;
 	direction.Normalize(); // Get unit direction vector
 	Vec2 normal = Vec2( -direction.y, direction.x );
 	normal *= (thickness / 2.f);
 
-	Vec3 innerStart = Vec3( start.x, start.y, 0.f );
-	Vec3 innerEnd = Vec3( endX, endY, 0.f );
+	Vec3 innerStart = Vec3( start.x - normal.x, start.y - normal.y, 0.f );
+	Vec3 innerEnd = Vec3( end.x - normal.x , end.y - normal.y, 0.f );
 	Vec3 outerStart = Vec3( start.x + normal.x, start.y + normal.y, 0.f );
-	Vec3 outerEnd = Vec3( endX + normal.x, endY + normal.y, 0.f );
+	Vec3 outerEnd = Vec3( end.x + normal.x, end.y + normal.y, 0.f );
 
 	// Inner triangle
 	verts[0].m_position = innerStart;

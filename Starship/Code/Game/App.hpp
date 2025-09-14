@@ -26,6 +26,7 @@ public:
 
 	void SetIsQuitting();
 	bool IsQuitting() const;
+	void HardReset();
 	void OnKeyDown( unsigned char keyCode );
 	void OnKeyUp( unsigned char keyCode );
 	bool IsKeyDown( unsigned char keyCode ) const;

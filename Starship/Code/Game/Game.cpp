@@ -123,24 +123,67 @@ void Game::DebugDraw() const
 {
 	if ( m_playerShip != nullptr && !m_playerShip->m_isDead )
 	{
-		// Draw lines from the player ship to all asteroids
+		//Player ship
+		DebugDrawRing( m_playerShip->m_position, m_playerShip->m_cosmeticRadius, 0.1f, Rgba8( 255, 0, 255 ) );
+		DebugDrawRing( m_playerShip->m_position, m_playerShip->m_physicsRadius, 0.1f, Rgba8( 0, 255, 255 ) );
+
+		Vec2 playershipForwardNormal = m_playerShip->GetForwardNormal();
+		Vec2 playershipForwardLineEnd = m_playerShip->m_position + playershipForwardNormal * m_playerShip->m_cosmeticRadius;
+		DebugDrawLine( m_playerShip->m_position, playershipForwardLineEnd, 0.2f, Rgba8( 255, 0, 0 ) );
+
+		Vec2 playershipLeftNormal = playershipForwardNormal.GetRotatedBy90Degrees();
+		Vec2 playershipLeftLineEnd = m_playerShip->m_position + playershipLeftNormal * m_playerShip->m_cosmeticRadius;
+		DebugDrawLine( m_playerShip->m_position, playershipLeftLineEnd, 0.2f, Rgba8( 0, 255, 0 ) );
+		
+		Vec2 playershipVelocityLineEnd = m_playerShip->m_position + m_playerShip->m_velocity;
+		DebugDrawLine( m_playerShip->m_position, playershipVelocityLineEnd, 0.2f, Rgba8( 255, 255, 0 ) );
+
+		// Asteroids
 		for ( int asteroidIndex = 0; asteroidIndex < MAX_ASTEROIDS; ++asteroidIndex )
 		{
 			if ( m_asteroids[asteroidIndex] != nullptr )
 			{
-				DebugDrawLine( m_playerShip->m_position, m_asteroids[asteroidIndex]->m_position.x, m_asteroids[asteroidIndex]->m_position.y, 0.3f, Rgba8( 50, 50, 50 ) );
+				DebugDrawLine( m_playerShip->m_position, m_asteroids[asteroidIndex]->m_position, 0.2f, Rgba8( 50, 50, 50 ) );
+				DebugDrawRing( m_asteroids[asteroidIndex]->m_position, m_asteroids[asteroidIndex]->m_cosmeticRadius, 0.1f, Rgba8( 255, 0, 255 ) );
+				DebugDrawRing( m_asteroids[asteroidIndex]->m_position, m_asteroids[asteroidIndex]->m_physicsRadius, 0.1f, Rgba8( 0, 255, 255 ) );
+		    
+				Vec2 asteroidForwardNormal = m_asteroids[asteroidIndex]->GetForwardNormal();
+				Vec2 asteroidForwardLineEnd = m_asteroids[asteroidIndex]->m_position + asteroidForwardNormal * m_asteroids[asteroidIndex]->m_cosmeticRadius;
+				DebugDrawLine( m_asteroids[asteroidIndex]->m_position, asteroidForwardLineEnd, 0.2f, Rgba8( 255, 0, 0 ) );
+			
+				Vec2 asteroidLeftNormal = asteroidForwardNormal.GetRotatedBy90Degrees();
+				Vec2 asteroidLeftLineEnd = m_asteroids[asteroidIndex]->m_position + asteroidLeftNormal * m_asteroids[asteroidIndex]->m_cosmeticRadius;
+				DebugDrawLine( m_asteroids[asteroidIndex]->m_position, asteroidLeftLineEnd, 0.2f, Rgba8( 0, 255, 0 ) );
+			
+				Vec2 asteroidVelocityLineEnd = m_asteroids[asteroidIndex]->m_position + m_asteroids[asteroidIndex]->m_velocity;
+				DebugDrawLine( m_asteroids[asteroidIndex]->m_position, asteroidVelocityLineEnd, 0.2f, Rgba8( 255, 255, 0 ) );
 			}
 		}
 
-		// Draw lines from the player ship to all bullets
+		// Bullets
 		for ( int bulletIndex = 0; bulletIndex < MAX_BULLETS; ++bulletIndex )
 		{
 			if ( m_bullets[bulletIndex] != nullptr )
 			{
-				DebugDrawLine( m_playerShip->m_position, m_bullets[bulletIndex]->m_position.x, m_bullets[bulletIndex]->m_position.y, 0.3f, Rgba8( 50, 50, 50 ) );
+				DebugDrawLine( m_playerShip->m_position, m_bullets[bulletIndex]->m_position, 0.2f, Rgba8( 50, 50, 50 ) );
+				DebugDrawRing( m_bullets[bulletIndex]->m_position, m_bullets[bulletIndex]->m_cosmeticRadius, 0.1f, Rgba8( 255, 0, 255 ) );
+				DebugDrawRing( m_bullets[bulletIndex]->m_position, m_bullets[bulletIndex]->m_physicsRadius, 0.1f, Rgba8( 0, 255, 255 ) );
+			
+				Vec2 bulletForwardNormal = m_bullets[bulletIndex]->GetForwardNormal();
+				Vec2 bulletForwardLineEnd = m_bullets[bulletIndex]->m_position + bulletForwardNormal * m_bullets[bulletIndex]->m_cosmeticRadius;
+				DebugDrawLine( m_bullets[bulletIndex]->m_position, bulletForwardLineEnd, 0.2f, Rgba8( 255, 0, 0 ) );
+			
+				Vec2 bulletLeftNormal = bulletForwardNormal.GetRotatedBy90Degrees();
+				Vec2 bulletLeftLineEnd = m_bullets[bulletIndex]->m_position + bulletLeftNormal * m_bullets[bulletIndex]->m_cosmeticRadius;
+				DebugDrawLine( m_bullets[bulletIndex]->m_position, bulletLeftLineEnd, 0.2f, Rgba8( 0, 255, 0 ) );
+			
+				Vec2 bulletVelocityLineEnd = m_bullets[bulletIndex]->m_position + m_bullets[bulletIndex]->m_velocity;
+				DebugDrawLine( m_bullets[bulletIndex]->m_position, bulletVelocityLineEnd, 0.2f, Rgba8( 255, 255, 0 ) );
 			}
 		}
 	}
+
+	// Cosmetic radius rings
 }
 
 
