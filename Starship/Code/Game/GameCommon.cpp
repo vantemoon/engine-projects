@@ -72,28 +72,33 @@ void DebugDrawLine( Vec2 start, Vec2 end, float thickness, const Rgba8& color )
 
 	Vertex verts[NUM_VERTS];
 
-	Vec2 direction = end - start;
-	direction.Normalize();
-	Vec2 normal = Vec2( -direction.y, direction.x );
-	normal *= (thickness / 2.f);
+	Vec2 forwardDirection = end - start;
+	Vec2 forwardStep = forwardDirection.GetNormalized() * ( thickness / 2.f );
+	Vec2 leftDirection = forwardStep.GetRotatedBy90Degrees();
+	Vec2 leftStep = leftDirection.GetNormalized() * ( thickness / 2.f );
 
-	Vec3 innerStart = Vec3( start.x - normal.x, start.y - normal.y, 0.f );
-	Vec3 innerEnd = Vec3( end.x - normal.x , end.y - normal.y, 0.f );
-	Vec3 outerStart = Vec3( start.x + normal.x, start.y + normal.y, 0.f );
-	Vec3 outerEnd = Vec3( end.x + normal.x, end.y + normal.y, 0.f );
+	Vec2 innerStart = start + leftStep - forwardStep;
+	Vec2 outerStart = start - leftStep - forwardStep;
+	Vec2 innerEnd = end + leftStep + forwardStep;
+	Vec2 outerEnd = end - leftStep + forwardStep;
+
+	Vec3 innerStart3D = Vec3( innerStart.x, innerStart.y, 0.f );
+	Vec3 outerStart3D = Vec3( outerStart.x, outerStart.y, 0.f );
+	Vec3 innerEnd3D = Vec3( innerEnd.x, innerEnd.y, 0.f );
+	Vec3 outerEnd3D = Vec3( outerEnd.x, outerEnd.y, 0.f );
 
 	// Inner triangle
-	verts[0].m_position = innerStart;
-	verts[1].m_position = outerStart;
-	verts[2].m_position = outerEnd;
+	verts[0].m_position = innerStart3D;
+	verts[1].m_position = outerStart3D;
+	verts[2].m_position = outerEnd3D;
 	verts[0].m_color = color;
 	verts[1].m_color = color;
 	verts[2].m_color = color;
 
 	// Outer triangle
-	verts[3].m_position = innerStart;
-	verts[4].m_position = outerEnd;
-	verts[5].m_position = innerEnd;
+	verts[3].m_position = innerStart3D;
+	verts[4].m_position = outerEnd3D;
+	verts[5].m_position = innerEnd3D;
 	verts[3].m_color = color;
 	verts[4].m_color = color;
 	verts[5].m_color = color;
