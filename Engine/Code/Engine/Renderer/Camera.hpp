@@ -12,7 +12,7 @@ private:
 public:
 	Camera();
 	~Camera();
-    void SetOrthoView(const Vec2& bottomLeft, const Vec2& topRight);
+    void SetOrthoView( const Vec2& bottomLeft, const Vec2& topRight );
     Vec2 GetOrthoBottomLeft() const;
     Vec2 GetOrthoTopRight() const;
 };

@@ -52,23 +52,23 @@ PlayerShip::~PlayerShip() = default;
 //-----------------------------------------------------------------------------------------------
 void PlayerShip::Update( float deltaSeconds )
 {
-	if(m_isDead)
+	if( m_isDead )
 		return;
 
 	Entity::Update( deltaSeconds );
 
-	if(m_isAccelerating)
+	if( m_isAccelerating )
 	{
 		Accelerate( deltaSeconds );
 	}
 
 	BounceOffWorldEdges();
 
-	if(m_isTurningLeft)
+	if( m_isTurningLeft )
 	{
 		TurnLeft();
 	}
-	else if(m_isTurningRight)
+	else if( m_isTurningRight )
 	{
 		TurnRight();
 	}
@@ -86,7 +86,7 @@ void PlayerShip::Render() const
 		return;
 
 	Vertex tempShipWorldVerts[NUM_SHIP_VERTS];
-	for(int vertIndex = 0; vertIndex < NUM_SHIP_VERTS; ++vertIndex)
+	for( int vertIndex = 0; vertIndex < NUM_SHIP_VERTS; ++ vertIndex )
 	{
 		tempShipWorldVerts[vertIndex] = m_vertexArray[vertIndex];
 	}

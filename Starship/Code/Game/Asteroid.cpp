@@ -23,17 +23,22 @@ Asteroid::Asteroid( Game* game, Vec2 const& startingPosition, float orientationD
 	m_cosmeticRadius = ASTEROID_COSMETIC_RADIUS;
 	m_health = 3;
 
+	InitializeVertexArray();
+};
+
+
+//--------------------------------------------------------------------------------
+void Asteroid::InitializeVertexArray()
+{
 	RandomNumberGenerator rng;
 	m_vertexArray = new Vertex[NUM_ASTEROID_VERTS];
 
-	// Generate 16 random radii for the outer vertexes
 	float radii[NUM_ASTEROID_VERTS];
-	for ( int vertIndex = 0; vertIndex < NUM_ASTEROID_VERTS; ++vertIndex )
+	for ( int vertIndex = 0; vertIndex < NUM_ASTEROID_VERTS; ++ vertIndex )
 	{
 		radii[vertIndex] = rng.RollRandomFloatInRange( m_physicsRadius, m_cosmeticRadius );
 	}
 
-	// Transform the random vertexes
 	float rotationDegrees = 360.f / 16.f;
 	Vec3 vertexPos1 = Vec3( radii[0], 0.f, 0 );
 	Vec3 vertexPos2 = Vec3( radii[1], 0.f, 0 );
@@ -146,7 +151,7 @@ Asteroid::Asteroid( Game* game, Vec2 const& startingPosition, float orientationD
 	m_vertexArray[45] = Vertex( Vec3( 0.f, 0.f, 0 ), Rgba8( 100, 100, 100, 255 ), Vec2() );
 	m_vertexArray[46] = Vertex( vertexPos16, Rgba8( 100, 100, 100, 255 ), Vec2() );
 	m_vertexArray[47] = Vertex( vertexPos1, Rgba8( 100, 100, 100, 255 ), Vec2() );
-};
+}
 
 
 //--------------------------------------------------------------------------------
@@ -156,17 +161,17 @@ Asteroid::~Asteroid() = default;
 //--------------------------------------------------------------------------------
 void Asteroid::CheckCollisionWithBullets()
 {
-	if(g_app->m_game == nullptr)
+	if( g_app->m_game == nullptr )
 		return;
 
-	for(int bulletIndex = 0; bulletIndex < MAX_BULLETS; ++bulletIndex)
+	for( int bulletIndex = 0; bulletIndex < MAX_BULLETS; ++ bulletIndex )
 	{
 		Bullet* bullet = g_app->m_game->m_bullets[bulletIndex];
-		if(bullet == nullptr || bullet->m_isDead)
+		if( bullet == nullptr || bullet->m_isDead )
 			continue;
 		float distanceSquared = GetDistanceSquared2D( m_position, bullet->m_position );
 		float combinedRadii = m_physicsRadius + bullet->m_physicsRadius;
-		if(distanceSquared < (combinedRadii * combinedRadii))
+		if( distanceSquared < ( combinedRadii * combinedRadii ) )
 		{
 			bullet->Die();
 			m_health -= 1;
@@ -178,13 +183,13 @@ void Asteroid::CheckCollisionWithBullets()
 //--------------------------------------------------------------------------------
 void Asteroid::CheckCollisionWithPlayerShip()
 {
-	if(g_app->m_game == nullptr || g_app->m_game->m_playerShip == nullptr)
+	if( g_app->m_game == nullptr || g_app->m_game->m_playerShip == nullptr )
 		return;
 
 	PlayerShip* playerShip = g_app->m_game->m_playerShip;
 	float distanceSquared = GetDistanceSquared2D( m_position, playerShip->m_position );
 	float combinedRadii = m_physicsRadius + playerShip->m_physicsRadius;
-	if (distanceSquared < ( combinedRadii * combinedRadii ) )
+	if ( distanceSquared < ( combinedRadii * combinedRadii ) )
 	{
 		playerShip->Die();
 		m_health -= 1;
@@ -217,7 +222,7 @@ void Asteroid::Render() const
 {
 	// Create a copy of the asteroid's vertex array to transform
 	Vertex tempAsteroidWorldVerts[NUM_ASTEROID_VERTS];
-	for ( int vertIndex = 0; vertIndex < NUM_ASTEROID_VERTS; ++vertIndex )
+	for ( int vertIndex = 0; vertIndex < NUM_ASTEROID_VERTS; ++ vertIndex )
 	{
 		tempAsteroidWorldVerts[vertIndex] = m_vertexArray[vertIndex];
 	}
@@ -232,5 +237,4 @@ void Asteroid::Die()
 {
 	Entity::Die(); // m_isDead = true;
 	m_isGarbage = true;
-
 }

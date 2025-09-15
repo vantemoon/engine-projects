@@ -17,17 +17,25 @@ Bullet::Bullet( Game* game, PlayerShip* shooter )
 	m_velocity = BULLET_SPEED * shooter->GetForwardNormal();
 	m_physicsRadius = BULLET_PHYSICS_RADIUS;
 	m_cosmeticRadius = BULLET_COSMETIC_RADIUS;
+	
+	InitializeVertexArray();
+}
+
+
+//--------------------------------------------------------------------------------
+void Bullet::InitializeVertexArray()
+{
 	m_vertexArray = new Vertex[NUM_BULLET_VERTS];
 
 	// Triangle A
-	m_vertexArray[0] = Vertex( Vec3(   0, -0.5, 0 ), Rgba8( 255, 255, 0, 255 ), Vec2() );
-	m_vertexArray[1] = Vertex( Vec3( 0.5,    0, 0 ), Rgba8( 255, 255, 0, 255 ), Vec2() );
-	m_vertexArray[2] = Vertex( Vec3(   0,  0.5, 0 ), Rgba8( 255, 255, 0, 255 ), Vec2() );
+	m_vertexArray[0] = Vertex( Vec3( 0, -0.5, 0 ), Rgba8( 255, 255, 0, 255 ), Vec2() );
+	m_vertexArray[1] = Vertex( Vec3( 0.5, 0, 0 ), Rgba8( 255, 255, 0, 255 ), Vec2() );
+	m_vertexArray[2] = Vertex( Vec3( 0, 0.5, 0 ), Rgba8( 255, 255, 0, 255 ), Vec2() );
 
 	// Triangle B
-	m_vertexArray[3] = Vertex( Vec3(  0, -0.5, 0 ), Rgba8( 255, 0, 0, 255 ), Vec2() );
-	m_vertexArray[4] = Vertex( Vec3(  0,  0.5, 0 ), Rgba8( 255, 0, 0, 255 ), Vec2() );
-	m_vertexArray[5] = Vertex( Vec3( -2,    0, 0 ), Rgba8( 255, 0, 0,   0 ), Vec2() );
+	m_vertexArray[3] = Vertex( Vec3( 0, -0.5, 0 ), Rgba8( 255, 0, 0, 255 ), Vec2() );
+	m_vertexArray[4] = Vertex( Vec3( 0, 0.5, 0 ), Rgba8( 255, 0, 0, 255 ), Vec2() );
+	m_vertexArray[5] = Vertex( Vec3( -2, 0, 0 ), Rgba8( 255, 0, 0, 0 ), Vec2() );
 }
 
 
@@ -52,7 +60,7 @@ void Bullet::Render() const
 {
 	// Create a copy of the ship's vertex array to transform
 	Vertex tempShipWorldVerts[NUM_BULLET_VERTS];
-	for(int vertIndex = 0; vertIndex < NUM_BULLET_VERTS; ++vertIndex)
+	for( int vertIndex = 0; vertIndex < NUM_BULLET_VERTS; ++ vertIndex )
 	{
 		tempShipWorldVerts[vertIndex] = m_vertexArray[vertIndex];
 	}

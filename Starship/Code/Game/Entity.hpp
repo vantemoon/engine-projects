@@ -26,6 +26,7 @@ public:
 public:
 	Entity( Game* game, Vec2 startingPosition );
 	virtual ~Entity();
+	virtual void InitializeVertexArray();
 	virtual void Update( float deltaSeconds );
 	virtual void Render() const;
 	virtual void Die();

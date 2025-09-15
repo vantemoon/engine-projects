@@ -11,10 +11,10 @@ public: // NOTE: this is one of the few cases where we break both the "m_" namin
 
 public:
 	// Construction/Destruction
-	~Vec3() {}															// destructor (do nothing)
-	Vec3() {}															// default constructor (do nothing)
-	Vec3(Vec3 const& copyFrom);							                // copy constructor (from another vec3)
-	explicit Vec3(float initialX, float initialY, float initialZ);		// explicit constructor (from x, y, z)
+	~Vec3() = default;														// destructor (do nothing)
+	Vec3() = default;															// default constructor (do nothing)
+	Vec3( Vec3 const& copyFrom );							                // copy constructor (from another vec3)
+	explicit Vec3( float initialX, float initialY, float initialZ );		// explicit constructor (from x, y, z)
 
 	// Accessors (const methods)
 	float		GetLength() const;

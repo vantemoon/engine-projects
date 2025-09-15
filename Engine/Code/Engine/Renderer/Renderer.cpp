@@ -10,23 +10,19 @@
 #include "Engine/Renderer/Camera.hpp"
 #include "Engine/Renderer/Renderer.hpp"
 
-
-//-----------------------------------------------------------------------------------------------
-HGLRC g_openGLRenderingContext = nullptr;			// ...becomes void* Renderer::m_apiRenderingContext
+#define UNUSED(x) (void)(x);
 
 
 //-----------------------------------------------------------------------------------------------
-Renderer::Renderer()
-{
-	// DO NOTHING
-}
+HGLRC g_openGLRenderingContext = nullptr;     // ...becomes void* Renderer::m_apiRenderingContext
 
 
 //-----------------------------------------------------------------------------------------------
-Renderer::~Renderer()
-{
-	// DO NOTHING
-}
+Renderer::Renderer() = default;
+
+
+//-----------------------------------------------------------------------------------------------
+Renderer::~Renderer() = default;
 
 
 //-----------------------------------------------------------------------------------------------
@@ -89,10 +85,10 @@ void Renderer::CreateRenderingContext()
 //-----------------------------------------------------------------------------------------------
 void Renderer::ClearScreen( Rgba8 const& clearColor )
 {
-	float redByte = static_cast< float >( clearColor.r ) / 255.f;
-	float greenByte = static_cast< float >( clearColor.g ) / 255.f;
-	float blueByte = static_cast< float >( clearColor.b ) / 255.f;
-	float alphaByte = static_cast< float >( clearColor.a ) / 255.f;
+	float redByte = static_cast<float> ( clearColor.r ) / 255.f;
+	float greenByte = static_cast<float> ( clearColor.g ) / 255.f;
+	float blueByte = static_cast<float> ( clearColor.b ) / 255.f;
+	float alphaByte = static_cast<float> ( clearColor.a ) / 255.f;
 	glClearColor( redByte, greenByte, blueByte, alphaByte ); // Note; glClearColor takes colors as floats in [0,1], not bytes in [0,255]
 	glClear( GL_COLOR_BUFFER_BIT ); // ALWAYS clear the screen at the top of each frame's Render()!
 }
@@ -101,6 +97,8 @@ void Renderer::ClearScreen( Rgba8 const& clearColor )
 //-----------------------------------------------------------------------------------------------
 void Renderer::BeginCamera( Camera const& camera )
 {
+	
+	UNUSED( camera );
 	// Establish a 2D (orthographic) drawing coordinate system: (0,0) bottom-left to (10,10) top-right
 	glLoadIdentity();
 	glOrtho( 0.f, 200.f, 0.f, 100.f, 0.f, 1.f ); // arguments are: xLeft, xRight, yBottom, yTop, zNear, zFar
@@ -111,15 +109,16 @@ void Renderer::BeginCamera( Camera const& camera )
 void Renderer::EndCamera( Camera const& camera )
 {
 	// DO NOTHING
+	UNUSED( camera );
 }
 
 
 //-----------------------------------------------------------------------------------------------
 void Renderer::DrawVertexArray( int numVertexes, Vertex const* vertexes )
 {
-	glBegin(GL_TRIANGLES);
+	glBegin( GL_TRIANGLES );
 	{
-		for (int vertexIndex = 0; vertexIndex < numVertexes; ++vertexIndex)
+		for ( int vertexIndex = 0; vertexIndex < numVertexes; ++ vertexIndex )
 		{
 			Vertex const& currentVertex = vertexes[vertexIndex];
 			glColor4ub( currentVertex.m_color.r, currentVertex.m_color.g, currentVertex.m_color.b, currentVertex.m_color.a );

@@ -16,10 +16,11 @@ public:
 	static constexpr int NUM_BULLET_VERTS = 6;
 
 public:
-	Bullet(Game* game, PlayerShip* shooter);
+	Bullet( Game* game, PlayerShip* shooter );
 	~Bullet() override;
 
-	void Update(float deltaSeconds) override;
+	void InitializeVertexArray() override;
+	void Update( float deltaSeconds ) override;
 	void Render() const override;
 	void Die() override;
 

@@ -9,7 +9,7 @@
 
 
 //-----------------------------------------------------------------------------------------------
-void DebugDrawRing( Vec2 center, float radius, float thickness /*= 1*/, const Rgba8& color )
+void DebugDrawRing( Vec2 center, float radius, float thickness, const Rgba8& color )
 {
 	constexpr int NUM_SEGMENTS = 32;
 	constexpr int NUM_TRIANGLES = NUM_SEGMENTS * 2;
@@ -22,7 +22,7 @@ void DebugDrawRing( Vec2 center, float radius, float thickness /*= 1*/, const Rg
 
 	Vertex verts[NUM_VERTS];
 
-	for ( int segmentIndex = 0; segmentIndex < NUM_SEGMENTS; ++segmentIndex )
+	for ( int segmentIndex = 0; segmentIndex < NUM_SEGMENTS; ++ segmentIndex )
 	{
 		float startDegrees = DEGREES_PER_SEGMENT * static_cast<float>( segmentIndex );
 		float endDegrees = DEGREES_PER_SEGMENT * static_cast<float>( segmentIndex + 1 );
@@ -73,7 +73,7 @@ void DebugDrawLine( Vec2 start, Vec2 end, float thickness, const Rgba8& color )
 	Vertex verts[NUM_VERTS];
 
 	Vec2 direction = end - start;
-	direction.Normalize(); // Get unit direction vector
+	direction.Normalize();
 	Vec2 normal = Vec2( -direction.y, direction.x );
 	normal *= (thickness / 2.f);
 

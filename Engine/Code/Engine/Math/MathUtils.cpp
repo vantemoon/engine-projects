@@ -8,7 +8,7 @@
 //-----------------------------------------------------------------------------------------------
 float ConvertDegreesToRadians( float degrees )
 {
-	float radians = degrees * ( M_PI / 180.f );
+	float radians = degrees * ( static_cast<float> ( M_PI ) / 180.f );
 	return radians;
 }
 
@@ -16,7 +16,7 @@ float ConvertDegreesToRadians( float degrees )
 //-----------------------------------------------------------------------------------------------
 float ConvertRadiansToDegrees( float radians )
 {
-	float degrees = radians * ( 180.f / M_PI );
+	float degrees = radians * ( 180.f / static_cast< float > ( M_PI ) );
 	return degrees;
 }
 
@@ -53,7 +53,7 @@ float GetDistanceSquared2D( Vec2 const& positionA, Vec2 const& positionB )
 {
 	float deltaX = positionB.x - positionA.x;
 	float deltaY = positionB.y - positionA.y;
-	float distanceSquared = (deltaX * deltaX) + (deltaY * deltaY);
+	float distanceSquared = ( deltaX * deltaX ) + ( deltaY * deltaY );
 	return distanceSquared;
 }
 
@@ -73,7 +73,7 @@ float GetDistanceSquared3D( Vec3 const& positionA, Vec3 const& positionB )
 	float deltaX = positionB.x - positionA.x;
 	float deltaY = positionB.y - positionA.y;
 	float deltaZ = positionB.z - positionA.z;
-	float distanceSquared = (deltaX * deltaX) + (deltaY * deltaY) + (deltaZ * deltaZ);
+	float distanceSquared = ( deltaX * deltaX ) + ( deltaY * deltaY ) + ( deltaZ * deltaZ );
 	return distanceSquared;
 }
 
@@ -92,7 +92,7 @@ float GetDistanceXYSquared3D( Vec3 const& positionA, Vec3 const& positionB )
 {
 	float deltaX = positionB.x - positionA.x;
 	float deltaY = positionB.y - positionA.y;
-	float distanceSquared = (deltaX * deltaX) + (deltaY * deltaY);
+	float distanceSquared = ( deltaX * deltaX ) + ( deltaY * deltaY );
 	return distanceSquared;
 }
 
@@ -110,7 +110,7 @@ float GetDistanceXY3D( Vec3 const& positionA, Vec3 const& positionB )
 bool DoDiscsOverlap( Vec2 const& centerA, float radiusA, Vec2 const& centerB, float radiusB )
 {
 	float radiusSum = radiusA + radiusB;
-	bool doOverlap = GetDistanceSquared2D( centerA, centerB ) < (radiusSum * radiusSum);
+	bool doOverlap = GetDistanceSquared2D( centerA, centerB ) < ( radiusSum * radiusSum );
 	return doOverlap;
 }
 
@@ -119,7 +119,7 @@ bool DoDiscsOverlap( Vec2 const& centerA, float radiusA, Vec2 const& centerB, fl
 bool DoSpheresOverlap( Vec3 const& centerA, float radiusA, Vec3 const& centerB, float radiusB )
 {
 	float radiusSum = radiusA + radiusB;
-	bool doOverlap = GetDistanceSquared3D( centerA, centerB ) < (radiusSum * radiusSum);
+	bool doOverlap = GetDistanceSquared3D( centerA, centerB ) < ( radiusSum * radiusSum );
 	return doOverlap;
 }
 

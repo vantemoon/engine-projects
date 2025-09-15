@@ -12,7 +12,7 @@ public:
 
 public:
 	// Construction/Destruction
-	~Rgba8() {}												                                                                    // destructor (do nothing)
-	Rgba8() {}												                                                                    // default constructor (do nothing)
-	explicit Rgba8(unsigned char redByte, unsigned char greenByte, unsigned char blueByte, unsigned char alphaByte = 255);		// explicit constructor (from r, g, b, a)
+	~Rgba8() = default;											                                                                    // destructor (do nothing)
+	Rgba8() = default;											                                                                    // default constructor (do nothing)
+	explicit Rgba8( unsigned char redByte, unsigned char greenByte, unsigned char blueByte, unsigned char alphaByte = 255 );		// explicit constructor (from r, g, b, a)
 };

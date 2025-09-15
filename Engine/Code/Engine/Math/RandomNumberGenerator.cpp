@@ -22,7 +22,7 @@ int RandomNumberGenerator::RollRandomIntInRange( int minInclusive, int maxInclus
 //-----------------------------------------------------------------------------------------------
 float RandomNumberGenerator::RollRandomFloatZeroToOne()
 {
-	float randomFloat = rand() / (float)RAND_MAX;
+	float randomFloat = rand() / (float) RAND_MAX;
 	return randomFloat;
 }
 

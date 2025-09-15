@@ -14,6 +14,6 @@ public:
 
 public:
 	// Construction/Destruction
-	Vertex();																				// default constructor (do nothing)
-	explicit Vertex(Vec3 const& position, Rgba8 const& color, Vec2 const& uvTexCoords);		// explicit constructor (from position, color, uvTexCoords)
+	Vertex();																				    // default constructor (do nothing)
+	explicit Vertex( Vec3 const& position, Rgba8 const& color, Vec2 const& uvTexCoords );		// explicit constructor (from position, color, uvTexCoords)
 };

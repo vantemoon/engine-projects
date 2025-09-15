@@ -13,8 +13,13 @@ Entity::Entity( Game* game, Vec2 startingPosition )
 
 
 //-----------------------------------------------------------------------------------------------
-Entity::~Entity()
+Entity::~Entity() = default;
+
+
+//-----------------------------------------------------------------------------------------------
+void Entity::InitializeVertexArray()
 {
+	// Do nothing
 }
 
 

@@ -17,15 +17,15 @@ public:
 	bool m_isTurningRight = false;
 
 public:
-	PlayerShip(Game* game, Vec2 const& startingPosition, Vec2 const& startingVelocity);
+	PlayerShip( Game* game, Vec2 const& startingPosition, Vec2 const& startingVelocity );
 	~PlayerShip() override;
 
-	void Update(float deltaSeconds) override;
+	void Update( float deltaSeconds ) override;
 	void Render() const override;
 	void Die() override;
 
 	void BounceOffWorldEdges();
-	void Accelerate(float deltaSeconds);
+	void Accelerate( float deltaSeconds );
 	void TurnLeft();
 	void TurnRight();
 	void Respawn();

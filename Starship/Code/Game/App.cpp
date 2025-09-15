@@ -89,7 +89,7 @@ void CheckKeyboardInput()
 		g_app->m_game->m_playerShip->m_isTurningLeft = false;
 	}
 
-	if(g_app->WasKeyJustPressed( 'F' ) && !g_app->WasKeyJustPressed( 'S' ))
+	if( g_app->WasKeyJustPressed( 'F' ) && !g_app->WasKeyJustPressed( 'S' ) )
 	{
 		g_app->m_game->m_playerShip->m_isTurningRight = true;
 	}
@@ -119,7 +119,7 @@ void CheckKeyboardInput()
 		g_app->m_debugDraw = !g_app->m_debugDraw;
 	}
 
-	if(g_app->WasKeyJustPressed( 119 )) // F8
+	if( g_app->WasKeyJustPressed( 119 ) ) // F8
 	{
 		g_app->HardReset();
 	}
@@ -148,19 +148,19 @@ void App::Update( float deltaSeconds )
 	{
 		float timeScale = 1.f;
 
-		if(m_isSlowMo)
+		if( m_isSlowMo )
 			timeScale = 0.1f;
 
 		m_game->Update( deltaSeconds * timeScale );
 	}
 
-	if(m_pauseAfterNextUpdate)
+	if( m_pauseAfterNextUpdate )
 	{
 		m_isPaused = true;
 		m_pauseAfterNextUpdate = false;
 	}
 
-	for(int keyIndex = 0; keyIndex < 256; ++keyIndex)
+	for( int keyIndex = 0; keyIndex < 256; ++keyIndex )
 	{
 		m_wasKeyJustPressed[keyIndex] = m_isKeyDown[keyIndex];
 	}
@@ -170,7 +170,7 @@ void App::Update( float deltaSeconds )
 //-----------------------------------------------------------------------------------------------
 void App::Render() const
 {
-	g_engine->m_renderer->ClearScreen( Rgba8( 0, 0, 0, 255 ) );
+	g_engine->m_renderer->ClearScreen( Rgba8( 0, 0, 0 ) );
 	m_game->Render();
 }
 

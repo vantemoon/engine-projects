@@ -12,7 +12,7 @@ void TransformVertexArrayXY3D( int numVerts, Vertex* verts, float uniformScaleXY
 	float cosTheta = cosf( rotationRadians );
 	float sinTheta = sinf( rotationRadians );
 
-	for ( int vertIndex = 0; vertIndex < numVerts; ++vertIndex )
+	for ( int vertIndex = 0; vertIndex < numVerts; ++ vertIndex )
 	{
 		verts[vertIndex].m_position.x *= uniformScaleXY;
 		verts[vertIndex].m_position.y *= uniformScaleXY;
