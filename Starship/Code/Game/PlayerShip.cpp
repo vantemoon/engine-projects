@@ -99,8 +99,7 @@ void PlayerShip::Render() const
 //-----------------------------------------------------------------------------------------------
 void PlayerShip::Die()
 {
-	Entity::Die(); // m_isDead = true;
-	m_health = 0;
+	m_isDead = true;
 	m_velocity = Vec2( 0.f, 0.f );
 	m_angularVelocityDegreesPerSecond = 0.f;
 }

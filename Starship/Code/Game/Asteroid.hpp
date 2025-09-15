@@ -14,7 +14,6 @@ public:
 	void InitializeVertexArray() override;
 	void Update( float deltaSeconds ) override;
 	void Render() const override;
-	void Die() override;
 
 	void CheckCollisionWithBullets();
 	void CheckCollisionWithPlayerShip();

@@ -121,29 +121,32 @@ void Game::UpdateEntities( float deltaSeconds )
 //-----------------------------------------------------------------------------------------------
 void Game::DebugDraw() const
 {
-	if ( m_playerShip != nullptr && !m_playerShip->m_isDead )
+	if ( m_playerShip != nullptr )
 	{
 		//Player ship
-		DebugDrawRing( m_playerShip->m_position, m_playerShip->m_cosmeticRadius, 0.1f, Rgba8( 255, 0, 255 ) );
-		DebugDrawRing( m_playerShip->m_position, m_playerShip->m_physicsRadius, 0.1f, Rgba8( 0, 255, 255 ) );
-
-		Vec2 playershipForwardNormal = m_playerShip->GetForwardNormal();
-		Vec2 playershipForwardLineEnd = m_playerShip->m_position + playershipForwardNormal * m_playerShip->m_cosmeticRadius;
-		DebugDrawLine( m_playerShip->m_position, playershipForwardLineEnd, 0.2f, Rgba8( 255, 0, 0 ) );
-
-		Vec2 playershipLeftNormal = playershipForwardNormal.GetRotatedBy90Degrees();
-		Vec2 playershipLeftLineEnd = m_playerShip->m_position + playershipLeftNormal * m_playerShip->m_cosmeticRadius;
-		DebugDrawLine( m_playerShip->m_position, playershipLeftLineEnd, 0.2f, Rgba8( 0, 255, 0 ) );
+		if ( m_playerShip->IsAlive() )
+		{
+			DebugDrawRing( m_playerShip->m_position, m_playerShip->m_cosmeticRadius, 0.1f, Rgba8( 255, 0, 255 ) );
+			DebugDrawRing( m_playerShip->m_position, m_playerShip->m_physicsRadius, 0.1f, Rgba8( 0, 255, 255 ) );
 		
-		Vec2 playershipVelocityLineEnd = m_playerShip->m_position + m_playerShip->m_velocity;
-		DebugDrawLine( m_playerShip->m_position, playershipVelocityLineEnd, 0.2f, Rgba8( 255, 255, 0 ) );
+			Vec2 playershipForwardNormal = m_playerShip->GetForwardNormal();
+			Vec2 playershipForwardLineEnd = m_playerShip->m_position + playershipForwardNormal * m_playerShip->m_cosmeticRadius;
+			DebugDrawLine( m_playerShip->m_position, playershipForwardLineEnd, 0.2f, Rgba8( 255, 0, 0 ) );
+
+			Vec2 playershipLeftNormal = playershipForwardNormal.GetRotatedBy90Degrees();
+			Vec2 playershipLeftLineEnd = m_playerShip->m_position + playershipLeftNormal * m_playerShip->m_cosmeticRadius;
+			DebugDrawLine( m_playerShip->m_position, playershipLeftLineEnd, 0.2f, Rgba8( 0, 255, 0 ) );
+
+			Vec2 playershipVelocityLineEnd = m_playerShip->m_position + m_playerShip->m_velocity;
+			DebugDrawLine( m_playerShip->m_position, playershipVelocityLineEnd, 0.2f, Rgba8( 255, 255, 0 ) );
+		}
 
 		// Asteroids
 		for ( int asteroidIndex = 0; asteroidIndex < MAX_ASTEROIDS; ++ asteroidIndex )
 		{
 			if ( m_asteroids[asteroidIndex] != nullptr )
 			{
-				DebugDrawLine( m_playerShip->m_position, m_asteroids[asteroidIndex]->m_position, 0.2f, Rgba8( 50, 50, 50 ) );
+				DebugDrawLine( Vec2( WORLD_CENTER_X, WORLD_CENTER_Y ), m_asteroids[asteroidIndex]->m_position, 0.2f, Rgba8( 50, 50, 50 ) );
 				DebugDrawRing( m_asteroids[asteroidIndex]->m_position, m_asteroids[asteroidIndex]->m_cosmeticRadius, 0.1f, Rgba8( 255, 0, 255 ) );
 				DebugDrawRing( m_asteroids[asteroidIndex]->m_position, m_asteroids[asteroidIndex]->m_physicsRadius, 0.1f, Rgba8( 0, 255, 255 ) );
 		    
@@ -165,7 +168,7 @@ void Game::DebugDraw() const
 		{
 			if ( m_bullets[bulletIndex] != nullptr )
 			{
-				DebugDrawLine( m_playerShip->m_position, m_bullets[bulletIndex]->m_position, 0.2f, Rgba8( 50, 50, 50 ) );
+				DebugDrawLine( Vec2( WORLD_CENTER_X, WORLD_CENTER_Y ), m_bullets[bulletIndex]->m_position, 0.2f, Rgba8( 50, 50, 50 ) );
 				DebugDrawRing( m_bullets[bulletIndex]->m_position, m_bullets[bulletIndex]->m_cosmeticRadius, 0.1f, Rgba8( 255, 0, 255 ) );
 				DebugDrawRing( m_bullets[bulletIndex]->m_position, m_bullets[bulletIndex]->m_physicsRadius, 0.1f, Rgba8( 0, 255, 255 ) );
 			

@@ -174,7 +174,7 @@ void Asteroid::CheckCollisionWithBullets()
 		if( distanceSquared < ( combinedRadii * combinedRadii ) )
 		{
 			bullet->Die();
-			m_health -= 1;
+			this->TakeDamage( 1 );
 		}
 	}
 }
@@ -183,7 +183,7 @@ void Asteroid::CheckCollisionWithBullets()
 //--------------------------------------------------------------------------------
 void Asteroid::CheckCollisionWithPlayerShip()
 {
-	if( g_app->m_game == nullptr || g_app->m_game->m_playerShip == nullptr )
+	if( g_app->m_game == nullptr || g_app->m_game->m_playerShip == nullptr || g_app->m_game->m_playerShip->m_isDead )
 		return;
 
 	PlayerShip* playerShip = g_app->m_game->m_playerShip;
@@ -192,7 +192,7 @@ void Asteroid::CheckCollisionWithPlayerShip()
 	if ( distanceSquared < ( combinedRadii * combinedRadii ) )
 	{
 		playerShip->Die();
-		m_health -= 1;
+		this->TakeDamage( 1 );
 	}
 }
 
@@ -201,11 +201,6 @@ void Asteroid::CheckCollisionWithPlayerShip()
 void Asteroid::Update( float deltaSeconds )
 {
 	Entity::Update( deltaSeconds );
-
-	if( m_health <= 0 )
-	{
-		Die();
-	}
 
 	if( IsOffScreen() )
 	{
@@ -229,12 +224,4 @@ void Asteroid::Render() const
 	// Transform the copy to world space and render the vertexes
 	TransformVertexArrayXY3D( NUM_ASTEROID_VERTS, tempAsteroidWorldVerts, 1.f, m_orientationDegrees, m_position );
 	g_engine->m_renderer->DrawVertexArray( NUM_ASTEROID_VERTS, tempAsteroidWorldVerts );
-}
-
-
-//-----------------------------------------------------------------------------------------------
-void Asteroid::Die()
-{
-	Entity::Die(); // m_isDead = true;
-	m_isGarbage = true;
 }

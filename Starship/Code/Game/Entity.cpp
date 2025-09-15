@@ -39,9 +39,21 @@ void Entity::Render() const
 
 
 //-----------------------------------------------------------------------------------------------
+void Entity::TakeDamage( int damage )
+{
+	m_health -= damage;
+	if ( m_health <= 0 )
+	{
+		Die();
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
 void Entity::Die()
 {
 	m_isDead = true;
+	m_isGarbage = true;
 }
 
 

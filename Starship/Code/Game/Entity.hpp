@@ -29,6 +29,7 @@ public:
 	virtual void InitializeVertexArray();
 	virtual void Update( float deltaSeconds );
 	virtual void Render() const;
+	virtual void TakeDamage( int damage );
 	virtual void Die();
 
 	// Accessors

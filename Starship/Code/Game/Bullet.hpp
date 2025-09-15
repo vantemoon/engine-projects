@@ -22,7 +22,6 @@ public:
 	void InitializeVertexArray() override;
 	void Update( float deltaSeconds ) override;
 	void Render() const override;
-	void Die() override;
 
 	bool IsOffScreen() const override;
 };

@@ -72,14 +72,6 @@ void Bullet::Render() const
 
 
 //-----------------------------------------------------------------------------------------------
-void Bullet::Die()
-{
-	Entity::Die(); //m_isDead = true;
-	m_isGarbage = true;
-}
-
-
-//-----------------------------------------------------------------------------------------------
 bool Bullet::IsOffScreen() const
 {
 	return Entity::IsOffScreen();
