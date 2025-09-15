@@ -10,8 +10,6 @@
 #include "Engine/Renderer/Camera.hpp"
 #include "Engine/Renderer/Renderer.hpp"
 
-#define UNUSED(x) (void)(x);
-
 
 //-----------------------------------------------------------------------------------------------
 HGLRC g_openGLRenderingContext = nullptr;     // ...becomes void* Renderer::m_apiRenderingContext
@@ -95,21 +93,21 @@ void Renderer::ClearScreen( Rgba8 const& clearColor )
 
 
 //-----------------------------------------------------------------------------------------------
-void Renderer::BeginCamera( Camera const& camera )
+void Renderer::BeginCamera( [[maybe_unused]] Camera const& camera )
 {
-	
-	UNUSED( camera );
+	Vec2 bottomLeft = camera.GetOrthoBottomLeft();
+	Vec2 topRight = camera.GetOrthoTopRight();
+
 	// Establish a 2D (orthographic) drawing coordinate system: (0,0) bottom-left to (10,10) top-right
 	glLoadIdentity();
-	glOrtho( 0.f, 200.f, 0.f, 100.f, 0.f, 1.f ); // arguments are: xLeft, xRight, yBottom, yTop, zNear, zFar
+	glOrtho( bottomLeft.x, topRight.x, bottomLeft.y, topRight.y, 0.f, 1.f ); // arguments are: xLeft, xRight, yBottom, yTop, zNear, zFar
 }
 
 
 //-----------------------------------------------------------------------------------------------
-void Renderer::EndCamera( Camera const& camera )
+void Renderer::EndCamera( [[maybe_unused]] Camera const& camera )
 {
 	// DO NOTHING
-	UNUSED( camera );
 }
 
 
