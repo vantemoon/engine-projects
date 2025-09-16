@@ -51,6 +51,9 @@ Game::~Game()
 		delete m_asteroids[asteroidIndex];
 		m_asteroids[asteroidIndex] = nullptr;
 	}
+
+	delete m_gameCamera;
+	m_gameCamera = nullptr;
 }
 
 
@@ -90,6 +93,8 @@ void Game::DeleteGarbageEntities()
 void Game::Update( float deltaSeconds )
 {
 	UpdateEntities( deltaSeconds );
+
+	m_gameCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( WORLD_SIZE_X, WORLD_SIZE_Y ) );
 
 	g_app->m_game->DeleteGarbageEntities();
 }
@@ -189,7 +194,6 @@ void Game::DebugDraw() const
 //-----------------------------------------------------------------------------------------------
 void Game::Render() const
 {
-	m_gameCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( WORLD_SIZE_X, WORLD_SIZE_Y ) );
 	g_engine->m_renderer->BeginCamera( *m_gameCamera );
 	
 	RenderEntities();
