@@ -134,6 +134,14 @@ float Atan2Degrees( float y, float x )
 
 
 //-----------------------------------------------------------------------------------------------
+float DotProduct2D( Vec2 const& a, Vec2 const& b )
+{
+	float dotProduct = ( a.x * b.x ) + ( a.y * b.y );
+	return dotProduct;
+}
+
+
+//-----------------------------------------------------------------------------------------------
 float GetDistanceSquared2D( Vec2 const& positionA, Vec2 const& positionB )
 {
 	float deltaX = positionB.x - positionA.x;

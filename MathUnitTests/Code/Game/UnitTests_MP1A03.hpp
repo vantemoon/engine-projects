@@ -15,11 +15,11 @@ void RunTests_MP1A03();
 //
 #define ENABLE_TestSet_MP1A03_AABB2Basics
 #define ENABLE_TestSet_MP1A03_AABB2Methods
-//#define ENABLE_TestSet_MP1A03_IntVec2Basics
-//#define ENABLE_TestSet_MP1A03_IntVec2Methods
+#define ENABLE_TestSet_MP1A03_IntVec2Basics
+#define ENABLE_TestSet_MP1A03_IntVec2Methods
 #define ENABLE_TestSet_MP1A03_LerpAndClamp
 //#define ENABLE_TestSet_MP1A03_Turning2D
-//#define ENABLE_TestSet_MP1A03_DotProduct2D
+#define ENABLE_TestSet_MP1A03_DotProduct2D
 
 
 //-----------------------------------------------------------------------------------------------
