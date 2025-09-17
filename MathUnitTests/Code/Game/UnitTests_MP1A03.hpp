@@ -13,8 +13,8 @@ void RunTests_MP1A03();
 // YOU MAY COMMENT THESE OUT TEMPORARILY to disable certain test sets while you work.
 // For every assignment submission, all test sets must be enabled.
 //
-//#define ENABLE_TestSet_MP1A03_AABB2Basics
-//#define ENABLE_TestSet_MP1A03_AABB2Methods
+#define ENABLE_TestSet_MP1A03_AABB2Basics
+#define ENABLE_TestSet_MP1A03_AABB2Methods
 //#define ENABLE_TestSet_MP1A03_IntVec2Basics
 //#define ENABLE_TestSet_MP1A03_IntVec2Methods
 #define ENABLE_TestSet_MP1A03_LerpAndClamp
