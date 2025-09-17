@@ -23,12 +23,14 @@
     <ClInclude Include="UnitTests_Custom.hpp" />
     <ClInclude Include="UnitTests_MP1A01.hpp" />
     <ClInclude Include="UnitTests_MP1A02.hpp" />
+    <ClInclude Include="UnitTests_MP1A03.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="UnitTests_Custom.cpp" />
     <ClCompile Include="UnitTests_MP1A01.cpp" />
     <ClCompile Include="UnitTests_MP1A02.cpp" />
+    <ClCompile Include="UnitTests_MP1A03.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\Engine\Code\Engine\Engine.vcxproj">

@@ -6,6 +6,91 @@
 
 
 //-----------------------------------------------------------------------------------------------
+float GetClamped( float value, float minValue, float maxValue )
+{
+	if ( value < minValue )
+	{
+		return minValue;
+	}
+	else if ( value > maxValue )
+	{
+		return maxValue;
+	}
+	else
+	{
+		return value;
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+float GetClampedZeroToOne( float value )
+{
+	if ( value < 0.f )
+	{
+		return 0.f;
+	}
+	else if ( value > 1.f )
+	{
+		return 1.f;
+	}
+	else
+	{
+		return value;
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+float Interpolate( float start, float end, float fractionTowardEnd )
+{
+	float result = start + ( ( end - start ) * fractionTowardEnd );
+	return result;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+float GetFractionWithinRange( float value, float rangeStart, float rangeEnd )
+{
+	if ( rangeStart == rangeEnd )
+	{
+		return 0.5f;
+	}
+	else
+	{
+		float fraction = ( value - rangeStart ) / ( rangeEnd - rangeStart );
+		return fraction;
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+float RangeMap( float inValue, float inStart, float inEnd, float outStart, float outEnd )
+{
+	float fraction = GetFractionWithinRange( inValue, inStart, inEnd );
+	float outValue = Interpolate( outStart, outEnd, fraction );
+	return outValue;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+float RangeMapClamped( float inValue, float inStart, float inEnd, float outStart, float outEnd )
+{
+	float fraction = GetFractionWithinRange( inValue, inStart, inEnd );
+	fraction = GetClampedZeroToOne( fraction );
+	float outValue = Interpolate( outStart, outEnd, fraction );
+	return outValue;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+float RoundDownToInt( float value )
+{
+	return floorf( value );
+}
+
+
+//-----------------------------------------------------------------------------------------------
 float ConvertDegreesToRadians( float degrees )
 {
 	float radians = degrees * ( static_cast<float> ( M_PI ) / 180.f );

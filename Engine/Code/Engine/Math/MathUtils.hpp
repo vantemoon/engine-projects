@@ -7,6 +7,16 @@ struct Vec2;
 struct Vec3;
 
 //-----------------------------------------------------------------------------------------------
+// Clamp and lerp
+float GetClamped( float value, float minValue, float maxValue );
+float GetClampedZeroToOne( float value );
+float Interpolate( float start, float end, float fractionTowardEnd );
+float GetFractionWithinRange( float value, float rangeStart, float rangeEnd );
+float RangeMap( float inValue, float inStart, float inEnd, float outStart, float outEnd );
+float RangeMapClamped( float inValue, float inStart, float inEnd, float outStart, float outEnd );
+float RoundDownToInt( float value );
+
+//-----------------------------------------------------------------------------------------------
 // Angle utilities
 float ConvertDegreesToRadians( float degrees );
 float ConvertRadiansToDegrees( float radians );

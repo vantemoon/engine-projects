@@ -3,7 +3,7 @@
 //
 #include "Game/UnitTests_MP1A01.hpp"
 #include "Game/UnitTests_MP1A02.hpp"	// Uncomment this line after adding the MP1-A2 test code
-// #include "Game/UnitTests_MP1A03.hpp"	// Uncomment this line after adding the MP1-A3 test code
+#include "Game/UnitTests_MP1A03.hpp"	// Uncomment this line after adding the MP1-A3 test code
 // #include "Game/UnitTests_MP1A04.hpp"	// Uncomment this line after adding the MP1-A4 test code
 // #include "Game/UnitTests_MP1A05.hpp"	// Uncomment this line after adding the MP1-A5 test code
 // #include "Game/UnitTests_MP1A06.hpp"	// Uncomment this line after adding the MP1-A6 test code
@@ -19,7 +19,7 @@ void RunTestSets()
 {
 	RunTests_MP1A01();
     RunTests_MP1A02();	// Uncomment this line after adding the MP1-A2 test code
-//	RunTests_MP1A03();	// Uncomment this line after adding the MP1-A3 test code
+    RunTests_MP1A03();	// Uncomment this line after adding the MP1-A3 test code
 // 	RunTests_MP1A04();	// Uncomment this line after adding the MP1-A4 test code
 // 	RunTests_MP1A05();	// Uncomment this line after adding the MP1-A5 test code
 // 	RunTests_MP1A06();	// Uncomment this line after adding the MP1-A6 test code
