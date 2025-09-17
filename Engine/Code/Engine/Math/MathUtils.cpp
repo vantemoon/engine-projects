@@ -134,6 +134,47 @@ float Atan2Degrees( float y, float x )
 
 
 //-----------------------------------------------------------------------------------------------
+float GetShortestAngularDispDegrees( float startDegrees, float endDegrees )
+{
+	float deltaDegrees = endDegrees - startDegrees;
+	while ( deltaDegrees > 180.f )
+	{
+		deltaDegrees -= 360.f;
+	}
+	while ( deltaDegrees < -180.f )
+	{
+		deltaDegrees += 360.f;
+	}
+	return deltaDegrees;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+float GetTurnedTowardDegrees( float currentDegrees, float goalDegrees, float maxDeltaDegrees )
+{
+	float deltaDegrees = GetShortestAngularDispDegrees( currentDegrees, goalDegrees );
+	if ( deltaDegrees > maxDeltaDegrees )
+	{
+		deltaDegrees = maxDeltaDegrees;
+	}
+	else if ( deltaDegrees < -maxDeltaDegrees )
+	{
+		deltaDegrees = -maxDeltaDegrees;
+	}
+	float newDegrees = currentDegrees + deltaDegrees;
+	while ( newDegrees > 180.f )
+	{
+		newDegrees -= 360.f;
+	}
+	while ( newDegrees < -180.f )
+	{
+		newDegrees += 360.f;
+	}
+	return newDegrees;
+}
+
+
+//-----------------------------------------------------------------------------------------------
 float DotProduct2D( Vec2 const& a, Vec2 const& b )
 {
 	float dotProduct = ( a.x * b.x ) + ( a.y * b.y );

@@ -23,8 +23,8 @@ float ConvertRadiansToDegrees( float radians );
 float CosDegrees( float degrees );
 float SinDegrees( float degrees );
 float Atan2Degrees( float y, float x );
-// float GetShortestAngularDispDegrees( float startDegrees, float endDegrees );
-// float GetTurnedTowardDegrees( float currentDegrees, float goalDegrees, float maxDeltaDegrees );
+float GetShortestAngularDispDegrees( float startDegrees, float endDegrees );
+float GetTurnedTowardDegrees( float currentDegrees, float goalDegrees, float maxDeltaDegrees );
 
 //-----------------------------------------------------------------------------------------------
 // Dot and cross products
