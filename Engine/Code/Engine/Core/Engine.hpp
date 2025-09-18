@@ -2,8 +2,9 @@
 
 
 //-----------------------------------------------------------------------------------------------
-class Engine;   // Forward declaration
-class Renderer; // Forward declaration
+class Engine;      // Forward declaration
+class InputSystem; // Forward declaration
+class Renderer;    // Forward declaration
 
 //-----------------------------------------------------------------------------------------------
 extern Engine* g_engine; // Advertisement that this global exists, so external people can use it
@@ -19,4 +20,5 @@ public:
 
 public:
 	Renderer* m_renderer = nullptr;
+	InputSystem* m_inputSystem = nullptr;
 };

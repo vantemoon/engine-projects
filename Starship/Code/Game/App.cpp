@@ -1,5 +1,6 @@
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/Rgba8.hpp"
+#include "Engine/Input/InputSystem.hpp"
 #include "Engine/Math/RandomNumberGenerator.hpp"
 #include "Engine/Renderer/Camera.hpp"
 #include "Engine/Renderer/Renderer.hpp"
@@ -44,82 +45,75 @@ void App::RunFrame()
 //-----------------------------------------------------------------------------------------------
 void CheckKeyboardInput()
 {
-	if ( g_app->IsKeyDown( 'Q' ) )
+	if ( g_engine->m_inputSystem->WasKeyJustPressed( 'Q' ) )
 	{
 		g_app->SetIsQuitting();
 	}
 
-	if ( g_app->WasKeyJustPressed( 'P' ) )
+	if ( g_engine->m_inputSystem->WasKeyJustPressed( 'P' ) )
 	{
 		g_app->m_isPaused = !g_app->m_isPaused;
 	}
 
-	if ( g_app->WasKeyJustPressed( 'O' ) )
+	if ( g_engine->m_inputSystem->WasKeyJustPressed( 'O' ) )
 	{
 		g_app->m_isPaused = false;
 		g_app->m_pauseAfterNextUpdate = true;
 	}
 
-	if ( g_app->WasKeyJustPressed( 'T' ) )
+	if ( g_engine->m_inputSystem->IsKeyDown( 'T' ) )
 	{
 		g_app->m_isSlowMo = true;
 	}
-	else if ( g_app->WasKeyJustReleased( 'T' ) )
+	else
 	{
 		g_app->m_isSlowMo = false;
 	}
 
-	if ( g_app->WasKeyJustPressed( 32 ) ) // Space
+	if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_SPACE ) )
 	{
 		g_app->m_game->SpawnBulletFromPlayerShip();
 	}
 
-	if ( g_app->WasKeyJustPressed( 'I' ) )
+	if ( g_engine->m_inputSystem->WasKeyJustPressed( 'I' ) )
 	{
 		g_app->m_game->SpawnRandomAsteroid();
 	}
 
-	if ( g_app->WasKeyJustPressed( 'S' ) && !g_app->WasKeyJustPressed( 'F' ) )
+	if ( g_engine->m_inputSystem->IsKeyDown( 'S' ) && !g_engine->m_inputSystem->IsKeyDown( 'F' ) )
 	{
 		g_app->m_game->m_playerShip->m_isTurningLeft = true;
 	}
-
-	if ( g_app->WasKeyJustReleased( 'S' ) )
-	{
-		g_app->m_game->m_playerShip->m_isTurningLeft = false;
-	}
-
-	if( g_app->WasKeyJustPressed( 'F' ) && !g_app->WasKeyJustPressed( 'S' ) )
+	else if ( g_engine->m_inputSystem->IsKeyDown( 'F' ) && !g_engine->m_inputSystem->IsKeyDown( 'S' ) )
 	{
 		g_app->m_game->m_playerShip->m_isTurningRight = true;
 	}
-
-	if ( g_app->WasKeyJustReleased( 'F' ) )
+	else
 	{
+		g_app->m_game->m_playerShip->m_isTurningLeft = false;
 		g_app->m_game->m_playerShip->m_isTurningRight = false;
 	}
 
-	if ( g_app->WasKeyJustPressed( 'E' ) )
+	if ( g_engine->m_inputSystem->IsKeyDown( 'E' ) )
 	{
 		g_app->m_game->m_playerShip->m_isAccelerating = true;
 	}
-
-	if ( g_app->WasKeyJustReleased( 'E' ) )
+	else
 	{
 		g_app->m_game->m_playerShip->m_isAccelerating = false;
 	}
 
-	if ( g_app->WasKeyJustPressed( 'N' ) && g_app->m_game->m_playerShip->m_isDead )
+	if ( g_engine->m_inputSystem->WasKeyJustPressed( 'N' ) && g_app->m_game->m_playerShip->m_isDead )
 	{
 		g_app->m_game->m_playerShip->Respawn();
 	}
 
-	if ( g_app->WasKeyJustPressed( 112 ) ) // F1
+	if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_F1 ) )
 	{
 		g_app->m_debugDraw = !g_app->m_debugDraw;
 	}
 
-	if( g_app->WasKeyJustPressed( 119 ) ) // F8
+	if( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_F8 ) )
 	{
 		g_app->HardReset();
 	}
@@ -159,11 +153,6 @@ void App::Update( float deltaSeconds )
 		m_isPaused = true;
 		m_pauseAfterNextUpdate = false;
 	}
-
-	for( int keyIndex = 0; keyIndex < 256; ++keyIndex )
-	{
-		m_wasKeyJustPressed[keyIndex] = m_isKeyDown[keyIndex];
-	}
 }
 
 
@@ -186,39 +175,4 @@ void App::SetIsQuitting()
 bool App::IsQuitting() const
 {
 	return m_isQuitting;
-}
-
-
-//-----------------------------------------------------------------------------------------------
-void App::OnKeyDown( unsigned char keyCode )
-{
-	m_isKeyDown[keyCode] = true;
-}
-
-
-//-----------------------------------------------------------------------------------------------
-void App::OnKeyUp( unsigned char keyCode )
-{
-	m_isKeyDown[keyCode] = false;
-}
-
-
-//-----------------------------------------------------------------------------------------------
-bool App::IsKeyDown( unsigned char keyCode ) const
-{
-	return m_isKeyDown[keyCode];
-}
-
-
-//-----------------------------------------------------------------------------------------------
-bool App::WasKeyJustPressed( unsigned char keyCode ) const
-{
-	return m_isKeyDown[keyCode] && !m_wasKeyJustPressed[keyCode];
-}
-
-
-//-----------------------------------------------------------------------------------------------
-bool App::WasKeyJustReleased( unsigned char keyCode ) const
-{
-	return !m_isKeyDown[keyCode] && m_wasKeyJustPressed[keyCode];
 }

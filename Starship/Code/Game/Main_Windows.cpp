@@ -7,6 +7,7 @@
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/Rgba8.hpp"
 #include "Engine/Core/Vertex.hpp"
+#include "Engine/Input/InputSystem.hpp"
 #include "Engine/Math/Vec2.hpp"
 #include "Engine/Math/Vec3.hpp"
 #include "Engine/Renderer/Camera.hpp"
@@ -61,7 +62,7 @@ LRESULT CALLBACK WindowsMessageHandlingProcedure( HWND windowHandle, UINT wmMess
 		{
 			unsigned char asKey = (unsigned char)wParam;
 
-			g_app->OnKeyDown( asKey );
+			g_engine->m_inputSystem->HandleKeyPressed( asKey );
 			break;
 		}
 
@@ -70,7 +71,7 @@ LRESULT CALLBACK WindowsMessageHandlingProcedure( HWND windowHandle, UINT wmMess
 		{
 			unsigned char asKey = (unsigned char) wParam;
 
-			g_app->OnKeyUp( asKey );
+			g_engine->m_inputSystem->HandleKeyReleased( asKey );
 			break;
 		}
 	}

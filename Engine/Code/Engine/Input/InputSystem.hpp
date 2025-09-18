@@ -1,0 +1,50 @@
+#pragma once
+#include "Engine/Input/KeyButtonState.hpp"
+#include "Engine/Input/XboxController.hpp"
+
+
+//----------------------------------------------------------------
+extern unsigned char const KEYCODE_F1;
+extern unsigned char const KEYCODE_F2;
+extern unsigned char const KEYCODE_F3;
+extern unsigned char const KEYCODE_F4;
+extern unsigned char const KEYCODE_F5;
+extern unsigned char const KEYCODE_F6;
+extern unsigned char const KEYCODE_F7;
+extern unsigned char const KEYCODE_F8;
+extern unsigned char const KEYCODE_F9;
+extern unsigned char const KEYCODE_F10;
+extern unsigned char const KEYCODE_F11;
+extern unsigned char const KEYCODE_ESCAPE;
+extern unsigned char const KEYCODE_SPACE;
+extern unsigned char const KEYCODE_ENTER;
+
+
+//----------------------------------------------------------------
+constexpr int NUM_KEYCODES = 256;
+constexpr int NUM_XBOX_CONTROLLERS = 4;
+
+
+//----------------------------------------------------------------
+class InputSystem
+{
+public:
+	InputSystem();
+	~InputSystem();
+	void StartUp();
+	void ShutDown();
+	void BeginFrame();
+	void EndFrame();
+
+	bool IsKeyDown( unsigned char keyCode ) const;
+	bool WasKeyJustPressed( unsigned char keyCode ) const;
+	bool WasKeyJustReleased( unsigned char keyCode ) const;
+
+	void HandleKeyPressed( unsigned char keyCode );
+	void HandleKeyReleased( unsigned char keyCode );
+	// XboxController const& GetController( int controllerID );
+
+protected:
+	KeyButtonState m_keyStates[ NUM_KEYCODES ];
+	// XboxController m_controllers[ NUM_XBOX_CONTROLLERS ];
+};
