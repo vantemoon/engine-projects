@@ -37,4 +37,5 @@ public:
 	bool            m_isSlowMo = false;
 	bool			m_pauseAfterNextUpdate = false;
 	bool            m_debugDraw = false;
+	bool            m_isAttractMode = true;
 };

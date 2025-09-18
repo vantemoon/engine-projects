@@ -77,7 +77,7 @@ void CheckKeyboardInput()
 
 	if ( g_engine->m_inputSystem->WasKeyJustPressed( 'I' ) )
 	{
-		g_app->m_game->SpawnRandomAsteroid();
+		g_app->m_game->SpawnRandomAsteroid(1);
 	}
 
 	if ( g_engine->m_inputSystem->IsKeyDown( 'S' ) && !g_engine->m_inputSystem->IsKeyDown( 'F' ) )

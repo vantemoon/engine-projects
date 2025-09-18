@@ -18,17 +18,7 @@ Game::Game()
 	m_playerShip = new PlayerShip( this, Vec2( WORLD_CENTER_X, WORLD_CENTER_Y ), Vec2( 0.f, 0.f ) );
 	
 	// Spawn 6 asteroids in the game world
-	RandomNumberGenerator rng;
-	for ( int asteroidIndex = 0; asteroidIndex < NUM_STARTING_ASTEROIDS; ++ asteroidIndex )
-	{
-		float randomX = rng.RollRandomFloatInRange( 0.f, WORLD_SIZE_X );
-		float randomY = rng.RollRandomFloatInRange( 0.f, WORLD_SIZE_Y );
-		float randomOrientation = rng.RollRandomFloatInRange( 0.f, 360.f );
-		Vec2 randomDirection = Vec2::MakeFromPolarDegrees( rng.RollRandomFloatInRange( 0.f, 360.f ), 1.f );
-		Vec2 randomVelocity = randomDirection * ASTEROID_SPEED;
-		float randomAngularVelocity = rng.RollRandomFloatInRange( -200.f, 200.f );
-		m_asteroids[asteroidIndex] = new Asteroid( this, Vec2( randomX, randomY ), randomOrientation, randomVelocity, randomAngularVelocity );
-	}
+	SpawnRandomAsteroid(6);
 	
 	m_gameCamera = new Camera();
 }
@@ -230,31 +220,34 @@ void Game::RenderEntities() const
 
 
 //-----------------------------------------------------------------------------------------------
-void Game::SpawnRandomAsteroid()
+void Game::SpawnRandomAsteroid( int numOfAsteroid )
 {
 	if ( m_playerShip == nullptr || m_playerShip->m_isDead )
 		return;
 
-	bool hasFreeSlot = false;
-	for ( int asteroidIndex = 0; asteroidIndex < MAX_ASTEROIDS; ++ asteroidIndex )
+	for ( int i = 0; i < numOfAsteroid; ++i )
 	{
-		if ( m_asteroids[asteroidIndex] == nullptr )
+		bool hasFreeSlot = false;
+		for ( int asteroidIndex = 0; asteroidIndex < MAX_ASTEROIDS; ++asteroidIndex )
 		{
-			hasFreeSlot = true;
-			RandomNumberGenerator rng;
-			float randomX = rng.RollRandomFloatInRange( 0.f, WORLD_SIZE_X );
-			float randomY = rng.RollRandomFloatInRange( 0.f, WORLD_SIZE_Y );
-			float randomOrientation = rng.RollRandomFloatInRange( 0.f, 360.f );
-			Vec2 randomDirection = Vec2::MakeFromPolarDegrees( rng.RollRandomFloatInRange( 0.f, 360.f ), 1.f );
-			Vec2 randomVelocity = randomDirection * ASTEROID_SPEED;
-			float randomAngularVelocity = rng.RollRandomFloatInRange( -200.f, 200.f );
-			m_asteroids[asteroidIndex] = new Asteroid( this, Vec2( randomX, randomY ), randomOrientation, randomVelocity, randomAngularVelocity );
-			break;
+			if ( m_asteroids[asteroidIndex] == nullptr )
+			{
+				hasFreeSlot = true;
+				RandomNumberGenerator rng;
+				float randomX = rng.RollRandomFloatInRange( 0.f, WORLD_SIZE_X );
+				float randomY = rng.RollRandomFloatInRange( 0.f, WORLD_SIZE_Y );
+				float randomOrientation = rng.RollRandomFloatInRange( 0.f, 360.f );
+				Vec2 randomDirection = Vec2::MakeFromPolarDegrees( rng.RollRandomFloatInRange( 0.f, 360.f ), 1.f );
+				Vec2 randomVelocity = randomDirection * ASTEROID_SPEED;
+				float randomAngularVelocity = rng.RollRandomFloatInRange( -200.f, 200.f );
+				m_asteroids[asteroidIndex] = new Asteroid( this, Vec2( randomX, randomY ), randomOrientation, randomVelocity, randomAngularVelocity );
+				break;
+			}
 		}
-	}
-	if ( !hasFreeSlot )
-	{
-		ERROR_RECOVERABLE( "No available asteroid slots!" );
+		if ( !hasFreeSlot )
+		{
+			ERROR_RECOVERABLE( "No available asteroid slots!" );
+		}
 	}
 }
 

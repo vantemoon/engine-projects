@@ -15,6 +15,8 @@ public:
 	void Update( float deltaSeconds ) override;
 	void Render() const override;
 
+private:
 	void CheckCollisionWithBullets();
 	void CheckCollisionWithPlayerShip();
+	void WrapAroundScreen();
 };

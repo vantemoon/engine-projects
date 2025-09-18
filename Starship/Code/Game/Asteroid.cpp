@@ -203,12 +203,24 @@ void Asteroid::Update( float deltaSeconds )
 	Entity::Update( deltaSeconds );
 
 	if( IsOffScreen() )
-	{
-		Die();
-	}
+		WrapAroundScreen();
 
 	this->CheckCollisionWithBullets();
 	this->CheckCollisionWithPlayerShip();
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Asteroid::WrapAroundScreen()
+{
+	if( m_position.x < 0.f )
+		m_position.x = (float) WORLD_SIZE_X;
+	else if( m_position.x > (float) WORLD_SIZE_X)
+		m_position.x = 0.f;
+	if( m_position.y < 0.f )
+		m_position.y = (float) WORLD_SIZE_Y;
+	else if( m_position.y > (float) WORLD_SIZE_Y)
+		m_position.y = 0.f;
 }
 
 

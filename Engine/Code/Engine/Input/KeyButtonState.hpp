@@ -5,10 +5,10 @@
 class KeyButtonState
 {
 public:
-	KeyButtonState() = default;
-	~KeyButtonState() = default;
+	KeyButtonState();
+	~KeyButtonState();
 
 public:
-	bool m_isPressed = false;
-	bool m_wasPressedLastFrame = false;
+	bool m_isPressed;
+	bool m_wasPressedLastFrame;
 };
