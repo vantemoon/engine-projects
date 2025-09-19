@@ -6,6 +6,7 @@
 #include "Engine/Renderer/Renderer.hpp"
 #include "Game/App.hpp"
 #include "Game/Asteroid.hpp"
+#include "Game/Beetle.hpp"
 #include "Game/Bullet.hpp"
 #include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
@@ -19,8 +20,10 @@ Game::Game()
 	
 	// Spawn 6 asteroids in the game world
 	SpawnRandomAsteroid(6);
+	SpawnRandomBeetle();
 	
 	m_gameCamera = new Camera();
+	m_attractCamera = new Camera();
 }
 
 
@@ -40,6 +43,12 @@ Game::~Game()
 	{
 		delete m_asteroids[asteroidIndex];
 		m_asteroids[asteroidIndex] = nullptr;
+	}
+
+	for ( int beetleIndex = 0; beetleIndex < 2; ++ beetleIndex )
+	{
+		delete m_beetles[beetleIndex];
+		m_beetles[beetleIndex] = nullptr;
 	}
 
 	delete m_gameCamera;
@@ -76,18 +85,47 @@ void Game::DeleteGarbageEntities()
 			g_app->m_game->m_asteroids[asteroidIndex] = nullptr;
 		}
 	}
+
+	for( int beetleIndex = 0; beetleIndex < 2; ++ beetleIndex )
+	{
+		if( g_app->m_game->m_beetles[beetleIndex] != nullptr && g_app->m_game->m_beetles[beetleIndex]->m_isGarbage )
+		{
+			delete g_app->m_game->m_beetles[beetleIndex];
+			g_app->m_game->m_beetles[beetleIndex] = nullptr;
+		}
+	}
 }
 
 
 //-----------------------------------------------------------------------------------------------
 void Game::Update( float deltaSeconds )
 {
+	if ( m_isAttractMode )
+	{
+		UpdateAttractMode( deltaSeconds );
+		return;
+	};
+
+	if ( m_isAttractMode )
+	{
+		return;
+	};
+
 	UpdateEntities( deltaSeconds );
 
 	m_gameCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( WORLD_SIZE_X, WORLD_SIZE_Y ) );
 
 	g_app->m_game->DeleteGarbageEntities();
 }
+
+
+//-----------------------------------------------------------------------------------------------
+void Game::UpdateAttractMode( [[maybe_unused]] float deltaSeconds )
+{
+	
+	m_attractCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( WORLD_SIZE_X, WORLD_SIZE_Y ) );
+}
+
 
 
 //-----------------------------------------------------------------------------------------------
@@ -110,6 +148,14 @@ void Game::UpdateEntities( float deltaSeconds )
 			m_asteroids[asteroidIndex]->Update( deltaSeconds );
 		}
 	}
+
+	for( int beetleIndex = 0; beetleIndex < 2; ++ beetleIndex )
+	{
+		if( m_beetles[beetleIndex] != nullptr )
+		{
+			m_beetles[beetleIndex]->Update( deltaSeconds );
+		}
+	}
 }
 
 
@@ -119,40 +165,40 @@ void Game::DebugDraw() const
 	if ( m_playerShip != nullptr )
 	{
 		//Player ship
-		DebugDrawLine( Vec2( WORLD_CENTER_X, WORLD_CENTER_Y ), m_playerShip->m_position, 0.2f, Rgba8( 50, 50, 50 ) );
+		DebugDrawLine( Vec2( WORLD_CENTER_X, WORLD_CENTER_Y ), m_playerShip->m_position, 0.2f, Rgba8( 50, 50, 50 ), Rgba8( 50, 50, 50 ) );
 		DebugDrawRing( m_playerShip->m_position, m_playerShip->m_cosmeticRadius, 0.1f, Rgba8( 255, 0, 255 ) );
 		DebugDrawRing( m_playerShip->m_position, m_playerShip->m_physicsRadius, 0.1f, Rgba8( 0, 255, 255 ) );
 		
 		Vec2 playershipForwardNormal = m_playerShip->GetForwardNormal();
 		Vec2 playershipForwardLineEnd = m_playerShip->m_position + playershipForwardNormal * m_playerShip->m_cosmeticRadius;
-		DebugDrawLine( m_playerShip->m_position, playershipForwardLineEnd, 0.2f, Rgba8( 255, 0, 0 ) );
+		DebugDrawLine( m_playerShip->m_position, playershipForwardLineEnd, 0.2f, Rgba8( 255, 0, 0 ), Rgba8( 255, 0, 0 ) );
 
 		Vec2 playershipLeftNormal = playershipForwardNormal.GetRotatedBy90Degrees();
 		Vec2 playershipLeftLineEnd = m_playerShip->m_position + playershipLeftNormal * m_playerShip->m_cosmeticRadius;
-		DebugDrawLine( m_playerShip->m_position, playershipLeftLineEnd, 0.2f, Rgba8( 0, 255, 0 ) );
+		DebugDrawLine( m_playerShip->m_position, playershipLeftLineEnd, 0.2f, Rgba8( 0, 255, 0 ), Rgba8( 0, 255, 0 ) );
 
 		Vec2 playershipVelocityLineEnd = m_playerShip->m_position + m_playerShip->m_velocity;
-		DebugDrawLine( m_playerShip->m_position, playershipVelocityLineEnd, 0.2f, Rgba8( 255, 255, 0 ) );
+		DebugDrawLine( m_playerShip->m_position, playershipVelocityLineEnd, 0.2f, Rgba8( 255, 255, 0 ), Rgba8( 255, 255, 0 ) );
 
 		// Asteroids
 		for ( int asteroidIndex = 0; asteroidIndex < MAX_ASTEROIDS; ++ asteroidIndex )
 		{
 			if ( m_asteroids[asteroidIndex] != nullptr )
 			{
-				DebugDrawLine( Vec2( WORLD_CENTER_X, WORLD_CENTER_Y ), m_asteroids[asteroidIndex]->m_position, 0.2f, Rgba8( 50, 50, 50 ) );
+				DebugDrawLine( Vec2( WORLD_CENTER_X, WORLD_CENTER_Y ), m_asteroids[asteroidIndex]->m_position, 0.2f, Rgba8( 50, 50, 50 ), Rgba8( 50, 50, 50 ) );
 				DebugDrawRing( m_asteroids[asteroidIndex]->m_position, m_asteroids[asteroidIndex]->m_cosmeticRadius, 0.1f, Rgba8( 255, 0, 255 ) );
 				DebugDrawRing( m_asteroids[asteroidIndex]->m_position, m_asteroids[asteroidIndex]->m_physicsRadius, 0.1f, Rgba8( 0, 255, 255 ) );
 		    
 				Vec2 asteroidForwardNormal = m_asteroids[asteroidIndex]->GetForwardNormal();
 				Vec2 asteroidForwardLineEnd = m_asteroids[asteroidIndex]->m_position + asteroidForwardNormal * m_asteroids[asteroidIndex]->m_cosmeticRadius;
-				DebugDrawLine( m_asteroids[asteroidIndex]->m_position, asteroidForwardLineEnd, 0.2f, Rgba8( 255, 0, 0 ) );
+				DebugDrawLine( m_asteroids[asteroidIndex]->m_position, asteroidForwardLineEnd, 0.2f, Rgba8( 255, 0, 0 ), Rgba8( 255, 0, 0 ) );
 			
 				Vec2 asteroidLeftNormal = asteroidForwardNormal.GetRotatedBy90Degrees();
 				Vec2 asteroidLeftLineEnd = m_asteroids[asteroidIndex]->m_position + asteroidLeftNormal * m_asteroids[asteroidIndex]->m_cosmeticRadius;
-				DebugDrawLine( m_asteroids[asteroidIndex]->m_position, asteroidLeftLineEnd, 0.2f, Rgba8( 0, 255, 0 ) );
+				DebugDrawLine( m_asteroids[asteroidIndex]->m_position, asteroidLeftLineEnd, 0.2f, Rgba8( 0, 255, 0 ), Rgba8( 0, 255, 0 ) );
 			
 				Vec2 asteroidVelocityLineEnd = m_asteroids[asteroidIndex]->m_position + m_asteroids[asteroidIndex]->m_velocity;
-				DebugDrawLine( m_asteroids[asteroidIndex]->m_position, asteroidVelocityLineEnd, 0.2f, Rgba8( 255, 255, 0 ) );
+				DebugDrawLine( m_asteroids[asteroidIndex]->m_position, asteroidVelocityLineEnd, 0.2f, Rgba8( 255, 255, 0 ), Rgba8( 255, 255, 0 ) );
 			}
 		}
 
@@ -161,20 +207,42 @@ void Game::DebugDraw() const
 		{
 			if ( m_bullets[bulletIndex] != nullptr )
 			{
-				DebugDrawLine( Vec2( WORLD_CENTER_X, WORLD_CENTER_Y ), m_bullets[bulletIndex]->m_position, 0.2f, Rgba8( 50, 50, 50 ) );
+				DebugDrawLine( Vec2( WORLD_CENTER_X, WORLD_CENTER_Y ), m_bullets[bulletIndex]->m_position, 0.2f, Rgba8( 50, 50, 50 ), Rgba8( 50, 50, 50 ) );
 				DebugDrawRing( m_bullets[bulletIndex]->m_position, m_bullets[bulletIndex]->m_cosmeticRadius, 0.1f, Rgba8( 255, 0, 255 ) );
 				DebugDrawRing( m_bullets[bulletIndex]->m_position, m_bullets[bulletIndex]->m_physicsRadius, 0.1f, Rgba8( 0, 255, 255 ) );
 			
 				Vec2 bulletForwardNormal = m_bullets[bulletIndex]->GetForwardNormal();
 				Vec2 bulletForwardLineEnd = m_bullets[bulletIndex]->m_position + bulletForwardNormal * m_bullets[bulletIndex]->m_cosmeticRadius;
-				DebugDrawLine( m_bullets[bulletIndex]->m_position, bulletForwardLineEnd, 0.2f, Rgba8( 255, 0, 0 ) );
+				DebugDrawLine( m_bullets[bulletIndex]->m_position, bulletForwardLineEnd, 0.2f, Rgba8( 255, 0, 0 ), Rgba8( 255, 0, 0 ) );
 			
 				Vec2 bulletLeftNormal = bulletForwardNormal.GetRotatedBy90Degrees();
 				Vec2 bulletLeftLineEnd = m_bullets[bulletIndex]->m_position + bulletLeftNormal * m_bullets[bulletIndex]->m_cosmeticRadius;
-				DebugDrawLine( m_bullets[bulletIndex]->m_position, bulletLeftLineEnd, 0.2f, Rgba8( 0, 255, 0 ) );
+				DebugDrawLine( m_bullets[bulletIndex]->m_position, bulletLeftLineEnd, 0.2f, Rgba8( 0, 255, 0 ), Rgba8( 0, 255, 0 ) );
 			
 				Vec2 bulletVelocityLineEnd = m_bullets[bulletIndex]->m_position + m_bullets[bulletIndex]->m_velocity;
-				DebugDrawLine( m_bullets[bulletIndex]->m_position, bulletVelocityLineEnd, 0.2f, Rgba8( 255, 255, 0 ) );
+				DebugDrawLine( m_bullets[bulletIndex]->m_position, bulletVelocityLineEnd, 0.2f, Rgba8( 255, 255, 0 ), Rgba8( 255, 255, 0 ) );
+			}
+		}
+
+		// Beetles
+		for ( int beetleIndex = 0; beetleIndex < 2; ++beetleIndex )
+		{
+			if ( m_beetles[beetleIndex] != nullptr )
+			{
+				DebugDrawLine( Vec2( WORLD_CENTER_X, WORLD_CENTER_Y ), m_beetles[beetleIndex]->m_position, 0.2f, Rgba8( 50, 50, 50 ), Rgba8( 50, 50, 50 ) );
+				DebugDrawRing( m_beetles[beetleIndex]->m_position, m_beetles[beetleIndex]->m_cosmeticRadius, 0.1f, Rgba8( 255, 0, 255 ) );
+				DebugDrawRing( m_beetles[beetleIndex]->m_position, m_beetles[beetleIndex]->m_physicsRadius, 0.1f, Rgba8( 0, 255, 255 ) );
+
+				Vec2 beetleForwardNormal = m_beetles[beetleIndex]->GetForwardNormal();
+				Vec2 beetleForwardLineEnd = m_beetles[beetleIndex]->m_position + beetleForwardNormal * m_beetles[beetleIndex]->m_cosmeticRadius;
+				DebugDrawLine( m_beetles[beetleIndex]->m_position, beetleForwardLineEnd, 0.2f, Rgba8( 255, 0, 0 ), Rgba8( 255, 0, 0 ) );
+
+				Vec2 beetleLeftNormal = beetleForwardNormal.GetRotatedBy90Degrees();
+				Vec2 beetleLeftLineEnd = m_beetles[beetleIndex]->m_position + beetleLeftNormal * m_beetles[beetleIndex]->m_cosmeticRadius;
+				DebugDrawLine( m_beetles[beetleIndex]->m_position, beetleLeftLineEnd, 0.2f, Rgba8( 0, 255, 0 ), Rgba8( 0, 255, 0 ) );
+
+				Vec2 beetleVelocityLineEnd = m_beetles[beetleIndex]->m_position + m_beetles[beetleIndex]->m_velocity;
+				DebugDrawLine( m_beetles[beetleIndex]->m_position, beetleVelocityLineEnd, 0.2f, Rgba8( 255, 255, 0 ), Rgba8( 255, 255, 0 ) );
 			}
 		}
 	}
@@ -184,6 +252,12 @@ void Game::DebugDraw() const
 //-----------------------------------------------------------------------------------------------
 void Game::Render() const
 {
+	if ( m_isAttractMode )
+	{
+		RenderAttractMode();
+		return;
+	};
+
 	g_engine->m_renderer->BeginCamera( *m_gameCamera );
 	
 	RenderEntities();
@@ -194,6 +268,17 @@ void Game::Render() const
 	}
 
 	g_engine->m_renderer->EndCamera( *m_gameCamera );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game::RenderAttractMode() const
+{
+	g_engine->m_renderer->BeginCamera( *m_attractCamera );
+
+	DebugDrawLine( Vec2( 10.f, 10.f ), Vec2( 190.f, 90.f ), 1.f, Rgba8( 255, 0, 0 ), Rgba8( 0, 255, 0 ) );
+
+	g_engine->m_renderer->EndCamera( *m_attractCamera );
 }
 
 
@@ -214,6 +299,14 @@ void Game::RenderEntities() const
 		if ( m_asteroids[asteroidIndex] != nullptr )
 		{
 			m_asteroids[asteroidIndex]->Render();
+		}
+	}
+
+	for ( int beetleIndex = 0; beetleIndex < 2; ++ beetleIndex )
+	{
+		if ( m_beetles[beetleIndex] != nullptr )
+		{
+			m_beetles[beetleIndex]->Render();
 		}
 	}
 }
@@ -271,5 +364,28 @@ void Game::SpawnBulletFromPlayerShip()
 	if ( !hasFreeSlot )
 	{
 		ERROR_RECOVERABLE( "No available bullet slots!" );
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game::SpawnRandomBeetle()
+{
+	if ( m_playerShip == nullptr || m_playerShip->m_isDead )
+		return;
+
+	bool hasFreeSlot = false;
+	for ( int beetleIndex = 0; beetleIndex < 2; ++ beetleIndex )
+	{
+		if ( m_beetles[beetleIndex] == nullptr )
+		{
+			hasFreeSlot = true;
+			RandomNumberGenerator rng;
+			float randomY = rng.RollRandomFloatInRange( 0.f, WORLD_SIZE_Y );
+			Vec2 startingPosition = Vec2( 0.f, randomY );
+			Vec2 startingVelocity = Vec2( 10, 0.f );
+			m_beetles[beetleIndex] = new Beetle( this, startingPosition, 0.f, startingVelocity, 0.f );
+			break;
+		}
 	}
 }

@@ -34,6 +34,9 @@
     <ClCompile Include="GameCommon.cpp">
       <Filter>Gameplay</Filter>
     </ClCompile>
+    <ClCompile Include="Beetle.cpp">
+      <Filter>Gameplay</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.hpp">
@@ -55,6 +58,9 @@
       <Filter>Gameplay</Filter>
     </ClInclude>
     <ClInclude Include="GameCommon.hpp">
+      <Filter>Gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="Beetle.hpp">
       <Filter>Gameplay</Filter>
     </ClInclude>
   </ItemGroup>

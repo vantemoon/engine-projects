@@ -27,4 +27,4 @@ constexpr float PLAYER_SHIP_PHYSICS_RADIUS = 1.75f;
 constexpr float PLAYER_SHIP_COSMETIC_RADIUS = 2.25f;
 
 void DebugDrawRing( Vec2 center, float radius, float thickness, const Rgba8& color );
-void DebugDrawLine( Vec2 start, Vec2 end, float thickness, const Rgba8& color );
+void DebugDrawLine( Vec2 start, Vec2 end, float thickness, const Rgba8& startColor, const Rgba8& endColor );

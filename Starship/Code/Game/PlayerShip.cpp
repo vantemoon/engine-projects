@@ -17,33 +17,41 @@ PlayerShip::PlayerShip( Game* game, Vec2 const& startingPosition, Vec2 const& st
 	m_velocity = startingVelocity;
 	m_physicsRadius = PLAYER_SHIP_PHYSICS_RADIUS;
 	m_cosmeticRadius = PLAYER_SHIP_COSMETIC_RADIUS;
+	
+	InitializeVertexArray();
+}
+
+
+//
+void PlayerShip::InitializeVertexArray()
+{
 	m_vertexArray = new Vertex[NUM_SHIP_VERTS];
 
 	// Triangle A
-	m_vertexArray[0] = Vertex( Vec3(  2, 1, 0 ), Rgba8( 102, 153, 204, 255), Vec2() );
-	m_vertexArray[1] = Vertex( Vec3(  0, 2, 0 ), Rgba8( 102, 153, 204, 255), Vec2() );
-	m_vertexArray[2] = Vertex( Vec3( -2, 1, 0 ), Rgba8( 102, 153, 204, 255), Vec2() );
+	m_vertexArray[0] = Vertex( Vec3( 2, 1, 0 ), Rgba8( 102, 153, 204, 255 ), Vec2() );
+	m_vertexArray[1] = Vertex( Vec3( 0, 2, 0 ), Rgba8( 102, 153, 204, 255 ), Vec2() );
+	m_vertexArray[2] = Vertex( Vec3( -2, 1, 0 ), Rgba8( 102, 153, 204, 255 ), Vec2() );
 
 	// Triangle B
-	m_vertexArray[3] = Vertex( Vec3(  0,  1, 0 ), Rgba8( 102, 153, 204, 255), Vec2() );
-	m_vertexArray[4] = Vertex( Vec3( -2,  1, 0 ), Rgba8( 102, 153, 204, 255), Vec2() );
-	m_vertexArray[5] = Vertex( Vec3( -2, -1, 0 ), Rgba8( 102, 153, 204, 255), Vec2() );
+	m_vertexArray[3] = Vertex( Vec3( 0, 1, 0 ), Rgba8( 102, 153, 204, 255 ), Vec2() );
+	m_vertexArray[4] = Vertex( Vec3( -2, 1, 0 ), Rgba8( 102, 153, 204, 255 ), Vec2() );
+	m_vertexArray[5] = Vertex( Vec3( -2, -1, 0 ), Rgba8( 102, 153, 204, 255 ), Vec2() );
 
 	// Triangle C
-	m_vertexArray[6] = Vertex( Vec3(  0,  1, 0 ), Rgba8( 102, 153, 204, 255 ), Vec2() );
+	m_vertexArray[6] = Vertex( Vec3( 0, 1, 0 ), Rgba8( 102, 153, 204, 255 ), Vec2() );
 	m_vertexArray[7] = Vertex( Vec3( -2, -1, 0 ), Rgba8( 102, 153, 204, 255 ), Vec2() );
-	m_vertexArray[8] = Vertex( Vec3(  0, -1, 0 ), Rgba8( 102, 153, 204, 255 ), Vec2() );
+	m_vertexArray[8] = Vertex( Vec3( 0, -1, 0 ), Rgba8( 102, 153, 204, 255 ), Vec2() );
 
 	// Triangle D
-	m_vertexArray[9] =  Vertex( Vec3( 1,  0, 0 ), Rgba8( 102, 153, 204, 255 ), Vec2() );
-	m_vertexArray[10] = Vertex( Vec3( 0,  1, 0 ), Rgba8( 102, 153, 204, 255 ), Vec2() );
+	m_vertexArray[9] = Vertex( Vec3( 1, 0, 0 ), Rgba8( 102, 153, 204, 255 ), Vec2() );
+	m_vertexArray[10] = Vertex( Vec3( 0, 1, 0 ), Rgba8( 102, 153, 204, 255 ), Vec2() );
 	m_vertexArray[11] = Vertex( Vec3( 0, -1, 0 ), Rgba8( 102, 153, 204, 255 ), Vec2() );
 
 	// Triangle E
-	m_vertexArray[12] = Vertex( Vec3(  2, -1, 0 ), Rgba8( 102, 153, 204, 255 ), Vec2() );
+	m_vertexArray[12] = Vertex( Vec3( 2, -1, 0 ), Rgba8( 102, 153, 204, 255 ), Vec2() );
 	m_vertexArray[13] = Vertex( Vec3( -2, -1, 0 ), Rgba8( 102, 153, 204, 255 ), Vec2() );
-	m_vertexArray[14] = Vertex( Vec3(  0, -2, 0 ), Rgba8( 102, 153, 204, 255 ), Vec2() );
-}
+	m_vertexArray[14] = Vertex( Vec3( 0, -2, 0 ), Rgba8( 102, 153, 204, 255 ), Vec2() );
+};
 
 //--------------------------------------------------------------------------------
 PlayerShip::~PlayerShip() = default;

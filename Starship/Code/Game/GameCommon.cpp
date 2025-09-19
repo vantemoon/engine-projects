@@ -65,7 +65,7 @@ void DebugDrawRing( Vec2 center, float radius, float thickness, const Rgba8& col
 
 
 //-----------------------------------------------------------------------------------------------
-void DebugDrawLine( Vec2 start, Vec2 end, float thickness, const Rgba8& color )
+void DebugDrawLine( Vec2 start, Vec2 end, float thickness, const Rgba8& startColor, const Rgba8& endColor )
 {
 	constexpr int NUM_TRIANGLES = 2;
 	constexpr int NUM_VERTS = NUM_TRIANGLES * 3;
@@ -91,17 +91,17 @@ void DebugDrawLine( Vec2 start, Vec2 end, float thickness, const Rgba8& color )
 	verts[0].m_position = innerStart3D;
 	verts[1].m_position = outerStart3D;
 	verts[2].m_position = outerEnd3D;
-	verts[0].m_color = color;
-	verts[1].m_color = color;
-	verts[2].m_color = color;
+	verts[0].m_color = startColor;
+	verts[1].m_color = startColor;
+	verts[2].m_color = endColor;
 
 	// Outer triangle
 	verts[3].m_position = innerStart3D;
 	verts[4].m_position = outerEnd3D;
 	verts[5].m_position = innerEnd3D;
-	verts[3].m_color = color;
-	verts[4].m_color = color;
-	verts[5].m_color = color;
+	verts[3].m_color = startColor;
+	verts[4].m_color = endColor;
+	verts[5].m_color = endColor;
 
 	g_engine->m_renderer->DrawVertexArray( NUM_VERTS, verts );
 }

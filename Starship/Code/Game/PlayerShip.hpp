@@ -23,10 +23,12 @@ public:
 	void Update( float deltaSeconds ) override;
 	void Render() const override;
 	void Die() override;
+	void Respawn();
 
+private:
+	void InitializeVertexArray() override;
 	void BounceOffWorldEdges();
 	void Accelerate( float deltaSeconds );
 	void TurnLeft();
 	void TurnRight();
-	void Respawn();
 };

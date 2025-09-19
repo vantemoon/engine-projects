@@ -26,7 +26,6 @@ public:
 public:
 	Entity( Game* game, Vec2 startingPosition );
 	virtual ~Entity();
-	virtual void InitializeVertexArray();
 	virtual void Update( float deltaSeconds );
 	virtual void Render() const;
 	virtual void TakeDamage( int damage );
@@ -36,4 +35,7 @@ public:
 	virtual bool IsOffScreen() const;
 	virtual Vec2 GetForwardNormal() const;
 	bool IsAlive() const;
+
+private:
+	virtual void InitializeVertexArray();
 };
