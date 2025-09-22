@@ -148,8 +148,7 @@ void PlayerShip::BounceOffWorldEdges()
 void PlayerShip::Accelerate( float deltaSeconds )
 {
 	Vec2 forwardNormal = GetForwardNormal();
-	float accelerationRate = 30.f;
-	m_velocity += forwardNormal * accelerationRate * deltaSeconds;
+	m_velocity += forwardNormal * PLAYER_SHIP_ACCELERATION * deltaSeconds;
 }
 
 

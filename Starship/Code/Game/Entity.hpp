@@ -36,6 +36,8 @@ public:
 	virtual Vec2 GetForwardNormal() const;
 	bool IsAlive() const;
 
-private:
+protected:
 	virtual void InitializeVertexArray();
+	virtual void CheckCollisionWithBullets();
+	virtual void CheckCollisionWithPlayerShip();
 };

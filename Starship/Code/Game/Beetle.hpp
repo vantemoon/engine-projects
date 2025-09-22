@@ -9,7 +9,7 @@ public:
 	static constexpr int NUM_BEETLE_VERTS = 18;
 
 public:
-	Beetle( Game* game, Vec2 const& startingPosition, float orientationDegrees, Vec2 const& startingVelocity, float startingAngularVelocity );
+	Beetle( Game* game, Vec2 const& startingPosition );
 	~Beetle() override;
 	void Update( float deltaSeconds ) override;
 	void Render() const override;

@@ -1,6 +1,7 @@
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/ErrorWarningAssert.hpp"
 #include "Engine/Core/Rgba8.hpp"
+#include "Engine/Input/InputSystem.hpp"
 #include "Engine/Math/RandomNumberGenerator.hpp"
 #include "Engine/Renderer/Camera.hpp"
 #include "Engine/Renderer/Renderer.hpp"
@@ -11,6 +12,7 @@
 #include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
 #include "Game/PlayerShip.hpp"
+#include "Game/Wasp.hpp"
 
 
 //-----------------------------------------------------------------------------------------------
@@ -18,9 +20,9 @@ Game::Game()
 {
 	m_playerShip = new PlayerShip( this, Vec2( WORLD_CENTER_X, WORLD_CENTER_Y ), Vec2( 0.f, 0.f ) );
 	
-	// Spawn 6 asteroids in the game world
 	SpawnRandomAsteroid(6);
 	SpawnRandomBeetle();
+	SpawnRandomWasp();
 	
 	m_gameCamera = new Camera();
 	m_attractCamera = new Camera();
@@ -122,7 +124,10 @@ void Game::Update( float deltaSeconds )
 //-----------------------------------------------------------------------------------------------
 void Game::UpdateAttractMode( [[maybe_unused]] float deltaSeconds )
 {
-	
+	if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_SPACE ) || g_engine->m_inputSystem->WasKeyJustPressed( 'N' ) )
+	{
+		m_isAttractMode = false;
+	};
 	m_attractCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( WORLD_SIZE_X, WORLD_SIZE_Y ) );
 }
 
@@ -131,8 +136,10 @@ void Game::UpdateAttractMode( [[maybe_unused]] float deltaSeconds )
 //-----------------------------------------------------------------------------------------------
 void Game::UpdateEntities( float deltaSeconds )
 {
+	// Player ship
 	m_playerShip->Update( deltaSeconds );
 
+	// Bullets
 	for( int bulletIndex = 0; bulletIndex < MAX_BULLETS; ++ bulletIndex )
 	{
 		if( m_bullets[bulletIndex] != nullptr )
@@ -141,6 +148,7 @@ void Game::UpdateEntities( float deltaSeconds )
 		}
 	}
 
+	// Asteroids
 	for( int asteroidIndex = 0; asteroidIndex < MAX_ASTEROIDS; ++ asteroidIndex )
 	{
 		if( m_asteroids[asteroidIndex] != nullptr )
@@ -149,11 +157,21 @@ void Game::UpdateEntities( float deltaSeconds )
 		}
 	}
 
+	// Beetles
 	for( int beetleIndex = 0; beetleIndex < 2; ++ beetleIndex )
 	{
 		if( m_beetles[beetleIndex] != nullptr )
 		{
 			m_beetles[beetleIndex]->Update( deltaSeconds );
+		}
+	}
+
+	// Wasps
+	for( int waspIndex = 0; waspIndex < 2; ++ waspIndex )
+	{
+		if( m_wasps[waspIndex] != nullptr )
+		{
+			m_wasps[waspIndex]->Update( deltaSeconds );
 		}
 	}
 }
@@ -245,6 +263,28 @@ void Game::DebugDraw() const
 				DebugDrawLine( m_beetles[beetleIndex]->m_position, beetleVelocityLineEnd, 0.2f, Rgba8( 255, 255, 0 ), Rgba8( 255, 255, 0 ) );
 			}
 		}
+
+		// Wasps
+		for ( int waspIndex = 0; waspIndex < 2; ++waspIndex )
+		{
+			if ( m_wasps[waspIndex] != nullptr )
+			{
+				DebugDrawLine( Vec2( WORLD_CENTER_X, WORLD_CENTER_Y ), m_wasps[waspIndex]->m_position, 0.2f, Rgba8( 50, 50, 50 ), Rgba8( 50, 50, 50 ) );
+				DebugDrawRing( m_wasps[waspIndex]->m_position, m_wasps[waspIndex]->m_cosmeticRadius, 0.1f, Rgba8( 255, 0, 255 ) );
+				DebugDrawRing( m_wasps[waspIndex]->m_position, m_wasps[waspIndex]->m_physicsRadius, 0.1f, Rgba8( 0, 255, 255 ) );
+
+				Vec2 waspForwardNormal = m_wasps[waspIndex]->GetForwardNormal();
+				Vec2 waspForwardLineEnd = m_wasps[waspIndex]->m_position + waspForwardNormal * m_wasps[waspIndex]->m_cosmeticRadius;
+				DebugDrawLine( m_wasps[waspIndex]->m_position, waspForwardLineEnd, 0.2f, Rgba8( 255, 0, 0 ), Rgba8( 255, 0, 0 ) );
+
+				Vec2 waspLeftNormal = waspForwardNormal.GetRotatedBy90Degrees();
+				Vec2 waspLeftLineEnd = m_wasps[waspIndex]->m_position + waspLeftNormal * m_wasps[waspIndex]->m_cosmeticRadius;
+				DebugDrawLine( m_wasps[waspIndex]->m_position, waspLeftLineEnd, 0.2f, Rgba8( 0, 255, 0 ), Rgba8( 0, 255, 0 ) );
+
+				Vec2 waspVelocityLineEnd = m_wasps[waspIndex]->m_position + m_wasps[waspIndex]->m_velocity;
+				DebugDrawLine( m_wasps[waspIndex]->m_position, waspVelocityLineEnd, 0.2f, Rgba8( 255, 255, 0 ), Rgba8( 255, 255, 0 ) );
+			}
+		}
 	}
 }
 
@@ -285,8 +325,10 @@ void Game::RenderAttractMode() const
 //-----------------------------------------------------------------------------------------------
 void Game::RenderEntities() const
 {
+	// Player ship
 	m_playerShip->Render();
 
+	// Bullets
 	for ( int bulletIndex = 0; bulletIndex < MAX_BULLETS; ++ bulletIndex )
 	{
 		if ( m_bullets[bulletIndex] != nullptr )
@@ -294,6 +336,8 @@ void Game::RenderEntities() const
 			m_bullets[bulletIndex]->Render();
 		}
 	}
+
+	// Asteroids
 	for ( int asteroidIndex = 0; asteroidIndex < MAX_ASTEROIDS; ++ asteroidIndex )
 	{
 		if ( m_asteroids[asteroidIndex] != nullptr )
@@ -302,11 +346,21 @@ void Game::RenderEntities() const
 		}
 	}
 
+	// Beetles
 	for ( int beetleIndex = 0; beetleIndex < 2; ++ beetleIndex )
 	{
 		if ( m_beetles[beetleIndex] != nullptr )
 		{
 			m_beetles[beetleIndex]->Render();
+		}
+	}
+
+	// Wasps
+	for ( int waspIndex = 0; waspIndex < 2; ++ waspIndex )
+	{
+		if ( m_wasps[waspIndex] != nullptr )
+		{
+			m_wasps[waspIndex]->Render();
 		}
 	}
 }
@@ -327,13 +381,12 @@ void Game::SpawnRandomAsteroid( int numOfAsteroid )
 			{
 				hasFreeSlot = true;
 				RandomNumberGenerator rng;
-				float randomX = rng.RollRandomFloatInRange( 0.f, WORLD_SIZE_X );
-				float randomY = rng.RollRandomFloatInRange( 0.f, WORLD_SIZE_Y );
+				Vec2 randomOffscreenPosition = GetRandomOffscreenPosition( ASTEROID_COSMETIC_RADIUS );
 				float randomOrientation = rng.RollRandomFloatInRange( 0.f, 360.f );
 				Vec2 randomDirection = Vec2::MakeFromPolarDegrees( rng.RollRandomFloatInRange( 0.f, 360.f ), 1.f );
 				Vec2 randomVelocity = randomDirection * ASTEROID_SPEED;
 				float randomAngularVelocity = rng.RollRandomFloatInRange( -200.f, 200.f );
-				m_asteroids[asteroidIndex] = new Asteroid( this, Vec2( randomX, randomY ), randomOrientation, randomVelocity, randomAngularVelocity );
+				m_asteroids[asteroidIndex] = new Asteroid( this, randomOffscreenPosition, randomOrientation, randomVelocity, randomAngularVelocity );
 				break;
 			}
 		}
@@ -375,17 +428,63 @@ void Game::SpawnRandomBeetle()
 		return;
 
 	bool hasFreeSlot = false;
-	for ( int beetleIndex = 0; beetleIndex < 2; ++ beetleIndex )
+	for ( int beetleIndex = 0; beetleIndex < MAX_BEETLE; ++ beetleIndex )
 	{
 		if ( m_beetles[beetleIndex] == nullptr )
 		{
 			hasFreeSlot = true;
-			RandomNumberGenerator rng;
-			float randomY = rng.RollRandomFloatInRange( 0.f, WORLD_SIZE_Y );
-			Vec2 startingPosition = Vec2( 0.f, randomY );
-			Vec2 startingVelocity = Vec2( 10, 0.f );
-			m_beetles[beetleIndex] = new Beetle( this, startingPosition, 0.f, startingVelocity, 0.f );
+			Vec2 randomOffscreenPosition = GetRandomOffscreenPosition( BEETLE_COSMETIC_RADIUS );
+
+			m_beetles[beetleIndex] = new Beetle( this, randomOffscreenPosition );
 			break;
 		}
 	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game::SpawnRandomWasp()
+{
+	if ( m_playerShip == nullptr || m_playerShip->m_isDead )
+		return;
+	bool hasFreeSlot = false;
+	for ( int waspIndex = 0; waspIndex < MAX_WASP; ++ waspIndex )
+	{
+		if ( m_wasps[waspIndex] == nullptr )
+		{
+			hasFreeSlot = true;
+			Vec2 randomOffscreenPosition = GetRandomOffscreenPosition( WASP_COSMETIC_RADIUS );
+			
+			m_wasps[waspIndex] = new Wasp( this, randomOffscreenPosition );
+			break;
+		}
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+Vec2 Game::GetRandomOffscreenPosition( float cosmeticRadius ) const
+{
+	RandomNumberGenerator rng;
+	float randomX = rng.RollRandomFloatInRange( -cosmeticRadius, WORLD_SIZE_X + cosmeticRadius );
+	float randomY = rng.RollRandomFloatInRange( -cosmeticRadius, WORLD_SIZE_Y + cosmeticRadius );
+	int side = rng.RollRandomIntLessThan( 4 ); // 0: left, 1: right, 2: bottom, 3: top
+	switch ( side )
+	{
+		case 0: // left
+			randomX = -cosmeticRadius;
+			break;
+		case 1: // right
+			randomX = WORLD_SIZE_X + cosmeticRadius;
+			break;
+		case 2: // bottom
+			randomY = -cosmeticRadius;
+			break;
+		case 3: // top
+			randomY = WORLD_SIZE_Y + cosmeticRadius;
+			break;
+		default:
+			break;
+	}
+	return Vec2( randomX, randomY );
 }

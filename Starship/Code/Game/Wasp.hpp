@@ -3,18 +3,18 @@
 
 
 //-----------------------------------------------------------------------------------------------
-class Asteroid : public Entity
+class Wasp : public Entity
 {
 public:
-	static constexpr int NUM_ASTEROID_VERTS = 48;
+	static constexpr int NUM_WASP_VERTS = 6;
 
 public:
-	Asteroid( Game* game, Vec2 const& startingPosition, float orientationDegrees, Vec2 const& startingVelocity, float startingAngularVelocity );
-	~Asteroid() override;
+	Wasp( Game* game, Vec2 const& startingPosition );
+	~Wasp() override;
 	void Update( float deltaSeconds ) override;
 	void Render() const override;
 
 private:
 	void InitializeVertexArray() override;
-	void WrapAroundScreen();
+	void Accelerate( float deltaSeconds );
 };

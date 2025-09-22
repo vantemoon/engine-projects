@@ -45,77 +45,80 @@ void App::RunFrame()
 //-----------------------------------------------------------------------------------------------
 void CheckKeyboardInput()
 {
-	if ( g_engine->m_inputSystem->WasKeyJustPressed( 'Q' ) )
+	if ( !g_app->m_game->m_isAttractMode )
 	{
-		g_app->SetIsQuitting();
-	}
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'Q' ) )
+		{
+			g_app->SetIsQuitting();
+		}
 
-	if ( g_engine->m_inputSystem->WasKeyJustPressed( 'P' ) )
-	{
-		g_app->m_isPaused = !g_app->m_isPaused;
-	}
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'P' ) )
+		{
+			g_app->m_isPaused = !g_app->m_isPaused;
+		}
 
-	if ( g_engine->m_inputSystem->WasKeyJustPressed( 'O' ) )
-	{
-		g_app->m_isPaused = false;
-		g_app->m_pauseAfterNextUpdate = true;
-	}
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'O' ) )
+		{
+			g_app->m_isPaused = false;
+			g_app->m_pauseAfterNextUpdate = true;
+		}
 
-	if ( g_engine->m_inputSystem->IsKeyDown( 'T' ) )
-	{
-		g_app->m_isSlowMo = true;
-	}
-	else
-	{
-		g_app->m_isSlowMo = false;
-	}
+		if ( g_engine->m_inputSystem->IsKeyDown( 'T' ) )
+		{
+			g_app->m_isSlowMo = true;
+		}
+		else
+		{
+			g_app->m_isSlowMo = false;
+		}
 
-	if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_SPACE ) )
-	{
-		g_app->m_game->SpawnBulletFromPlayerShip();
-	}
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_SPACE ) )
+		{
+			g_app->m_game->SpawnBulletFromPlayerShip();
+		}
 
-	if ( g_engine->m_inputSystem->WasKeyJustPressed( 'I' ) )
-	{
-		g_app->m_game->SpawnRandomAsteroid(1);
-	}
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'I' ) )
+		{
+			g_app->m_game->SpawnRandomAsteroid( 1 );
+		}
 
-	if ( g_engine->m_inputSystem->IsKeyDown( 'S' ) && !g_engine->m_inputSystem->IsKeyDown( 'F' ) )
-	{
-		g_app->m_game->m_playerShip->m_isTurningLeft = true;
-	}
-	else if ( g_engine->m_inputSystem->IsKeyDown( 'F' ) && !g_engine->m_inputSystem->IsKeyDown( 'S' ) )
-	{
-		g_app->m_game->m_playerShip->m_isTurningRight = true;
-	}
-	else
-	{
-		g_app->m_game->m_playerShip->m_isTurningLeft = false;
-		g_app->m_game->m_playerShip->m_isTurningRight = false;
-	}
+		if ( g_engine->m_inputSystem->IsKeyDown( 'S' ) && !g_engine->m_inputSystem->IsKeyDown( 'F' ) )
+		{
+			g_app->m_game->m_playerShip->m_isTurningLeft = true;
+		}
+		else if ( g_engine->m_inputSystem->IsKeyDown( 'F' ) && !g_engine->m_inputSystem->IsKeyDown( 'S' ) )
+		{
+			g_app->m_game->m_playerShip->m_isTurningRight = true;
+		}
+		else
+		{
+			g_app->m_game->m_playerShip->m_isTurningLeft = false;
+			g_app->m_game->m_playerShip->m_isTurningRight = false;
+		}
 
-	if ( g_engine->m_inputSystem->IsKeyDown( 'E' ) )
-	{
-		g_app->m_game->m_playerShip->m_isAccelerating = true;
-	}
-	else
-	{
-		g_app->m_game->m_playerShip->m_isAccelerating = false;
-	}
+		if ( g_engine->m_inputSystem->IsKeyDown( 'E' ) )
+		{
+			g_app->m_game->m_playerShip->m_isAccelerating = true;
+		}
+		else
+		{
+			g_app->m_game->m_playerShip->m_isAccelerating = false;
+		}
 
-	if ( g_engine->m_inputSystem->WasKeyJustPressed( 'N' ) && g_app->m_game->m_playerShip->m_isDead )
-	{
-		g_app->m_game->m_playerShip->Respawn();
-	}
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'N' ) && g_app->m_game->m_playerShip->m_isDead )
+		{
+			g_app->m_game->m_playerShip->Respawn();
+		}
 
-	if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_F1 ) )
-	{
-		g_app->m_debugDraw = !g_app->m_debugDraw;
-	}
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_F1 ) )
+		{
+			g_app->m_debugDraw = !g_app->m_debugDraw;
+		}
 
-	if( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_F8 ) )
-	{
-		g_app->HardReset();
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_F8 ) )
+		{
+			g_app->HardReset();
+		}
 	}
 }
 

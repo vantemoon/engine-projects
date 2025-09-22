@@ -158,45 +158,6 @@ void Asteroid::InitializeVertexArray()
 Asteroid::~Asteroid() = default;
 
 
-//--------------------------------------------------------------------------------
-void Asteroid::CheckCollisionWithBullets()
-{
-	if( g_app->m_game == nullptr )
-		return;
-
-	for( int bulletIndex = 0; bulletIndex < MAX_BULLETS; ++ bulletIndex )
-	{
-		Bullet* bullet = g_app->m_game->m_bullets[bulletIndex];
-		if( bullet == nullptr || bullet->m_isDead )
-			continue;
-		float distanceSquared = GetDistanceSquared2D( m_position, bullet->m_position );
-		float combinedRadii = m_physicsRadius + bullet->m_physicsRadius;
-		if( distanceSquared < ( combinedRadii * combinedRadii ) )
-		{
-			bullet->Die();
-			this->TakeDamage( 1 );
-		}
-	}
-}
-
-
-//--------------------------------------------------------------------------------
-void Asteroid::CheckCollisionWithPlayerShip()
-{
-	if( g_app->m_game == nullptr || g_app->m_game->m_playerShip == nullptr || g_app->m_game->m_playerShip->m_isDead )
-		return;
-
-	PlayerShip* playerShip = g_app->m_game->m_playerShip;
-	float distanceSquared = GetDistanceSquared2D( m_position, playerShip->m_position );
-	float combinedRadii = m_physicsRadius + playerShip->m_physicsRadius;
-	if ( distanceSquared < ( combinedRadii * combinedRadii ) )
-	{
-		playerShip->Die();
-		this->TakeDamage( 1 );
-	}
-}
-
-
 //-----------------------------------------------------------------------------------------------
 void Asteroid::Update( float deltaSeconds )
 {

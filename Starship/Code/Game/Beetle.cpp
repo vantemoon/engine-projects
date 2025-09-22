@@ -4,18 +4,24 @@
 #include "Engine/Math/MathUtils.hpp"
 #include "Engine/Renderer/Renderer.hpp"
 #include "Game/Beetle.hpp"
+#include "Game/App.hpp"
+#include "Game/Bullet.hpp"
+#include "Game/Game.hpp"
+#include "Game/GameCommon.hpp"
+#include "Game/PlayerShip.hpp"
 
 
 //-----------------------------------------------------------------------------------------------
-Beetle::Beetle( Game* game, Vec2 const& startingPosition, float orientationDegrees, Vec2 const& startingVelocity, float startingAngularVelocity )
+Beetle::Beetle( Game* game, Vec2 const& startingPosition )
 	: Entity( game, startingPosition )
 {
-	m_orientationDegrees = orientationDegrees;
-	m_velocity = startingVelocity;
-	m_angularVelocityDegreesPerSecond = startingAngularVelocity;
-	m_physicsRadius = 2.f;
-	m_cosmeticRadius = 1.75f;
-	m_health = 2;
+	Vec2 toPlayer = m_game->m_playerShip->m_position - m_position;
+	m_orientationDegrees = toPlayer.GetOrientationDegrees();
+	m_velocity = BEETLE_SPEED * toPlayer.GetNormalized();
+
+	m_physicsRadius = BEETLE_PHYSICS_RADIUS;
+	m_cosmeticRadius = BEETLE_COSMETIC_RADIUS;
+	m_health = 3;
 
 	InitializeVertexArray();
 }
@@ -33,7 +39,17 @@ Beetle::~Beetle()
 void Beetle::Update( float deltaSeconds )
 {
 	Entity::Update( deltaSeconds );
-	// WrapAroundScreen();
+
+	if ( m_game->m_playerShip->m_isDead )
+	{
+		return;
+	}
+	Vec2 toPlayer = m_game->m_playerShip->m_position - m_position;
+	m_orientationDegrees = toPlayer.GetOrientationDegrees();
+	m_velocity = BEETLE_SPEED * toPlayer.GetNormalized();
+
+	this->CheckCollisionWithBullets();
+	this->CheckCollisionWithPlayerShip();
 }
 
 

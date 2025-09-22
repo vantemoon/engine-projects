@@ -37,6 +37,9 @@
     <ClCompile Include="Beetle.cpp">
       <Filter>Gameplay</Filter>
     </ClCompile>
+    <ClCompile Include="Wasp.cpp">
+      <Filter>Gameplay</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.hpp">
@@ -61,6 +64,9 @@
       <Filter>Gameplay</Filter>
     </ClInclude>
     <ClInclude Include="Beetle.hpp">
+      <Filter>Gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="Wasp.hpp">
       <Filter>Gameplay</Filter>
     </ClInclude>
   </ItemGroup>

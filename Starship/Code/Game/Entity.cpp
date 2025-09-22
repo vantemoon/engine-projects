@@ -1,7 +1,10 @@
 #include "Engine/Math/MathUtils.hpp"
 #include "Engine/Math/Vec2.hpp"
+#include "Game/Bullet.hpp"
 #include "Game/Entity.hpp"
+#include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
+#include "Game/PlayerShip.hpp"
 
 
 //-----------------------------------------------------------------------------------------------
@@ -86,4 +89,43 @@ Vec2 Entity::GetForwardNormal() const
 bool Entity::IsAlive() const
 {
 	return !m_isDead;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Entity::CheckCollisionWithBullets()
+{
+	if ( m_game == nullptr )
+		return;
+
+	for ( int bulletIndex = 0; bulletIndex < MAX_BULLETS; ++bulletIndex )
+	{
+		Bullet* bullet = m_game->m_bullets[bulletIndex];
+		if ( bullet == nullptr || bullet->m_isDead )
+			continue;
+		float distanceSquared = GetDistanceSquared2D( m_position, bullet->m_position );
+		float combinedRadii = m_physicsRadius + bullet->m_physicsRadius;
+		if ( distanceSquared < ( combinedRadii * combinedRadii ) )
+		{
+			bullet->Die();
+			this->TakeDamage( 1 );
+		}
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Entity::CheckCollisionWithPlayerShip()
+{
+	if ( m_game == nullptr || m_game->m_playerShip == nullptr || m_game->m_playerShip->m_isDead )
+		return;
+
+	PlayerShip* playerShip = m_game->m_playerShip;
+	float distanceSquared = GetDistanceSquared2D( m_position, playerShip->m_position );
+	float combinedRadii = m_physicsRadius + playerShip->m_physicsRadius;
+	if ( distanceSquared < ( combinedRadii * combinedRadii ) )
+	{
+		playerShip->Die();
+		this->TakeDamage( 1 );
+	}
 }
