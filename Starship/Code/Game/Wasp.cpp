@@ -19,7 +19,7 @@ Wasp::Wasp( Game* game, Vec2 const& startingPosition )
 
 	m_physicsRadius = WASP_PHYSICS_RADIUS;
 	m_cosmeticRadius = WASP_COSMETIC_RADIUS;
-	m_health = 2;
+	m_health = 1;
 
 	InitializeVertexArray();
 }
@@ -53,7 +53,7 @@ void Wasp::Render() const
 {
 	/// Create a copy of the beetle's vertex array to transform
 	Vertex tempWaspWorldVerts[NUM_WASP_VERTS];
-	for ( int vertIndex = 0; vertIndex < NUM_WASP_VERTS; ++vertIndex )
+	for ( int vertIndex = 0; vertIndex < NUM_WASP_VERTS; ++ vertIndex )
 	{
 		tempWaspWorldVerts[vertIndex] = m_vertexArray[vertIndex];
 	}

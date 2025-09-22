@@ -61,39 +61,53 @@ Game::~Game()
 //-----------------------------------------------------------------------------------------------
 void Game::DeleteGarbageEntities()
 {
-	if( g_app->m_game == nullptr )
+	if ( g_app->m_game == nullptr )
 		return;
 
-	if( g_app->m_game->m_playerShip != nullptr && g_app->m_game->m_playerShip->m_isGarbage )
+	// Player ship
+	if ( g_app->m_game->m_playerShip != nullptr && g_app->m_game->m_playerShip->m_isGarbage )
 	{
 		delete g_app->m_game->m_playerShip;
 		g_app->m_game->m_playerShip = nullptr;
 	}
 
-	for( int bulletIndex = 0; bulletIndex < MAX_BULLETS; ++ bulletIndex )
+	// Bullets
+	for ( int bulletIndex = 0; bulletIndex < MAX_BULLETS; ++ bulletIndex )
 	{
-		if( g_app->m_game->m_bullets[bulletIndex] != nullptr && g_app->m_game->m_bullets[bulletIndex]->m_isGarbage )
+		if ( g_app->m_game->m_bullets[bulletIndex] != nullptr && g_app->m_game->m_bullets[bulletIndex]->m_isGarbage )
 		{
 			delete g_app->m_game->m_bullets[bulletIndex];
 			g_app->m_game->m_bullets[bulletIndex] = nullptr;
 		}
 	}
 
-	for( int asteroidIndex = 0; asteroidIndex < MAX_ASTEROIDS; ++ asteroidIndex )
+	// Asteroids
+	for ( int asteroidIndex = 0; asteroidIndex < MAX_ASTEROIDS; ++ asteroidIndex )
 	{
-		if( g_app->m_game->m_asteroids[asteroidIndex] != nullptr && g_app->m_game->m_asteroids[asteroidIndex]->m_isGarbage )
+		if ( g_app->m_game->m_asteroids[asteroidIndex] != nullptr && g_app->m_game->m_asteroids[asteroidIndex]->m_isGarbage )
 		{
 			delete g_app->m_game->m_asteroids[asteroidIndex];
 			g_app->m_game->m_asteroids[asteroidIndex] = nullptr;
 		}
 	}
 
-	for( int beetleIndex = 0; beetleIndex < 2; ++ beetleIndex )
+	// Beetles
+	for ( int beetleIndex = 0; beetleIndex < MAX_BEETLES; ++ beetleIndex )
 	{
-		if( g_app->m_game->m_beetles[beetleIndex] != nullptr && g_app->m_game->m_beetles[beetleIndex]->m_isGarbage )
+		if ( g_app->m_game->m_beetles[beetleIndex] != nullptr && g_app->m_game->m_beetles[beetleIndex]->m_isGarbage )
 		{
 			delete g_app->m_game->m_beetles[beetleIndex];
 			g_app->m_game->m_beetles[beetleIndex] = nullptr;
+		}
+	}
+
+	// Wasp
+	for ( int waspIndex = 0; waspIndex < MAX_WASPS; ++waspIndex )
+	{
+		if ( g_app->m_game->m_wasps[waspIndex] != nullptr && g_app->m_game->m_wasps[waspIndex]->m_isGarbage )
+		{
+			delete g_app->m_game->m_wasps[waspIndex];
+			g_app->m_game->m_wasps[waspIndex] = nullptr;
 		}
 	}
 }
@@ -428,7 +442,7 @@ void Game::SpawnRandomBeetle()
 		return;
 
 	bool hasFreeSlot = false;
-	for ( int beetleIndex = 0; beetleIndex < MAX_BEETLE; ++ beetleIndex )
+	for ( int beetleIndex = 0; beetleIndex < MAX_BEETLES; ++ beetleIndex )
 	{
 		if ( m_beetles[beetleIndex] == nullptr )
 		{
@@ -448,7 +462,7 @@ void Game::SpawnRandomWasp()
 	if ( m_playerShip == nullptr || m_playerShip->m_isDead )
 		return;
 	bool hasFreeSlot = false;
-	for ( int waspIndex = 0; waspIndex < MAX_WASP; ++ waspIndex )
+	for ( int waspIndex = 0; waspIndex < MAX_WASPS; ++ waspIndex )
 	{
 		if ( m_wasps[waspIndex] == nullptr )
 		{

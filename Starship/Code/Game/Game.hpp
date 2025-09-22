@@ -18,8 +18,8 @@ public:
 	PlayerShip* m_playerShip = nullptr;
 	Asteroid*   m_asteroids[MAX_ASTEROIDS] = {};
 	Bullet*     m_bullets[MAX_BULLETS] = {};
-	Beetle*     m_beetles[MAX_BEETLE] = {};
-	Wasp*       m_wasps[MAX_WASP] = {};
+	Beetle*     m_beetles[MAX_BEETLES] = {};
+	Wasp*       m_wasps[MAX_WASPS] = {};
 	Camera*     m_gameCamera = nullptr;
 	Camera*     m_attractCamera = nullptr;
 
