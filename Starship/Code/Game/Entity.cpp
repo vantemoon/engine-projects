@@ -12,6 +12,17 @@ Entity::Entity( Game* game, Vec2 startingPosition )
 	: m_game( game )
 	, m_position( startingPosition )
 {
+	// Default values, should be overridden by derived classes
+	m_velocity = Vec2( 0.f, 0.f );
+	m_orientationDegrees = 0.f;
+	m_angularVelocityDegreesPerSecond = 0.f;
+	m_physicsRadius = 1.f;
+	m_cosmeticRadius = 1.f;
+	m_health = 1;
+	m_isDead = false;
+	m_isGarbage = false;
+
+	InitializeVertexArray();
 }
 
 

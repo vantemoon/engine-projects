@@ -20,9 +20,9 @@ Game::Game()
 {
 	m_playerShip = new PlayerShip( this, Vec2( WORLD_CENTER_X, WORLD_CENTER_Y ), Vec2( 0.f, 0.f ) );
 	
-	SpawnRandomAsteroid(6);
-	SpawnRandomBeetle();
-	SpawnRandomWasp();
+	SpawnRandomAsteroids(4);
+	SpawnRandomBeetles(2);
+	SpawnRandomWasps(1);
 	
 	m_gameCamera = new Camera();
 	m_attractCamera = new Camera();
@@ -381,12 +381,12 @@ void Game::RenderEntities() const
 
 
 //-----------------------------------------------------------------------------------------------
-void Game::SpawnRandomAsteroid( int numOfAsteroid )
+void Game::SpawnRandomAsteroids( int numOfAsteroid )
 {
 	if ( m_playerShip == nullptr || m_playerShip->m_isDead )
 		return;
 
-	for ( int i = 0; i < numOfAsteroid; ++i )
+	for ( int asteroidSpawned = 0; asteroidSpawned < numOfAsteroid; ++asteroidSpawned )
 	{
 		bool hasFreeSlot = false;
 		for ( int asteroidIndex = 0; asteroidIndex < MAX_ASTEROIDS; ++asteroidIndex )
@@ -436,41 +436,56 @@ void Game::SpawnBulletFromPlayerShip()
 
 
 //-----------------------------------------------------------------------------------------------
-void Game::SpawnRandomBeetle()
+void Game::SpawnRandomBeetles( int numOfBeetles )
 {
 	if ( m_playerShip == nullptr || m_playerShip->m_isDead )
 		return;
 
-	bool hasFreeSlot = false;
-	for ( int beetleIndex = 0; beetleIndex < MAX_BEETLES; ++ beetleIndex )
+	for ( int beetlesSpawned = 0; beetlesSpawned < numOfBeetles; ++beetlesSpawned )
 	{
-		if ( m_beetles[beetleIndex] == nullptr )
+		bool hasFreeSlot = false;
+		for ( int beetleIndex = 0; beetleIndex < MAX_BEETLES; ++beetleIndex )
 		{
-			hasFreeSlot = true;
-			Vec2 randomOffscreenPosition = GetRandomOffscreenPosition( BEETLE_COSMETIC_RADIUS );
+			if ( m_beetles[beetleIndex] == nullptr )
+			{
+				hasFreeSlot = true;
+				Vec2 randomOffscreenPosition = GetRandomOffscreenPosition( BEETLE_COSMETIC_RADIUS );
 
-			m_beetles[beetleIndex] = new Beetle( this, randomOffscreenPosition );
-			break;
+				m_beetles[beetleIndex] = new Beetle( this, randomOffscreenPosition );
+				break;
+			}
+		}
+		if ( !hasFreeSlot )
+		{
+			ERROR_RECOVERABLE( "No available beetle slots!" );
 		}
 	}
 }
 
 
 //-----------------------------------------------------------------------------------------------
-void Game::SpawnRandomWasp()
+void Game::SpawnRandomWasps(int numOfWasps)
 {
 	if ( m_playerShip == nullptr || m_playerShip->m_isDead )
 		return;
-	bool hasFreeSlot = false;
-	for ( int waspIndex = 0; waspIndex < MAX_WASPS; ++ waspIndex )
+	
+	for ( int waspsSpawned = 0; waspsSpawned < numOfWasps; ++waspsSpawned )
 	{
-		if ( m_wasps[waspIndex] == nullptr )
+		bool hasFreeSlot = false;
+		for ( int waspIndex = 0; waspIndex < MAX_WASPS; ++waspIndex )
 		{
-			hasFreeSlot = true;
-			Vec2 randomOffscreenPosition = GetRandomOffscreenPosition( WASP_COSMETIC_RADIUS );
-			
-			m_wasps[waspIndex] = new Wasp( this, randomOffscreenPosition );
-			break;
+			if ( m_wasps[waspIndex] == nullptr )
+			{
+				hasFreeSlot = true;
+				Vec2 randomOffscreenPosition = GetRandomOffscreenPosition( WASP_COSMETIC_RADIUS );
+
+				m_wasps[waspIndex] = new Wasp( this, randomOffscreenPosition );
+				break;
+			}
+		}
+		if ( !hasFreeSlot )
+		{
+			ERROR_RECOVERABLE( "No available wasp slots!" );
 		}
 	}
 }

@@ -32,8 +32,8 @@ constexpr float PLAYER_SHIP_TURN_SPEED = 600.f; // 300.f;
 constexpr float PLAYER_SHIP_PHYSICS_RADIUS = 1.75f;
 constexpr float PLAYER_SHIP_COSMETIC_RADIUS = 2.25f;
 
-constexpr float BEETLE_SPEED = 8.f;
-constexpr float BEETLE_PHYSICS_RADIUS = 1.75f;
+constexpr float BEETLE_SPEED = 10.f;
+constexpr float BEETLE_PHYSICS_RADIUS = 1.5f;
 constexpr float BEETLE_COSMETIC_RADIUS = 2.f;
 
 constexpr float WASP_SPEED = 10.f;

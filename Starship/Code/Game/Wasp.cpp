@@ -19,7 +19,7 @@ Wasp::Wasp( Game* game, Vec2 const& startingPosition )
 
 	m_physicsRadius = WASP_PHYSICS_RADIUS;
 	m_cosmeticRadius = WASP_COSMETIC_RADIUS;
-	m_health = 1;
+	m_health = 2;
 
 	InitializeVertexArray();
 }

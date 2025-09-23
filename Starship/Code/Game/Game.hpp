@@ -37,10 +37,10 @@ public:
 	void RenderEntities() const;
 	void RenderAttractMode() const;
 	Vec2 GetRandomOffscreenPosition( float cosmeticRadius ) const;
-	void SpawnRandomAsteroid( int numOfAsteroid );
+	void SpawnRandomAsteroids( int numOfAsteroids );
 	void SpawnBulletFromPlayerShip();
-	void SpawnRandomBeetle();
-	void SpawnRandomWasp();
+	void SpawnRandomBeetles( int numOfBeetles );
+	void SpawnRandomWasps( int numOfWasps );
 
 private:
 	void DeleteGarbageEntities();
