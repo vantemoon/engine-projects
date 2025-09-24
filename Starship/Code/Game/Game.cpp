@@ -1,7 +1,11 @@
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/ErrorWarningAssert.hpp"
 #include "Engine/Core/Rgba8.hpp"
+#include "Engine/Core/Time.hpp"
+#include "Engine/Core/Vertex.hpp"
+#include "Engine/Core/VertexUtils.hpp"
 #include "Engine/Input/InputSystem.hpp"
+#include "Engine/Math/MathUtils.hpp"
 #include "Engine/Math/RandomNumberGenerator.hpp"
 #include "Engine/Renderer/Camera.hpp"
 #include "Engine/Renderer/Renderer.hpp"
@@ -384,8 +388,27 @@ void Game::RenderAttractMode() const
 {
 	g_engine->m_renderer->BeginCamera( *m_attractCamera );
 
-	DebugDrawLine( Vec2( 10.f, 10.f ), Vec2( 190.f, 90.f ), 1.f, Rgba8( 255, 0, 0 ), Rgba8( 0, 255, 0 ) );
+	Vertex shipVertexArray1[PlayerShip::NUM_SHIP_VERTS];
+	Vertex shipVertexArray2[PlayerShip::NUM_SHIP_VERTS];
+	m_playerShip->GetVertexArrayCopy( shipVertexArray1 );
+	m_playerShip->GetVertexArrayCopy( shipVertexArray2 );
+	TransformVertexArrayXY3D( PlayerShip::NUM_SHIP_VERTS, shipVertexArray1, 7.5f, 0.f, Vec2( WORLD_CENTER_X - 50.f, WORLD_CENTER_Y ) );
+	TransformVertexArrayXY3D( PlayerShip::NUM_SHIP_VERTS, shipVertexArray2, -7.5f, 0.f, Vec2( WORLD_CENTER_X + 50.f, WORLD_CENTER_Y ) );
 
+	Vertex triangleVertexArray[3];
+	triangleVertexArray[0].m_position = Vec3( WORLD_CENTER_X - 10.f, WORLD_CENTER_Y - 10.f, 0.f );
+	triangleVertexArray[1].m_position = Vec3( WORLD_CENTER_X - 10.f, WORLD_CENTER_Y + 10.f, 0.f );
+	triangleVertexArray[2].m_position = Vec3( WORLD_CENTER_X + 10.f, WORLD_CENTER_Y, 0.f );
+	float alpha = 0.5f + 0.5f * SinDegrees( (float) GetCurrentTimeSeconds() * 180.f );
+	Rgba8 triangleColor = Rgba8( 0, 153, 0, ( unsigned char ) ( alpha * 255.f ) );
+	triangleVertexArray[0].m_color = triangleColor;
+	triangleVertexArray[1].m_color = triangleColor;
+	triangleVertexArray[2].m_color = triangleColor;
+
+	g_engine->m_renderer->DrawVertexArray( PlayerShip::NUM_SHIP_VERTS, shipVertexArray1 );
+	g_engine->m_renderer->DrawVertexArray( PlayerShip::NUM_SHIP_VERTS, shipVertexArray2 );
+	g_engine->m_renderer->DrawVertexArray( 3, triangleVertexArray );
+	
 	g_engine->m_renderer->EndCamera( *m_attractCamera );
 }
 

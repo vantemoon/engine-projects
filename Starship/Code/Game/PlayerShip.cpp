@@ -54,6 +54,37 @@ void PlayerShip::InitializeVertexArray()
 	m_vertexArray[14] = Vertex( Vec3( 0, -2, 0 ), Rgba8( 102, 153, 204, 255 ), Vec2() );
 };
 
+
+//--------------------------------------------------------------------------------
+void PlayerShip::GetVertexArrayCopy( Vertex* out_vertexArray ) const
+{
+	// Triangle A
+	out_vertexArray[0] = Vertex( Vec3( 2, 1, 0 ), Rgba8( 102, 153, 204, 255 ), Vec2() );
+	out_vertexArray[1] = Vertex( Vec3( 0, 2, 0 ), Rgba8( 102, 153, 204, 255 ), Vec2() );
+	out_vertexArray[2] = Vertex( Vec3( -2, 1, 0 ), Rgba8( 102, 153, 204, 255 ), Vec2() );
+
+	// Triangle B
+	out_vertexArray[3] = Vertex( Vec3( 0, 1, 0 ), Rgba8( 102, 153, 204, 255 ), Vec2() );
+	out_vertexArray[4] = Vertex( Vec3( -2, 1, 0 ), Rgba8( 102, 153, 204, 255 ), Vec2() );
+	out_vertexArray[5] = Vertex( Vec3( -2, -1, 0 ), Rgba8( 102, 153, 204, 255 ), Vec2() );
+
+	// Triangle C
+	out_vertexArray[6] = Vertex( Vec3( 0, 1, 0 ), Rgba8( 102, 153, 204, 255 ), Vec2() );
+	out_vertexArray[7] = Vertex( Vec3( -2, -1, 0 ), Rgba8( 102, 153, 204, 255 ), Vec2() );
+	out_vertexArray[8] = Vertex( Vec3( 0, -1, 0 ), Rgba8( 102, 153, 204, 255 ), Vec2() );
+
+	// Triangle D
+	out_vertexArray[9] = Vertex( Vec3( 1, 0, 0 ), Rgba8( 102, 153, 204, 255 ), Vec2() );
+	out_vertexArray[10] = Vertex( Vec3( 0, 1, 0 ), Rgba8( 102, 153, 204, 255 ), Vec2() );
+	out_vertexArray[11] = Vertex( Vec3( 0, -1, 0 ), Rgba8( 102, 153, 204, 255 ), Vec2() );
+
+	// Triangle E
+	out_vertexArray[12] = Vertex( Vec3( 2, -1, 0 ), Rgba8( 102, 153, 204, 255 ), Vec2() );
+	out_vertexArray[13] = Vertex( Vec3( -2, -1, 0 ), Rgba8( 102, 153, 204, 255 ), Vec2() );
+	out_vertexArray[14] = Vertex( Vec3( 0, -2, 0 ), Rgba8( 102, 153, 204, 255 ), Vec2() );
+}
+
+
 //--------------------------------------------------------------------------------
 PlayerShip::~PlayerShip() = default;
 

@@ -3,7 +3,7 @@
 
 
 //-----------------------------------------------------------------------------------------------
-class Game; // Forward declaration
+class Game;  // Forward declaration
 struct Vec2; // Forward declaration
 
 
@@ -24,6 +24,7 @@ public:
 	void Render() const override;
 	void Die() override;
 	void Respawn();
+	void GetVertexArrayCopy( Vertex* out_vertexArray ) const;
 
 private:
 	void InitializeVertexArray() override;
