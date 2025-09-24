@@ -13,6 +13,7 @@ public:
 	~Asteroid() override;
 	void Update( float deltaSeconds ) override;
 	void Render() const override;
+	void Die() override;
 
 private:
 	void InitializeVertexArray() override;

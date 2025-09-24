@@ -64,6 +64,15 @@ void Wasp::Render() const
 
 
 //-----------------------------------------------------------------------------------------------
+void Wasp::Die()
+{
+	Entity::Die();
+
+	m_game->SpawnDebrisCluster( 12, m_position, m_velocity, Rgba8( 255, 255, 0 ), m_cosmeticRadius * 0.1f, m_cosmeticRadius * 0.5f );
+}
+
+
+//-----------------------------------------------------------------------------------------------
 void Wasp::InitializeVertexArray()
 {
 	m_vertexArray = new Vertex[NUM_WASP_VERTS];

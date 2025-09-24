@@ -2,6 +2,7 @@
 #include "Engine/Core/Vertex.hpp"
 #include "Engine/Core/VertexUtils.hpp"
 #include "Engine/Renderer/Renderer.hpp"
+#include "Game/App.hpp"
 #include "Game/Bullet.hpp"
 #include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
@@ -72,7 +73,9 @@ void Bullet::Render() const
 
 
 //-----------------------------------------------------------------------------------------------
-bool Bullet::IsOffScreen() const
+void Bullet::Die()
 {
-	return Entity::IsOffScreen();
+	Entity::Die();
+
+	m_game->SpawnDebrisCluster( 3, m_position, m_velocity * -0.2f, Rgba8( 255, 128, 0 ), m_cosmeticRadius * 0.05f, m_cosmeticRadius * 0.1f );
 }

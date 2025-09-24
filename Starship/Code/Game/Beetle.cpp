@@ -69,6 +69,15 @@ void Beetle::Render() const
 
 
 //-----------------------------------------------------------------------------------------------
+void Beetle::Die()
+{
+	Entity::Die();
+
+	m_game->SpawnDebrisCluster( 12, m_position, m_velocity, Rgba8( 153, 255, 51 ), m_cosmeticRadius * 0.1f, m_cosmeticRadius * 0.6f );
+}
+
+
+//-----------------------------------------------------------------------------------------------
 void Beetle::InitializeVertexArray()
 {
 	m_vertexArray = new Vertex[NUM_BEETLE_VERTS];

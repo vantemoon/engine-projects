@@ -198,3 +198,12 @@ void Asteroid::Render() const
 	TransformVertexArrayXY3D( NUM_ASTEROID_VERTS, tempAsteroidWorldVerts, 1.f, m_orientationDegrees, m_position );
 	g_engine->m_renderer->DrawVertexArray( NUM_ASTEROID_VERTS, tempAsteroidWorldVerts );
 }
+
+
+//-----------------------------------------------------------------------------------------------
+void Asteroid::Die()
+{
+	Entity::Die();
+
+	m_game->SpawnDebrisCluster( 12, m_position, m_velocity, Rgba8( 100, 100, 100, 255 ), m_cosmeticRadius * 0.2f, m_cosmeticRadius * 0.8f );
+}
