@@ -12,6 +12,7 @@ constexpr int MAX_ASTEROIDS = 12;
 constexpr int MAX_BULLETS = 20;
 constexpr int MAX_BEETLES = 2;
 constexpr int MAX_WASPS = 3;
+constexpr int MAX_DEBRIS = 100;
 
 constexpr float WORLD_SIZE_X = 200.f;
 constexpr float WORLD_SIZE_Y = 100.f;
@@ -41,6 +42,8 @@ constexpr float WASP_MAX_SPEED = 500.f;
 constexpr float WASP_ACCELERATION = 10.f;
 constexpr float WASP_PHYSICS_RADIUS = 1.25f;
 constexpr float WASP_COSMETIC_RADIUS = 1.5f;
+
+constexpr float DEBRIS_LIFETIME_SECONDS = 2.f;
 
 void DebugDrawRing( Vec2 center, float radius, float thickness, const Rgba8& color );
 void DebugDrawLine( Vec2 start, Vec2 end, float thickness, const Rgba8& startColor, const Rgba8& endColor );

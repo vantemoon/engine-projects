@@ -6,6 +6,7 @@
 
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/Rgba8.hpp"
+#include "Engine/Core/Time.hpp"
 #include "Engine/Core/Vertex.hpp"
 #include "Engine/Input/InputSystem.hpp"
 #include "Engine/Math/Vec2.hpp"

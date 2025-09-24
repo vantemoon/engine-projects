@@ -7,6 +7,7 @@ class Asteroid;   // Forward declaration
 class Beetle;     // Forward declaration
 class Bullet;     // Forward declaration
 class Camera;     // Forward declaration
+class Debris;     // Forward declaration
 class PlayerShip; // Forward declaration
 class Wasp;       // Forward declaration
 
@@ -20,6 +21,7 @@ public:
 	Bullet*     m_bullets[MAX_BULLETS] = {};
 	Beetle*     m_beetles[MAX_BEETLES] = {};
 	Wasp*       m_wasps[MAX_WASPS] = {};
+	Debris*     m_debris[MAX_DEBRIS] = {};
 	Camera*     m_gameCamera = nullptr;
 	Camera*     m_attractCamera = nullptr;
 
@@ -41,6 +43,8 @@ public:
 	void SpawnBulletFromPlayerShip();
 	void SpawnRandomBeetles( int numOfBeetles );
 	void SpawnRandomWasps( int numOfWasps );
+	void SpawnDebrisCluster( int numOfDebris, Vec2 const& position, Vec2 momentum, Rgba8 const& color,
+							 float minRadius, float maxRadius);
 
 private:
 	void DeleteGarbageEntities();

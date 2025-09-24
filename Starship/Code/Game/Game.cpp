@@ -9,6 +9,7 @@
 #include "Game/Asteroid.hpp"
 #include "Game/Beetle.hpp"
 #include "Game/Bullet.hpp"
+#include "Game/Debris.hpp"
 #include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
 #include "Game/PlayerShip.hpp"
@@ -51,6 +52,18 @@ Game::~Game()
 	{
 		delete m_beetles[beetleIndex];
 		m_beetles[beetleIndex] = nullptr;
+	}
+
+	for ( int waspIndex = 0; waspIndex < 2; ++ waspIndex )
+	{
+		delete m_wasps[waspIndex];
+		m_wasps[waspIndex] = nullptr;
+	}
+
+	for ( int debrisIndex = 0; debrisIndex < MAX_DEBRIS; ++ debrisIndex )
+	{
+		delete m_debris[debrisIndex];
+		m_debris[debrisIndex] = nullptr;
 	}
 
 	delete m_gameCamera;
@@ -108,6 +121,16 @@ void Game::DeleteGarbageEntities()
 		{
 			delete g_app->m_game->m_wasps[waspIndex];
 			g_app->m_game->m_wasps[waspIndex] = nullptr;
+		}
+	}
+
+	// Debris
+	for ( int debrisIndex = 0; debrisIndex < MAX_DEBRIS; ++ debrisIndex )
+	{
+		if ( g_app->m_game->m_debris[debrisIndex] != nullptr && g_app->m_game->m_debris[debrisIndex]->m_isGarbage )
+		{
+			delete g_app->m_game->m_debris[debrisIndex];
+			g_app->m_game->m_debris[debrisIndex] = nullptr;
 		}
 	}
 }
@@ -186,6 +209,15 @@ void Game::UpdateEntities( float deltaSeconds )
 		if( m_wasps[waspIndex] != nullptr )
 		{
 			m_wasps[waspIndex]->Update( deltaSeconds );
+		}
+	}
+
+	// Debris
+	for( int debrisIndex = 0; debrisIndex < MAX_DEBRIS; ++ debrisIndex )
+	{
+		if( m_debris[debrisIndex] != nullptr )
+		{
+			m_debris[debrisIndex]->Update( deltaSeconds );
 		}
 	}
 }
@@ -299,6 +331,28 @@ void Game::DebugDraw() const
 				DebugDrawLine( m_wasps[waspIndex]->m_position, waspVelocityLineEnd, 0.2f, Rgba8( 255, 255, 0 ), Rgba8( 255, 255, 0 ) );
 			}
 		}
+
+		// Debris
+		for ( int debrisIndex = 0; debrisIndex < MAX_DEBRIS; ++debrisIndex )
+		{
+			if ( m_debris[debrisIndex] != nullptr )
+			{
+				DebugDrawLine( Vec2( WORLD_CENTER_X, WORLD_CENTER_Y ), m_debris[debrisIndex]->m_position, 0.2f, Rgba8( 50, 50, 50 ), Rgba8( 50, 50, 50 ) );
+				DebugDrawRing( m_debris[debrisIndex]->m_position, m_debris[debrisIndex]->m_cosmeticRadius, 0.1f, Rgba8( 255, 0, 255 ) );
+				DebugDrawRing( m_debris[debrisIndex]->m_position, m_debris[debrisIndex]->m_physicsRadius, 0.1f, Rgba8( 0, 255, 255 ) );
+
+				Vec2 debrisForwardNormal = m_debris[debrisIndex]->GetForwardNormal();
+				Vec2 debrisForwardLineEnd = m_debris[debrisIndex]->m_position + debrisForwardNormal * m_debris[debrisIndex]->m_cosmeticRadius;
+				DebugDrawLine( m_debris[debrisIndex]->m_position, debrisForwardLineEnd, 0.2f, Rgba8( 255, 0, 0 ), Rgba8( 255, 0, 0 ) );
+
+				Vec2 debrisLeftNormal = debrisForwardNormal.GetRotatedBy90Degrees();
+				Vec2 debrisLeftLineEnd = m_debris[debrisIndex]->m_position + debrisLeftNormal * m_debris[debrisIndex]->m_cosmeticRadius;
+				DebugDrawLine( m_debris[debrisIndex]->m_position, debrisLeftLineEnd, 0.2f, Rgba8( 0, 255, 0 ), Rgba8( 0, 255, 0 ) );
+
+				Vec2 debrisVelocityLineEnd = m_debris[debrisIndex]->m_position + m_debris[debrisIndex]->m_velocity;
+				DebugDrawLine( m_debris[debrisIndex]->m_position, debrisVelocityLineEnd, 0.2f, Rgba8( 255, 255, 0 ), Rgba8( 255, 255, 0 ) );
+			}
+		}
 	}
 }
 
@@ -375,6 +429,15 @@ void Game::RenderEntities() const
 		if ( m_wasps[waspIndex] != nullptr )
 		{
 			m_wasps[waspIndex]->Render();
+		}
+	}
+
+	// Debris
+	for ( int debrisIndex = 0; debrisIndex < MAX_DEBRIS; ++ debrisIndex )
+	{
+		if ( m_debris[debrisIndex] != nullptr )
+		{
+			m_debris[debrisIndex]->Render();
 		}
 	}
 }
@@ -516,4 +579,32 @@ Vec2 Game::GetRandomOffscreenPosition( float cosmeticRadius ) const
 			break;
 	}
 	return Vec2( randomX, randomY );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game::SpawnDebrisCluster( int numOfDebris, Vec2 const& position, Vec2 momentum, Rgba8 const& color, float minRadius, float maxRadius )
+{
+	for ( int debrisSpawned = 0; debrisSpawned < numOfDebris; ++debrisSpawned )
+	{
+		bool hasFreeSlot = false;
+		for ( int debrisIndex = 0; debrisIndex < MAX_DEBRIS; ++debrisIndex )
+		{
+			if ( m_debris[debrisIndex] == nullptr )
+			{
+				hasFreeSlot = true;
+				RandomNumberGenerator rng;
+				Vec2 randomDirection = Vec2::MakeFromPolarDegrees( rng.RollRandomFloatInRange( 0.f, 360.f ), 1.f );
+				Vec2 randomVelocity = randomDirection * rng.RollRandomFloatInRange( 5.f, 15.f ) + momentum;
+				float randomAngularVelocity = rng.RollRandomFloatInRange( -360.f, 360.f );
+
+				m_debris[debrisIndex] = new Debris( this, position, randomVelocity, randomAngularVelocity, color, minRadius, maxRadius );
+				break;
+			}
+		}
+		if ( !hasFreeSlot )
+		{
+			ERROR_RECOVERABLE( "No available debris slots!" );
+		}
+	}
 }

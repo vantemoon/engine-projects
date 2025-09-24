@@ -6,6 +6,7 @@
 #include "Engine/Core/VertexUtils.hpp"
 #include "Engine/Renderer/Renderer.hpp"
 #include "Game/App.hpp"
+#include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
 #include "Game/PlayerShip.hpp"
 
@@ -110,6 +111,9 @@ void PlayerShip::Die()
 	m_isDead = true;
 	m_velocity = Vec2( 0.f, 0.f );
 	m_angularVelocityDegreesPerSecond = 0.f;
+
+	g_app->m_game->SpawnDebrisCluster( 30, this->m_position, this->m_velocity, Rgba8( 102, 153, 204 ),
+									   this->m_cosmeticRadius * 0.1f, this->m_cosmeticRadius * 0.8f );
 }
 
 
