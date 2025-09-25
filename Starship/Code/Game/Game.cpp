@@ -154,6 +154,13 @@ void Game::Update( float deltaSeconds )
 		return;
 	};
 
+	// Return to attract mode
+	if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_ESCAPE ) )
+	{
+		m_isAttractMode = true;
+		return;
+	}
+
 	UpdateEntities( deltaSeconds );
 
 	m_gameCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( WORLD_SIZE_X, WORLD_SIZE_Y ) );
@@ -165,10 +172,18 @@ void Game::Update( float deltaSeconds )
 //-----------------------------------------------------------------------------------------------
 void Game::UpdateAttractMode( [[maybe_unused]] float deltaSeconds )
 {
+	// Start the game
 	if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_SPACE ) || g_engine->m_inputSystem->WasKeyJustPressed( 'N' ) )
 	{
 		m_isAttractMode = false;
 	};
+
+	// Quit the game
+	if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_ESCAPE ) )
+	{
+		g_app->SetIsQuitting();
+	}
+
 	m_attractCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( WORLD_SIZE_X, WORLD_SIZE_Y ) );
 }
 

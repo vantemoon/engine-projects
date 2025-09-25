@@ -26,7 +26,7 @@ public:
 	Camera*     m_attractCamera = nullptr;
 
 	bool        m_isAttractMode = true;
-	int         m_numOfWaves = 5;
+	int         m_waveNumber = 0;
 
 public:
 	Game();

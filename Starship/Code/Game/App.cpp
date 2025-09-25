@@ -47,11 +47,6 @@ void CheckKeyboardInput()
 {
 	if ( !g_app->m_game->m_isAttractMode )
 	{
-		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'Q' ) )
-		{
-			g_app->SetIsQuitting();
-		}
-
 		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'P' ) )
 		{
 			g_app->m_isPaused = !g_app->m_isPaused;
