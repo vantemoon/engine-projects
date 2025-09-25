@@ -150,6 +150,8 @@ void Game::Update( float deltaSeconds )
 		return;
 	};
 
+	CheckPlayerLives();
+
 	UpdateWaves();
 	UpdateFromKeyboard();
 	UpdateEntities( deltaSeconds );
@@ -279,6 +281,7 @@ void Game::UpdateFromKeyboard()
 		// Start the game
 		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_SPACE ) || g_engine->m_inputSystem->WasKeyJustPressed( 'N' ) )
 		{
+			Reset();
 			m_isAttractMode = false;
 		};
 
@@ -505,6 +508,7 @@ void Game::Render() const
 	g_engine->m_renderer->BeginCamera( *m_gameCamera );
 	
 	RenderEntities();
+	RenderPlayerLives();
 
 	if ( g_app->m_debugDraw )
 	{
@@ -594,6 +598,39 @@ void Game::RenderEntities() const
 		{
 			m_debris[debrisIndex]->Render();
 		}
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game::RenderPlayerLives() const 
+{
+	Vertex shipVertexArray[PlayerShip::NUM_SHIP_VERTS];
+	m_playerShip->GetVertexArrayCopy( shipVertexArray );
+
+	for ( int vertIndex = 0; vertIndex < PlayerShip::NUM_SHIP_VERTS; ++ vertIndex ) 
+	{
+		shipVertexArray[vertIndex].m_color.a = 204;
+	}
+
+	float spacing = 5.f;
+	float rotation = 90.f;
+	float scale = 1.f;
+	float startX = 5.f;
+	float startY = WORLD_SIZE_Y - 5.f;
+
+	for ( int lifeIndex = 0; lifeIndex < m_playerSpareLives; ++ lifeIndex ) 
+	{
+		if ( lifeIndex == 0 ) 
+		{
+			Vec2 position = Vec2( startX, startY );
+			TransformVertexArrayXY3D( PlayerShip::NUM_SHIP_VERTS, shipVertexArray, scale, rotation, position );
+		}
+		else
+		{
+			TransformVertexArrayXY3D( PlayerShip::NUM_SHIP_VERTS, shipVertexArray, 1.f, 0.f, Vec2( spacing, 0.f ) );
+		}
+		g_engine->m_renderer->DrawVertexArray( PlayerShip::NUM_SHIP_VERTS, shipVertexArray );
 	}
 }
 
@@ -791,5 +828,70 @@ void Game::KillAllEnemies()
 		{
 			m_wasps[waspIndex]->Die();
 		}
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game::CheckPlayerLives()
+{
+	static float timeOfDeath = 0.f;
+
+	if ( m_playerShip == nullptr || !m_playerShip->m_isDead )
+		return;
+
+	if ( m_playerSpareLives == 0 && !m_playerShip->IsAlive() )
+	{
+		if ( timeOfDeath == 0.f )
+		{
+			timeOfDeath = ( float ) GetCurrentTimeSeconds();
+		}
+
+		// Return to attract mode after 3 seconds
+		if ( ( float ) GetCurrentTimeSeconds() - timeOfDeath >= 3.f )
+		{
+			m_isAttractMode = true;
+			m_waveNumber = 0;
+			m_playerSpareLives = NUM_PLAYER_LIVES - 1;
+			timeOfDeath = 0.f;
+		}
+	}
+	else
+	{
+		timeOfDeath = 0.f;
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game::Reset()
+{
+	m_waveNumber = 0;
+	m_playerSpareLives = NUM_PLAYER_LIVES - 1;
+
+	// Delete player ship and recreate
+	delete m_playerShip;
+	m_playerShip = new PlayerShip( this, Vec2( WORLD_CENTER_X, WORLD_CENTER_Y ), Vec2( 0.f, 0.f ) );
+
+	// Delete all entities
+	for ( int i = 0; i < MAX_BULLETS; ++i ) {
+		delete m_bullets[i];
+		m_bullets[i] = nullptr;
+	}
+	for ( int i = 0; i < MAX_ASTEROIDS; ++i ) {
+		delete m_asteroids[i];
+		m_asteroids[i] = nullptr;
+	}
+	for ( int i = 0; i < MAX_BEETLES; ++i ) {
+		delete m_beetles[i];
+		m_beetles[i] = nullptr;
+	}
+	for ( int i = 0; i < MAX_WASPS; ++i ) {
+		delete m_wasps[i];
+		m_wasps[i] = nullptr;
+	}
+	for ( int i = 0; i < MAX_DEBRIS; ++i ) {
+		delete m_debris[i];
+		m_debris[i] = nullptr;
 	}
 }

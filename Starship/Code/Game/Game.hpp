@@ -28,6 +28,7 @@ public:
 	bool        m_isAttractMode = true;
 	int         m_waveNumber = 0;
 	constexpr static int NUM_OF_WAVES = 5;
+	int			m_playerSpareLives = NUM_PLAYER_LIVES - 1;
 
 public:
 	Game();
@@ -42,6 +43,7 @@ public:
 	void StartNextWave();
 	void Render() const;
 	void RenderEntities() const;
+	void RenderPlayerLives() const;
 	void RenderAttractMode() const;
 	Vec2 GetRandomOffscreenPosition( float cosmeticRadius ) const;
 	void SpawnRandomAsteroids( int numOfAsteroids );
@@ -49,6 +51,8 @@ public:
 	void SpawnRandomBeetles( int numOfBeetles );
 	void SpawnRandomWasps( int numOfWasps );
 	void SpawnDebrisCluster( int numOfDebris, Vec2 const& position, Vec2 momentum, Rgba8 const& color, float minRadius, float maxRadius);
+	void CheckPlayerLives();
+	void Reset();
 	void KillAllEnemies(); // For debugging
 
 private:

@@ -137,6 +137,5 @@ void Entity::CheckCollisionWithPlayerShip()
 	if ( distanceSquared < ( combinedRadii * combinedRadii ) )
 	{
 		playerShip->Die();
-		this->TakeDamage( 1 );
 	}
 }

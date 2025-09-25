@@ -1,7 +1,9 @@
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/Rgba8.hpp"
+#include "Engine/Core/Time.hpp"
 #include "Engine/Input/InputSystem.hpp"
 #include "Engine/Math/RandomNumberGenerator.hpp"
+#include "Engine/Math/MathUtils.hpp"
 #include "Engine/Renderer/Camera.hpp"
 #include "Engine/Renderer/Renderer.hpp"
 #include "Game/App.hpp"
@@ -16,6 +18,8 @@ App::App()
 {
 	g_engine = new Engine();
 	m_game = new Game();
+
+	m_lastFrameStartTime = GetCurrentTimeSeconds();
 }
 
 
@@ -33,9 +37,14 @@ App::~App()
 //-----------------------------------------------------------------------------------------------
 void App::RunFrame()
 {
-	// One "frame" of the game.  Generally: Input, Update, Render.  We call this 60+ times per second.
-	g_engine->BeginFrame(); // Allow engine subsystems to do pre-frame stuff
-	float deltaSeconds = 0.0167f;
+	g_engine->BeginFrame();
+
+	double currentTime = GetCurrentTimeSeconds();
+	float deltaSeconds = static_cast<float> ( currentTime - m_lastFrameStartTime );
+	deltaSeconds = GetClamped( deltaSeconds, 0.f, 0.1f );
+
+	m_lastFrameStartTime = currentTime;
+
 	Update( deltaSeconds );
 	Render(); // Draw the current state of the game
 	g_engine->EndFrame(); // Allow engine subsystems to do post-frame stuff
@@ -102,7 +111,11 @@ void CheckKeyboardInput()
 
 		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'N' ) && g_app->m_game->m_playerShip->m_isDead )
 		{
-			g_app->m_game->m_playerShip->Respawn();
+			if ( g_app->m_game->m_playerSpareLives > 0 )
+			{
+				g_app->m_game->m_playerShip->Respawn();
+				-- g_app->m_game->m_playerSpareLives;
+			}
 		}
 
 		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_F1 ) )

@@ -7,7 +7,7 @@ struct Vec2;  // Forward declaration
 
 
 //-----------------------------------------------------------------------------------------------
-constexpr int NUM_STARTING_ASTEROIDS = 6;
+constexpr int NUM_PLAYER_LIVES = 4;
 constexpr int MAX_ASTEROIDS = 12;
 constexpr int MAX_BULLETS = 20;
 constexpr int MAX_BEETLES = 2;
@@ -29,7 +29,7 @@ constexpr float BULLET_PHYSICS_RADIUS = 0.5f;
 constexpr float BULLET_COSMETIC_RADIUS = 2.0f;
 
 constexpr float PLAYER_SHIP_ACCELERATION = 30.f;
-constexpr float PLAYER_SHIP_TURN_SPEED = 600.f; // 300.f;
+constexpr float PLAYER_SHIP_TURN_SPEED = 300.f;
 constexpr float PLAYER_SHIP_PHYSICS_RADIUS = 1.75f;
 constexpr float PLAYER_SHIP_COSMETIC_RADIUS = 2.25f;
 
