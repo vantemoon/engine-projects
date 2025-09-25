@@ -27,6 +27,7 @@ public:
 
 	bool        m_isAttractMode = true;
 	int         m_waveNumber = 0;
+	constexpr static int NUM_OF_WAVES = 5;
 
 public:
 	Game();
@@ -35,6 +36,10 @@ public:
 	void Update( float deltaSeconds);
 	void UpdateAttractMode( float deltaSeconds );
 	void UpdateEntities( float deltaSeconds );
+	void UpdateFromKeyboard();
+	void UpdateWaves();
+	bool IsReadyToStartNextWave() const;
+	void StartNextWave();
 	void Render() const;
 	void RenderEntities() const;
 	void RenderAttractMode() const;
@@ -43,8 +48,8 @@ public:
 	void SpawnBulletFromPlayerShip();
 	void SpawnRandomBeetles( int numOfBeetles );
 	void SpawnRandomWasps( int numOfWasps );
-	void SpawnDebrisCluster( int numOfDebris, Vec2 const& position, Vec2 momentum, Rgba8 const& color,
-							 float minRadius, float maxRadius);
+	void SpawnDebrisCluster( int numOfDebris, Vec2 const& position, Vec2 momentum, Rgba8 const& color, float minRadius, float maxRadius);
+	void KillAllEnemies(); // For debugging
 
 private:
 	void DeleteGarbageEntities();

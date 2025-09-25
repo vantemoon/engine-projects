@@ -25,10 +25,6 @@ Game::Game()
 {
 	m_playerShip = new PlayerShip( this, Vec2( WORLD_CENTER_X, WORLD_CENTER_Y ), Vec2( 0.f, 0.f ) );
 	
-	SpawnRandomAsteroids(4);
-	SpawnRandomBeetles(2);
-	SpawnRandomWasps(1);
-	
 	m_gameCamera = new Camera();
 	m_attractCamera = new Camera();
 }
@@ -154,13 +150,8 @@ void Game::Update( float deltaSeconds )
 		return;
 	};
 
-	// Return to attract mode
-	if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_ESCAPE ) )
-	{
-		m_isAttractMode = true;
-		return;
-	}
-
+	UpdateWaves();
+	UpdateFromKeyboard();
 	UpdateEntities( deltaSeconds );
 
 	m_gameCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( WORLD_SIZE_X, WORLD_SIZE_Y ) );
@@ -170,21 +161,147 @@ void Game::Update( float deltaSeconds )
 
 
 //-----------------------------------------------------------------------------------------------
-void Game::UpdateAttractMode( [[maybe_unused]] float deltaSeconds )
+void Game::UpdateWaves()
 {
-	// Start the game
-	if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_SPACE ) || g_engine->m_inputSystem->WasKeyJustPressed( 'N' ) )
+	if ( IsReadyToStartNextWave() )
 	{
-		m_isAttractMode = false;
-	};
+		if ( m_waveNumber == NUM_OF_WAVES )
+		{
+			// Return to attract mode
+			m_isAttractMode = true;
+			m_waveNumber = 0;
+			return;
+		}
 
-	// Quit the game
-	if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_ESCAPE ) )
+		StartNextWave();
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool Game::IsReadyToStartNextWave() const
+{
+	if ( m_playerShip == nullptr || m_playerShip->m_isDead )
+		return false;
+
+	// Asteroids
+	for ( int asteroidIndex = 0; asteroidIndex < MAX_ASTEROIDS; ++ asteroidIndex )
 	{
-		g_app->SetIsQuitting();
+		Asteroid* asteroid = m_asteroids[asteroidIndex];
+		if ( asteroid != nullptr && asteroid->IsAlive() )
+			return false;
 	}
 
+	// Beetles
+	for ( int beetleIndex = 0; beetleIndex < MAX_BEETLES; ++ beetleIndex )
+	{
+		Beetle* beetle = m_beetles[beetleIndex];
+		if ( beetle != nullptr && beetle->IsAlive() )
+			return false;
+	}
+
+	// Wasps
+	for ( int waspIndex = 0; waspIndex < MAX_WASPS; ++ waspIndex )
+	{
+		Wasp* wasp = m_wasps[waspIndex];
+		if ( wasp != nullptr && wasp->IsAlive() )
+			return false;
+	}
+
+	// Debris
+	for ( int debrisIndex = 0; debrisIndex < MAX_DEBRIS; ++ debrisIndex )
+	{
+		Debris* debris = m_debris[debrisIndex];
+		if ( debris != nullptr && debris->IsAlive() )
+			return false;
+	}
+
+	return true;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game::StartNextWave()
+{
+	++ m_waveNumber;
+
+	switch ( m_waveNumber )
+	{
+		default:
+			break;
+
+		case 1:
+			SpawnRandomAsteroids( 4 );
+			SpawnRandomBeetles( 1 );
+			SpawnRandomWasps( 1 );
+			break;
+
+		case 2:
+			SpawnRandomAsteroids( 6 );
+			SpawnRandomBeetles( 2 );
+			SpawnRandomWasps( 1 );
+			break;
+
+		case 3:
+			SpawnRandomAsteroids( 8 );
+			SpawnRandomBeetles( 2 );
+			SpawnRandomWasps( 2 );
+			break;
+
+		case 4:
+			SpawnRandomAsteroids( 10 );
+			SpawnRandomBeetles( 2 );
+			SpawnRandomWasps( 2 );
+			break;
+
+		case 5:
+			SpawnRandomAsteroids( 12 );
+			SpawnRandomBeetles( 2 );
+			SpawnRandomWasps( 2 );
+			break;
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game::UpdateAttractMode( [[maybe_unused]] float deltaSeconds )
+{
+	UpdateFromKeyboard();
 	m_attractCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( WORLD_SIZE_X, WORLD_SIZE_Y ) );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game::UpdateFromKeyboard()
+{
+	if ( m_isAttractMode )
+	{
+		// Start the game
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_SPACE ) || g_engine->m_inputSystem->WasKeyJustPressed( 'N' ) )
+		{
+			m_isAttractMode = false;
+		};
+
+		// Quit the game
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_ESCAPE ) )
+		{
+			g_app->SetIsQuitting();
+		}
+	}
+	else
+	{
+		// Return to attract mode
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_ESCAPE ) )
+		{
+			m_isAttractMode = true;
+		}
+
+		// Kill all enemies (for debugging)
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'K' ) )
+		{
+			KillAllEnemies();
+		}
+	}
 }
 
 
@@ -643,6 +760,36 @@ void Game::SpawnDebrisCluster( int numOfDebris, Vec2 const& position, Vec2 momen
 		if ( !hasFreeSlot )
 		{
 			ERROR_RECOVERABLE( "No available debris slots!" );
+		}
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game::KillAllEnemies()
+{
+	// Asteroids
+	for ( int asteroidIndex = 0; asteroidIndex < MAX_ASTEROIDS; ++ asteroidIndex )
+	{
+		if ( m_asteroids[asteroidIndex] != nullptr && m_asteroids[asteroidIndex]->IsAlive() )
+		{
+			m_asteroids[asteroidIndex]->Die();
+		}
+	}
+	// Beetles
+	for ( int beetleIndex = 0; beetleIndex < MAX_BEETLES; ++ beetleIndex )
+	{
+		if ( m_beetles[beetleIndex] != nullptr && m_beetles[beetleIndex]->IsAlive() )
+		{
+			m_beetles[beetleIndex]->Die();
+		}
+	}
+	// Wasps
+	for ( int waspIndex = 0; waspIndex < MAX_WASPS; ++ waspIndex )
+	{
+		if ( m_wasps[waspIndex] != nullptr && m_wasps[waspIndex]->IsAlive() )
+		{
+			m_wasps[waspIndex]->Die();
 		}
 	}
 }

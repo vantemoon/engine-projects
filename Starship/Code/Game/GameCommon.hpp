@@ -12,7 +12,7 @@ constexpr int MAX_ASTEROIDS = 12;
 constexpr int MAX_BULLETS = 20;
 constexpr int MAX_BEETLES = 2;
 constexpr int MAX_WASPS = 3;
-constexpr int MAX_DEBRIS = 100;
+constexpr int MAX_DEBRIS = 300;
 
 constexpr float WORLD_SIZE_X = 200.f;
 constexpr float WORLD_SIZE_Y = 100.f;
