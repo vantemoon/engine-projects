@@ -118,7 +118,7 @@ void Entity::CheckCollisionWithBullets()
 		float combinedRadii = m_physicsRadius + bullet->m_physicsRadius;
 		if ( distanceSquared < ( combinedRadii * combinedRadii ) )
 		{
-			bullet->Die();
+			bullet->Die( true );
 			this->TakeDamage( 1 );
 		}
 	}

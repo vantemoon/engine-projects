@@ -322,8 +322,6 @@ void Game::UpdateFromController()
 	{
 		ERROR_RECOVERABLE( "Controller 0 is not connected" );
 	}
-
-	
 }
 
 

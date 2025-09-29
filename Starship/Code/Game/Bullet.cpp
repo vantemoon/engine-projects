@@ -18,6 +18,7 @@ Bullet::Bullet( Game* game, PlayerShip* shooter )
 	m_velocity = BULLET_SPEED * shooter->GetForwardNormal();
 	m_physicsRadius = BULLET_PHYSICS_RADIUS;
 	m_cosmeticRadius = BULLET_COSMETIC_RADIUS;
+	m_ageSeconds = 0.0f;
 	
 	InitializeVertexArray();
 }
@@ -49,9 +50,15 @@ void Bullet::Update( float deltaSeconds )
 {
 	Entity::Update( deltaSeconds );
 
+	m_ageSeconds += deltaSeconds;
+	if ( m_ageSeconds > BULLET_LIFETIME_SECONDS )
+	{
+		Die( false );
+	}
+
 	if ( IsOffScreen() )
 	{
-		Die();
+		Die( true );
 	}
 }
 
@@ -73,9 +80,13 @@ void Bullet::Render() const
 
 
 //-----------------------------------------------------------------------------------------------
-void Bullet::Die()
+void Bullet::Die( bool shouldSpawnDebris )
 {
 	Entity::Die();
 
-	m_game->SpawnDebrisCluster( 3, m_position, m_velocity * -0.2f, Rgba8( 255, 128, 0 ), m_cosmeticRadius * 0.05f, m_cosmeticRadius * 0.1f );
+	if ( shouldSpawnDebris )
+	{
+		m_game->SpawnDebrisCluster( 3, m_position, m_velocity * -0.2f, Rgba8( 255, 128, 0 ), m_cosmeticRadius * 0.05f, m_cosmeticRadius * 0.1f );
+
+	}
 }

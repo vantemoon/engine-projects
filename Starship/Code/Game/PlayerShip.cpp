@@ -293,4 +293,5 @@ void PlayerShip::Respawn()
 	m_position = Vec2( WORLD_CENTER_X, WORLD_CENTER_Y );
 	m_velocity = Vec2( 0.f, 0.f );
 	m_orientationDegrees = 0.f;
+	m_thrustFraction = 0.f;
 }
