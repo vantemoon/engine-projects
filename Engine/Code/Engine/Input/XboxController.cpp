@@ -21,8 +21,8 @@ XboxController::XboxController()
 	}
 
 	// Set joystick dead zones
-	m_leftJoystick.SetDeadZoneThresholds( 0.15f, 0.95f );
-	m_rightJoystick.SetDeadZoneThresholds( 0.15f, 0.95f );
+	m_leftJoystick.SetDeadZoneThresholds( 0.3f, 0.95f );
+	m_rightJoystick.SetDeadZoneThresholds( 0.3f, 0.95f );
 }
 
 

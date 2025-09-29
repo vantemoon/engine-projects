@@ -1,5 +1,6 @@
 #include <Windows.h>
 #include "Engine/Core/ErrorWarningAssert.hpp"
+#include "Engine/Input/AnalogJoystick.hpp"
 #include "Engine/Input/InputSystem.hpp"
 
 
