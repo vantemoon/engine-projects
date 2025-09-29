@@ -38,6 +38,7 @@ public:
 	void UpdateAttractMode( float deltaSeconds );
 	void UpdateEntities( float deltaSeconds );
 	void UpdateFromKeyboard();
+	void UpdateFromController();
 	void UpdateWaves();
 	bool IsReadyToStartNextWave() const;
 	void StartNextWave();

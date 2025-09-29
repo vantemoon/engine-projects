@@ -42,9 +42,9 @@ public:
 
 	void HandleKeyPressed( unsigned char keyCode );
 	void HandleKeyReleased( unsigned char keyCode );
-	// XboxController const& GetController( int controllerID );
+	XboxController const& GetController( int controllerID );
 
 protected:
 	KeyButtonState m_keyStates[ NUM_KEYCODES ];
-	// XboxController m_controllers[ NUM_XBOX_CONTROLLERS ];
+	XboxController m_controllers[ NUM_XBOX_CONTROLLERS ];
 };

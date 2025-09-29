@@ -1,5 +1,6 @@
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/Rgba8.hpp"
+#include "Engine/Input/InputSystem.hpp"
 #include "Engine/Math/Vec2.hpp"
 #include "Engine/Math/Vec3.hpp"
 #include "Engine/Core/Vertex.hpp"
@@ -9,6 +10,7 @@
 #include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
 #include "Game/PlayerShip.hpp"
+#include "Engine/Core/ErrorWarningAssert.hpp"
 
 
 //-----------------------------------------------------------------------------------------------
@@ -92,15 +94,21 @@ PlayerShip::~PlayerShip() = default;
 //-----------------------------------------------------------------------------------------------
 void PlayerShip::Update( float deltaSeconds )
 {
-	if( m_isDead )
-		return;
-
+	
 	Entity::Update( deltaSeconds );
 
-	if( m_isAccelerating )
+	UpdateFromKeyboard();
+	UpdateFromController();
+
+	if ( m_isDead )
+		return;
+
+	if ( m_isAccelerating )
 	{
-		Accelerate( deltaSeconds );
+		m_thrustFraction = 1.f;
 	}
+	Accelerate( deltaSeconds * m_thrustFraction );
+	
 
 	BounceOffWorldEdges();
 
@@ -115,6 +123,83 @@ void PlayerShip::Update( float deltaSeconds )
 	else
 	{
 		m_angularVelocityDegreesPerSecond = 0.f;
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void PlayerShip::UpdateFromKeyboard()
+{
+	// Attacking
+	if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_SPACE ) )
+	{
+		m_game->SpawnBulletFromPlayerShip();
+	}
+
+	// Movement
+	if ( g_engine->m_inputSystem->IsKeyDown( 'S' ) && !g_engine->m_inputSystem->IsKeyDown( 'F' ) )
+	{
+		m_game->m_playerShip->m_isTurningLeft = true;
+	}
+	else if ( g_engine->m_inputSystem->IsKeyDown( 'F' ) && !g_engine->m_inputSystem->IsKeyDown( 'S' ) )
+	{
+		m_game->m_playerShip->m_isTurningRight = true;
+	}
+	else
+	{
+		m_game->m_playerShip->m_isTurningLeft = false;
+		m_game->m_playerShip->m_isTurningRight = false;
+	}
+
+	if ( g_engine->m_inputSystem->IsKeyDown( 'E' ) )
+	{
+		m_game->m_playerShip->m_isAccelerating = true;
+	}
+	else
+	{
+		m_game->m_playerShip->m_isAccelerating = false;
+	}
+
+	// Respawn
+	if ( g_engine->m_inputSystem->WasKeyJustPressed( 'N' ) && m_isDead )
+	{
+		if ( m_game->m_playerSpareLives > 0 )
+		{
+			Respawn();
+			--g_app->m_game->m_playerSpareLives;
+		}
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void PlayerShip::UpdateFromController()
+{
+	XboxController const& controller = g_engine->m_inputSystem->GetController( 0 );
+
+	// Movement
+	float leftJoystickMagnitude = controller.GetLeftJoystick().GetMagnitude();
+	float leftJoystickOrientationDegrees = controller.GetLeftJoystick().GetOrientationDegrees();
+	if ( leftJoystickMagnitude > 0.f )
+	{
+		m_thrustFraction = leftJoystickMagnitude;
+		m_orientationDegrees = leftJoystickOrientationDegrees;
+	}
+
+	// Attacking
+	if ( controller.WasButtonJustPressed( XBOX_BUTTON_A ) )
+	{
+		m_game->SpawnBulletFromPlayerShip();
+	}
+
+	// Respawn
+	if ( controller.WasButtonJustPressed( XBOX_BUTTON_START ) && m_isDead )
+	{
+		if ( m_game->m_playerSpareLives > 0 )
+		{
+			Respawn();
+			--g_app->m_game->m_playerSpareLives;
+		}
 	}
 }
 

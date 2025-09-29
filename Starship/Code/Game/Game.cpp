@@ -299,6 +299,11 @@ void Game::UpdateFromKeyboard()
 			m_isAttractMode = true;
 		}
 
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'I' ) )
+		{
+			SpawnRandomAsteroids( 1 );
+		}
+
 		// Kill all enemies (for debugging)
 		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'K' ) )
 		{
@@ -307,6 +312,19 @@ void Game::UpdateFromKeyboard()
 	}
 }
 
+
+//-----------------------------------------------------------------------------------------------
+void Game::UpdateFromController()
+{
+	XboxController const& controller = g_engine->m_inputSystem->GetController( 0 );
+
+	if ( !controller.IsConnected() )
+	{
+		ERROR_RECOVERABLE( "Controller 0 is not connected" );
+	}
+
+	
+}
 
 
 //-----------------------------------------------------------------------------------------------

@@ -16,11 +16,16 @@ public:
 	bool m_isTurningLeft = false;
 	bool m_isTurningRight = false;
 
+	// bool m_isUsingController = false;
+	float m_thrustFraction = 0.f;
+
 public:
 	PlayerShip( Game* game, Vec2 const& startingPosition, Vec2 const& startingVelocity );
 	~PlayerShip() override;
 
 	void Update( float deltaSeconds ) override;
+	void UpdateFromKeyboard();
+	void UpdateFromController();
 	void Render() const override;
 	void Die() override;
 	void Respawn();

@@ -22,6 +22,7 @@ public:
 
 	void RunFrame();
 	void Update( float deltaSeconds );
+	void UpdateFromKeyboard();
 	void Render() const;
 
 	void SetIsQuitting();

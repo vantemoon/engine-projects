@@ -1,4 +1,5 @@
 #include <Windows.h>
+#include "Engine/Core/ErrorWarningAssert.hpp"
 #include "Engine/Input/InputSystem.hpp"
 
 
@@ -17,6 +18,11 @@ unsigned char const KEYCODE_F11 = VK_F11;
 unsigned char const KEYCODE_ESCAPE = VK_ESCAPE;
 unsigned char const KEYCODE_SPACE = VK_SPACE;
 unsigned char const KEYCODE_ENTER = VK_RETURN;
+unsigned char const KEYCODE_BACKSPACE = VK_BACK;
+unsigned char const KEYCODE_UPARROW = VK_UP;
+unsigned char const KEYCODE_DOWNARROW = VK_DOWN;
+unsigned char const KEYCODE_LEFTARROW = VK_LEFT;
+unsigned char const KEYCODE_RIGHTARROW = VK_RIGHT;
 
 
 //----------------------------------------------------------------
@@ -34,18 +40,32 @@ InputSystem::~InputSystem()
 //----------------------------------------------------------------
 void InputSystem::StartUp()
 {
+	for ( int keyIndex = 0; keyIndex < NUM_KEYCODES; ++keyIndex )
+	{
+		m_keyStates[keyIndex] = KeyButtonState();
+	}
+	for ( int controllerIndex = 0; controllerIndex < NUM_XBOX_CONTROLLERS; ++controllerIndex )
+	{
+		m_controllers[controllerIndex] = XboxController();
+		m_controllers[controllerIndex].m_id = controllerIndex;
+	}
 }
 
 
 //----------------------------------------------------------------
 void InputSystem::ShutDown()
 {
+	// DO NOTHING
 }
 
 
 //----------------------------------------------------------------
 void InputSystem::BeginFrame()
 {
+	for ( int controllerIndex = 0; controllerIndex < NUM_XBOX_CONTROLLERS; ++controllerIndex )
+	{
+		m_controllers[controllerIndex].Update();
+	}
 }
 
 
@@ -91,4 +111,15 @@ void InputSystem::HandleKeyPressed( unsigned char keyCode )
 void InputSystem::HandleKeyReleased( unsigned char keyCode )
 {
 	m_keyStates[keyCode].m_isPressed = false;
+}
+
+
+//----------------------------------------------------------------
+XboxController const& InputSystem::GetController( int controllerID )
+{
+	if ( controllerID < 0 || controllerID >= NUM_XBOX_CONTROLLERS )
+	{
+		ERROR_AND_DIE( "InputSystem::GetController() - controllerID is out of range!" );
+	}
+	return m_controllers[controllerID];
 }

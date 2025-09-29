@@ -52,80 +52,38 @@ void App::RunFrame()
 
 
 //-----------------------------------------------------------------------------------------------
-void CheckKeyboardInput()
+void App::UpdateFromKeyboard()
 {
-	if ( !g_app->m_game->m_isAttractMode )
+	if ( !m_game->m_isAttractMode )
 	{
 		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'P' ) )
 		{
-			g_app->m_isPaused = !g_app->m_isPaused;
+			m_isPaused = !m_isPaused;
 		}
 
 		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'O' ) )
 		{
-			g_app->m_isPaused = false;
-			g_app->m_pauseAfterNextUpdate = true;
+			m_isPaused = false;
+			m_pauseAfterNextUpdate = true;
 		}
 
 		if ( g_engine->m_inputSystem->IsKeyDown( 'T' ) )
 		{
-			g_app->m_isSlowMo = true;
+			m_isSlowMo = true;
 		}
 		else
 		{
-			g_app->m_isSlowMo = false;
-		}
-
-		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_SPACE ) )
-		{
-			g_app->m_game->SpawnBulletFromPlayerShip();
-		}
-
-		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'I' ) )
-		{
-			g_app->m_game->SpawnRandomAsteroids( 1 );
-		}
-
-		if ( g_engine->m_inputSystem->IsKeyDown( 'S' ) && !g_engine->m_inputSystem->IsKeyDown( 'F' ) )
-		{
-			g_app->m_game->m_playerShip->m_isTurningLeft = true;
-		}
-		else if ( g_engine->m_inputSystem->IsKeyDown( 'F' ) && !g_engine->m_inputSystem->IsKeyDown( 'S' ) )
-		{
-			g_app->m_game->m_playerShip->m_isTurningRight = true;
-		}
-		else
-		{
-			g_app->m_game->m_playerShip->m_isTurningLeft = false;
-			g_app->m_game->m_playerShip->m_isTurningRight = false;
-		}
-
-		if ( g_engine->m_inputSystem->IsKeyDown( 'E' ) )
-		{
-			g_app->m_game->m_playerShip->m_isAccelerating = true;
-		}
-		else
-		{
-			g_app->m_game->m_playerShip->m_isAccelerating = false;
-		}
-
-		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'N' ) && g_app->m_game->m_playerShip->m_isDead )
-		{
-			if ( g_app->m_game->m_playerSpareLives > 0 )
-			{
-				g_app->m_game->m_playerShip->Respawn();
-				-- g_app->m_game->m_playerSpareLives;
-			}
+			m_isSlowMo = false;
 		}
 
 		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_F1 ) )
 		{
-			g_app->m_debugDraw = !g_app->m_debugDraw;
+			m_debugDraw = !m_debugDraw;
 		}
 
 		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_F8 ) )
 		{
-			g_app->HardReset();
+			HardReset();
 		}
 	}
 }
@@ -147,17 +105,20 @@ void App::HardReset()
 //-----------------------------------------------------------------------------------------------
 void App::Update( float deltaSeconds )
 {
-	CheckKeyboardInput();
+	UpdateFromKeyboard();
 
-	if ( !m_isPaused )
+	float timeScale = 1.f;
+	
+	if( m_isPaused )
 	{
-		float timeScale = 1.f;
-
-		if( m_isSlowMo )
-			timeScale = 0.1f;
-
-		m_game->Update( deltaSeconds * timeScale );
+		timeScale = 0.f;
 	}
+	else if( m_isSlowMo )
+	{
+		timeScale = 0.1f;
+	}
+
+	m_game->Update( deltaSeconds * timeScale );
 
 	if( m_pauseAfterNextUpdate )
 	{
