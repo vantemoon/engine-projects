@@ -103,9 +103,9 @@ void PlayerShip::Update( float deltaSeconds )
 	if ( m_isDead )
 		return;
 
-	if ( m_isAccelerating )
+	if ( !m_isAccelerating )
 	{
-		m_thrustFraction = 1.f;
+		m_thrustFraction = 0.f;
 	}
 	Accelerate( deltaSeconds * m_thrustFraction );
 	
@@ -154,6 +154,7 @@ void PlayerShip::UpdateFromKeyboard()
 	if ( g_engine->m_inputSystem->IsKeyDown( 'E' ) )
 	{
 		m_game->m_playerShip->m_isAccelerating = true;
+		m_thrustFraction = 1.f;
 	}
 	else
 	{
@@ -182,9 +183,15 @@ void PlayerShip::UpdateFromController()
 	float leftJoystickOrientationDegrees = controller.GetLeftJoystick().GetOrientationDegrees();
 	if ( leftJoystickMagnitude > 0.f )
 	{
+		m_isAccelerating = true;
 		m_thrustFraction = leftJoystickMagnitude;
 		m_orientationDegrees = leftJoystickOrientationDegrees;
 	}
+	/*else
+	{
+		m_isAccelerating = false;
+		m_thrustFraction = 0.f;
+	}*/
 
 	// Attacking
 	if ( controller.WasButtonJustPressed( XBOX_BUTTON_A ) )

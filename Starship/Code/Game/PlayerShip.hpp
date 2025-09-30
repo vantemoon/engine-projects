@@ -16,7 +16,6 @@ public:
 	bool m_isTurningLeft = false;
 	bool m_isTurningRight = false;
 
-	// bool m_isUsingController = false;
 	float m_thrustFraction = 0.f;
 
 public:

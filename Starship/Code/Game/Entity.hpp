@@ -34,7 +34,7 @@ public:
 	// Accessors
 	virtual bool IsOffScreen() const;
 	virtual Vec2 GetForwardNormal() const;
-	bool IsAlive() const;
+	bool         IsAlive() const;
 
 protected:
 	virtual void InitializeVertexArray();

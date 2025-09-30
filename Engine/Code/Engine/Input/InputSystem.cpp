@@ -47,8 +47,7 @@ void InputSystem::StartUp()
 	}
 	for ( int controllerIndex = 0; controllerIndex < NUM_XBOX_CONTROLLERS; ++controllerIndex )
 	{
-		m_controllers[controllerIndex] = XboxController();
-		m_controllers[controllerIndex].m_id = controllerIndex;
+		m_controllers[controllerIndex] = XboxController( controllerIndex );
 	}
 }
 
@@ -56,7 +55,15 @@ void InputSystem::StartUp()
 //----------------------------------------------------------------
 void InputSystem::ShutDown()
 {
-	// DO NOTHING
+    for (int keyIndex = 0; keyIndex < NUM_KEYCODES; ++keyIndex)
+    {
+        m_keyStates[keyIndex] = KeyButtonState();
+    }
+
+    for (int controllerIndex = 0; controllerIndex < NUM_XBOX_CONTROLLERS; ++controllerIndex)
+    {
+        m_controllers[controllerIndex].Reset();
+    }
 }
 
 

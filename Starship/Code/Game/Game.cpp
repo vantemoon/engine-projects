@@ -322,6 +322,38 @@ void Game::UpdateFromController()
 	{
 		ERROR_RECOVERABLE( "Controller 0 is not connected" );
 	}
+
+	if ( m_isAttractMode )
+	{
+		// Start the game
+		if ( controller.WasButtonJustPressed( XBOX_BUTTON_A ) || controller.WasButtonJustPressed( XBOX_BUTTON_START ) )
+		{
+			Reset();
+			m_isAttractMode = false;
+		};
+		// Quit the game
+		if ( controller.WasButtonJustPressed( XBOX_BUTTON_BACK ) )
+		{
+			g_app->SetIsQuitting();
+		}
+	}
+	else
+	{
+		// Return to attract mode
+		if ( controller.WasButtonJustPressed( XBOX_BUTTON_BACK ) )
+		{
+			m_isAttractMode = true;
+		}
+		if ( controller.WasButtonJustPressed( XBOX_BUTTON_X ) )
+		{
+			SpawnRandomAsteroids( 1 );
+		}
+		// Kill all enemies (for debugging)
+		if ( controller.WasButtonJustPressed( XBOX_BUTTON_Y ) )
+		{
+			KillAllEnemies();
+		}
+	}
 }
 
 

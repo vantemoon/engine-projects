@@ -47,7 +47,11 @@ float AnalogJoystick::GetOuterDeadZoneFraction() const
 //-----------------------------------------------------------------------------------------------
 void AnalogJoystick::Reset()
 {
-	// TODO: implement
+	m_innerDeadZoneFraction = 0.3f;
+	m_outerDeadZoneFraction = 0.95f;
+
+	m_rawPosition = Vec2( 0.f, 0.f );
+	m_correctedPosition = Vec2( 0.f, 0.f );
 }
 
 

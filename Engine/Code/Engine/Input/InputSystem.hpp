@@ -46,5 +46,11 @@ public:
 
 protected:
 	KeyButtonState m_keyStates[ NUM_KEYCODES ];
-	XboxController m_controllers[ NUM_XBOX_CONTROLLERS ];
+	XboxController m_controllers[NUM_XBOX_CONTROLLERS] = 
+	{ 
+		XboxController( 0 ), 
+		XboxController( 1 ), 
+		XboxController( 2 ), 
+		XboxController( 3 ) 
+	};
 };

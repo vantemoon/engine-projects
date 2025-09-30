@@ -8,8 +8,8 @@
 
 
 //-----------------------------------------------------------------------------------------------
-XboxController::XboxController()
-	: m_id( -1 )
+XboxController::XboxController( int controllerID )
+	: m_controllerID( controllerID )
 	, m_isConnected( false )
 	, m_leftTrigger( 0.f )
 	, m_rightTrigger( 0.f )
@@ -40,7 +40,7 @@ bool XboxController::IsConnected() const
 //-----------------------------------------------------------------------------------------------
 int XboxController::GetControllerID() const
 {
-	return m_id;
+	return m_controllerID;
 }
 
 
@@ -120,7 +120,7 @@ bool XboxController::WasButtonJustReleased( XboxButtonID buttonID ) const
 void XboxController::Update()
 {
 	XINPUT_STATE xboxControllerState = {}; // Clear (zero-out) the controller state structure
-	DWORD result = XInputGetState( m_id, &xboxControllerState ); // Get fresh state info
+	DWORD result = XInputGetState( m_controllerID, &xboxControllerState ); // Get fresh state info
 	if ( result == ERROR_SUCCESS ) // Result if the controller is connected (error code is SUCCESS)
 	{
 		// Update buttons
