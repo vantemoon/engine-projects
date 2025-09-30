@@ -69,6 +69,7 @@ void AnalogJoystick::SetPosition( float rawNormalizedX, float rawNormalizedY )
 	m_rawPosition.x = rawNormalizedX;
 	m_rawPosition.y = rawNormalizedY;
 	float magnitude = m_rawPosition.GetLength();
+	float orientationDegrees = m_rawPosition.GetOrientationDegrees();
 	if ( magnitude < m_innerDeadZoneFraction )
 	{
 		m_correctedPosition = Vec2( 0.f, 0.f );
@@ -80,5 +81,5 @@ void AnalogJoystick::SetPosition( float rawNormalizedX, float rawNormalizedY )
 		return;
 	}
 	float scaledMagnitude = RangeMapClamped( magnitude, m_innerDeadZoneFraction, m_outerDeadZoneFraction, 0.f, 1.f );
-	m_correctedPosition = m_rawPosition.GetNormalized() * scaledMagnitude;
+	m_correctedPosition = Vec2::MakeFromPolarDegrees( orientationDegrees, scaledMagnitude );
 }
