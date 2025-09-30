@@ -90,6 +90,13 @@ void App::UpdateFromKeyboard()
 
 
 //-----------------------------------------------------------------------------------------------
+void App::UpdateFromController()
+{
+	// Currently no global controller actions
+}
+
+
+//-----------------------------------------------------------------------------------------------
 void App::HardReset()
 {
 	if ( m_game != nullptr )

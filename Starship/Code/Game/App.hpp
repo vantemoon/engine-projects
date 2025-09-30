@@ -23,6 +23,7 @@ public:
 	void RunFrame();
 	void Update( float deltaSeconds );
 	void UpdateFromKeyboard();
+	void UpdateFromController();
 	void Render() const;
 
 	void SetIsQuitting();

@@ -187,17 +187,16 @@ void PlayerShip::UpdateFromController()
 		m_thrustFraction = leftJoystickMagnitude;
 		m_orientationDegrees = leftJoystickOrientationDegrees;
 	}
-	/*else
-	{
-		m_isAccelerating = false;
-		m_thrustFraction = 0.f;
-	}*/
 
 	// Attacking
-	if ( controller.WasButtonJustPressed( XBOX_BUTTON_A ) )
+	static bool wasRightTriggerPressedLastFrame = false;
+	float rightTriggerValue = controller.GetRightTrigger();
+	bool isRightTriggerPressed = rightTriggerValue > 0.f;
+	if ( controller.WasButtonJustPressed( XBOX_BUTTON_A ) || ( isRightTriggerPressed && !wasRightTriggerPressedLastFrame) )
 	{
 		m_game->SpawnBulletFromPlayerShip();
 	}
+	wasRightTriggerPressedLastFrame = isRightTriggerPressed;
 
 	// Respawn
 	if ( controller.WasButtonJustPressed( XBOX_BUTTON_START ) && m_isDead )

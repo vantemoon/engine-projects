@@ -154,6 +154,7 @@ void Game::Update( float deltaSeconds )
 
 	UpdateWaves();
 	UpdateFromKeyboard();
+	UpdateFromController();
 	UpdateEntities( deltaSeconds );
 
 	m_gameCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( WORLD_SIZE_X, WORLD_SIZE_Y ) );
@@ -269,6 +270,7 @@ void Game::StartNextWave()
 void Game::UpdateAttractMode( [[maybe_unused]] float deltaSeconds )
 {
 	UpdateFromKeyboard();
+	UpdateFromController();
 	m_attractCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( WORLD_SIZE_X, WORLD_SIZE_Y ) );
 }
 
@@ -317,11 +319,6 @@ void Game::UpdateFromKeyboard()
 void Game::UpdateFromController()
 {
 	XboxController const& controller = g_engine->m_inputSystem->GetController( 0 );
-
-	if ( !controller.IsConnected() )
-	{
-		ERROR_RECOVERABLE( "Controller 0 is not connected" );
-	}
 
 	if ( m_isAttractMode )
 	{
