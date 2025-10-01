@@ -145,6 +145,16 @@ Vec2 const Vec2::GetNormalized() const
 
 
 //-----------------------------------------------------------------------------------------------
+Vec2 const Vec2::GetReflected( Vec2 const& normalOfSurfaceToReflectOffOf ) const
+{
+	Vec2 vn = DotProduct2D( *this, normalOfSurfaceToReflectOffOf ) * normalOfSurfaceToReflectOffOf;
+	Vec2 vt = *this - vn;
+	Vec2 reflected = vt - vn;
+	return reflected;
+}
+
+
+//-----------------------------------------------------------------------------------------------
 void Vec2::SetOrientationDegrees( float newOrientationDegrees )
 {
 	float length = GetLength();
@@ -235,6 +245,13 @@ float Vec2::NormalizeAndGetPreviousLength()
 	float length = GetLength();
 	Normalize();
 	return length;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Vec2::Reflect( Vec2 const& normalOfSurfaceToReflectOffOf )
+{
+	*this = GetReflected( normalOfSurfaceToReflectOffOf );
 }
 
 

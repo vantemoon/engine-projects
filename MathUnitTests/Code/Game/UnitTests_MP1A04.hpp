@@ -15,8 +15,8 @@ void RunTests_MP1A04();
 //
 #define ENABLE_TestSet_MP1A04_PushOutOf
 #define ENABLE_TestSet_MP1A04_ProjectAndReflect
-#define ENABLE_TestSet_MP1A04_TransformUsingIJ
-#define ENABLE_TestSet_MP1A04_MiscGeometricUtilities
+// #define ENABLE_TestSet_MP1A04_TransformUsingIJ
+// #define ENABLE_TestSet_MP1A04_MiscGeometricUtilities
 
 
 //-----------------------------------------------------------------------------------------------

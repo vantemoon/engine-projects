@@ -25,6 +25,9 @@
     <ClInclude Include="UnitTests_MP1A03.hpp">
       <Filter>Unit Tests</Filter>
     </ClInclude>
+    <ClInclude Include="UnitTests_MP1A04.hpp">
+      <Filter>Unit Tests</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -40,6 +43,9 @@
       <Filter>Unit Tests</Filter>
     </ClCompile>
     <ClCompile Include="UnitTests_MP1A03.cpp">
+      <Filter>Unit Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="UnitTests_MP1A04.cpp">
       <Filter>Unit Tests</Filter>
     </ClCompile>
   </ItemGroup>

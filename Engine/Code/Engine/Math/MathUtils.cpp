@@ -1,5 +1,6 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
+#include "Engine/Math/AABB2.hpp"
 #include "Engine/Math/MathUtils.hpp"
 #include "Engine/Math/Vec2.hpp"
 #include "Engine/Math/Vec3.hpp"
@@ -175,6 +176,23 @@ float GetTurnedTowardDegrees( float currentDegrees, float goalDegrees, float max
 
 
 //-----------------------------------------------------------------------------------------------
+float GetAngleDegreesBetweenVectors2D( Vec2 const& a, Vec2 const& b )
+{
+	float aLength = a.GetLength();
+	float bLength = b.GetLength();
+	if ( aLength == 0.f || bLength == 0.f )
+	{
+		return 0.f;
+	}
+	float aDotB = DotProduct2D( a, b );
+	float cosTheta = aDotB / ( aLength * bLength );
+	cosTheta = GetClamped( cosTheta, -1.f, 1.f );
+	float angleDegrees = ConvertRadiansToDegrees( acosf( cosTheta ) );
+	return angleDegrees;
+}
+
+
+//-----------------------------------------------------------------------------------------------
 float DotProduct2D( Vec2 const& a, Vec2 const& b )
 {
 	float dotProduct = ( a.x * b.x ) + ( a.y * b.y );
@@ -241,6 +259,34 @@ float GetDistanceXY3D( Vec3 const& positionA, Vec3 const& positionB )
 
 
 //-----------------------------------------------------------------------------------------------
+float GetProjectedLength2D( Vec2 const& vectorToProject, Vec2 const& vectorToProjectOnto )
+{
+	if ( vectorToProjectOnto.GetLengthSquared() == 0.f )
+	{
+		return 0.f;
+	}
+
+	Vec2 ontoNormalized = vectorToProjectOnto.GetNormalized();
+	float projectedLength = DotProduct2D( vectorToProject, ontoNormalized );
+	return projectedLength;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+Vec2 const GetProjectedVector2D( Vec2 const& vectorToProject, Vec2 const& vectorToProjectOnto )
+{
+	if ( vectorToProjectOnto.GetLengthSquared() == 0.f )
+	{
+		return Vec2( 0.f, 0.f );
+	}
+	Vec2 ontoNormalized = vectorToProjectOnto.GetNormalized();
+	float projectedLength = DotProduct2D( vectorToProject, ontoNormalized );
+	Vec2 projectedVector = ontoNormalized * projectedLength;
+	return projectedVector;
+}
+
+
+//-----------------------------------------------------------------------------------------------
 bool DoDiscsOverlap( Vec2 const& centerA, float radiusA, Vec2 const& centerB, float radiusB )
 {
 	float radiusSum = radiusA + radiusB;
@@ -255,6 +301,131 @@ bool DoSpheresOverlap( Vec3 const& centerA, float radiusA, Vec3 const& centerB, 
 	float radiusSum = radiusA + radiusB;
 	bool doOverlap = GetDistanceSquared3D( centerA, centerB ) < ( radiusSum * radiusSum );
 	return doOverlap;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool IsPointInsideDisc2D( Vec2 const& point, Vec2 const& discCenter, float discRadius )
+{
+	bool isInside = GetDistanceSquared2D( point, discCenter ) < ( discRadius * discRadius );
+	return isInside;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+Vec2 GetNearestPointOnDisc2D( Vec2 const& referencePos, Vec2 const& discCenter, float discRadius )
+{
+	Vec2 toReference = referencePos - discCenter;
+	float distanceSquared = toReference.GetLengthSquared();
+	float radiusSquared = discRadius * discRadius;
+	if ( distanceSquared <= radiusSquared )
+	{
+		return referencePos;
+	}
+	else
+	{
+		Vec2 direction = toReference.GetNormalized();
+		Vec2 nearestPoint = discCenter + ( direction * discRadius );
+		return nearestPoint;
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool PushDiscOutOfFixedPoint2D( Vec2& mobileDiscCenter, float mobileDiscRadius, Vec2 const& fixedPoint )
+{
+	Vec2 toMobile = mobileDiscCenter - fixedPoint;
+	float distanceSquared = toMobile.GetLengthSquared();
+	float radiusSum = mobileDiscRadius;
+	float radiusSumSquared = radiusSum * radiusSum;
+	if ( distanceSquared < radiusSumSquared )
+	{
+		if ( distanceSquared == 0.f )
+		{
+			mobileDiscCenter += Vec2( radiusSum, 0.f );
+		}
+		else
+		{
+			float distance = sqrtf( distanceSquared );
+			Vec2 moveDirection = toMobile.GetNormalized();
+			Vec2 moveVector = moveDirection * ( radiusSum - distance );
+			mobileDiscCenter += moveVector;
+		}
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool PushDiscOutOfFixedDisc2D( Vec2& mobileDiscCenter, float mobileDiscRadius, Vec2 const& fixedDiscCenter, float fixedDiscRadius )
+{
+	Vec2 toMobile = mobileDiscCenter - fixedDiscCenter;
+	float distanceSquared = toMobile.GetLengthSquared();
+	float radiusSum = mobileDiscRadius + fixedDiscRadius;
+	float radiusSumSquared = radiusSum * radiusSum;
+	if ( distanceSquared < radiusSumSquared )
+	{
+		if ( distanceSquared == 0.f )
+		{
+			mobileDiscCenter += Vec2( radiusSum, 0.f );
+		}
+		else
+		{
+			float distance = sqrtf( distanceSquared );
+			Vec2 moveDirection = toMobile.GetNormalized();
+			Vec2 moveVector = moveDirection * ( radiusSum - distance );
+			mobileDiscCenter += moveVector;
+		}
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool PushDiscsOutOfEachOther2D( Vec2& aCenter, float aRadius, Vec2& bCenter, float bRadius )
+{
+	Vec2 toB = bCenter - aCenter;
+	float distanceSquared = toB.GetLengthSquared();
+	float radiusSum = aRadius + bRadius;
+	float radiusSumSquared = radiusSum * radiusSum;
+	if ( distanceSquared < radiusSumSquared )
+	{
+		if ( distanceSquared == 0.f )
+		{
+			bCenter += Vec2( radiusSum, 0.f );
+		}
+		else
+		{
+			float distance = sqrtf( distanceSquared );
+			Vec2 moveDirection = toB.GetNormalized();
+			Vec2 moveVector = moveDirection * ( radiusSum - distance );
+			bCenter += moveVector * 0.5f;
+			aCenter -= moveVector * 0.5f;
+		}
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool PushDiscOutOfFixedAABB2D( Vec2& mobileDiscCenter, float mobileDiscRadius, AABB2 const& fixedBox )
+{
+	float nearestX = GetClamped( mobileDiscCenter.x, fixedBox.m_mins.x, fixedBox.m_maxs.x );
+	float nearestY = GetClamped( mobileDiscCenter.y, fixedBox.m_mins.y, fixedBox.m_maxs.y );
+	Vec2 nearestPoint( nearestX, nearestY );
+	return PushDiscOutOfFixedPoint2D( mobileDiscCenter, mobileDiscRadius, nearestPoint );
 }
 
 
