@@ -10,7 +10,4 @@ KeyButtonState::KeyButtonState()
 
 
 //----------------------------------------------------------------
-KeyButtonState::~KeyButtonState()
-{
-	// DO NOTHING
-}
+KeyButtonState::~KeyButtonState() = default;

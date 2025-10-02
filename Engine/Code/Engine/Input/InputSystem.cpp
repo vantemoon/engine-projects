@@ -1,7 +1,7 @@
-#include <Windows.h>
+#include "Engine/Input/InputSystem.hpp"
 #include "Engine/Core/ErrorWarningAssert.hpp"
 #include "Engine/Input/AnalogJoystick.hpp"
-#include "Engine/Input/InputSystem.hpp"
+#include <Windows.h>
 
 
 //----------------------------------------------------------------
@@ -59,7 +59,6 @@ void InputSystem::ShutDown()
     {
         m_keyStates[keyIndex] = KeyButtonState();
     }
-
     for (int controllerIndex = 0; controllerIndex < NUM_XBOX_CONTROLLERS; ++controllerIndex)
     {
         m_controllers[controllerIndex].Reset();

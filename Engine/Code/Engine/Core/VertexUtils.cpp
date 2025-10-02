@@ -1,7 +1,9 @@
-#include <cmath>
+#include "Engine/Core/VertexUtils.hpp"
 #include "Engine/Core/Vertex.hpp"
 #include "Engine/Math/MathUtils.hpp"
 #include "Engine/Math/Vec2.hpp"
+
+#include <math.h>
 
 
 //-----------------------------------------------------------------------------------------------

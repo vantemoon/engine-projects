@@ -1,5 +1,5 @@
-#include "Engine/Math/MathUtils.hpp"
 #include "Engine/Input/AnalogJoystick.hpp"
+#include "Engine/Math/MathUtils.hpp"
 
 
 //-----------------------------------------------------------------------------------------------

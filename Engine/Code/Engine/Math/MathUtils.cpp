@@ -1,9 +1,9 @@
-#define _USE_MATH_DEFINES
-#include <cmath>
-#include "Engine/Math/AABB2.hpp"
 #include "Engine/Math/MathUtils.hpp"
+#include "Engine/Math/AABB2.hpp"
 #include "Engine/Math/Vec2.hpp"
 #include "Engine/Math/Vec3.hpp"
+#define _USE_MATH_DEFINES
+#include <math.h>
 
 
 //-----------------------------------------------------------------------------------------------

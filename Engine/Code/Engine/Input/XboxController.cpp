@@ -1,10 +1,9 @@
+#include "Engine/Input/XboxController.hpp"
+#include "Engine/Core/ErrorWarningAssert.hpp"
+#include "Engine/Math/MathUtils.hpp"
 #include <Windows.h>
 #include <Xinput.h>
 #pragma comment( lib, "xinput" ) 
-
-#include "Engine/Core/ErrorWarningAssert.hpp"
-#include "Engine/Input/XboxController.hpp"
-#include "Engine/Math/MathUtils.hpp"
 
 
 //-----------------------------------------------------------------------------------------------
