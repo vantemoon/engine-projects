@@ -1,3 +1,12 @@
+#include "Game/Game.hpp"
+#include "Game/App.hpp"
+#include "Game/Asteroid.hpp"
+#include "Game/Beetle.hpp"
+#include "Game/Bullet.hpp"
+#include "Game/Debris.hpp"
+#include "Game/GameCommon.hpp"
+#include "Game/PlayerShip.hpp"
+#include "Game/Wasp.hpp"
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/ErrorWarningAssert.hpp"
 #include "Engine/Core/Rgba8.hpp"
@@ -9,15 +18,6 @@
 #include "Engine/Math/RandomNumberGenerator.hpp"
 #include "Engine/Renderer/Camera.hpp"
 #include "Engine/Renderer/Renderer.hpp"
-#include "Game/App.hpp"
-#include "Game/Asteroid.hpp"
-#include "Game/Beetle.hpp"
-#include "Game/Bullet.hpp"
-#include "Game/Debris.hpp"
-#include "Game/Game.hpp"
-#include "Game/GameCommon.hpp"
-#include "Game/PlayerShip.hpp"
-#include "Game/Wasp.hpp"
 
 
 //-----------------------------------------------------------------------------------------------

@@ -1,6 +1,6 @@
 #pragma once
-#include "Engine/Core/Rgba8.hpp"
 #include "Game/Entity.hpp"
+#include "Engine/Core/Rgba8.hpp"
 
 
 //-----------------------------------------------------------------------------------------------

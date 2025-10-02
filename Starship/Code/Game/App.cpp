@@ -1,3 +1,8 @@
+#include "Game/App.hpp"
+#include "Game/Asteroid.hpp"
+#include "Game/Bullet.hpp"
+#include "Game/Game.hpp"
+#include "Game/PlayerShip.hpp"
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/Rgba8.hpp"
 #include "Engine/Core/Time.hpp"
@@ -6,11 +11,6 @@
 #include "Engine/Math/MathUtils.hpp"
 #include "Engine/Renderer/Camera.hpp"
 #include "Engine/Renderer/Renderer.hpp"
-#include "Game/App.hpp"
-#include "Game/Asteroid.hpp"
-#include "Game/Bullet.hpp"
-#include "Game/Game.hpp"
-#include "Game/PlayerShip.hpp"
 
 
 //-----------------------------------------------------------------------------------------------

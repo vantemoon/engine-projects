@@ -1,3 +1,4 @@
+#include "Game/GameCommon.hpp"
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/Rgba8.hpp"
 #include "Engine/Math/MathUtils.hpp"
@@ -5,7 +6,6 @@
 #include "Engine/Math/Vec3.hpp"
 #include "Engine/Core/Vertex.hpp"
 #include "Engine/Renderer/Renderer.hpp"
-#include "Game/GameCommon.hpp"
 
 
 //-----------------------------------------------------------------------------------------------
