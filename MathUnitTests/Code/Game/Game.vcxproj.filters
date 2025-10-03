@@ -28,6 +28,9 @@
     <ClInclude Include="UnitTests_MP1A04.hpp">
       <Filter>Unit Tests</Filter>
     </ClInclude>
+    <ClInclude Include="EngineBuildPreferences.hpp">
+      <Filter>Framework</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">

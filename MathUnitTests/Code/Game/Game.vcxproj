@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="EngineBuildPreferences.hpp" />
     <ClInclude Include="GameCommon.hpp" />
     <ClInclude Include="UnitTests_Custom.hpp" />
     <ClInclude Include="UnitTests_MP1A01.hpp" />
