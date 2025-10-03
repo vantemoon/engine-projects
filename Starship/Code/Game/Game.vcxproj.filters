@@ -31,9 +31,6 @@
     <ClCompile Include="Asteroid.cpp">
       <Filter>Gameplay</Filter>
     </ClCompile>
-    <ClCompile Include="GameCommon.cpp">
-      <Filter>Gameplay</Filter>
-    </ClCompile>
     <ClCompile Include="Beetle.cpp">
       <Filter>Gameplay</Filter>
     </ClCompile>
@@ -42,6 +39,9 @@
     </ClCompile>
     <ClCompile Include="Debris.cpp">
       <Filter>Gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="GameCommon.cpp">
+      <Filter>Framework</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -63,9 +63,6 @@
     <ClInclude Include="Asteroid.hpp">
       <Filter>Gameplay</Filter>
     </ClInclude>
-    <ClInclude Include="GameCommon.hpp">
-      <Filter>Gameplay</Filter>
-    </ClInclude>
     <ClInclude Include="Beetle.hpp">
       <Filter>Gameplay</Filter>
     </ClInclude>
@@ -74,6 +71,9 @@
     </ClInclude>
     <ClInclude Include="Debris.hpp">
       <Filter>Gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="GameCommon.hpp">
+      <Filter>Framework</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
