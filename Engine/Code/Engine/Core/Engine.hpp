@@ -2,6 +2,7 @@
 
 
 //-----------------------------------------------------------------------------------------------
+class AudioSystem; // Forward declaration
 class Engine;      // Forward declaration
 class InputSystem; // Forward declaration
 class Renderer;    // Forward declaration
@@ -19,6 +20,7 @@ public:
 	void EndFrame();
 
 public:
-	Renderer* m_renderer = nullptr;
+	AudioSystem* m_audioSystem = nullptr;
 	InputSystem* m_inputSystem = nullptr;
+	Renderer* m_renderer = nullptr;
 };
