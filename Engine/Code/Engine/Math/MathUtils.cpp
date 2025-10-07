@@ -1,5 +1,6 @@
 #include "Engine/Math/MathUtils.hpp"
 #include "Engine/Math/AABB2.hpp"
+#include "Engine/Math/IntVec2.hpp"
 #include "Engine/Math/Vec2.hpp"
 #include "Engine/Math/Vec3.hpp"
 #define _USE_MATH_DEFINES
@@ -259,6 +260,16 @@ float GetDistanceXY3D( Vec3 const& positionA, Vec3 const& positionB )
 
 
 //-----------------------------------------------------------------------------------------------
+int GetTaxicabDistance2D( IntVec2 const& pointA, IntVec2 const& pointB )
+{
+	int deltaX = abs( pointB.x - pointA.x );
+	int deltaY = abs( pointB.y - pointA.y );
+	int taxicabDistance = deltaX + deltaY;
+	return taxicabDistance;
+}
+
+
+//-----------------------------------------------------------------------------------------------
 float GetProjectedLength2D( Vec2 const& vectorToProject, Vec2 const& vectorToProjectOnto )
 {
 	if ( vectorToProjectOnto.GetLengthSquared() == 0.f )
@@ -309,6 +320,36 @@ bool IsPointInsideDisc2D( Vec2 const& point, Vec2 const& discCenter, float discR
 {
 	bool isInside = GetDistanceSquared2D( point, discCenter ) < ( discRadius * discRadius );
 	return isInside;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool IsPointInsideOrientedSector2D( Vec2 const& point, Vec2 const& sectorTip, float sectorForwardDegrees, float sectorApertureDegrees, float sectorRadius )
+{
+	if ( !IsPointInsideDisc2D( point, sectorTip, sectorRadius ) )
+	{
+		return false;
+	}
+
+	Vec2 toPoint = point - sectorTip;
+	float angleToPointDegrees = Atan2Degrees( toPoint.y, toPoint.x );
+	float angleDifferenceDegrees = GetShortestAngularDispDegrees( sectorForwardDegrees, angleToPointDegrees );
+	return fabsf( angleDifferenceDegrees ) <= ( sectorApertureDegrees * 0.5f );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool IsPointInsideDirectedSector2D( Vec2 const& point, Vec2 const& sectorTip, Vec2 const& sectorForwardNormal, float sectorApertureDegrees, float sectorRadius )
+{
+	if ( !IsPointInsideDisc2D( point, sectorTip, sectorRadius ) )
+	{
+		return false;
+	}
+	
+	Vec2 toPoint = point - sectorTip;
+	float minimumCosine = CosDegrees( sectorApertureDegrees * 0.5f );
+	float actualCosine = DotProduct2D( toPoint.GetNormalized(), sectorForwardNormal );
+	return actualCosine >= minimumCosine;
 }
 
 
@@ -452,9 +493,28 @@ void TransformPositionXY3D( Vec3& posToTransform, float uniformScale, float zRot
 
 	// Rotate
 	posToTransform = posToTransform.GetRotatedAboutZDegrees( zRotationDegrees );
-	
 
 	// Translate
 	posToTransform.x += xyTranslation.x;
 	posToTransform.y += xyTranslation.y;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void TransformPosition2D( Vec2& posToTransform, Vec2 const& iBasis, Vec2 const& jBasis, Vec2 const& translation )
+{
+	float newX = ( posToTransform.x * iBasis.x ) + ( posToTransform.y * jBasis.x ) + translation.x;
+	float newY = ( posToTransform.x * iBasis.y ) + ( posToTransform.y * jBasis.y ) + translation.y;
+	posToTransform.x = newX;
+	posToTransform.y = newY;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void TransformPositionXY3D( Vec3& posToTransform, Vec2 const& iBasis, Vec2 const& jBasis, Vec2 const& xyTranslation )
+{
+	float newX = ( posToTransform.x * iBasis.x ) + ( posToTransform.y * jBasis.x ) + xyTranslation.x;
+	float newY = ( posToTransform.x * iBasis.y ) + ( posToTransform.y * jBasis.y ) + xyTranslation.y;
+	posToTransform.x = newX;
+	posToTransform.y = newY;
 }

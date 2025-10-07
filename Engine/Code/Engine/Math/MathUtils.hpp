@@ -4,6 +4,7 @@
 //-----------------------------------------------------------------------------------------------
 // Forward type declarations
 struct AABB2;
+struct IntVec2;
 struct Vec2;
 struct Vec3;
 
@@ -40,7 +41,7 @@ float GetDistance3D( Vec3 const& positionA, Vec3 const& positionB );
 float GetDistanceSquared3D( Vec3 const& positionA, Vec3 const& positionB );
 float GetDistanceXY3D( Vec3 const& positionA, Vec3 const& positionB );
 float GetDistanceXYSquared3D( Vec3 const& positionA, Vec3 const& positionB );
-// float GetTaxicabDistance2D( Vec2 const& pointA, Vec2 const& pointB );
+int GetTaxicabDistance2D( IntVec2 const& pointA, IntVec2 const& pointB );
 float GetProjectedLength2D( Vec2 const& vectorToProject, Vec2 const& vectorToProjectOnto );
 Vec2 const GetProjectedVector2D( Vec2 const& vectorToProject, Vec2 const& vectorToProjectOnto );
 
@@ -49,8 +50,8 @@ Vec2 const GetProjectedVector2D( Vec2 const& vectorToProject, Vec2 const& vector
 bool DoDiscsOverlap( Vec2 const& centerA, float radiusA, Vec2 const& centerB, float radiusB );
 bool DoSpheresOverlap( Vec3 const& centerA, float radiusA, Vec3 const& centerB, float radiusB );
 bool IsPointInsideDisc2D( Vec2 const& point, Vec2 const& discCenter, float discRadius );
-// bool IsPointInsideOrientatedSector2D( Vec2 const& point, Vec2 const& sectorTip, float sectorForwardDegrees, float sectorApertureDegrees, float sectorRadius );
-// bool IsPointInsideDirectedSector2D( Vec2 const& point, Vec2 const& sectorTip, Vec2 const& sectorForwardNormal, float sectorApertureDegrees, float sectorRadius );
+bool IsPointInsideOrientedSector2D( Vec2 const& point, Vec2 const& sectorTip, float sectorForwardDegrees, float sectorApertureDegrees, float sectorRadius );
+bool IsPointInsideDirectedSector2D( Vec2 const& point, Vec2 const& sectorTip, Vec2 const& sectorForwardNormal, float sectorApertureDegrees, float sectorRadius );
 Vec2 GetNearestPointOnDisc2D( Vec2 const& referencePos, Vec2 const& discCenter, float discRadius );
 bool PushDiscOutOfFixedPoint2D( Vec2& mobileDiscCenter, float mobileDiscRadius, Vec2 const& fixedPoint );
 bool PushDiscOutOfFixedDisc2D( Vec2& mobileDiscCenter, float mobileDiscRadius, Vec2 const& fixedDiscCenter, float fixedDiscRadius );
@@ -61,5 +62,5 @@ bool PushDiscOutOfFixedAABB2D( Vec2& mobileDiscCenter, float mobileDiscRadius, A
 // Transform utilities
 void TransformPosition2D( Vec2& posToTransform, float uniformScale, float rotationDegrees, Vec2 const& translation );
 void TransformPositionXY3D( Vec3& posToTransform, float uniformScale, float zRotationDegrees, Vec2 const& xyTranslation );
-// void TransformPosition2D( Vec2& posToTransform, Vec2 const& iBasis, Vec2 const& jBasis, Vec2 const& translation );
-// void TransformPositionXY3D( Vec3& posToTransform, Vec2 const& iBasis, Vec2 const& jBasis, Vec2 const& xyTranslation );
+void TransformPosition2D( Vec2& posToTransform, Vec2 const& iBasis, Vec2 const& jBasis, Vec2 const& translation );
+void TransformPositionXY3D( Vec3& posToTransform, Vec2 const& iBasis, Vec2 const& jBasis, Vec2 const& xyTranslation );
