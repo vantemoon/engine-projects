@@ -1,5 +1,6 @@
 #pragma once
 #include "Game/GameCommon.hpp"
+#include "Engine/Audio/AudioSystem.hpp"
 
 
 //-----------------------------------------------------------------------------------------------
@@ -29,6 +30,9 @@ public:
 	int         m_waveNumber = 0;
 	constexpr static int NUM_OF_WAVES = 5;
 	int			m_playerSpareLives = NUM_PLAYER_LIVES - 1;
+
+	bool m_isBackgroundMusicPlaying = false;
+	SoundID m_backgroundMusicSoundID = 0;
 
 public:
 	Game();

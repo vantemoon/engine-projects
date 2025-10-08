@@ -161,6 +161,9 @@ void Game::Update( float deltaSeconds )
 	m_gameCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( WORLD_SIZE_X, WORLD_SIZE_Y ) );
 
 	g_app->m_game->DeleteGarbageEntities();
+
+	if ( m_isBackgroundMusicPlaying )
+		g_engine->m_audioSystem->SetSoundPlaybackVolume( m_backgroundMusicSoundID, 0.25f );
 }
 
 
@@ -174,6 +177,10 @@ void Game::UpdateWaves()
 			// Return to attract mode
 			m_isAttractMode = true;
 			m_waveNumber = 0;
+
+			SoundID gameWinSound = g_engine->m_audioSystem->CreateOrGetSound( "Data/Braam - Zone End.wav" );
+			g_engine->m_audioSystem->StartSound( gameWinSound, false, 0.7f, 0.f, 0.8f );
+
 			return;
 		}
 
@@ -264,6 +271,9 @@ void Game::StartNextWave()
 			SpawnRandomWasps( 2 );
 			break;
 	}
+
+	SoundID waveStartSound = g_engine->m_audioSystem->CreateOrGetSound( "Data/NewWave.wav" );
+	g_engine->m_audioSystem->StartSound( waveStartSound, false, 0.7f, 0.f, 0.8f );
 }
 
 
@@ -273,6 +283,17 @@ void Game::UpdateAttractMode( [[maybe_unused]] float deltaSeconds )
 	UpdateFromKeyboard();
 	UpdateFromController();
 	m_attractCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( WORLD_SIZE_X, WORLD_SIZE_Y ) );
+
+	if ( !m_isBackgroundMusicPlaying )
+	{
+		m_backgroundMusicSoundID = g_engine->m_audioSystem->CreateOrGetSound( "Data/12 Track 12.mp3" );
+		g_engine->m_audioSystem->StartSound( m_backgroundMusicSoundID, true, 0.8f, 0.f, 1.f );
+		m_isBackgroundMusicPlaying = true;
+	}
+	else
+	{
+		g_engine->m_audioSystem->SetSoundPlaybackVolume( m_backgroundMusicSoundID, 0.8f );
+	}
 }
 
 
@@ -726,6 +747,10 @@ void Game::SpawnBulletFromPlayerShip()
 		{
 			hasFreeSlot = true;
 			m_bullets[bulletIndex] = new Bullet( this, m_playerShip );
+
+			SoundID shootSound = g_engine->m_audioSystem->CreateOrGetSound( "Data/PlayershipShoot.wav" );
+			g_engine->m_audioSystem->StartSound( shootSound );
+
 			break;
 		}
 	}
@@ -900,6 +925,9 @@ void Game::CheckPlayerLives()
 			m_waveNumber = 0;
 			m_playerSpareLives = NUM_PLAYER_LIVES - 1;
 			timeOfDeath = 0.f;
+
+			SoundID gameOverSound = g_engine->m_audioSystem->CreateOrGetSound( "Data/Braam - Retro Pulse.wav" );
+			g_engine->m_audioSystem->StartSound( gameOverSound, false, 0.7f, 0.f, 0.8f );
 		}
 	}
 	else

@@ -3,6 +3,8 @@
 #include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
 #include "Game/PlayerShip.hpp"
+#include "Engine/Audio/AudioSystem.hpp"
+#include "Engine/Core/Engine.hpp"
 #include "Engine/Math/MathUtils.hpp"
 #include "Engine/Math/Vec2.hpp"
 

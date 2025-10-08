@@ -47,3 +47,12 @@ Gameplay progresses in waves, each harder than the last, with victory after the 
 
 Known Issues:
 None at this time.
+
+Sound Credits:
+- Player ship shoots bullet: Bxfr generated
+- Player ship on hit/dies: Bxfr generated
+- Player ship respawns: Bxfr generated
+- Entities die: Bxfr generated
+- Defeat: Guildhall sound library "99Sounds/ 99 Sound Effect/Braam - Retro Pulse.wav"
+- Victory: Guildhall sound library "99Sounds/ 99 Sound Effect/Braam - Zone End.wav"
+- Attract: Guildhall sound library "SoundFx/SceneScape/Scc01/12 Track 12.mp3"

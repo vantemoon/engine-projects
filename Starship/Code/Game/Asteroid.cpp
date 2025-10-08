@@ -4,6 +4,7 @@
 #include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
 #include "Game/PlayerShip.hpp"
+#include "Engine/Audio/AudioSystem.hpp"
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/Vertex.hpp"
 #include "Engine/Core/VertexUtils.hpp"
@@ -206,4 +207,7 @@ void Asteroid::Die()
 	Entity::Die();
 
 	m_game->SpawnDebrisCluster( 12, m_position, m_velocity, Rgba8( 100, 100, 100, 255 ), m_cosmeticRadius * 0.2f, m_cosmeticRadius * 0.8f );
+
+	SoundID entityDeathSound = g_engine->m_audioSystem->CreateOrGetSound( "Data/AsteroidsDie.wav" );
+	g_engine->m_audioSystem->StartSound( entityDeathSound, false, 0.5f );
 }

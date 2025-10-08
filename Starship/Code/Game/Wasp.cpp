@@ -2,6 +2,7 @@
 #include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
 #include "Game/PlayerShip.hpp"
+#include "Engine/Audio/AudioSystem.hpp"
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/Vertex.hpp"
 #include "Engine/Core/VertexUtils.hpp"
@@ -69,6 +70,9 @@ void Wasp::Die()
 	Entity::Die();
 
 	m_game->SpawnDebrisCluster( 12, m_position, m_velocity, Rgba8( 255, 255, 0 ), m_cosmeticRadius * 0.1f, m_cosmeticRadius * 0.5f );
+
+	SoundID entityDeathSound = g_engine->m_audioSystem->CreateOrGetSound( "Data/BeetlesWaspsDie.wav" );
+	g_engine->m_audioSystem->StartSound( entityDeathSound, false, 0.6f, 0.f, 0.5f );
 }
 
 

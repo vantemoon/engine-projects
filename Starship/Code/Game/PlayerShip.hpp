@@ -15,7 +15,6 @@ public:
 	bool m_isAccelerating = false;
 	bool m_isTurningLeft = false;
 	bool m_isTurningRight = false;
-
 	float m_thrustFraction = 0.f;
 
 public:
@@ -32,6 +31,7 @@ public:
 
 private:
 	void InitializeVertexArray() override;
+	void ImportSounds();
 	void BounceOffWorldEdges();
 	void Accelerate( float deltaSeconds );
 	void TurnLeft();

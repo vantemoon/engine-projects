@@ -2,6 +2,7 @@
 #include "Game/App.hpp"
 #include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
+#include "Engine/Audio/AudioSystem.hpp"
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/ErrorWarningAssert.hpp"
 #include "Engine/Core/Rgba8.hpp"
@@ -25,7 +26,7 @@ PlayerShip::PlayerShip( Game* game, Vec2 const& startingPosition, Vec2 const& st
 }
 
 
-//
+//--------------------------------------------------------------------------------
 void PlayerShip::InitializeVertexArray()
 {
 	m_vertexArray = new Vertex[NUM_SHIP_VERTS];
@@ -235,6 +236,9 @@ void PlayerShip::Die()
 	m_angularVelocityDegreesPerSecond = 0.f;
 
 	m_game->SpawnDebrisCluster( 30, m_position, m_velocity, Rgba8( 102, 153, 204 ), m_cosmeticRadius * 0.1f, m_cosmeticRadius * 0.8f );
+
+	SoundID shipExplosionSound = g_engine->m_audioSystem->CreateOrGetSound( "Data/PlayershipDie.wav" );
+	g_engine->m_audioSystem->StartSound( shipExplosionSound, false, 0.5f, 0.f, 0.5f );
 }
 
 
@@ -300,4 +304,7 @@ void PlayerShip::Respawn()
 	m_velocity = Vec2( 0.f, 0.f );
 	m_orientationDegrees = 0.f;
 	m_thrustFraction = 0.f;
+
+	SoundID shipRespawnSound = g_engine->m_audioSystem->CreateOrGetSound( "Data/PlayershipRespawn.wav" );
+	g_engine->m_audioSystem->StartSound( shipRespawnSound, false, 0.5f, 0.f, 1.f );
 }
