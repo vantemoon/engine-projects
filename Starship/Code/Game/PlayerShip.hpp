@@ -31,7 +31,6 @@ public:
 
 private:
 	void InitializeVertexArray() override;
-	void ImportSounds();
 	void BounceOffWorldEdges();
 	void Accelerate( float deltaSeconds );
 	void TurnLeft();

@@ -261,14 +261,14 @@ void Game::StartNextWave()
 
 		case 4:
 			SpawnRandomAsteroids( 10 );
-			SpawnRandomBeetles( 2 );
-			SpawnRandomWasps( 2 );
+			SpawnRandomBeetles( 5 );
+			SpawnRandomWasps( 3 );
 			break;
 
 		case 5:
 			SpawnRandomAsteroids( 12 );
-			SpawnRandomBeetles( 2 );
-			SpawnRandomWasps( 2 );
+			SpawnRandomBeetles( 5 );
+			SpawnRandomWasps( 5 );
 			break;
 	}
 
@@ -401,16 +401,26 @@ void Game::UpdateEntities( float deltaSeconds )
 	}
 
 	// Beetles
-	for( int beetleIndex = 0; beetleIndex < 2; ++ beetleIndex )
+	for( int beetleIndex = 0; beetleIndex < MAX_BEETLES; ++ beetleIndex )
 	{
 		if( m_beetles[beetleIndex] != nullptr )
 		{
 			m_beetles[beetleIndex]->Update( deltaSeconds );
+
+			for ( int otherBeetleIndex = beetleIndex + 1; otherBeetleIndex < MAX_BEETLES; ++otherBeetleIndex )
+			{
+				if ( m_beetles[otherBeetleIndex] != nullptr )
+				{
+					Beetle* beetleA = m_beetles[beetleIndex];
+					Beetle* beetleB = m_beetles[otherBeetleIndex];
+					PushDiscsOutOfEachOther2D( beetleA->m_position, beetleA->m_physicsRadius, beetleB->m_position, beetleB->m_physicsRadius );
+				}
+			}
 		}
 	}
 
 	// Wasps
-	for( int waspIndex = 0; waspIndex < 2; ++ waspIndex )
+	for( int waspIndex = 0; waspIndex < MAX_WASPS; ++ waspIndex )
 	{
 		if( m_wasps[waspIndex] != nullptr )
 		{
@@ -641,7 +651,7 @@ void Game::RenderEntities() const
 	}
 
 	// Beetles
-	for ( int beetleIndex = 0; beetleIndex < 2; ++ beetleIndex )
+	for ( int beetleIndex = 0; beetleIndex < MAX_BEETLES; ++ beetleIndex )
 	{
 		if ( m_beetles[beetleIndex] != nullptr )
 		{
@@ -650,7 +660,7 @@ void Game::RenderEntities() const
 	}
 
 	// Wasps
-	for ( int waspIndex = 0; waspIndex < 2; ++ waspIndex )
+	for ( int waspIndex = 0; waspIndex < MAX_WASPS; ++ waspIndex )
 	{
 		if ( m_wasps[waspIndex] != nullptr )
 		{
