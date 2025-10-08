@@ -23,16 +23,17 @@ public:
 	Beetle*     m_beetles[MAX_BEETLES] = {};
 	Wasp*       m_wasps[MAX_WASPS] = {};
 	Debris*     m_debris[MAX_DEBRIS] = {};
-	Camera*     m_gameCamera = nullptr;
-	Camera*     m_attractCamera = nullptr;
+
+	Camera*     m_worldCamera = nullptr;
+	Camera*     m_screenCamera = nullptr;
+	// Camera*     m_attractCamera = nullptr;
 
 	bool        m_isAttractMode = true;
 	int         m_waveNumber = 0;
-	constexpr static int NUM_OF_WAVES = 5;
 	int			m_playerSpareLives = NUM_PLAYER_LIVES - 1;
 
-	bool m_isBackgroundMusicPlaying = false;
-	SoundID m_backgroundMusicSoundID = 0;
+	bool        m_isBackgroundMusicPlaying = false;
+	SoundID     m_backgroundMusicSoundID = 0;
 
 public:
 	Game();
@@ -48,7 +49,7 @@ public:
 	void StartNextWave();
 	void Render() const;
 	void RenderEntities() const;
-	void RenderPlayerLives() const;
+	void RenderHUD() const;
 	void RenderAttractMode() const;
 	Vec2 GetRandomOffscreenPosition( float cosmeticRadius ) const;
 	void SpawnRandomAsteroids( int numOfAsteroids );

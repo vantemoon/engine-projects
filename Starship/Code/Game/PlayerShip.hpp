@@ -31,6 +31,7 @@ public:
 
 private:
 	void InitializeVertexArray() override;
+	void RenderThrust() const;
 	void BounceOffWorldEdges();
 	void Accelerate( float deltaSeconds );
 	void TurnLeft();

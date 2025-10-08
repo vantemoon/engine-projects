@@ -9,6 +9,7 @@
 #include "Engine/Core/Vertex.hpp"
 #include "Engine/Core/VertexUtils.hpp"
 #include "Engine/Input/InputSystem.hpp"
+#include "Engine/Math/RandomNumberGenerator.hpp"
 #include "Engine/Math/Vec2.hpp"
 #include "Engine/Math/Vec3.hpp"
 #include "Engine/Renderer/Renderer.hpp"
@@ -225,8 +226,36 @@ void PlayerShip::Render() const
 
 	TransformVertexArrayXY3D( NUM_SHIP_VERTS, tempShipWorldVerts, 1.f, m_orientationDegrees, m_position );
 	g_engine->m_renderer->DrawVertexArray( NUM_SHIP_VERTS, tempShipWorldVerts );
+
+	if ( m_isAccelerating )
+	{
+		RenderThrust();
+	}
 }
 
+
+//-----------------------------------------------------------------------------------------------
+void PlayerShip::RenderThrust() const
+{
+	RandomNumberGenerator rng;
+
+	float minLength = 1.0f;
+	float maxLength = 1.0f + m_thrustFraction * 4.0f;
+	float flickerLength = minLength + ( maxLength - minLength ) * rng.RollRandomFloatZeroToOne();
+
+	unsigned char baseR = 255;
+	unsigned char baseG = static_cast<unsigned char>(128 + rng.RollRandomIntInRange(0, 127));
+	unsigned char baseB = 0;
+	Rgba8 flickerColor( baseR, baseG, baseB, 255 );
+
+	Vertex thrustVerts[3];
+	thrustVerts[0] = Vertex( Vec3( -2.f, -1.f, 0.f ), flickerColor, Vec2() );
+	thrustVerts[1] = Vertex( Vec3( -2.f - flickerLength, 0.f, 0.f ), Rgba8( 255, 255, 0, 0 ), Vec2() );
+	thrustVerts[2] = Vertex( Vec3( -2.f, 1.f, 0.f ), flickerColor, Vec2() );
+
+	TransformVertexArrayXY3D( 3, thrustVerts, 1.f, m_orientationDegrees, m_position );
+	g_engine->m_renderer->DrawVertexArray( 3, thrustVerts );
+}
 
 //-----------------------------------------------------------------------------------------------
 void PlayerShip::Die()

@@ -26,8 +26,13 @@ Game::Game()
 {
 	m_playerShip = new PlayerShip( this, Vec2( WORLD_CENTER_X, WORLD_CENTER_Y ), Vec2( 0.f, 0.f ) );
 	
-	m_gameCamera = new Camera();
-	m_attractCamera = new Camera();
+	m_worldCamera = new Camera();
+	m_screenCamera = new Camera();
+
+	m_worldCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( WORLD_SIZE_X, WORLD_SIZE_Y ) );
+	m_screenCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) );
+
+	m_isAttractMode = true;
 }
 
 
@@ -67,8 +72,11 @@ Game::~Game()
 		m_debris[debrisIndex] = nullptr;
 	}
 
-	delete m_gameCamera;
-	m_gameCamera = nullptr;
+	delete m_worldCamera;
+	m_worldCamera = nullptr;
+
+	delete m_screenCamera;
+	m_screenCamera = nullptr;
 }
 
 
@@ -158,12 +166,13 @@ void Game::Update( float deltaSeconds )
 	UpdateFromController();
 	UpdateEntities( deltaSeconds );
 
-	m_gameCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( WORLD_SIZE_X, WORLD_SIZE_Y ) );
-
 	g_app->m_game->DeleteGarbageEntities();
 
 	if ( m_isBackgroundMusicPlaying )
 		g_engine->m_audioSystem->SetSoundPlaybackVolume( m_backgroundMusicSoundID, 0.25f );
+
+	m_worldCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( WORLD_SIZE_X, WORLD_SIZE_Y ) );
+	m_screenCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) );
 }
 
 
@@ -282,7 +291,7 @@ void Game::UpdateAttractMode( [[maybe_unused]] float deltaSeconds )
 {
 	UpdateFromKeyboard();
 	UpdateFromController();
-	m_attractCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( WORLD_SIZE_X, WORLD_SIZE_Y ) );
+	// m_attractCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( WORLD_SIZE_X, WORLD_SIZE_Y ) );
 
 	if ( !m_isBackgroundMusicPlaying )
 	{
@@ -582,37 +591,44 @@ void Game::Render() const
 		return;
 	};
 
-	g_engine->m_renderer->BeginCamera( *m_gameCamera );
+	g_engine->m_renderer->BeginCamera( *m_worldCamera );
 	
 	RenderEntities();
-	RenderPlayerLives();
+	RenderHUD();
 
 	if ( g_app->m_debugDraw )
 	{
 		DebugDraw();
 	}
 
-	g_engine->m_renderer->EndCamera( *m_gameCamera );
+	g_engine->m_renderer->EndCamera( *m_worldCamera );
 }
 
 
 //-----------------------------------------------------------------------------------------------
 void Game::RenderAttractMode() const
 {
-	g_engine->m_renderer->BeginCamera( *m_attractCamera );
+	g_engine->m_renderer->BeginCamera( *m_screenCamera );
+
+	float shipScale = SCREEN_SIZE_X * 0.04f;
+	float shipOffsetX = SCREEN_SIZE_X * 0.2f;
+	float centerX = SCREEN_SIZE_X * 0.5f;
+	float centerY = SCREEN_SIZE_Y * 0.5f;
 
 	Vertex shipVertexArray1[PlayerShip::NUM_SHIP_VERTS];
 	Vertex shipVertexArray2[PlayerShip::NUM_SHIP_VERTS];
 	m_playerShip->GetVertexArrayCopy( shipVertexArray1 );
 	m_playerShip->GetVertexArrayCopy( shipVertexArray2 );
-	TransformVertexArrayXY3D( PlayerShip::NUM_SHIP_VERTS, shipVertexArray1, 7.5f, 0.f, Vec2( WORLD_CENTER_X - 50.f, WORLD_CENTER_Y ) );
-	TransformVertexArrayXY3D( PlayerShip::NUM_SHIP_VERTS, shipVertexArray2, -7.5f, 0.f, Vec2( WORLD_CENTER_X + 50.f, WORLD_CENTER_Y ) );
+	TransformVertexArrayXY3D( PlayerShip::NUM_SHIP_VERTS, shipVertexArray1, shipScale, 0.f, Vec2( centerX - shipOffsetX, centerY ) );
+	TransformVertexArrayXY3D( PlayerShip::NUM_SHIP_VERTS, shipVertexArray2, -shipScale, 0.f, Vec2( centerX + shipOffsetX, centerY ) );
 
+	// Triangle scales and positions
+	float triSize = SCREEN_SIZE_X * 0.05f;
 	Vertex triangleVertexArray[3];
-	triangleVertexArray[0].m_position = Vec3( WORLD_CENTER_X - 10.f, WORLD_CENTER_Y - 10.f, 0.f );
-	triangleVertexArray[1].m_position = Vec3( WORLD_CENTER_X - 10.f, WORLD_CENTER_Y + 10.f, 0.f );
-	triangleVertexArray[2].m_position = Vec3( WORLD_CENTER_X + 10.f, WORLD_CENTER_Y, 0.f );
-	float alpha = 0.5f + 0.5f * SinDegrees( (float) GetCurrentTimeSeconds() * 180.f );
+	triangleVertexArray[0].m_position = Vec3( centerX - triSize, centerY - triSize, 0.f );
+	triangleVertexArray[1].m_position = Vec3( centerX - triSize, centerY + triSize, 0.f );
+	triangleVertexArray[2].m_position = Vec3( centerX + triSize, centerY, 0.f );
+	float alpha = 0.5f + 0.5f * SinDegrees( ( float ) GetCurrentTimeSeconds() * 180.f );
 	Rgba8 triangleColor = Rgba8( 0, 153, 0, ( unsigned char ) ( alpha * 255.f ) );
 	triangleVertexArray[0].m_color = triangleColor;
 	triangleVertexArray[1].m_color = triangleColor;
@@ -621,8 +637,8 @@ void Game::RenderAttractMode() const
 	g_engine->m_renderer->DrawVertexArray( PlayerShip::NUM_SHIP_VERTS, shipVertexArray1 );
 	g_engine->m_renderer->DrawVertexArray( PlayerShip::NUM_SHIP_VERTS, shipVertexArray2 );
 	g_engine->m_renderer->DrawVertexArray( 3, triangleVertexArray );
-	
-	g_engine->m_renderer->EndCamera( *m_attractCamera );
+
+	g_engine->m_renderer->EndCamera( *m_screenCamera );
 }
 
 
@@ -680,35 +696,32 @@ void Game::RenderEntities() const
 
 
 //-----------------------------------------------------------------------------------------------
-void Game::RenderPlayerLives() const 
+void Game::RenderHUD() const
 {
-	Vertex shipVertexArray[PlayerShip::NUM_SHIP_VERTS];
-	m_playerShip->GetVertexArrayCopy( shipVertexArray );
+	g_engine->m_renderer->BeginCamera( *m_screenCamera );
 
-	for ( int vertIndex = 0; vertIndex < PlayerShip::NUM_SHIP_VERTS; ++ vertIndex ) 
-	{
-		shipVertexArray[vertIndex].m_color.a = 204;
-	}
-
-	float spacing = 5.f;
+	float spacing = SCREEN_SIZE_X * 0.025f;
 	float rotation = 90.f;
-	float scale = 1.f;
-	float startX = 5.f;
-	float startY = WORLD_SIZE_Y - 5.f;
+	float scale = SCREEN_SIZE_X * 0.005f;
+	float startX = spacing;
+	float startY = SCREEN_SIZE_Y - spacing;
 
-	for ( int lifeIndex = 0; lifeIndex < m_playerSpareLives; ++ lifeIndex ) 
+	for ( int lifeIndex = 0; lifeIndex < m_playerSpareLives; ++lifeIndex )
 	{
-		if ( lifeIndex == 0 ) 
+		Vertex shipVertexArray[PlayerShip::NUM_SHIP_VERTS];
+		m_playerShip->GetVertexArrayCopy( shipVertexArray );
+
+		for ( int vertIndex = 0; vertIndex < PlayerShip::NUM_SHIP_VERTS; ++vertIndex )
 		{
-			Vec2 position = Vec2( startX, startY );
-			TransformVertexArrayXY3D( PlayerShip::NUM_SHIP_VERTS, shipVertexArray, scale, rotation, position );
+			shipVertexArray[vertIndex].m_color.a = 204;
 		}
-		else
-		{
-			TransformVertexArrayXY3D( PlayerShip::NUM_SHIP_VERTS, shipVertexArray, 1.f, 0.f, Vec2( spacing, 0.f ) );
-		}
+
+		Vec2 position = Vec2( startX + lifeIndex * spacing, startY );
+		TransformVertexArrayXY3D( PlayerShip::NUM_SHIP_VERTS, shipVertexArray, scale, rotation, position );
 		g_engine->m_renderer->DrawVertexArray( PlayerShip::NUM_SHIP_VERTS, shipVertexArray );
 	}
+
+	g_engine->m_renderer->EndCamera( *m_screenCamera );
 }
 
 
