@@ -173,6 +173,37 @@ void Game::Update( float deltaSeconds )
 
 	m_worldCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( WORLD_SIZE_X, WORLD_SIZE_Y ) );
 	m_screenCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) );
+
+	if ( m_isScreenShaking )
+	{
+		float shakeElapsedTime = ( float ) GetCurrentTimeSeconds() - m_screenShakeStartTime;
+		if ( shakeElapsedTime < m_screenShakeDuration )
+		{
+			ScreenShake( m_screenShakeIntensity );
+			/*m_screenShakeIntensity *= 0.9f; // Dampen the shake intensity over time*/
+		}
+		else
+		{
+			m_isScreenShaking = false;
+			m_screenShakeIntensity = 0.f;
+			m_screenShakeDuration = 0.f;
+			m_screenShakeStartTime = 0.f;
+			m_worldCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( WORLD_SIZE_X, WORLD_SIZE_Y ) );
+		}
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game::ScreenShake( float intensity )
+{
+	if ( m_worldCamera == nullptr || intensity <= 0.f )
+		return;
+
+	RandomNumberGenerator rng;
+	float offsetX = rng.RollRandomFloatInRange( -intensity, intensity );
+	float offsetY = rng.RollRandomFloatInRange( -intensity, intensity );
+	m_worldCamera->Translate2D( Vec2( offsetX, offsetY ) );
 }
 
 

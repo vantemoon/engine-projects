@@ -35,6 +35,11 @@ public:
 	bool        m_isBackgroundMusicPlaying = false;
 	SoundID     m_backgroundMusicSoundID = 0;
 
+	bool        m_isScreenShaking = false;
+	float	    m_screenShakeIntensity = 0.f;
+	float       m_screenShakeDuration = 0.f;
+	float       m_screenShakeStartTime = 0.f;
+
 public:
 	Game();
 	~Game();
@@ -45,6 +50,7 @@ public:
 	void UpdateFromKeyboard();
 	void UpdateFromController();
 	void UpdateWaves();
+	void ScreenShake( float intensity );
 	bool IsReadyToStartNextWave() const;
 	void StartNextWave();
 	void Render() const;

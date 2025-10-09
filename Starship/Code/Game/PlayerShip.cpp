@@ -6,6 +6,7 @@
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/ErrorWarningAssert.hpp"
 #include "Engine/Core/Rgba8.hpp"
+#include "Engine/Core/Time.hpp"
 #include "Engine/Core/Vertex.hpp"
 #include "Engine/Core/VertexUtils.hpp"
 #include "Engine/Input/InputSystem.hpp"
@@ -268,6 +269,11 @@ void PlayerShip::Die()
 
 	SoundID shipExplosionSound = g_engine->m_audioSystem->CreateOrGetSound( "Data/PlayershipDie.wav" );
 	g_engine->m_audioSystem->StartSound( shipExplosionSound, false, 0.5f, 0.f, 0.5f );
+
+	g_app->m_game->m_isScreenShaking = true;
+	g_app->m_game->m_screenShakeIntensity = 0.5f;
+	g_app->m_game->m_screenShakeDuration = 2.f;
+	g_app->m_game->m_screenShakeStartTime = ( float ) GetCurrentTimeSeconds();
 }
 
 

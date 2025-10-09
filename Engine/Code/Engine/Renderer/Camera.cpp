@@ -34,3 +34,11 @@ Vec2 Camera::GetOrthoTopRight() const
 {
 	return m_orthoTopRight;
 }
+
+
+//-----------------------------------------------------------------------------------------------
+void Camera::Translate2D( Vec2 const& translation )
+{
+	m_orthoBottomLeft += translation;
+	m_orthoTopRight += translation;
+}
