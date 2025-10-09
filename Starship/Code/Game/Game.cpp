@@ -11,6 +11,7 @@
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/ErrorWarningAssert.hpp"
 #include "Engine/Core/Rgba8.hpp"
+#include "Engine/Core/SimpleTriangleFont.hpp"
 #include "Engine/Core/Time.hpp"
 #include "Engine/Core/Vertex.hpp"
 #include "Engine/Core/VertexUtils.hpp"
@@ -32,7 +33,7 @@ Game::Game()
 	m_worldCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( WORLD_SIZE_X, WORLD_SIZE_Y ) );
 	m_screenCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) );
 
-	m_isAttractMode = true;
+	m_currentGameState = ATTRACT_MODE;
 }
 
 
@@ -148,16 +149,16 @@ void Game::DeleteGarbageEntities()
 //-----------------------------------------------------------------------------------------------
 void Game::Update( float deltaSeconds )
 {
-	if ( m_isAttractMode )
+	if ( m_currentGameState == GameState::ATTRACT_MODE )
 	{
 		UpdateAttractMode( deltaSeconds );
 		return;
 	};
 
-	if ( m_isAttractMode )
+	/*if ( m_isAttractMode )
 	{
 		return;
-	};
+	};*/
 
 	CheckPlayerLives();
 
@@ -179,8 +180,9 @@ void Game::Update( float deltaSeconds )
 		float shakeElapsedTime = ( float ) GetCurrentTimeSeconds() - m_screenShakeStartTime;
 		if ( shakeElapsedTime < m_screenShakeDuration )
 		{
-			ScreenShake( m_screenShakeIntensity );
-			/*m_screenShakeIntensity *= 0.9f; // Dampen the shake intensity over time*/
+			float t = shakeElapsedTime / m_screenShakeDuration;
+			float currentIntensity = m_screenShakeIntensity * ( 1.f - t );
+			ScreenShake( currentIntensity );
 		}
 		else
 		{
@@ -215,11 +217,13 @@ void Game::UpdateWaves()
 		if ( m_waveNumber == NUM_OF_WAVES )
 		{
 			// Return to attract mode
-			m_isAttractMode = true;
+			m_currentGameState = GameState::VICTORY;
 			m_waveNumber = 0;
 
 			SoundID gameWinSound = g_engine->m_audioSystem->CreateOrGetSound( "Data/Braam - Zone End.wav" );
 			g_engine->m_audioSystem->StartSound( gameWinSound, false, 0.7f, 0.f, 0.8f );
+
+			m_currentGameState = GameState::ATTRACT_MODE;
 
 			return;
 		}
@@ -340,13 +344,13 @@ void Game::UpdateAttractMode( [[maybe_unused]] float deltaSeconds )
 //-----------------------------------------------------------------------------------------------
 void Game::UpdateFromKeyboard()
 {
-	if ( m_isAttractMode )
+	if ( m_currentGameState == GameState::ATTRACT_MODE )
 	{
 		// Start the game
 		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_SPACE ) || g_engine->m_inputSystem->WasKeyJustPressed( 'N' ) )
 		{
 			Reset();
-			m_isAttractMode = false;
+			m_currentGameState = GameState::PLAYING;
 		};
 
 		// Quit the game
@@ -360,7 +364,7 @@ void Game::UpdateFromKeyboard()
 		// Return to attract mode
 		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_ESCAPE ) )
 		{
-			m_isAttractMode = true;
+			m_currentGameState = GameState::ATTRACT_MODE;
 		}
 
 		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'I' ) )
@@ -382,13 +386,13 @@ void Game::UpdateFromController()
 {
 	XboxController const& controller = g_engine->m_inputSystem->GetController( 0 );
 
-	if ( m_isAttractMode )
+	if ( m_currentGameState == GameState::ATTRACT_MODE )
 	{
 		// Start the game
 		if ( controller.WasButtonJustPressed( XBOX_BUTTON_A ) || controller.WasButtonJustPressed( XBOX_BUTTON_START ) )
 		{
 			Reset();
-			m_isAttractMode = false;
+			m_currentGameState = GameState::PLAYING;
 		};
 		// Quit the game
 		if ( controller.WasButtonJustPressed( XBOX_BUTTON_BACK ) )
@@ -401,7 +405,7 @@ void Game::UpdateFromController()
 		// Return to attract mode
 		if ( controller.WasButtonJustPressed( XBOX_BUTTON_BACK ) )
 		{
-			m_isAttractMode = true;
+			m_currentGameState = GameState::ATTRACT_MODE;
 		}
 		if ( controller.WasButtonJustPressed( XBOX_BUTTON_X ) )
 		{
@@ -616,7 +620,7 @@ void Game::DebugDraw() const
 //-----------------------------------------------------------------------------------------------
 void Game::Render() const
 {
-	if ( m_isAttractMode )
+	if ( m_currentGameState == GameState::ATTRACT_MODE )
 	{
 		RenderAttractMode();
 		return;
@@ -639,6 +643,10 @@ void Game::Render() const
 //-----------------------------------------------------------------------------------------------
 void Game::RenderAttractMode() const
 {
+	// Color palette
+	Rgba8 brightYellow = Rgba8( 253, 239, 3 );
+	Rgba8 brightCyan = Rgba8( 87, 231, 239 );
+
 	g_engine->m_renderer->BeginCamera( *m_screenCamera );
 
 	float shipScale = SCREEN_SIZE_X * 0.04f;
@@ -668,6 +676,14 @@ void Game::RenderAttractMode() const
 	g_engine->m_renderer->DrawVertexArray( PlayerShip::NUM_SHIP_VERTS, shipVertexArray1 );
 	g_engine->m_renderer->DrawVertexArray( PlayerShip::NUM_SHIP_VERTS, shipVertexArray2 );
 	g_engine->m_renderer->DrawVertexArray( 3, triangleVertexArray );
+
+	// Text
+	std::vector<Vertex> textVertexArray;
+	AddVertsForTextTriangles2D( textVertexArray, "Starship", Vec2( 200.f, 550.f ), 80.f, brightCyan );
+	AddVertsForTextTriangles2D( textVertexArray, "Gold", Vec2( 505.f, 490.f ), 60.f, brightYellow );
+	// AddVertsForTextTriangles2D( textVertexArray, "Press Start or A to Play", Vec2( 250.f, 300.f ), 30.f, brightCyan );
+
+	g_engine->m_renderer->DrawVertexArray( (int) textVertexArray.size(), textVertexArray.data() );
 
 	g_engine->m_renderer->EndCamera( *m_screenCamera );
 }
@@ -967,6 +983,8 @@ void Game::CheckPlayerLives()
 
 	if ( m_playerSpareLives == 0 && !m_playerShip->IsAlive() )
 	{
+		m_currentGameState = GameState::GAME_OVER;
+
 		if ( timeOfDeath == 0.f )
 		{
 			timeOfDeath = ( float ) GetCurrentTimeSeconds();
@@ -975,7 +993,7 @@ void Game::CheckPlayerLives()
 		// Return to attract mode after 3 seconds
 		if ( ( float ) GetCurrentTimeSeconds() - timeOfDeath >= 3.f )
 		{
-			m_isAttractMode = true;
+			m_currentGameState = GameState::ATTRACT_MODE;
 			m_waveNumber = 0;
 			m_playerSpareLives = NUM_PLAYER_LIVES - 1;
 			timeOfDeath = 0.f;

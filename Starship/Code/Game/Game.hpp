@@ -26,9 +26,7 @@ public:
 
 	Camera*     m_worldCamera = nullptr;
 	Camera*     m_screenCamera = nullptr;
-	// Camera*     m_attractCamera = nullptr;
 
-	bool        m_isAttractMode = true;
 	int         m_waveNumber = 0;
 	int			m_playerSpareLives = NUM_PLAYER_LIVES - 1;
 
@@ -39,6 +37,8 @@ public:
 	float	    m_screenShakeIntensity = 0.f;
 	float       m_screenShakeDuration = 0.f;
 	float       m_screenShakeStartTime = 0.f;
+
+	GameState   m_currentGameState;
 
 public:
 	Game();

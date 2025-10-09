@@ -274,6 +274,10 @@ void PlayerShip::Die()
 	g_app->m_game->m_screenShakeIntensity = 0.5f;
 	g_app->m_game->m_screenShakeDuration = 2.f;
 	g_app->m_game->m_screenShakeStartTime = ( float ) GetCurrentTimeSeconds();
+
+	g_app->m_game->m_isScreenShaking = true;
+	g_app->m_game->m_screenShakeIntensity = 0.8f;
+	g_app->m_game->m_screenShakeDuration = 2.f;
 }
 
 

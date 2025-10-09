@@ -7,6 +7,20 @@ struct Vec2;  // Forward declaration
 
 
 //-----------------------------------------------------------------------------------------------
+enum GameState
+{
+	INVALID_STATE = -1,
+	ATTRACT_MODE,
+	PLAYING,
+	// PAUSED,
+	// SLOW_MO,
+	GAME_OVER,
+	VICTORY,
+	NUM_GAME_STATES
+};
+
+
+//-----------------------------------------------------------------------------------------------
 constexpr int NUM_PLAYER_LIVES = 4;
 constexpr int NUM_OF_WAVES = 5;
 constexpr int MAX_ASTEROIDS = 12;
