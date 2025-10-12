@@ -56,31 +56,6 @@ void App::UpdateFromKeyboard()
 {
 	if ( !m_game->m_currentGameState == GameState::ATTRACT_MODE )
 	{
-		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'P' ) )
-		{
-			m_isPaused = !m_isPaused;
-		}
-
-		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'O' ) )
-		{
-			m_isPaused = false;
-			m_pauseAfterNextUpdate = true;
-		}
-
-		if ( g_engine->m_inputSystem->IsKeyDown( 'T' ) )
-		{
-			m_isSlowMo = true;
-		}
-		else
-		{
-			m_isSlowMo = false;
-		}
-
-		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_F1 ) )
-		{
-			m_debugDraw = !m_debugDraw;
-		}
-
 		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_F8 ) )
 		{
 			HardReset();
@@ -115,23 +90,8 @@ void App::Update( float deltaSeconds )
 	UpdateFromKeyboard();
 
 	float timeScale = 1.f;
-	
-	if( m_isPaused )
-	{
-		timeScale = 0.f;
-	}
-	else if( m_isSlowMo )
-	{
-		timeScale = 0.1f;
-	}
 
 	m_game->Update( deltaSeconds * timeScale );
-
-	if( m_pauseAfterNextUpdate )
-	{
-		m_isPaused = true;
-		m_pauseAfterNextUpdate = false;
-	}
 }
 
 

@@ -20,13 +20,17 @@ S / F: Rotate ship left / right
 E: Apply thrust
 Space: Fire a bullet
 N: Respawn if dead
-I: Spawn a new Asteroid
-F1: Toggle debug mode
-F8: Hard-reset the game
+
 T: Hold to slow time to 1/10th speed
 P: Pause or unpause
-O: Advance one frame, then pause
 Esc: Return to Attract mode or exit if already there
+
+
+DEBUG:
+F1: Toggle debug mode
+F8: Hard-reset the game
+I: Spawn an asteroid
+O: Advance one frame, then pause
 K: Kill all hostile entities (developer trick, skip to next wave)
 
 Xbox Controller

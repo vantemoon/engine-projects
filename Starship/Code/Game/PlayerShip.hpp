@@ -12,9 +12,9 @@ class PlayerShip : public Entity
 {
 public:
 	static constexpr int NUM_SHIP_VERTS = 15;
-	bool m_isAccelerating = false;
-	bool m_isTurningLeft = false;
-	bool m_isTurningRight = false;
+	bool  m_isAccelerating = false;
+	bool  m_isTurningLeft = false;
+	bool  m_isTurningRight = false;
 	float m_thrustFraction = 0.f;
 
 public:

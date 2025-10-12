@@ -32,12 +32,7 @@ public:
 
 public:
 	Game*			m_game = nullptr;
-	Camera			m_gameCamera;
-	double			m_lastFrameStartTime = 0.0;
 
+	double			m_lastFrameStartTime = 0.0;
 	bool			m_isQuitting = false;
-	bool			m_isPaused = false;
-	bool            m_isSlowMo = false;
-	bool			m_pauseAfterNextUpdate = false;
-	bool            m_debugDraw = false;
 };

@@ -40,6 +40,11 @@ public:
 
 	GameState   m_currentGameState;
 
+	bool        m_isScanModeOn = false;
+
+	bool        m_isDebugFeaturesOn = false;
+	bool        m_isPausedAfterNextUpdate = false;
+
 public:
 	Game();
 	~Game();
@@ -65,7 +70,7 @@ public:
 	void SpawnDebrisCluster( int numOfDebris, Vec2 const& position, Vec2 momentum, Rgba8 const& color, float minRadius, float maxRadius);
 	void CheckPlayerLives();
 	void Reset();
-	void KillAllEnemies(); // For debugging
+	void KillAllEnemies(); // For testing and debugging
 
 private:
 	void DeleteGarbageEntities();

@@ -155,10 +155,17 @@ void Game::Update( float deltaSeconds )
 		return;
 	};
 
-	/*if ( m_isAttractMode )
+	if ( m_currentGameState == GameState::PAUSED )
 	{
+		UpdateFromKeyboard();
+		UpdateFromController();
 		return;
-	};*/
+	};
+
+	if ( m_isScanModeOn )
+	{
+		deltaSeconds *= 0.1f;
+	};
 
 	CheckPlayerLives();
 
@@ -192,6 +199,12 @@ void Game::Update( float deltaSeconds )
 			m_screenShakeStartTime = 0.f;
 			m_worldCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( WORLD_SIZE_X, WORLD_SIZE_Y ) );
 		}
+	}
+
+	if ( m_isPausedAfterNextUpdate )
+	{
+		m_currentGameState = GameState::PAUSED;
+		m_isPausedAfterNextUpdate = false;
 	}
 }
 
@@ -367,13 +380,38 @@ void Game::UpdateFromKeyboard()
 			m_currentGameState = GameState::ATTRACT_MODE;
 		}
 
-		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'I' ) )
+		// Pause and resume the game
+		if ( m_currentGameState != GameState::PAUSED && g_engine->m_inputSystem->WasKeyJustPressed( 'P' ) )
+		{
+			m_currentGameState = GameState::PAUSED;
+		}
+
+		else if ( m_currentGameState == GameState::PAUSED && g_engine->m_inputSystem->WasKeyJustPressed( 'P' ) )
+		{
+			m_currentGameState = GameState::PLAYING;
+		}
+
+		// Toggle debug features
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_F1 ) )
+		{
+			m_isDebugFeaturesOn = !m_isDebugFeaturesOn;
+		}
+
+		// Pause the game after the next update (for debugging)
+		if ( m_isDebugFeaturesOn && g_engine->m_inputSystem->WasKeyJustPressed( 'O' ) )
+		{
+			m_currentGameState = GameState::PLAYING;
+			m_isPausedAfterNextUpdate = true;
+		}
+
+		// Spawn an asteroid (for debugging)
+		if ( m_isDebugFeaturesOn && g_engine->m_inputSystem->WasKeyJustPressed( 'I' ) )
 		{
 			SpawnRandomAsteroids( 1 );
 		}
 
 		// Kill all enemies (for debugging)
-		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'K' ) )
+		if ( m_isDebugFeaturesOn && g_engine->m_inputSystem->WasKeyJustPressed( 'K' ) )
 		{
 			KillAllEnemies();
 		}
@@ -406,15 +444,6 @@ void Game::UpdateFromController()
 		if ( controller.WasButtonJustPressed( XBOX_BUTTON_BACK ) )
 		{
 			m_currentGameState = GameState::ATTRACT_MODE;
-		}
-		if ( controller.WasButtonJustPressed( XBOX_BUTTON_X ) )
-		{
-			SpawnRandomAsteroids( 1 );
-		}
-		// Kill all enemies (for debugging)
-		if ( controller.WasButtonJustPressed( XBOX_BUTTON_Y ) )
-		{
-			KillAllEnemies();
 		}
 	}
 }
@@ -486,6 +515,8 @@ void Game::UpdateEntities( float deltaSeconds )
 //-----------------------------------------------------------------------------------------------
 void Game::DebugDraw() const
 {
+	g_engine->m_renderer->BeginCamera( *m_worldCamera );
+
 	if ( m_playerShip != nullptr )
 	{
 		//Player ship
@@ -614,6 +645,8 @@ void Game::DebugDraw() const
 			}
 		}
 	}
+
+	g_engine->m_renderer->EndCamera( *m_worldCamera );
 }
 
 
@@ -631,7 +664,7 @@ void Game::Render() const
 	RenderEntities();
 	RenderHUD();
 
-	if ( g_app->m_debugDraw )
+	if ( m_isDebugFeaturesOn )
 	{
 		DebugDraw();
 	}
@@ -775,9 +808,6 @@ void Game::RenderHUD() const
 //-----------------------------------------------------------------------------------------------
 void Game::SpawnRandomAsteroids( int numOfAsteroid )
 {
-	if ( m_playerShip == nullptr || m_playerShip->m_isDead )
-		return;
-
 	for ( int asteroidSpawned = 0; asteroidSpawned < numOfAsteroid; ++asteroidSpawned )
 	{
 		bool hasFreeSlot = false;
@@ -834,9 +864,6 @@ void Game::SpawnBulletFromPlayerShip()
 //-----------------------------------------------------------------------------------------------
 void Game::SpawnRandomBeetles( int numOfBeetles )
 {
-	if ( m_playerShip == nullptr || m_playerShip->m_isDead )
-		return;
-
 	for ( int beetlesSpawned = 0; beetlesSpawned < numOfBeetles; ++beetlesSpawned )
 	{
 		bool hasFreeSlot = false;
@@ -862,9 +889,6 @@ void Game::SpawnRandomBeetles( int numOfBeetles )
 //-----------------------------------------------------------------------------------------------
 void Game::SpawnRandomWasps(int numOfWasps)
 {
-	if ( m_playerShip == nullptr || m_playerShip->m_isDead )
-		return;
-	
 	for ( int waspsSpawned = 0; waspsSpawned < numOfWasps; ++waspsSpawned )
 	{
 		bool hasFreeSlot = false;

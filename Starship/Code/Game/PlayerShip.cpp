@@ -173,6 +173,16 @@ void PlayerShip::UpdateFromKeyboard()
 			--g_app->m_game->m_playerSpareLives;
 		}
 	}
+
+	// Scanning
+	if ( g_engine->m_inputSystem->IsKeyDown( 'T' ) )
+	{
+		m_game->m_isScanModeOn = true;
+	}
+	else if ( g_engine->m_inputSystem->WasKeyJustReleased( 'T' ) )
+	{
+		m_game->m_isScanModeOn = false;
+	}
 }
 
 
@@ -209,6 +219,17 @@ void PlayerShip::UpdateFromController()
 			Respawn();
 			--g_app->m_game->m_playerSpareLives;
 		}
+	}
+
+	// Scanning with left trigger
+	float leftTriggerValue = controller.GetLeftTrigger();
+	if ( leftTriggerValue > 0.f )
+	{
+		m_game->m_isScanModeOn = true;
+	}
+	else
+	{
+		m_game->m_isScanModeOn = false;
 	}
 }
 
