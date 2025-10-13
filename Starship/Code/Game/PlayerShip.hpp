@@ -3,8 +3,9 @@
 
 
 //-----------------------------------------------------------------------------------------------
-class Game;  // Forward declaration
-struct Vec2; // Forward declaration
+class Entity; // Forward declaration
+class Game;   // Forward declaration
+struct Vec2;  // Forward declaration
 
 
 //-----------------------------------------------------------------------------------------------

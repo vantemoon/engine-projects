@@ -27,6 +27,7 @@ constexpr int MAX_BULLETS = 20;
 constexpr int MAX_BEETLES = 5;
 constexpr int MAX_WASPS = 5;
 constexpr int MAX_DEBRIS = 300;
+constexpr int MAX_TARGETS = MAX_ASTEROIDS + MAX_BEETLES + MAX_WASPS;
 
 constexpr float WORLD_SIZE_X = 200.f;
 constexpr float WORLD_SIZE_Y = 100.f;

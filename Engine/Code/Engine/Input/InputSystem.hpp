@@ -18,6 +18,10 @@ extern unsigned char const KEYCODE_F11;
 extern unsigned char const KEYCODE_ESCAPE;
 extern unsigned char const KEYCODE_SPACE;
 extern unsigned char const KEYCODE_ENTER;
+extern unsigned char const KEYCODE_LEFTARROW;
+extern unsigned char const KEYCODE_RIGHTARROW;
+extern unsigned char const KEYCODE_UPARROW;
+extern unsigned char const KEYCODE_DOWNARROW;
 
 
 //----------------------------------------------------------------

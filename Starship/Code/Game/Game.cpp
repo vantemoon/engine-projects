@@ -34,6 +34,8 @@ Game::Game()
 	m_screenCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) );
 
 	m_currentGameState = ATTRACT_MODE;
+
+	InitializeTargersArray( m_scanTargets, MAX_TARGETS );
 }
 
 
@@ -78,6 +80,15 @@ Game::~Game()
 
 	delete m_screenCamera;
 	m_screenCamera = nullptr;
+}
+
+//-----------------------------------------------------------------------------------------------
+void Game::InitializeTargersArray(Entity** out_targetsArray, int maxTargets)
+{
+	// Example implementation: set all pointers to nullptr
+    for (int i = 0; i < maxTargets; ++i) {
+        out_targetsArray[i] = nullptr;
+    }
 }
 
 
@@ -340,7 +351,6 @@ void Game::UpdateAttractMode( [[maybe_unused]] float deltaSeconds )
 {
 	UpdateFromKeyboard();
 	UpdateFromController();
-	// m_attractCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( WORLD_SIZE_X, WORLD_SIZE_Y ) );
 
 	if ( !m_isBackgroundMusicPlaying )
 	{
@@ -379,6 +389,7 @@ void Game::UpdateFromKeyboard()
 		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_ESCAPE ) )
 		{
 			m_currentGameState = GameState::ATTRACT_MODE;
+			m_isScanModeOn = false;
 		}
 
 		// Pause and resume the game
@@ -445,6 +456,7 @@ void Game::UpdateFromController()
 		if ( controller.WasButtonJustPressed( XBOX_BUTTON_BACK ) )
 		{
 			m_currentGameState = GameState::ATTRACT_MODE;
+			m_isScanModeOn = false;
 		}
 	}
 }
@@ -978,10 +990,11 @@ void Game::RenderHUD() const
 
 
 //-----------------------------------------------------------------------------------------------
-void Game::RenderScanMode() const 
-{
-	// Full screen semi-transparent overlay
-	Rgba8 overlayColor = Rgba8( 0, 255, 0, 50 );
+void Game::RenderScanMode() const
+{	g_engine->m_renderer->BeginCamera( *m_screenCamera );
+
+	// Semi-transparent green overlay
+	Rgba8 overlayColor = Rgba8( 0, 255, 0, 30 );
 	Vertex overlayVerts[6];
 	overlayVerts[0].m_position = Vec3( 0.f, 0.f, 0.f );
 	overlayVerts[0].m_color = overlayColor;
@@ -996,6 +1009,203 @@ void Game::RenderScanMode() const
 	overlayVerts[5].m_position = Vec3( 0.f, ( float ) SCREEN_SIZE_Y, 0.f );
 	overlayVerts[5].m_color = overlayColor;
 	g_engine->m_renderer->DrawVertexArray( 6, overlayVerts );
+
+	// Highlight selected enemy
+	if ( m_currentSelectedEntityIndex >= 0 && m_currentSelectedEntityIndex < MAX_TARGETS ) {
+		Entity* m_currentSelectedEntity = m_scanTargets[m_currentSelectedEntityIndex];
+		if ( m_currentSelectedEntity != nullptr ) {
+			// Convert world position to screen position
+			Vec3 worldPos = Vec3( m_currentSelectedEntity->m_position.x, m_currentSelectedEntity->m_position.y, 0.f );
+			Vec3 screenPos = TransformWorldToScreen( worldPos );
+			float highlightRadius = m_currentSelectedEntity->m_cosmeticRadius * 1.5f * ( ( float ) SCREEN_SIZE_X / ( float ) WORLD_SIZE_X );
+			DebugDrawRing( Vec2( screenPos.x, screenPos.y ), highlightRadius, 1.5f, Rgba8( 0, 255, 0 ) );
+		}
+	}
+
+	g_engine->m_renderer->EndCamera( *m_screenCamera );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+Vec3 Game::TransformWorldToScreen( Vec3 const& worldPosition ) const
+{
+	Vec2 worldBottomLeft = m_worldCamera->GetOrthoBottomLeft();
+	Vec2 worldTopRight = m_worldCamera->GetOrthoTopRight();
+
+	Vec2 screenBottomLeft = m_screenCamera->GetOrthoBottomLeft();
+	Vec2 screenTopRight = m_screenCamera->GetOrthoTopRight();
+
+	float worldWidth = worldTopRight.x - worldBottomLeft.x;
+	float worldHeight = worldTopRight.y - worldBottomLeft.y;
+	float normX = ( worldPosition.x - worldBottomLeft.x ) / worldWidth;
+	float normY = ( worldPosition.y - worldBottomLeft.y ) / worldHeight;
+
+	float screenWidth = screenTopRight.x - screenBottomLeft.x;
+	float screenHeight = screenTopRight.y - screenBottomLeft.y;
+	float screenX = screenBottomLeft.x + normX * screenWidth;
+	float screenY = screenBottomLeft.y + normY * screenHeight;
+
+	return Vec3( screenX, screenY, worldPosition.z );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+int Game::BuildScanTargets()
+{
+	int m_numScanTargets = 0;
+
+	// Asteroids
+	for ( int asteroidIndex = 0; asteroidIndex < MAX_ASTEROIDS; ++asteroidIndex )
+	{
+		if ( m_asteroids[asteroidIndex] != nullptr && !m_asteroids[asteroidIndex]->m_isDead )
+		{
+			m_scanTargets[m_numScanTargets] = m_asteroids[asteroidIndex];
+			++m_numScanTargets;
+			if ( m_numScanTargets >= MAX_TARGETS )
+				return m_numScanTargets;
+		}
+	}
+
+	// Beetles
+	for ( int beetleIndex = 0; beetleIndex < MAX_BEETLES; ++beetleIndex )
+	{
+		if ( m_beetles[beetleIndex] != nullptr && !m_beetles[beetleIndex]->m_isDead )
+		{
+			m_scanTargets[m_numScanTargets] = m_beetles[beetleIndex];
+			++m_numScanTargets;
+			if ( m_numScanTargets >= MAX_TARGETS )
+				return m_numScanTargets;
+		}
+	}
+
+	// Wasps
+	for ( int waspIndex = 0; waspIndex < MAX_WASPS; ++waspIndex )
+	{
+		if ( m_wasps[waspIndex] != nullptr && !m_wasps[waspIndex]->m_isDead )
+		{
+			m_scanTargets[m_numScanTargets] = m_wasps[waspIndex];
+			++m_numScanTargets;
+			if ( m_numScanTargets >= MAX_TARGETS )
+				return m_numScanTargets;
+		}
+	}
+
+	return m_numScanTargets;
+}
+
+
+
+//-----------------------------------------------------------------------------------------------
+int Game::GetEnemyClosestToPlayer() const
+{
+	if ( m_playerShip == nullptr || m_playerShip->m_isDead )
+		return -1;
+
+	int closestTargetIndex = -1;
+	float closestDistSq = 0.0f;
+
+	for ( int targetIndex = 0; targetIndex < MAX_TARGETS; ++targetIndex )
+	{
+		Entity* target = m_scanTargets[targetIndex];
+		if ( target == nullptr || target->m_isDead )
+			continue;
+
+		float distSq = GetDistanceSquared2D( m_playerShip->m_position, target->m_position );
+
+		if ( closestTargetIndex == -1 || distSq < closestDistSq )
+		{
+			closestTargetIndex = targetIndex;
+			closestDistSq = distSq;
+		}
+	}
+
+	return closestTargetIndex;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+int Game::StepCurrentSelectedEntityIndex( int currentIndex, int step )
+{
+	if ( !m_isScanModeOn || m_playerShip == nullptr || currentIndex < 0 )
+		return currentIndex;
+
+	int numOfTargets = BuildScanTargets();
+	if ( numOfTargets <= 0 || currentIndex >= numOfTargets )
+		return -1;
+
+	Entity* currentSelected = m_scanTargets[currentIndex];
+	if ( currentSelected == nullptr || currentSelected->m_isDead )
+		return -1;
+
+	float baseAngle = ( currentSelected->m_position - m_playerShip->m_position ).GetOrientationDegrees();
+
+	int   bestIndex = currentIndex;
+	float bestMetric = 9999.f;
+	bool  found = false;
+
+	for ( int targetIndex = 0; targetIndex < numOfTargets; ++targetIndex )
+	{
+		if ( targetIndex == currentIndex ) continue;
+		Entity* target = m_scanTargets[targetIndex];
+		if ( target == nullptr || target->m_isDead ) continue;
+
+		float targetAngle = ( target->m_position - m_playerShip->m_position ).GetOrientationDegrees();
+		float delta = targetAngle - baseAngle;
+		while ( delta <= -180.f ) delta += 360.f;
+		while ( delta > 180.f ) delta -= 360.f;
+
+		if ( step > 0 ) // Right = clockwise
+		{
+			if ( delta < 0.f )
+			{
+				float metric = -delta;
+				if ( !found || metric < bestMetric )
+				{
+					found = true;
+					bestMetric = metric;
+					bestIndex = targetIndex;
+				}
+			}
+		}
+		else if ( step < 0 ) // Left = counter-clockwise
+		{
+			if ( delta > 0.f )
+			{
+				float metric = delta;
+				if ( !found || metric < bestMetric )
+				{
+					found = true;
+					bestMetric = metric;
+					bestIndex = targetIndex;
+				}
+			}
+		}
+	}
+
+	if ( !found )
+	{
+		float bestAbs = 9999.f;
+		for ( int targetIndex = 0; targetIndex < numOfTargets; ++targetIndex )
+		{
+			if ( targetIndex == currentIndex ) continue;
+			Entity* target = m_scanTargets[targetIndex];
+			if ( target == nullptr || target->m_isDead ) continue;
+
+			const float targetAngle = ( target->m_position - m_playerShip->m_position ).GetOrientationDegrees();
+			float delta = targetAngle - baseAngle;
+			while ( delta <= -180.f ) delta += 360.f;
+			while ( delta > 180.f ) delta -= 360.f;
+			const float ad = fabsf( delta );
+			if ( ad < bestAbs )
+			{
+				bestAbs = ad;
+				bestIndex = targetIndex;
+			}
+		}
+	}
+
+	m_currentSelectedEntityIndex = bestIndex;
+	return m_currentSelectedEntityIndex;
 }
 
 

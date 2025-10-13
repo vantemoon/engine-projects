@@ -1,7 +1,11 @@
 #include "Game/PlayerShip.hpp"
+#include "Game/Asteroid.hpp"
 #include "Game/App.hpp"
+#include "Game/Beetle.hpp"
+#include "Game/Entity.hpp"
 #include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
+#include "Game/Wasp.hpp"
 #include "Engine/Audio/AudioSystem.hpp"
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/ErrorWarningAssert.hpp"
@@ -178,10 +182,36 @@ void PlayerShip::UpdateFromKeyboard()
 	if ( g_engine->m_inputSystem->IsKeyDown( 'T' ) )
 	{
 		m_game->m_isScanModeOn = true;
+		m_game->BuildScanTargets();
+		if ( !m_game->m_isTargetInitialized )
+		{
+			m_game->m_currentSelectedEntityIndex = m_game->GetEnemyClosestToPlayer();
+			m_game->m_isTargetInitialized = true;
+		}
 	}
 	else if ( g_engine->m_inputSystem->WasKeyJustReleased( 'T' ) )
 	{
 		m_game->m_isScanModeOn = false;
+		m_game->m_isTargetInitialized = false;
+		for ( int targetIndex = 0; targetIndex < MAX_TARGETS; ++targetIndex )
+		{
+			m_game->m_scanTargets[targetIndex] = nullptr;
+		}
+
+		m_game->m_currentSelectedEntityIndex = -1;
+	}
+
+	// Change selected enemy in scan mode
+	if ( m_game->m_isScanModeOn )
+	{
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_LEFTARROW ) )
+		{
+			m_game->m_currentSelectedEntityIndex = m_game->StepCurrentSelectedEntityIndex( m_game->m_currentSelectedEntityIndex, -1 );
+		}
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_RIGHTARROW ) )
+		{
+			m_game->m_currentSelectedEntityIndex = m_game->StepCurrentSelectedEntityIndex( m_game->m_currentSelectedEntityIndex, 1 );
+		}
 	}
 }
 
@@ -222,18 +252,43 @@ void PlayerShip::UpdateFromController()
 	}
 
 	// Scanning with left trigger
+	static bool wasLeftTriggerPressedLastFrame = false;
 	float leftTriggerValue = controller.GetLeftTrigger();
-	if ( m_game->m_isScanModeOn )
-	{
-		return;
-	}
-	if ( leftTriggerValue > 0.f )
+	bool isLeftTriggerPressed = leftTriggerValue > 0.f;
+	bool wasLeftTriggerJustReleased = !isLeftTriggerPressed && wasLeftTriggerPressedLastFrame;
+	if ( isLeftTriggerPressed && !wasLeftTriggerPressedLastFrame )
 	{
 		m_game->m_isScanModeOn = true;
+		m_game->BuildScanTargets();
+		if ( !m_game->m_isTargetInitialized )
+		{
+			m_game->m_currentSelectedEntityIndex = m_game->GetEnemyClosestToPlayer();
+			m_game->m_isTargetInitialized = true;
+		}
 	}
-	else
+	else if ( wasLeftTriggerJustReleased )
 	{
 		m_game->m_isScanModeOn = false;
+		m_game->m_isTargetInitialized = false;
+		for ( int targetIndex = 0; targetIndex < MAX_TARGETS; ++targetIndex )
+		{
+			m_game->m_scanTargets[targetIndex] = nullptr;
+		}
+		m_game->m_currentSelectedEntityIndex = -1;
+	}
+	wasLeftTriggerPressedLastFrame = isLeftTriggerPressed;
+
+	// Change selected enemy in scan mode
+	if ( m_game->m_isScanModeOn )
+	{
+		if ( controller.WasButtonJustPressed( XBOX_BUTTON_LEFT ) )
+		{
+			m_game->m_currentSelectedEntityIndex = m_game->StepCurrentSelectedEntityIndex( m_game->m_currentSelectedEntityIndex, -1 );
+		}
+		if ( controller.WasButtonJustPressed( XBOX_BUTTON_RIGHT ) )
+		{
+			m_game->m_currentSelectedEntityIndex = m_game->StepCurrentSelectedEntityIndex( m_game->m_currentSelectedEntityIndex, 1 );
+		}
 	}
 }
 

@@ -9,8 +9,10 @@ class Beetle;     // Forward declaration
 class Bullet;     // Forward declaration
 class Camera;     // Forward declaration
 class Debris;     // Forward declaration
+class Entity;     // Forward declaration
 class PlayerShip; // Forward declaration
 class Wasp;       // Forward declaration
+struct Vec3;      // Forward declaration
 
 
 //-----------------------------------------------------------------------------------------------
@@ -23,6 +25,7 @@ public:
 	Beetle*     m_beetles[MAX_BEETLES] = {};
 	Wasp*       m_wasps[MAX_WASPS] = {};
 	Debris*     m_debris[MAX_DEBRIS] = {};
+	Entity*     m_scanTargets[MAX_TARGETS] = {};
 
 	Camera*     m_worldCamera = nullptr;
 	Camera*     m_screenCamera = nullptr;
@@ -41,6 +44,8 @@ public:
 	GameState   m_currentGameState;
 
 	bool        m_isScanModeOn = false;
+	bool        m_isTargetInitialized = false;
+	int         m_currentSelectedEntityIndex = -1;
 
 	bool        m_isDebugFeaturesOn = false;
 	bool        m_isPausedAfterNextUpdate = false;
@@ -65,6 +70,9 @@ public:
 	void RenderScanMode() const;
 	void RenderParallaxBackground() const;
 	Vec2 GetRandomOffscreenPosition( float cosmeticRadius ) const;
+	int  BuildScanTargets();
+	int  GetEnemyClosestToPlayer() const;
+	int  StepCurrentSelectedEntityIndex( int currentIndex, int step );
 	void SpawnRandomAsteroids( int numOfAsteroids );
 	void SpawnBulletFromPlayerShip();
 	void SpawnRandomBeetles( int numOfBeetles );
@@ -77,4 +85,6 @@ public:
 private:
 	void DeleteGarbageEntities();
 	void DebugDraw() const;
+	void InitializeTargersArray( Entity** out_targetsArray, int maxTargets );
+	Vec3 TransformWorldToScreen( Vec3 const& worldPosition ) const;
 };
