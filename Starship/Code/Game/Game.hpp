@@ -62,6 +62,7 @@ public:
 	void RenderEntities() const;
 	void RenderHUD() const;
 	void RenderAttractMode() const;
+	void RenderParallaxBackground() const;
 	Vec2 GetRandomOffscreenPosition( float cosmeticRadius ) const;
 	void SpawnRandomAsteroids( int numOfAsteroids );
 	void SpawnBulletFromPlayerShip();

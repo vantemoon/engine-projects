@@ -661,6 +661,7 @@ void Game::Render() const
 
 	g_engine->m_renderer->BeginCamera( *m_worldCamera );
 	
+	RenderParallaxBackground();
 	RenderEntities();
 	RenderHUD();
 
@@ -676,47 +677,207 @@ void Game::Render() const
 //-----------------------------------------------------------------------------------------------
 void Game::RenderAttractMode() const
 {
-	// Color palette
-	Rgba8 brightYellow = Rgba8( 253, 239, 3 );
-	Rgba8 brightCyan = Rgba8( 87, 231, 239 );
+	// Colors
+	const Rgba8 brightYellow = Rgba8( 253, 239, 3 );
+	const Rgba8 brightCyan = Rgba8( 87, 231, 239 );
+	const Rgba8 dimCyan = Rgba8( 87, 231, 239, 80 );
+	const Rgba8 dimYellow = Rgba8( 253, 239, 3, 80 );
+	const Rgba8 neonPink = Rgba8( 248, 21, 98 );
+
+	float flicker = 0.9f + 0.1f * SinDegrees( ( float ) GetCurrentTimeSeconds() * 720.f );
+	Rgba8 flickerCol = Rgba8(
+		( unsigned char ) ( brightCyan.r * flicker ),
+		( unsigned char ) ( brightCyan.g * flicker ),
+		( unsigned char ) ( brightCyan.b * flicker )
+	);
 
 	g_engine->m_renderer->BeginCamera( *m_screenCamera );
 
-	float shipScale = SCREEN_SIZE_X * 0.04f;
-	float shipOffsetX = SCREEN_SIZE_X * 0.2f;
-	float centerX = SCREEN_SIZE_X * 0.5f;
-	float centerY = SCREEN_SIZE_Y * 0.5f;
+	const float currentTime = ( float ) GetCurrentTimeSeconds();
+
+	// Ships
+	const float shipScale = SCREEN_SIZE_X * 0.04f;
+	const float shipOffsetX = SCREEN_SIZE_X * 0.2f;
+	const float centerX = SCREEN_SIZE_X * 0.5f;
+	const float centerY = SCREEN_SIZE_Y * 0.5f;
+
+	const float wobbleRot = 5.f * SinDegrees( currentTime * 45.f );
+	const float bob = 4.f * SinDegrees( currentTime * 60.f );
 
 	Vertex shipVertexArray1[PlayerShip::NUM_SHIP_VERTS];
 	Vertex shipVertexArray2[PlayerShip::NUM_SHIP_VERTS];
 	m_playerShip->GetVertexArrayCopy( shipVertexArray1 );
 	m_playerShip->GetVertexArrayCopy( shipVertexArray2 );
-	TransformVertexArrayXY3D( PlayerShip::NUM_SHIP_VERTS, shipVertexArray1, shipScale, 0.f, Vec2( centerX - shipOffsetX, centerY ) );
-	TransformVertexArrayXY3D( PlayerShip::NUM_SHIP_VERTS, shipVertexArray2, -shipScale, 0.f, Vec2( centerX + shipOffsetX, centerY ) );
 
-	// Triangle scales and positions
-	float triSize = SCREEN_SIZE_X * 0.05f;
+	TransformVertexArrayXY3D(
+		PlayerShip::NUM_SHIP_VERTS, shipVertexArray1, shipScale,
+		wobbleRot, Vec2( centerX - shipOffsetX, centerY + bob ) );
+
+	TransformVertexArrayXY3D(
+		PlayerShip::NUM_SHIP_VERTS, shipVertexArray2, -shipScale,
+		-wobbleRot, Vec2( centerX + shipOffsetX, centerY - bob ) );
+
+	// Play triangle
+	float triBase = SCREEN_SIZE_X * 0.05f;
+	float triPulse = 1.f + 0.06f * SinDegrees( currentTime * 180.f );
+	float triSize = triBase * triPulse;
+
 	Vertex triangleVertexArray[3];
 	triangleVertexArray[0].m_position = Vec3( centerX - triSize, centerY - triSize, 0.f );
 	triangleVertexArray[1].m_position = Vec3( centerX - triSize, centerY + triSize, 0.f );
 	triangleVertexArray[2].m_position = Vec3( centerX + triSize, centerY, 0.f );
-	float alpha = 0.5f + 0.5f * SinDegrees( ( float ) GetCurrentTimeSeconds() * 180.f );
-	Rgba8 triangleColor = Rgba8( 0, 153, 0, ( unsigned char ) ( alpha * 255.f ) );
+
+	float triAlpha = 0.55f + 0.45f * SinDegrees( currentTime * 180.f );
+	Rgba8 triangleColor = Rgba8( 0, 153, 0, ( unsigned char ) ( triAlpha * 255.f ) );
 	triangleVertexArray[0].m_color = triangleColor;
 	triangleVertexArray[1].m_color = triangleColor;
 	triangleVertexArray[2].m_color = triangleColor;
 
-	g_engine->m_renderer->DrawVertexArray( PlayerShip::NUM_SHIP_VERTS, shipVertexArray1 );
-	g_engine->m_renderer->DrawVertexArray( PlayerShip::NUM_SHIP_VERTS, shipVertexArray2 );
-	g_engine->m_renderer->DrawVertexArray( 3, triangleVertexArray );
-
 	// Text
-	std::vector<Vertex> textVertexArray;
-	AddVertsForTextTriangles2D( textVertexArray, "Starship", Vec2( 200.f, 550.f ), 80.f, brightCyan );
-	AddVertsForTextTriangles2D( textVertexArray, "Gold", Vec2( 505.f, 490.f ), 60.f, brightYellow );
-	// AddVertsForTextTriangles2D( textVertexArray, "Press Start or A to Play", Vec2( 250.f, 300.f ), 30.f, brightCyan );
+	std::vector<Vertex> textVerts;
+	textVerts.reserve( 4096 );
 
-	g_engine->m_renderer->DrawVertexArray( (int) textVertexArray.size(), textVertexArray.data() );
+	float starshipStartX = SCREEN_SIZE_X / 2.f - 250.f;
+	float starshipStartY = 600.f;
+	float goldStartX = SCREEN_SIZE_X / 2.f + 60.f;
+	float goldStartY = 540.f;
+	float glowOffset = 4.f;
+	float jitterX = SinDegrees( currentTime * 720.f );
+	AddVertsForTextTriangles2D( textVerts, "Starship", Vec2( starshipStartX + jitterX + glowOffset, starshipStartY + glowOffset ), 80.f, dimCyan );
+	AddVertsForTextTriangles2D( textVerts, "Starship", Vec2( starshipStartX + jitterX, starshipStartY), 80.f, flickerCol );
+	AddVertsForTextTriangles2D( textVerts, "Gold", Vec2( goldStartX + glowOffset, goldStartY + glowOffset ), 60.f, dimYellow );
+	AddVertsForTextTriangles2D( textVerts, "Gold", Vec2( goldStartX, goldStartY ), 60.f, brightYellow );
+
+	float promptStartX = SCREEN_SIZE_X / 2.f - 270.f;
+	float promptStartY = 150.f;
+	float promptAlpha = 0.35f + 0.65f * ( 0.5f * ( 1.f + SinDegrees( currentTime * 240.f ) ) );
+	Rgba8 promptCol = Rgba8( neonPink.r, neonPink.g, neonPink.b, ( unsigned char ) ( promptAlpha * 255.f ) );
+	AddVertsForTextTriangles2D( textVerts, "Press Start or A to Play", Vec2( promptStartX, promptStartY ), 30.f, promptCol );
+
+
+	// Render 
+	RenderParallaxBackground();
+	g_engine->m_renderer->DrawVertexArray( PlayerShip::NUM_SHIP_VERTS, shipVertexArray2 );
+	g_engine->m_renderer->DrawVertexArray( PlayerShip::NUM_SHIP_VERTS, shipVertexArray1 );
+	g_engine->m_renderer->DrawVertexArray( 3, triangleVertexArray );
+	g_engine->m_renderer->DrawVertexArray( ( int ) textVerts.size(), textVerts.data() );
+
+	g_engine->m_renderer->EndCamera( *m_screenCamera );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game::RenderParallaxBackground() const 
+{
+	g_engine->m_renderer->BeginCamera( *m_screenCamera );
+
+	const int   numOfColumns = 20;
+	const int   tailLength = 12;
+	const float glyphCellHeight = 18.0f;
+	const float columnSpacingPixels = ( float ) SCREEN_SIZE_X / ( float ) numOfColumns;
+	const float minSpeed = 50.0f;
+	const float maxSpeed = 110.0f;
+
+	const Rgba8 headColor = Rgba8( 140, 255, 200, 200 );
+	const Rgba8 tailColor = Rgba8( 60, 200, 170, 150 );
+
+	static const char* const glyphSet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+	const int glyphSetLength = 36;
+
+	static bool  isInitialised = false;
+	static float columnHeadY[numOfColumns];
+	static float columnSpeed[numOfColumns];
+	static float lastUpdateTime = 0.0f;
+	
+	RandomNumberGenerator rng;
+
+	if ( !isInitialised )
+	{
+		for ( int columnIndex = 0; columnIndex < numOfColumns; ++columnIndex )
+		{
+			columnSpeed[columnIndex] = rng.RollRandomFloatInRange( minSpeed, maxSpeed );
+
+			float randomStartRatio = rng.RollRandomFloatZeroToOne();
+			float maxStartY = ( float ) SCREEN_SIZE_Y + ( float ) tailLength * glyphCellHeight;
+			columnHeadY[columnIndex] = randomStartRatio * maxStartY;
+		}
+
+		lastUpdateTime = ( float ) GetCurrentTimeSeconds();
+		isInitialised = true;
+	}
+
+	float currentTime = ( float ) GetCurrentTimeSeconds();
+	float deltaSeconds = currentTime - lastUpdateTime;
+	if ( deltaSeconds < 0.0f ) deltaSeconds = 0.0f;
+	if ( deltaSeconds > 0.1f ) deltaSeconds = 0.1f;
+	lastUpdateTime = currentTime;
+
+	std::vector<Vertex> textVertices;
+	textVertices.reserve( numOfColumns * tailLength * 12 );
+
+	for ( int columnIndex = 0; columnIndex < numOfColumns; ++ columnIndex )
+	{
+		columnHeadY[columnIndex] -= columnSpeed[columnIndex] * deltaSeconds;
+
+		float minY = -glyphCellHeight * ( float ) tailLength;
+		float maxY = ( float ) SCREEN_SIZE_Y + glyphCellHeight * ( float ) tailLength;
+
+		if ( columnHeadY[columnIndex] < minY )
+		{
+			columnSpeed[columnIndex] = rng.RollRandomFloatInRange( minSpeed, maxSpeed );
+			columnHeadY[columnIndex] = maxY;
+		}
+
+		float columnCenterX = ( columnIndex + 0.5f ) * columnSpacingPixels;
+		float glyphWidth = glyphCellHeight * 0.6f;
+		float glyphStartX = columnCenterX - glyphWidth * 0.5f;
+
+		for ( int tailIndex = 0; tailIndex < tailLength; ++tailIndex )
+		{
+			float glyphYPosition = columnHeadY[columnIndex] - ( float ) tailIndex * glyphCellHeight;
+			if ( glyphYPosition < -glyphCellHeight || glyphYPosition >( float )SCREEN_SIZE_Y + glyphCellHeight )
+			{
+				continue;
+			}
+
+			int frameTicker = ( int ) ( currentTime * 10.0f );
+			int glyphIndex = ( columnIndex * 131 + tailIndex * 17 + frameTicker ) % glyphSetLength;
+			if ( glyphIndex < 0 )
+			{
+				glyphIndex += glyphSetLength;
+			}
+
+			char glyphText[2];
+			glyphText[0] = glyphSet[glyphIndex];
+			glyphText[1] = '\0';
+
+			Rgba8 glyphColour;
+			if ( tailIndex == 0 )
+			{
+				glyphColour = headColor;
+			}
+			else
+			{
+				float t = ( float ) tailIndex / ( float ) tailLength;
+				glyphColour.r = ( unsigned char ) Interpolate( ( float ) headColor.r, ( float ) tailColor.r, t );
+				glyphColour.g = ( unsigned char ) Interpolate( ( float ) headColor.g, ( float ) tailColor.g, t );
+				glyphColour.b = ( unsigned char ) Interpolate( ( float ) headColor.b, ( float ) tailColor.b, t );
+				glyphColour.a = ( unsigned char ) Interpolate( ( float ) headColor.a, ( float ) tailColor.a, t );
+			}
+			if ( tailIndex > 0 )
+			{
+				float fadeRatio = 1.0f - ( ( float ) tailIndex / ( float ) tailLength );
+				glyphColour.a = ( unsigned char ) ( ( float ) glyphColour.a * fadeRatio );
+			}
+
+			AddVertsForTextTriangles2D( textVertices, glyphText, Vec2( glyphStartX, glyphYPosition ), glyphCellHeight, glyphColour );
+		}
+	}
+
+	if ( !textVertices.empty() )
+	{
+		g_engine->m_renderer->DrawVertexArray( ( int ) textVertices.size(), textVertices.data() );
+	}
 
 	g_engine->m_renderer->EndCamera( *m_screenCamera );
 }
@@ -725,6 +886,8 @@ void Game::RenderAttractMode() const
 //-----------------------------------------------------------------------------------------------
 void Game::RenderEntities() const
 {
+	g_engine->m_renderer->BeginCamera( *m_worldCamera );
+
 	// Player ship
 	m_playerShip->Render();
 
@@ -772,6 +935,8 @@ void Game::RenderEntities() const
 			m_debris[debrisIndex]->Render();
 		}
 	}
+
+	g_engine->m_renderer->EndCamera( *m_worldCamera );
 }
 
 
