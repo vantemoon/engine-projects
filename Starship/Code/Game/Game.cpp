@@ -164,6 +164,7 @@ void Game::Update( float deltaSeconds )
 
 	if ( m_isScanModeOn )
 	{
+		printf( "SCAN MODE ON\n" );
 		deltaSeconds *= 0.1f;
 	};
 
@@ -663,6 +664,12 @@ void Game::Render() const
 	
 	RenderParallaxBackground();
 	RenderEntities();
+
+	if ( m_isScanModeOn )
+	{
+		RenderScanMode();
+	}
+
 	RenderHUD();
 
 	if ( m_isDebugFeaturesOn )
@@ -967,6 +974,28 @@ void Game::RenderHUD() const
 	}
 
 	g_engine->m_renderer->EndCamera( *m_screenCamera );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game::RenderScanMode() const 
+{
+	// Full screen semi-transparent overlay
+	Rgba8 overlayColor = Rgba8( 0, 255, 0, 50 );
+	Vertex overlayVerts[6];
+	overlayVerts[0].m_position = Vec3( 0.f, 0.f, 0.f );
+	overlayVerts[0].m_color = overlayColor;
+	overlayVerts[1].m_position = Vec3( ( float ) SCREEN_SIZE_X, 0.f, 0.f );
+	overlayVerts[1].m_color = overlayColor;
+	overlayVerts[2].m_position = Vec3( ( float ) SCREEN_SIZE_X, ( float ) SCREEN_SIZE_Y, 0.f );
+	overlayVerts[2].m_color = overlayColor;
+	overlayVerts[3].m_position = Vec3( 0.f, 0.f, 0.f );
+	overlayVerts[3].m_color = overlayColor;
+	overlayVerts[4].m_position = Vec3( ( float ) SCREEN_SIZE_X, ( float ) SCREEN_SIZE_Y, 0.f );
+	overlayVerts[4].m_color = overlayColor;
+	overlayVerts[5].m_position = Vec3( 0.f, ( float ) SCREEN_SIZE_Y, 0.f );
+	overlayVerts[5].m_color = overlayColor;
+	g_engine->m_renderer->DrawVertexArray( 6, overlayVerts );
 }
 
 

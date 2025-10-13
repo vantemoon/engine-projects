@@ -223,6 +223,10 @@ void PlayerShip::UpdateFromController()
 
 	// Scanning with left trigger
 	float leftTriggerValue = controller.GetLeftTrigger();
+	if ( m_game->m_isScanModeOn )
+	{
+		return;
+	}
 	if ( leftTriggerValue > 0.f )
 	{
 		m_game->m_isScanModeOn = true;
