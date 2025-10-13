@@ -140,11 +140,11 @@ void PlayerShip::UpdateFromKeyboard()
 	}
 
 	// Movement
-	if ( g_engine->m_inputSystem->IsKeyDown( 'S' ) && !g_engine->m_inputSystem->IsKeyDown( 'F' ) )
+	if ( g_engine->m_inputSystem->IsKeyDown( 'A' ) && !g_engine->m_inputSystem->IsKeyDown( 'D' ) )
 	{
 		m_game->m_playerShip->m_isTurningLeft = true;
 	}
-	else if ( g_engine->m_inputSystem->IsKeyDown( 'F' ) && !g_engine->m_inputSystem->IsKeyDown( 'S' ) )
+	else if ( g_engine->m_inputSystem->IsKeyDown( 'D' ) && !g_engine->m_inputSystem->IsKeyDown( 'A' ) )
 	{
 		m_game->m_playerShip->m_isTurningRight = true;
 	}
@@ -154,7 +154,7 @@ void PlayerShip::UpdateFromKeyboard()
 		m_game->m_playerShip->m_isTurningRight = false;
 	}
 
-	if ( g_engine->m_inputSystem->IsKeyDown( 'E' ) )
+	if ( g_engine->m_inputSystem->IsKeyDown( 'W' ) )
 	{
 		m_game->m_playerShip->m_isAccelerating = true;
 		m_thrustFraction = 1.f;
