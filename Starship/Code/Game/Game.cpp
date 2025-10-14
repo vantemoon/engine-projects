@@ -1086,7 +1086,7 @@ void Game::RenderHUD() const
 
 	Rgba8 bgColour = Rgba8( 20, 24, 32, 200 );
 	Rgba8 borderColour = Rgba8( 0, 255, 220, 180 );
-	Rgba8 fillColour = Rgba8( 246, 149, 59, 230 );
+	Rgba8 fillColour = Rgba8( 253, 239, 3, 230 );
 	Rgba8 lowColour = Rgba8( 255, 60, 180, 230 );
 
 	bool belowBothCost = ( energyVal < detCost ) && ( energyVal < telCost );
@@ -1114,20 +1114,21 @@ void Game::RenderHUD() const
 	fill[5] = Vertex( Vec3( barX, barY + barHeight, 0.f ), fillColour, Vec2( 0, 0 ) );
 	g_engine->m_renderer->DrawVertexArray( 6, fill );
 
-	DebugDrawLine( Vec2( barX, barY ), Vec2( barX + barWidth, barY ), 2.f, borderColour, borderColour );
-	DebugDrawLine( Vec2( barX + barWidth, barY ), Vec2( barX + barWidth, barY + barHeight ), 2.f, borderColour, borderColour );
-	DebugDrawLine( Vec2( barX + barWidth, barY + barHeight ), Vec2( barX, barY + barHeight ), 2.f, borderColour, borderColour );
-	DebugDrawLine( Vec2( barX, barY + barHeight ), Vec2( barX, barY ), 2.f, borderColour, borderColour );
+	DebugDrawLine( Vec2( barX, barY ), Vec2( barX + barWidth, barY ), 4.f, borderColour, borderColour );
+	DebugDrawLine( Vec2( barX + barWidth, barY ), Vec2( barX + barWidth, barY + barHeight ), 4.f, borderColour, borderColour );
+	DebugDrawLine( Vec2( barX + barWidth, barY + barHeight ), Vec2( barX, barY + barHeight ), 4.f, borderColour, borderColour );
+	DebugDrawLine( Vec2( barX, barY + barHeight ), Vec2( barX, barY ), 4.f, borderColour, borderColour );
 
 	Rgba8 tickColour = Rgba8( 180, 230, 255, 200 );
 	float detX = barX + barWidth * ( detCost / energyMax );
 	float telX = barX + barWidth * ( telCost / energyMax );
-	DebugDrawLine( Vec2( detX, barY - 3.f ), Vec2( detX, barY + barHeight + 3.f ), 1.f, tickColour, tickColour );
-	DebugDrawLine( Vec2( telX, barY - 3.f ), Vec2( telX, barY + barHeight + 3.f ), 1.f, tickColour, tickColour );
+	DebugDrawLine( Vec2( detX, barY - 3.f ), Vec2( detX, barY + barHeight + 3.f ), 4.f, tickColour, tickColour );
+	DebugDrawLine( Vec2( telX, barY - 3.f ), Vec2( telX, barY + barHeight + 3.f ), 4.f, tickColour, tickColour );
 
 	std::vector<Vertex> textVerts;
 	std::string labelEnergy = Stringf( "ENERGY: %d / %d", ( int ) energyVal, ( int ) energyMax );
-	AddVertsForTextTriangles2D( textVerts, labelEnergy, Vec2( barX, barY + 22.f ), 16.f, Rgba8( 140, 255, 200, 230 ) );
+	AddVertsForTextTriangles2D( textVerts, labelEnergy, Vec2( barX + 1.5f, barY + 30.f + 1.5f ), 16.f, Rgba8( 253, 239, 3, 60 ) );
+	AddVertsForTextTriangles2D( textVerts, labelEnergy, Vec2( barX, barY + 30.f ), 16.f, Rgba8( 253, 239, 3, 230 ) );
 
 	g_engine->m_renderer->DrawVertexArray( ( int ) textVerts.size(), textVerts.data() );
 

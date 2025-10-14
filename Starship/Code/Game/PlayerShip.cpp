@@ -227,7 +227,7 @@ void PlayerShip::UpdateFromKeyboard()
 	}
 
 	// Scanning
-	if ( g_engine->m_inputSystem->IsKeyDown( 'T' ) )
+	if ( IsAlive() && g_engine->m_inputSystem->IsKeyDown( 'T' ) )
 	{
 		m_game->m_isScanModeOn = true;
 		m_game->BuildScanTargets();
@@ -235,6 +235,9 @@ void PlayerShip::UpdateFromKeyboard()
 		{
 			m_game->m_currentSelectedEntityIndex = m_game->GetEnemyClosestToPlayer();
 			m_game->m_isTargetInitialized = true;
+
+			SoundID scanSound = g_engine->m_audioSystem->CreateOrGetSound( "Data/Scan.wav" );
+			g_engine->m_audioSystem->StartSound( scanSound, false, 0.3f, 0.f, 1.f );
 		}
 	}
 	else if ( g_engine->m_inputSystem->WasKeyJustReleased( 'T' ) )
@@ -255,10 +258,16 @@ void PlayerShip::UpdateFromKeyboard()
 		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_LEFTARROW ) )
 		{
 			m_game->m_currentSelectedEntityIndex = m_game->StepCurrentSelectedEntityIndex( m_game->m_currentSelectedEntityIndex, -1 );
+
+			SoundID scanSound = g_engine->m_audioSystem->CreateOrGetSound( "Data/Scan.wav" );
+			g_engine->m_audioSystem->StartSound( scanSound, false, 0.3f, 0.f, 1.f );
 		}
 		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_RIGHTARROW ) )
 		{
 			m_game->m_currentSelectedEntityIndex = m_game->StepCurrentSelectedEntityIndex( m_game->m_currentSelectedEntityIndex, 1 );
+
+			SoundID scanSound = g_engine->m_audioSystem->CreateOrGetSound( "Data/Scan.wav" );
+			g_engine->m_audioSystem->StartSound( scanSound, false, 0.3f, 0.f, 1.f );
 		}
 	}
 }
@@ -316,7 +325,7 @@ void PlayerShip::UpdateFromController( float deltaSeconds )
 	float leftTriggerValue = controller.GetLeftTrigger();
 	bool isLeftTriggerPressed = leftTriggerValue > 0.f;
 	bool wasLeftTriggerJustReleased = !isLeftTriggerPressed && wasLeftTriggerPressedLastFrame;
-	if ( isLeftTriggerPressed && !wasLeftTriggerPressedLastFrame )
+	if ( IsAlive() && isLeftTriggerPressed && !wasLeftTriggerPressedLastFrame )
 	{
 		m_game->m_isScanModeOn = true;
 		m_game->BuildScanTargets();
