@@ -572,7 +572,6 @@ int TestSet_MP1A04_MiscGeometricUtilities()
 //-----------------------------------------------------------------------------------------------
 void RunTests_MP1A04()
 {
-	printf( "Running tests for MP1-A04 (version 2)...\n" );
 	RunTestSet( true, TestSet_MP1A04_PushOutOf,					"MP1-A04: Push-out-of" );
 	RunTestSet( true, TestSet_MP1A04_ProjectAndReflect,			"MP1-A04: Project and reflect" );
 	RunTestSet( true, TestSet_MP1A04_TransformUsingIJ,			"MP1-A04: Transform using IJ bases" );
