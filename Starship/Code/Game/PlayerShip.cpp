@@ -106,7 +106,7 @@ void PlayerShip::Update( float deltaSeconds )
 	Entity::Update( deltaSeconds );
 
 	UpdateFromKeyboard();
-	UpdateFromController();
+	UpdateFromController( deltaSeconds );
 
 	if ( IsAlive() )
 		UpdateEnergy( deltaSeconds );
@@ -265,7 +265,7 @@ void PlayerShip::UpdateFromKeyboard()
 
 
 //-----------------------------------------------------------------------------------------------
-void PlayerShip::UpdateFromController()
+void PlayerShip::UpdateFromController( float deltaSeconds )
 {
 	XboxController const& controller = g_engine->m_inputSystem->GetController( 0 );
 
@@ -281,11 +281,23 @@ void PlayerShip::UpdateFromController()
 
 	// Attacking
 	static bool wasRightTriggerPressedLastFrame = false;
+	static float fireCooldownSeconds = 0.f;
+	const float fireIntervalSeconds = 0.12f;
+
 	float rightTriggerValue = controller.GetRightTrigger();
-	bool isRightTriggerPressed = rightTriggerValue > 0.f;
-	if ( controller.WasButtonJustPressed( XBOX_BUTTON_A ) || ( isRightTriggerPressed && !wasRightTriggerPressedLastFrame) )
+	bool  isRightTriggerPressed = ( rightTriggerValue > 0.35f );
+
+	fireCooldownSeconds -= deltaSeconds;
+	if ( fireCooldownSeconds < 0.f )
+		fireCooldownSeconds = 0.f;
+
+	bool triggerJustPressed = ( isRightTriggerPressed && !wasRightTriggerPressedLastFrame );
+	bool triggerHeldAndReady = ( isRightTriggerPressed && fireCooldownSeconds <= 0.f );
+
+	if ( controller.WasButtonJustPressed( XBOX_BUTTON_A ) || triggerJustPressed || triggerHeldAndReady )
 	{
 		m_game->SpawnBulletFromPlayerShip();
+		fireCooldownSeconds = fireIntervalSeconds;
 	}
 	wasRightTriggerPressedLastFrame = isRightTriggerPressed;
 

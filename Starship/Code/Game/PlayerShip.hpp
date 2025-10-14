@@ -30,12 +30,11 @@ public:
 
 	void  Update( float deltaSeconds ) override;
 	void  UpdateFromKeyboard();
-	void  UpdateFromController();
+	void  UpdateFromController( float deltaseconds );
 	void  UpdateEnergy( float deltaSeconds );
 	bool  HasEnoughEnergy( float cost ) const;
 	float GetEnergyFraction() const;
 	bool  TrySpendEnergy( float cost );
-	bool IsLowEnergyFlashing() const;
 	void  Render() const override;
 	void  Die() override;
 	void  Respawn();

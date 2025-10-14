@@ -507,6 +507,45 @@ void Game::UpdateFromController()
 			m_currentGameState = GameState::ATTRACT_MODE;
 			m_isScanModeOn = false;
 		}
+
+		if ( m_isScanModeOn && controller.WasButtonJustPressed( XBOX_BUTTON_RIGHT_SHOULDER ) )
+		{
+			// Perform scan action on the currently selected target
+			if ( m_currentSelectedEntityIndex >= 0 && m_currentSelectedEntityIndex < MAX_TARGETS )
+			{
+				Entity* target = m_scanTargets[m_currentSelectedEntityIndex];
+				if ( target != nullptr && target->IsAlive() )
+				{
+					if ( target->m_isAsteroid )
+					{
+						if ( m_playerShip->TrySpendEnergy( m_playerShip->m_costDetonate ) )
+						{
+							target->TakeDamage( target->m_health );
+						}
+					}
+					else if ( target->m_isBeetle )
+					{
+						if ( m_playerShip->TrySpendEnergy( m_playerShip->m_costTelefrag ) )
+						{
+							Vec2 targetPosition = target->m_position;
+							target->TakeDamage( target->m_health );
+							m_playerShip->m_position = targetPosition;
+						}
+					}
+					else if ( target->m_isWasp )
+					{
+						if ( m_playerShip->TrySpendEnergy( m_playerShip->m_costTelefrag ) )
+						{
+							Vec2 targetPosition = target->m_position;
+							target->TakeDamage( target->m_health );
+							m_playerShip->m_position = targetPosition;
+						}
+					}
+					BuildScanTargets();
+					m_currentSelectedEntityIndex = GetEnemyClosestToPlayer();
+				}
+			}
+		}
 	}
 }
 
@@ -1047,7 +1086,7 @@ void Game::RenderHUD() const
 
 	Rgba8 bgColour = Rgba8( 20, 24, 32, 200 );
 	Rgba8 borderColour = Rgba8( 0, 255, 220, 180 );
-	Rgba8 fillColour = Rgba8( 0, 255, 200, 230 );
+	Rgba8 fillColour = Rgba8( 246, 149, 59, 230 );
 	Rgba8 lowColour = Rgba8( 255, 60, 180, 230 );
 
 	bool belowBothCost = ( energyVal < detCost ) && ( energyVal < telCost );
