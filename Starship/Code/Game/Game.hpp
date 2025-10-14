@@ -88,4 +88,5 @@ private:
 	void DebugDraw() const;
 	void InitializeTargersArray( Entity** out_targetsArray, int maxTargets );
 	Vec3 TransformWorldToScreen( Vec3 const& worldPosition ) const;
+	bool IsOnScreen( Vec2 const& worldPosition, float cosmeticRadius ) const;
 };

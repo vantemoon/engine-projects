@@ -1247,9 +1247,14 @@ int Game::BuildScanTargets()
 	// Asteroids
 	for ( int asteroidIndex = 0; asteroidIndex < MAX_ASTEROIDS; ++asteroidIndex )
 	{
-		if ( m_asteroids[asteroidIndex] != nullptr && !m_asteroids[asteroidIndex]->m_isDead )
+		Asteroid* asteroid = m_asteroids[asteroidIndex];
+
+		if ( asteroid != nullptr && !asteroid->m_isDead )
 		{
-			m_scanTargets[m_numScanTargets] = m_asteroids[asteroidIndex];
+			if ( !IsOnScreen( asteroid->m_position, asteroid->m_cosmeticRadius ) )
+				continue;
+
+			m_scanTargets[m_numScanTargets] = asteroid;
 			++m_numScanTargets;
 			if ( m_numScanTargets >= MAX_TARGETS )
 				return m_numScanTargets;
@@ -1259,9 +1264,14 @@ int Game::BuildScanTargets()
 	// Beetles
 	for ( int beetleIndex = 0; beetleIndex < MAX_BEETLES; ++beetleIndex )
 	{
-		if ( m_beetles[beetleIndex] != nullptr && !m_beetles[beetleIndex]->m_isDead )
+		Beetle* beetle = m_beetles[beetleIndex];
+
+		if ( beetle != nullptr && !beetle->m_isDead )
 		{
-			m_scanTargets[m_numScanTargets] = m_beetles[beetleIndex];
+			if ( !IsOnScreen( beetle->m_position, beetle->m_cosmeticRadius ) )
+				continue;
+
+			m_scanTargets[m_numScanTargets] = beetle;
 			++m_numScanTargets;
 			if ( m_numScanTargets >= MAX_TARGETS )
 				return m_numScanTargets;
@@ -1271,9 +1281,14 @@ int Game::BuildScanTargets()
 	// Wasps
 	for ( int waspIndex = 0; waspIndex < MAX_WASPS; ++waspIndex )
 	{
-		if ( m_wasps[waspIndex] != nullptr && !m_wasps[waspIndex]->m_isDead )
+		Wasp* wasp = m_wasps[waspIndex];
+
+		if ( wasp != nullptr && !wasp->m_isDead )
 		{
-			m_scanTargets[m_numScanTargets] = m_wasps[waspIndex];
+			if ( !IsOnScreen( wasp->m_position, wasp->m_cosmeticRadius ) )
+				continue;
+
+			m_scanTargets[m_numScanTargets] = wasp;
 			++m_numScanTargets;
 			if ( m_numScanTargets >= MAX_TARGETS )
 				return m_numScanTargets;
@@ -1283,6 +1298,18 @@ int Game::BuildScanTargets()
 	return m_numScanTargets;
 }
 
+
+//-----------------------------------------------------------------------------------------------
+bool Game::IsOnScreen( Vec2 const& worldPosition, float cosmeticRadius ) const
+{
+	Vec2 worldBottomLeft = m_worldCamera->GetOrthoBottomLeft();
+	Vec2 worldTopRight = m_worldCamera->GetOrthoTopRight();
+	if ( worldPosition.x + cosmeticRadius < worldBottomLeft.x ) return false;
+	if ( worldPosition.x - cosmeticRadius > worldTopRight.x ) return false;
+	if ( worldPosition.y + cosmeticRadius < worldBottomLeft.y ) return false;
+	if ( worldPosition.y - cosmeticRadius > worldTopRight.y ) return false;
+	return true;
+}
 
 
 //-----------------------------------------------------------------------------------------------
@@ -1658,4 +1685,9 @@ void Game::Reset()
 		delete m_debris[i];
 		m_debris[i] = nullptr;
 	}
+
+	m_isScreenShaking = false;
+	m_isScanModeOn = false;
+	m_isTargetInitialized = false;
+	m_isDebugFeaturesOn = false;
 }
