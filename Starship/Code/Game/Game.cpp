@@ -12,6 +12,7 @@
 #include "Engine/Core/ErrorWarningAssert.hpp"
 #include "Engine/Core/Rgba8.hpp"
 #include "Engine/Core/SimpleTriangleFont.hpp"
+#include "Engine/Core/StringUtils.hpp"
 #include "Engine/Core/Time.hpp"
 #include "Engine/Core/Vertex.hpp"
 #include "Engine/Core/VertexUtils.hpp"
@@ -212,12 +213,21 @@ void Game::Update( float deltaSeconds )
 			m_worldCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( WORLD_SIZE_X, WORLD_SIZE_Y ) );
 		}
 	}
+	
+	UpdateScanMode( deltaSeconds );
 
 	if ( m_isPausedAfterNextUpdate )
 	{
 		m_currentGameState = GameState::PAUSED;
 		m_isPausedAfterNextUpdate = false;
 	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game::UpdateScanMode( [[maybe_unused]] float deltaSeconds )
+{
+	BuildScanTargets();
 }
 
 
@@ -401,6 +411,45 @@ void Game::UpdateFromKeyboard()
 		else if ( m_currentGameState == GameState::PAUSED && g_engine->m_inputSystem->WasKeyJustPressed( 'P' ) )
 		{
 			m_currentGameState = GameState::PLAYING;
+		}
+
+		if ( m_isScanModeOn && g_engine->m_inputSystem->WasKeyJustPressed( 'F' ) )
+		{
+			// Perform scan action on the currently selected target
+			if ( m_currentSelectedEntityIndex >= 0 && m_currentSelectedEntityIndex < MAX_TARGETS )
+			{
+				Entity* target = m_scanTargets[m_currentSelectedEntityIndex];
+				if ( target != nullptr && target->IsAlive() )
+				{
+					if ( target->m_isAsteroid )
+					{
+						if ( m_playerShip->TrySpendEnergy( m_playerShip->m_costDetonate ) )
+						{
+							target->TakeDamage( target->m_health );
+						}
+					}
+					else if ( target->m_isBeetle )
+					{
+						if ( m_playerShip->TrySpendEnergy( m_playerShip->m_costTelefrag ) )
+						{
+							Vec2 targetPosition = target->m_position;
+							target->TakeDamage( target->m_health );
+							m_playerShip->m_position = targetPosition;
+						}
+					}
+					else if ( target->m_isWasp )
+					{
+						if ( m_playerShip->TrySpendEnergy( m_playerShip->m_costTelefrag ) )
+						{
+							Vec2 targetPosition = target->m_position;
+							target->TakeDamage( target->m_health );
+							m_playerShip->m_position = targetPosition;
+						}
+					}
+					BuildScanTargets();
+					m_currentSelectedEntityIndex = GetEnemyClosestToPlayer();
+				}
+			}
 		}
 
 		// Toggle debug features
@@ -907,9 +956,6 @@ void Game::RenderEntities() const
 {
 	g_engine->m_renderer->BeginCamera( *m_worldCamera );
 
-	// Player ship
-	m_playerShip->Render();
-
 	// Bullets
 	for ( int bulletIndex = 0; bulletIndex < MAX_BULLETS; ++ bulletIndex )
 	{
@@ -955,6 +1001,9 @@ void Game::RenderEntities() const
 		}
 	}
 
+	// Player ship
+	m_playerShip->Render();
+
 	g_engine->m_renderer->EndCamera( *m_worldCamera );
 }
 
@@ -985,6 +1034,64 @@ void Game::RenderHUD() const
 		g_engine->m_renderer->DrawVertexArray( PlayerShip::NUM_SHIP_VERTS, shipVertexArray );
 	}
 
+	const float barX = 24.f;
+	const float barY = ( float ) SCREEN_SIZE_Y - 120.f;
+	const float barWidth = 260.f;
+	const float barHeight = 18.f;
+
+	const float energyRatio = m_playerShip->GetEnergyFraction();
+	const float energyVal = m_playerShip->m_currentEnergy;
+	const float energyMax = m_playerShip->m_maxEnergy;
+	const float detCost = m_playerShip->m_costDetonate;
+	const float telCost = m_playerShip->m_costTelefrag;
+
+	Rgba8 bgColour = Rgba8( 20, 24, 32, 200 );
+	Rgba8 borderColour = Rgba8( 0, 255, 220, 180 );
+	Rgba8 fillColour = Rgba8( 0, 255, 200, 230 );
+	Rgba8 lowColour = Rgba8( 255, 60, 180, 230 );
+
+	bool belowBothCost = ( energyVal < detCost ) && ( energyVal < telCost );
+	if ( belowBothCost )
+	{
+		fillColour = lowColour;
+	}
+
+	Vertex bg[6];
+	bg[0] = Vertex( Vec3( barX, barY, 0.f ), bgColour, Vec2( 0, 0) );
+	bg[1] = Vertex( Vec3( barX + barWidth, barY, 0.f ), bgColour, Vec2( 0, 0 ) );
+	bg[2] = Vertex( Vec3( barX + barWidth, barY + barHeight, 0.f ), bgColour, Vec2( 0, 0 ) );
+	bg[3] = Vertex( Vec3( barX, barY, 0.f ), bgColour, Vec2( 0, 0 ) );
+	bg[4] = Vertex( Vec3( barX + barWidth, barY + barHeight, 0.f ), bgColour, Vec2( 0, 0 ) );
+	bg[5] = Vertex( Vec3( barX, barY + barHeight, 0.f ), bgColour, Vec2( 0, 0 ) );
+	g_engine->m_renderer->DrawVertexArray( 6, bg );
+
+	float fillW = barWidth * energyRatio;
+	Vertex fill[6];
+	fill[0] = Vertex( Vec3( barX, barY, 0.f ), fillColour, Vec2( 0, 0 ) );
+	fill[1] = Vertex( Vec3( barX + fillW, barY, 0.f ), fillColour, Vec2( 0, 0 ) );
+	fill[2] = Vertex( Vec3( barX + fillW, barY + barHeight, 0.f ), fillColour, Vec2( 0, 0 ) );
+	fill[3] = Vertex( Vec3( barX, barY, 0.f ), fillColour, Vec2( 0, 0 ) );
+	fill[4] = Vertex( Vec3( barX + fillW, barY + barHeight, 0.f ), fillColour, Vec2( 0, 0 ) );
+	fill[5] = Vertex( Vec3( barX, barY + barHeight, 0.f ), fillColour, Vec2( 0, 0 ) );
+	g_engine->m_renderer->DrawVertexArray( 6, fill );
+
+	DebugDrawLine( Vec2( barX, barY ), Vec2( barX + barWidth, barY ), 2.f, borderColour, borderColour );
+	DebugDrawLine( Vec2( barX + barWidth, barY ), Vec2( barX + barWidth, barY + barHeight ), 2.f, borderColour, borderColour );
+	DebugDrawLine( Vec2( barX + barWidth, barY + barHeight ), Vec2( barX, barY + barHeight ), 2.f, borderColour, borderColour );
+	DebugDrawLine( Vec2( barX, barY + barHeight ), Vec2( barX, barY ), 2.f, borderColour, borderColour );
+
+	Rgba8 tickColour = Rgba8( 180, 230, 255, 200 );
+	float detX = barX + barWidth * ( detCost / energyMax );
+	float telX = barX + barWidth * ( telCost / energyMax );
+	DebugDrawLine( Vec2( detX, barY - 3.f ), Vec2( detX, barY + barHeight + 3.f ), 1.f, tickColour, tickColour );
+	DebugDrawLine( Vec2( telX, barY - 3.f ), Vec2( telX, barY + barHeight + 3.f ), 1.f, tickColour, tickColour );
+
+	std::vector<Vertex> textVerts;
+	std::string labelEnergy = Stringf( "ENERGY: %d / %d", ( int ) energyVal, ( int ) energyMax );
+	AddVertsForTextTriangles2D( textVerts, labelEnergy, Vec2( barX, barY + 22.f ), 16.f, Rgba8( 140, 255, 200, 230 ) );
+
+	g_engine->m_renderer->DrawVertexArray( ( int ) textVerts.size(), textVerts.data() );
+
 	g_engine->m_renderer->EndCamera( *m_screenCamera );
 }
 
@@ -1011,15 +1118,58 @@ void Game::RenderScanMode() const
 	g_engine->m_renderer->DrawVertexArray( 6, overlayVerts );
 
 	// Highlight selected enemy
+	Entity* m_currentSelectedEntity = nullptr;
 	if ( m_currentSelectedEntityIndex >= 0 && m_currentSelectedEntityIndex < MAX_TARGETS ) {
-		Entity* m_currentSelectedEntity = m_scanTargets[m_currentSelectedEntityIndex];
-		if ( m_currentSelectedEntity != nullptr ) {
-			// Convert world position to screen position
-			Vec3 worldPos = Vec3( m_currentSelectedEntity->m_position.x, m_currentSelectedEntity->m_position.y, 0.f );
-			Vec3 screenPos = TransformWorldToScreen( worldPos );
-			float highlightRadius = m_currentSelectedEntity->m_cosmeticRadius * 1.5f * ( ( float ) SCREEN_SIZE_X / ( float ) WORLD_SIZE_X );
-			DebugDrawRing( Vec2( screenPos.x, screenPos.y ), highlightRadius, 1.5f, Rgba8( 0, 255, 0 ) );
+		m_currentSelectedEntity = m_scanTargets[m_currentSelectedEntityIndex];
+	}
+	if ( m_currentSelectedEntity != nullptr && m_currentSelectedEntity->IsAlive() ) {
+		// Convert world position to screen position
+		Vec3 worldPos = Vec3( m_currentSelectedEntity->m_position.x, m_currentSelectedEntity->m_position.y, 0.f );
+		Vec3 screenPos = TransformWorldToScreen( worldPos );
+		float highlightRadius = m_currentSelectedEntity->m_cosmeticRadius * 1.5f * ( ( float ) SCREEN_SIZE_X / ( float ) WORLD_SIZE_X );
+		DebugDrawRing( Vec2( screenPos.x, screenPos.y ), highlightRadius, 1.5f, Rgba8( 0, 255, 0 ) );
+
+		Vec3 panelPos;
+		const float panelWidth = 260.f;
+		const float panelHeight = 130.f;
+		if ( screenPos.x < SCREEN_SIZE_X * 0.5f ) // Left side of screen
+		{
+			panelPos.x = screenPos.x + highlightRadius + 10.f;
 		}
+		else // Right side of screen
+		{
+			panelPos.x = screenPos.x - highlightRadius - 10.f - panelWidth;
+		}
+		panelPos.y = screenPos.y - panelHeight * 0.5f;
+
+		char* entityTypeString = nullptr;
+		char* entityActionString = nullptr;
+
+		if ( m_currentSelectedEntity )
+		{
+			m_currentSelectedEntity->GetEnemyTypeAndAction(
+				&entityTypeString,
+				&entityActionString );
+		}
+
+		float distanceToPlayer = GetDistance2D( m_playerShip->m_position, m_currentSelectedEntity->m_position );
+		float speed = m_currentSelectedEntity->m_velocity.GetLength();
+
+		std::string positionString = Stringf( "Position: (%.2f, %.2f)", m_currentSelectedEntity->m_position.x, m_currentSelectedEntity->m_position.y );
+		std::string speedString = Stringf( "Speed: %.2f units/s", speed );
+		std::string distanceString = Stringf( "Distance: %.2f units", distanceToPlayer );
+		std::string healthString = Stringf( "Health: %d", m_currentSelectedEntity->m_health );
+		std::string typeString = Stringf( "Type: %s", entityTypeString );
+		std::string actionString = Stringf( "Action: %s", entityActionString );
+
+		std::vector<Vertex> textVerts;
+		AddVertsForTextTriangles2D( textVerts, actionString, Vec2( panelPos.x + 10.f, panelPos.y + 110.f ), 14.f, Rgba8( 255, 255, 0 ) );
+		AddVertsForTextTriangles2D( textVerts, typeString, Vec2( panelPos.x + 10.f, panelPos.y + 90.f ), 14.f, Rgba8( 255, 255, 255 ) );
+		AddVertsForTextTriangles2D( textVerts, healthString, Vec2( panelPos.x + 10.f, panelPos.y + 70.f ), 14.f, Rgba8( 255, 255, 255 ) );
+		AddVertsForTextTriangles2D( textVerts, distanceString, Vec2( panelPos.x + 10.f, panelPos.y + 50.f ), 14.f, Rgba8( 255, 255, 255 ) );
+		AddVertsForTextTriangles2D( textVerts, speedString, Vec2( panelPos.x + 10.f, panelPos.y + 30.f ), 14.f, Rgba8( 255, 255, 255 ) );
+		AddVertsForTextTriangles2D( textVerts, positionString, Vec2( panelPos.x + 10.f, panelPos.y + 10.f ), 14.f, Rgba8( 255, 255, 255 ) );
+		g_engine->m_renderer->DrawVertexArray( ( int ) textVerts.size(), textVerts.data() );
 	}
 
 	g_engine->m_renderer->EndCamera( *m_screenCamera );

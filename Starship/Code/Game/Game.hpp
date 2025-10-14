@@ -56,6 +56,7 @@ public:
 
 	void Update( float deltaSeconds);
 	void UpdateAttractMode( float deltaSeconds );
+	void UpdateScanMode( float deltaSeconds );
 	void UpdateEntities( float deltaSeconds );
 	void UpdateFromKeyboard();
 	void UpdateFromController();

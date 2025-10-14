@@ -130,7 +130,7 @@ void Entity::CheckCollisionWithBullets()
 //-----------------------------------------------------------------------------------------------
 void Entity::CheckCollisionWithPlayerShip()
 {
-	if ( m_game == nullptr || m_game->m_playerShip == nullptr || m_game->m_playerShip->m_isDead )
+	if ( m_game == nullptr || m_game->m_playerShip == nullptr || m_game->m_playerShip->m_isDead || m_isDead )
 		return;
 
 	PlayerShip* playerShip = m_game->m_playerShip;
@@ -139,5 +139,35 @@ void Entity::CheckCollisionWithPlayerShip()
 	if ( distanceSquared < ( combinedRadii * combinedRadii ) )
 	{
 		playerShip->Die();
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+// In Entity.cpp
+void Entity::GetEnemyTypeAndAction( char** out_type, char** out_action ) const
+{
+	*out_type = ( char* ) "Enemy";
+	*out_action = ( char* ) "None";
+
+	if ( m_isAsteroid )
+	{
+		*out_type = ( char* ) "Asteroid";
+		*out_action = ( char* ) "Detonate (40)";
+		return;
+	}
+
+	if ( m_isBeetle )
+	{
+		*out_type = ( char* ) "Beetle";
+		*out_action = ( char* ) "Telefrag (55)";
+		return;
+	}
+
+	if ( m_isWasp )
+	{
+		*out_type = ( char* ) "Wasp";
+		*out_action = ( char* ) "Telefrag (55)";
+		return;
 	}
 }

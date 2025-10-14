@@ -23,6 +23,7 @@ Beetle::Beetle( Game* game, Vec2 const& startingPosition )
 	m_physicsRadius = BEETLE_PHYSICS_RADIUS;
 	m_cosmeticRadius = BEETLE_COSMETIC_RADIUS;
 	m_health = 3;
+	m_isBeetle = true;
 
 	InitializeVertexArray();
 }

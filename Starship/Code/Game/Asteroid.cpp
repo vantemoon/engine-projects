@@ -23,6 +23,7 @@ Asteroid::Asteroid( Game* game, Vec2 const& startingPosition, float orientationD
 	m_physicsRadius = ASTEROID_PHYSICS_RADIUS;
 	m_cosmeticRadius = ASTEROID_COSMETIC_RADIUS;
 	m_health = 3;
+	m_isAsteroid = true;
 
 	InitializeVertexArray();
 };

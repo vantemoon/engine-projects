@@ -18,23 +18,34 @@ public:
 	bool  m_isTurningRight = false;
 	float m_thrustFraction = 0.f;
 
+	float m_maxEnergy = 100.f;
+	float m_currentEnergy = 100.f;
+	float m_energyRechargeRate = 10.f;
+	float m_costDetonate = 40.0f;
+	float m_costTelefrag = 55.0f;
+
 public:
 	PlayerShip( Game* game, Vec2 const& startingPosition, Vec2 const& startingVelocity );
 	~PlayerShip() override;
 
-	void Update( float deltaSeconds ) override;
-	void UpdateFromKeyboard();
-	void UpdateFromController();
-	void Render() const override;
-	void Die() override;
-	void Respawn();
-	void GetVertexArrayCopy( Vertex* out_vertexArray ) const;
+	void  Update( float deltaSeconds ) override;
+	void  UpdateFromKeyboard();
+	void  UpdateFromController();
+	void  UpdateEnergy( float deltaSeconds );
+	bool  HasEnoughEnergy( float cost ) const;
+	float GetEnergyFraction() const;
+	bool  TrySpendEnergy( float cost );
+	bool IsLowEnergyFlashing() const;
+	void  Render() const override;
+	void  Die() override;
+	void  Respawn();
+	void  GetVertexArrayCopy( Vertex* out_vertexArray ) const;
 
 private:
-	void InitializeVertexArray() override;
-	void RenderThrust() const;
-	void BounceOffWorldEdges();
-	void Accelerate( float deltaSeconds );
-	void TurnLeft();
-	void TurnRight();
+	void  InitializeVertexArray() override;
+	void  RenderThrust() const;
+	void  BounceOffWorldEdges();
+	void  Accelerate( float deltaSeconds );
+	void  TurnLeft();
+	void  TurnRight();
 };

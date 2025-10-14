@@ -27,6 +27,7 @@ PlayerShip::PlayerShip( Game* game, Vec2 const& startingPosition, Vec2 const& st
 	m_velocity = startingVelocity;
 	m_physicsRadius = PLAYER_SHIP_PHYSICS_RADIUS;
 	m_cosmeticRadius = PLAYER_SHIP_COSMETIC_RADIUS;
+	m_currentEnergy = m_maxEnergy;
 	
 	InitializeVertexArray();
 }
@@ -107,6 +108,9 @@ void PlayerShip::Update( float deltaSeconds )
 	UpdateFromKeyboard();
 	UpdateFromController();
 
+	if ( IsAlive() )
+		UpdateEnergy( deltaSeconds );
+
 	if ( m_isDead )
 		return;
 
@@ -131,6 +135,50 @@ void PlayerShip::Update( float deltaSeconds )
 	{
 		m_angularVelocityDegreesPerSecond = 0.f;
 	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void PlayerShip::UpdateEnergy( float deltaSeconds )
+{
+	if ( m_currentEnergy < m_maxEnergy )
+	{
+		m_currentEnergy += m_energyRechargeRate * deltaSeconds;
+		if ( m_currentEnergy > m_maxEnergy )
+		{
+			m_currentEnergy = m_maxEnergy;
+		}
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool PlayerShip::HasEnoughEnergy( float cost ) const
+{
+	return m_currentEnergy >= cost;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+float PlayerShip::GetEnergyFraction() const
+{
+	return m_currentEnergy / m_maxEnergy;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool PlayerShip::TrySpendEnergy( float cost )
+{
+	if ( !HasEnoughEnergy( cost ) )
+	{
+		return false;
+	}
+	m_currentEnergy -= cost;
+	if ( m_currentEnergy < 0.f )
+	{
+		m_currentEnergy = 0.f;
+	}
+	return true;
 }
 
 
