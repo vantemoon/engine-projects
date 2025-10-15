@@ -18,4 +18,5 @@ public:
 private:
 	void InitializeVertexArray() override;
 	void Accelerate( float deltaSeconds );
+	void WrapAroundScreen();
 };

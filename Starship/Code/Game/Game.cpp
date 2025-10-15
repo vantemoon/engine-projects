@@ -309,6 +309,17 @@ bool Game::IsReadyToStartNextWave() const
 			return false;
 	}
 
+	if ( m_waveNumber == NUM_OF_WAVES )
+	{
+		// Asteroids
+		for ( int asteroidIndex = 0; asteroidIndex < MAX_ASTEROIDS; ++ asteroidIndex )
+		{
+			Asteroid* asteroid = m_asteroids[asteroidIndex];
+			if ( asteroid != nullptr && asteroid->IsAlive() )
+				return false;
+		}
+	}
+
 	return true;
 }
 
@@ -1153,6 +1164,21 @@ void Game::RenderHUD() const
 	AddVertsForTextTriangles2D( textVerts, labelEnergy, Vec2( barX, barY + 30.f ), 16.f, Rgba8( 253, 239, 3, 230 ) );
 
 	g_engine->m_renderer->DrawVertexArray( ( int ) textVerts.size(), textVerts.data() );
+
+	const float cellH = 28.f;
+	const Rgba8 textColour( 244, 224, 77, 255 ); // neon yellow (good over cyan bg)
+	const Rgba8 shadowColour( 0, 0, 0, 180 );
+
+	std::string waveText = Stringf( "WAVE %i / %i", m_waveNumber, NUM_OF_WAVES );
+
+	float x = 0.5f * ( float ) SCREEN_SIZE_X - 110.f;
+	float y = ( float ) SCREEN_SIZE_Y - 80.f;
+
+	std::vector<Vertex> verts;
+	AddVertsForTextTriangles2D( verts, waveText, Vec2( x + 1.f, y - 1.f ), cellH, shadowColour );
+	AddVertsForTextTriangles2D( verts, waveText, Vec2( x, y ), cellH, textColour );
+
+	g_engine->m_renderer->DrawVertexArray( ( int ) verts.size(), verts.data() );
 
 	g_engine->m_renderer->EndCamera( *m_screenCamera );
 }

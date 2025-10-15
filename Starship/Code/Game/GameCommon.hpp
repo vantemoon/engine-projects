@@ -59,8 +59,8 @@ constexpr float BEETLE_PHYSICS_RADIUS = 1.5f;
 constexpr float BEETLE_COSMETIC_RADIUS = 2.f;
 
 constexpr float WASP_SPEED = 10.f;
-constexpr float WASP_MAX_SPEED = 200.f;
-constexpr float WASP_ACCELERATION = 20.f;
+constexpr float WASP_MAX_SPEED = 30.f;
+constexpr float WASP_ACCELERATION = 10.f;
 constexpr float WASP_PHYSICS_RADIUS = 1.25f;
 constexpr float WASP_COSMETIC_RADIUS = 1.5f;
 
