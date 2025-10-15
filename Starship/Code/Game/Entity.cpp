@@ -130,7 +130,7 @@ void Entity::CheckCollisionWithBullets()
 //-----------------------------------------------------------------------------------------------
 void Entity::CheckCollisionWithPlayerShip()
 {
-	if ( m_game == nullptr || m_game->m_playerShip == nullptr || m_game->m_playerShip->m_isDead || m_isDead )
+	if ( m_game == nullptr || m_game->m_playerShip == nullptr || m_game->m_playerShip->m_isDead || m_game->m_playerShip->m_isInvincible || m_isDead )
 		return;
 
 	PlayerShip* playerShip = m_game->m_playerShip;

@@ -44,7 +44,7 @@ void Beetle::Update( float deltaSeconds )
 {
 	Entity::Update( deltaSeconds );
 
-	if ( m_game->m_playerShip->m_isDead )
+	if ( m_game->m_playerShip->m_isDead || m_game->m_playerShip->m_isInvincible )
 	{
 		return;
 	}

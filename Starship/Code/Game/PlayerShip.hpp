@@ -24,6 +24,15 @@ public:
 	float m_costDetonate = 40.0f;
 	float m_costTelefrag = 55.0f;
 
+	bool  m_isInvincible = false;
+	float m_invincibleTimer = 0.0f;
+	float m_invincibleDuration = 2.5f;
+
+	bool  m_flashOn = true;
+	float m_flashTimer = 0.0f;
+	float m_flashInterval = 0.2f;
+	unsigned char m_flashAlpha = 120;
+
 public:
 	PlayerShip( Game* game, Vec2 const& startingPosition, Vec2 const& startingVelocity );
 	~PlayerShip() override;
@@ -39,6 +48,8 @@ public:
 	void  Die() override;
 	void  Respawn();
 	void  GetVertexArrayCopy( Vertex* out_vertexArray ) const;
+	void  StartRespawnInvincibility( float durationSeconds );
+	void  UpdateInvincibility( float deltaSeconds );
 
 private:
 	void  InitializeVertexArray() override;

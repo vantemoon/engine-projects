@@ -136,6 +136,9 @@ void PlayerShip::Update( float deltaSeconds )
 	{
 		m_angularVelocityDegreesPerSecond = 0.f;
 	}
+
+	if ( IsAlive() )
+		UpdateInvincibility( deltaSeconds );
 }
 
 
@@ -224,6 +227,7 @@ void PlayerShip::UpdateFromKeyboard()
 		{
 			Respawn();
 			--g_app->m_game->m_playerSpareLives;
+			StartRespawnInvincibility( m_invincibleDuration );
 		}
 	}
 
@@ -318,6 +322,7 @@ void PlayerShip::UpdateFromController( float deltaSeconds )
 		{
 			Respawn();
 			--g_app->m_game->m_playerSpareLives;
+			StartRespawnInvincibility( m_invincibleDuration );
 		}
 	}
 
@@ -373,6 +378,22 @@ void PlayerShip::Render() const
 	for( int vertIndex = 0; vertIndex < NUM_SHIP_VERTS; ++ vertIndex )
 	{
 		tempShipWorldVerts[vertIndex] = m_vertexArray[vertIndex];
+	}
+
+	if ( m_isInvincible )
+	{
+		unsigned char alpha;
+		if ( m_flashOn )
+		{
+			alpha = m_flashAlpha;
+		}
+		else
+		{
+			alpha = 255;
+		}
+
+		for ( int vertexIndex = 0; vertexIndex < PlayerShip::NUM_SHIP_VERTS; ++ vertexIndex )
+			tempShipWorldVerts[vertexIndex].m_color.a = alpha;
 	}
 
 	TransformVertexArrayXY3D( NUM_SHIP_VERTS, tempShipWorldVerts, 1.f, m_orientationDegrees, m_position );
@@ -495,4 +516,40 @@ void PlayerShip::Respawn()
 
 	SoundID shipRespawnSound = g_engine->m_audioSystem->CreateOrGetSound( "Data/PlayershipRespawn.wav" );
 	g_engine->m_audioSystem->StartSound( shipRespawnSound, false, 0.5f, 0.f, 1.f );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void PlayerShip::StartRespawnInvincibility( float durationSeconds )
+{
+	m_isInvincible = true;
+	m_invincibleDuration = durationSeconds;
+	m_invincibleTimer = durationSeconds;
+	m_flashOn = true;
+	m_flashTimer = 0.0f;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void PlayerShip::UpdateInvincibility( float deltaSeconds )
+{
+	if ( !m_isInvincible ) return;
+
+	// Countdown
+	m_invincibleTimer -= deltaSeconds;
+	if ( m_invincibleTimer <= 0.0f )
+	{
+		m_isInvincible = false;
+		m_invincibleTimer = 0.0f;
+		m_flashOn = false;
+		return;
+	}
+
+	// Flash toggle
+	m_flashTimer += deltaSeconds;
+	if ( m_flashTimer >= m_flashInterval )
+	{
+		m_flashTimer = 0.0f;
+		m_flashOn = !m_flashOn;
+	}
 }
