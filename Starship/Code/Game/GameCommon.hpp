@@ -22,13 +22,13 @@ enum GameState
 //-----------------------------------------------------------------------------------------------
 constexpr int NUM_PLAYER_LIVES = 4;
 constexpr int NUM_OF_WAVES = 5;
-constexpr int MAX_ASTEROIDS = 12;
-constexpr int MAX_BULLETS = 20;
-constexpr int MAX_BEETLES = 5;
-constexpr int MAX_WASPS = 5;
+constexpr int MAX_ASTEROIDS = 50;
+constexpr int MAX_BULLETS = 50;
+constexpr int MAX_BEETLES = 20;
+constexpr int MAX_WASPS = 20;
 constexpr int MAX_DEBRIS = 300;
 constexpr int MAX_TARGETS = MAX_ASTEROIDS + MAX_BEETLES + MAX_WASPS;
-constexpr int MAX_IMPACT_WAVES = 32;
+constexpr int MAX_IMPACT_WAVES = 30;
 
 constexpr float WORLD_SIZE_X = 200.f;
 constexpr float WORLD_SIZE_Y = 100.f;

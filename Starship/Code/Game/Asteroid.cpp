@@ -22,10 +22,10 @@ Asteroid::Asteroid( Game* game, Vec2 const& startingPosition, float orientationD
 	m_velocity = startingVelocity;
 	m_orientationDegrees = orientationDegrees;
 	m_angularVelocityDegreesPerSecond = startingAngularVelocity;
-	m_physicsRadius = ASTEROID_PHYSICS_RADIUS;
-	m_cosmeticRadius = ASTEROID_COSMETIC_RADIUS;
 	m_sizeScale = sizeScale;
 	m_health = static_cast<int> ( floor( 2.f * m_sizeScale ) );
+	m_physicsRadius = ASTEROID_PHYSICS_RADIUS * sizeScale * 2;
+	m_cosmeticRadius = ASTEROID_COSMETIC_RADIUS * sizeScale * 2;
 	m_color = Rgba8( 100, 100, 100, 255 );
 	m_isAsteroid = true;
 
@@ -46,36 +46,36 @@ void Asteroid::InitializeVertexArray()
 	}
 
 	float rotationDegrees = 360.f / 16.f;
-	Vec3 vertexPos1 = Vec3( radii[0] * m_sizeScale, 0.f, 0 );
-	Vec3 vertexPos2 = Vec3( radii[1] * m_sizeScale, 0.f, 0 );
+	Vec3 vertexPos1 = Vec3( radii[0], 0.f, 0 );
+	Vec3 vertexPos2 = Vec3( radii[1], 0.f, 0 );
 	TransformPositionXY3D( vertexPos2, 1.f, rotationDegrees, Vec2( 0.f, 0.f ) );
-	Vec3 vertexPos3 = Vec3( radii[2] * m_sizeScale, 0.f, 0 );
+	Vec3 vertexPos3 = Vec3( radii[2], 0.f, 0 );
 	TransformPositionXY3D( vertexPos3, 1.f, rotationDegrees * 2.f, Vec2( 0.f, 0.f ) );
-	Vec3 vertexPos4 = Vec3( radii[3] * m_sizeScale, 0.f, 0 );
+	Vec3 vertexPos4 = Vec3( radii[3], 0.f, 0 );
 	TransformPositionXY3D( vertexPos4, 1.f, rotationDegrees * 3.f, Vec2( 0.f, 0.f ) );
-	Vec3 vertexPos5 = Vec3( radii[4] * m_sizeScale, 0.f, 0 );
+	Vec3 vertexPos5 = Vec3( radii[4], 0.f, 0 );
 	TransformPositionXY3D( vertexPos5, 1.f, rotationDegrees * 4.f, Vec2( 0.f, 0.f ) );
-	Vec3 vertexPos6 = Vec3( radii[5] * m_sizeScale, 0.f, 0 );
+	Vec3 vertexPos6 = Vec3( radii[5], 0.f, 0 );
 	TransformPositionXY3D( vertexPos6, 1.f, rotationDegrees * 5.f, Vec2( 0.f, 0.f ) );
-	Vec3 vertexPos7 = Vec3( radii[6] * m_sizeScale, 0.f, 0 );
+	Vec3 vertexPos7 = Vec3( radii[6], 0.f, 0 );
 	TransformPositionXY3D( vertexPos7, 1.f, rotationDegrees * 6.f, Vec2( 0.f, 0.f ) );
-	Vec3 vertexPos8 = Vec3( radii[7] * m_sizeScale, 0.f, 0 );
+	Vec3 vertexPos8 = Vec3( radii[7], 0.f, 0 );
 	TransformPositionXY3D( vertexPos8, 1.f, rotationDegrees * 7.f, Vec2( 0.f, 0.f ) );
-	Vec3 vertexPos9 = Vec3( radii[8] * m_sizeScale, 0.f, 0 );
+	Vec3 vertexPos9 = Vec3( radii[8], 0.f, 0 );
 	TransformPositionXY3D( vertexPos9, 1.f, rotationDegrees * 8.f, Vec2( 0.f, 0.f ) );
-	Vec3 vertexPos10 = Vec3( radii[9] * m_sizeScale, 0.f, 0 );
+	Vec3 vertexPos10 = Vec3( radii[9], 0.f, 0 );
 	TransformPositionXY3D( vertexPos10, 1.f, rotationDegrees * 9.f, Vec2( 0.f, 0.f ) );
-	Vec3 vertexPos11 = Vec3( radii[10] * m_sizeScale, 0.f, 0 );
+	Vec3 vertexPos11 = Vec3( radii[10], 0.f, 0 );
 	TransformPositionXY3D( vertexPos11, 1.f, rotationDegrees * 10.f, Vec2( 0.f, 0.f ) );
-	Vec3 vertexPos12 = Vec3( radii[11] * m_sizeScale, 0.f, 0 );
+	Vec3 vertexPos12 = Vec3( radii[11], 0.f, 0 );
 	TransformPositionXY3D( vertexPos12, 1.f, rotationDegrees * 11.f, Vec2( 0.f, 0.f ) );
-	Vec3 vertexPos13 = Vec3( radii[12] * m_sizeScale, 0.f, 0 );
+	Vec3 vertexPos13 = Vec3( radii[12], 0.f, 0 );
 	TransformPositionXY3D( vertexPos13, 1.f, rotationDegrees * 12.f, Vec2( 0.f, 0.f ) );
-	Vec3 vertexPos14 = Vec3( radii[13] * m_sizeScale, 0.f, 0 );
+	Vec3 vertexPos14 = Vec3( radii[13], 0.f, 0 );
 	TransformPositionXY3D( vertexPos14, 1.f, rotationDegrees * 13.f, Vec2( 0.f, 0.f ) );
-	Vec3 vertexPos15 = Vec3( radii[14] * m_sizeScale, 0.f, 0 );
+	Vec3 vertexPos15 = Vec3( radii[14], 0.f, 0 );
 	TransformPositionXY3D( vertexPos15, 1.f, rotationDegrees * 14.f, Vec2( 0.f, 0.f ) );
-	Vec3 vertexPos16 = Vec3( radii[15] * m_sizeScale, 0.f, 0 );
+	Vec3 vertexPos16 = Vec3( radii[15], 0.f, 0 );
 	TransformPositionXY3D( vertexPos16, 1.f, rotationDegrees * 15.f, Vec2( 0.f, 0.f ) );
 
 	// Triangle A

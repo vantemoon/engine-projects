@@ -1215,8 +1215,15 @@ void Game::RenderOffscreenIndicator() const
 	{
 		Entity* entity = offscreenEntities[entityIndex];
 		Vec3 worldPosition = Vec3( entity->m_position.x, entity->m_position.y, 0.f );
-		float worldPositionClampedX = GetClamped( worldPosition.x, minX, maxX );
-		float worldPositionClampedY = GetClamped( worldPosition.y, minY, maxY );
+		const float inset = 5.f;
+
+		float paddedMinX = minX + inset;
+		float paddedMaxX = maxX - inset;
+		float paddedMinY = minY + inset;
+		float paddedMaxY = maxY - inset;
+
+		float worldPositionClampedX = GetClamped( worldPosition.x, paddedMinX, paddedMaxX );
+		float worldPositionClampedY = GetClamped( worldPosition.y, paddedMinY, paddedMaxY );
 		Vec3 clampedWorldPosition = Vec3( worldPositionClampedX, worldPositionClampedY, 0.f );
 		Vec3 screenPosition = TransformWorldToScreen( clampedWorldPosition );
 		Vec2 toEntity = entity->m_position - m_playerShip->m_position;
@@ -1234,6 +1241,7 @@ void Game::RenderOffscreenIndicator() const
 		arrowVerts[4] = Vertex( Vec3( arrowTip.x, arrowTip.y, 0.f ), Rgba8( 255, 0, 0 ), Vec2( 0.f, 0.f ) );
 		arrowVerts[5] = Vertex( Vec3( arrowRight.x, arrowRight.y, 0.f ), Rgba8( 255, 0, 0 ), Vec2( 0.f, 0.f ) );
 		g_engine->m_renderer->DrawVertexArray( 6, arrowVerts );
+
 	}
 
 	g_engine->m_renderer->EndCamera( *m_screenCamera );
@@ -1271,17 +1279,24 @@ void Game::RenderScanMode() const
 		// Convert world position to screen position
 		Vec3 worldPos = Vec3( m_currentSelectedEntity->m_position.x, m_currentSelectedEntity->m_position.y, 0.f );
 		Vec3 screenPos = TransformWorldToScreen( worldPos );
-		float highlightRadius = m_currentSelectedEntity->m_cosmeticRadius * 1.5f * ( ( float ) SCREEN_SIZE_X / ( float ) WORLD_SIZE_X );
-		DebugDrawRing( Vec2( screenPos.x, screenPos.y ), highlightRadius, 1.5f, Rgba8( 0, 255, 0 ) );
+
+		float worldRadius = m_currentSelectedEntity->m_cosmeticRadius;
+		Vec2 worldCenter = m_currentSelectedEntity->m_position;
+		Vec3 screenCenter = TransformWorldToScreen( Vec3( worldCenter.x, worldCenter.y, 0.f ) );
+		Vec3 screenEdge = TransformWorldToScreen( Vec3( worldCenter.x + worldRadius, worldCenter.y, 0.f ) );
+		float screenRadius = fabsf( screenEdge.x - screenCenter.x );
+
+		float highlightRadius = screenRadius * 1.25f;
+		DebugDrawRing( Vec2( screenCenter.x, screenCenter.y ), highlightRadius, 1.5f, Rgba8( 0, 255, 0 ) );
 
 		Vec3 panelPos;
 		const float panelWidth = 260.f;
 		const float panelHeight = 130.f;
-		if ( screenPos.x < SCREEN_SIZE_X * 0.5f ) // Left side of screen
+		if ( screenPos.x < SCREEN_SIZE_X * 0.5f )
 		{
 			panelPos.x = screenPos.x + highlightRadius + 10.f;
 		}
-		else // Right side of screen
+		else
 		{
 			panelPos.x = screenPos.x - highlightRadius - 10.f - panelWidth;
 		}
@@ -1545,7 +1560,7 @@ void Game::SpawnRandomAsteroids( int numOfAsteroid )
 			Vec2 randomDirection = Vec2::MakeFromPolarDegrees( rng.RollRandomFloatInRange( 0.f, 360.f ), 1.f );
 			Vec2 randomVelocity = randomDirection * ASTEROID_SPEED;
 			float randomAngularVelocity = rng.RollRandomFloatInRange( -200.f, 200.f );
-			float randomScale = rng.RollRandomFloatInRange( 1.f, 3.f );
+			float randomScale = rng.RollRandomFloatInRange( 1.f, 1.5f );
 			m_asteroids[freeSlotIndex] = new Asteroid( this, randomOffscreenPosition, randomOrientation, randomVelocity, randomAngularVelocity, randomScale );
 		}
 		else

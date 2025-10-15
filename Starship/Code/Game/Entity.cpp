@@ -144,7 +144,6 @@ void Entity::CheckCollisionWithPlayerShip()
 
 
 //-----------------------------------------------------------------------------------------------
-// In Entity.cpp
 void Entity::GetEnemyTypeAndAction( char** out_type, char** out_action ) const
 {
 	*out_type = ( char* ) "Enemy";
