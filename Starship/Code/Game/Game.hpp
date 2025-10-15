@@ -1,6 +1,7 @@
 #pragma once
 #include "Game/GameCommon.hpp"
 #include "Engine/Audio/AudioSystem.hpp"
+#include "Engine/Core/Rgba8.hpp"
 
 
 //-----------------------------------------------------------------------------------------------
@@ -10,6 +11,7 @@ class Bullet;     // Forward declaration
 class Camera;     // Forward declaration
 class Debris;     // Forward declaration
 class Entity;     // Forward declaration
+class ImpactWave; // Forward declaration
 class PlayerShip; // Forward declaration
 class Wasp;       // Forward declaration
 struct Vec3;      // Forward declaration
@@ -25,6 +27,7 @@ public:
 	Beetle*     m_beetles[MAX_BEETLES] = {};
 	Wasp*       m_wasps[MAX_WASPS] = {};
 	Debris*     m_debris[MAX_DEBRIS] = {};
+	ImpactWave* m_impactWaves[MAX_IMPACT_WAVES] = {};
 	Entity*     m_scanTargets[MAX_TARGETS] = {};
 
 	Camera*     m_worldCamera = nullptr;
@@ -79,7 +82,9 @@ public:
 	void SpawnRandomBeetles( int numOfBeetles );
 	void SpawnRandomWasps( int numOfWasps );
 	void SpawnDebrisCluster( int numOfDebris, Vec2 const& position, Vec2 momentum, Rgba8 const& color, float minRadius, float maxRadius);
+	void SpawnImpactWave( Vec2 const& worldPosition, Rgba8 color = Rgba8( 248, 21, 98, 80 ) );
 	void CheckPlayerLives();
+	int  FindFreeEntityIndex( Entity** entityList, int maxCount ) const;
 	void Reset();
 	void KillAllEnemies(); // For testing and debugging
 

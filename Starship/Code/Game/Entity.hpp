@@ -1,4 +1,5 @@
 #pragma once
+#include "Engine/Core/Rgba8.hpp"
 #include "Engine/Math/Vec2.hpp"
 
 
@@ -18,6 +19,7 @@ public:
 	float		m_angularVelocityDegreesPerSecond;
 	float		m_physicsRadius;
 	float		m_cosmeticRadius;
+	Rgba8		m_color;
 	int			m_health;
 	bool		m_isDead = false;
 	bool		m_isGarbage = false;

@@ -5,6 +5,7 @@
 #include "Game/Bullet.hpp"
 #include "Game/Debris.hpp"
 #include "Game/GameCommon.hpp"
+#include "Game/ImpactWave.hpp"
 #include "Game/PlayerShip.hpp"
 #include "Game/Wasp.hpp"
 #include "Engine/Audio/AudioSystem.hpp"
@@ -155,6 +156,16 @@ void Game::DeleteGarbageEntities()
 			g_app->m_game->m_debris[debrisIndex] = nullptr;
 		}
 	}
+
+	// Impact waves
+	for ( int impactWaveIndex = 0; impactWaveIndex < MAX_IMPACT_WAVES; ++ impactWaveIndex )
+	{
+		if ( g_app->m_game->m_impactWaves[impactWaveIndex] != nullptr && g_app->m_game->m_impactWaves[impactWaveIndex]->m_isGarbage )
+		{
+			delete g_app->m_game->m_impactWaves[impactWaveIndex];
+			g_app->m_game->m_impactWaves[impactWaveIndex] = nullptr;
+		}
+	}
 }
 
 
@@ -273,14 +284,6 @@ bool Game::IsReadyToStartNextWave() const
 {
 	if ( m_playerShip == nullptr || m_playerShip->m_isDead )
 		return false;
-
-	// Asteroids
-	for ( int asteroidIndex = 0; asteroidIndex < MAX_ASTEROIDS; ++ asteroidIndex )
-	{
-		Asteroid* asteroid = m_asteroids[asteroidIndex];
-		if ( asteroid != nullptr && asteroid->IsAlive() )
-			return false;
-	}
 
 	// Beetles
 	for ( int beetleIndex = 0; beetleIndex < MAX_BEETLES; ++ beetleIndex )
@@ -608,6 +611,15 @@ void Game::UpdateEntities( float deltaSeconds )
 		if( m_debris[debrisIndex] != nullptr )
 		{
 			m_debris[debrisIndex]->Update( deltaSeconds );
+		}
+	}
+
+	// Impact waves
+	for( int impactWaveIndex = 0; impactWaveIndex < MAX_IMPACT_WAVES; ++ impactWaveIndex )
+	{
+		if( m_impactWaves[impactWaveIndex] != nullptr )
+		{
+			m_impactWaves[impactWaveIndex]->Update( deltaSeconds );
 		}
 	}
 }
@@ -1040,6 +1052,15 @@ void Game::RenderEntities() const
 		}
 	}
 
+	// Impact waves
+	for ( int impactWaveIndex = 0; impactWaveIndex < MAX_IMPACT_WAVES; ++ impactWaveIndex )
+	{
+		if ( m_impactWaves[impactWaveIndex] != nullptr )
+		{
+			m_impactWaves[impactWaveIndex]->Render();
+		}
+	}
+
 	// Player ship
 	m_playerShip->Render();
 
@@ -1431,23 +1452,18 @@ void Game::SpawnRandomAsteroids( int numOfAsteroid )
 {
 	for ( int asteroidSpawned = 0; asteroidSpawned < numOfAsteroid; ++asteroidSpawned )
 	{
-		bool hasFreeSlot = false;
-		for ( int asteroidIndex = 0; asteroidIndex < MAX_ASTEROIDS; ++asteroidIndex )
+		int freeSlotIndex = FindFreeEntityIndex( ( Entity** ) m_asteroids, MAX_ASTEROIDS );
+		if ( freeSlotIndex != -1 )
 		{
-			if ( m_asteroids[asteroidIndex] == nullptr )
-			{
-				hasFreeSlot = true;
-				RandomNumberGenerator rng;
-				Vec2 randomOffscreenPosition = GetRandomOffscreenPosition( ASTEROID_COSMETIC_RADIUS );
-				float randomOrientation = rng.RollRandomFloatInRange( 0.f, 360.f );
-				Vec2 randomDirection = Vec2::MakeFromPolarDegrees( rng.RollRandomFloatInRange( 0.f, 360.f ), 1.f );
-				Vec2 randomVelocity = randomDirection * ASTEROID_SPEED;
-				float randomAngularVelocity = rng.RollRandomFloatInRange( -200.f, 200.f );
-				m_asteroids[asteroidIndex] = new Asteroid( this, randomOffscreenPosition, randomOrientation, randomVelocity, randomAngularVelocity );
-				break;
-			}
+			RandomNumberGenerator rng;
+			Vec2 randomOffscreenPosition = GetRandomOffscreenPosition( ASTEROID_COSMETIC_RADIUS );
+			float randomOrientation = rng.RollRandomFloatInRange( 0.f, 360.f );
+			Vec2 randomDirection = Vec2::MakeFromPolarDegrees( rng.RollRandomFloatInRange( 0.f, 360.f ), 1.f );
+			Vec2 randomVelocity = randomDirection * ASTEROID_SPEED;
+			float randomAngularVelocity = rng.RollRandomFloatInRange( -200.f, 200.f );
+			m_asteroids[freeSlotIndex] = new Asteroid( this, randomOffscreenPosition, randomOrientation, randomVelocity, randomAngularVelocity );
 		}
-		if ( !hasFreeSlot )
+		else
 		{
 			ERROR_RECOVERABLE( "No available asteroid slots!" );
 		}
@@ -1461,21 +1477,14 @@ void Game::SpawnBulletFromPlayerShip()
 	if ( m_playerShip == nullptr || m_playerShip->m_isDead )
 		return;
 
-	bool hasFreeSlot = false;
-	for ( int bulletIndex = 0; bulletIndex < MAX_BULLETS; ++ bulletIndex )
+	int freeSlotIndex = FindFreeEntityIndex( ( Entity** ) m_bullets, MAX_BULLETS );
+	if ( freeSlotIndex != -1 )
 	{
-		if ( m_bullets[bulletIndex] == nullptr )
-		{
-			hasFreeSlot = true;
-			m_bullets[bulletIndex] = new Bullet( this, m_playerShip );
-
-			SoundID shootSound = g_engine->m_audioSystem->CreateOrGetSound( "Data/PlayershipShoot.wav" );
-			g_engine->m_audioSystem->StartSound( shootSound );
-
-			break;
-		}
+		m_bullets[freeSlotIndex] = new Bullet( this, m_playerShip );
+		SoundID shootSound = g_engine->m_audioSystem->CreateOrGetSound( "Data/PlayershipShoot.wav" );
+		g_engine->m_audioSystem->StartSound( shootSound );
 	}
-	if ( !hasFreeSlot )
+	else
 	{
 		ERROR_RECOVERABLE( "No available bullet slots!" );
 	}
@@ -1487,19 +1496,13 @@ void Game::SpawnRandomBeetles( int numOfBeetles )
 {
 	for ( int beetlesSpawned = 0; beetlesSpawned < numOfBeetles; ++beetlesSpawned )
 	{
-		bool hasFreeSlot = false;
-		for ( int beetleIndex = 0; beetleIndex < MAX_BEETLES; ++beetleIndex )
+		int freeSlotIndex = FindFreeEntityIndex( ( Entity** ) m_beetles, MAX_BEETLES );
+		if ( freeSlotIndex != -1 )
 		{
-			if ( m_beetles[beetleIndex] == nullptr )
-			{
-				hasFreeSlot = true;
-				Vec2 randomOffscreenPosition = GetRandomOffscreenPosition( BEETLE_COSMETIC_RADIUS );
-
-				m_beetles[beetleIndex] = new Beetle( this, randomOffscreenPosition );
-				break;
-			}
+			Vec2 randomOffscreenPosition = GetRandomOffscreenPosition( BEETLE_COSMETIC_RADIUS );
+			m_beetles[freeSlotIndex] = new Beetle( this, randomOffscreenPosition );
 		}
-		if ( !hasFreeSlot )
+		else
 		{
 			ERROR_RECOVERABLE( "No available beetle slots!" );
 		}
@@ -1512,19 +1515,13 @@ void Game::SpawnRandomWasps(int numOfWasps)
 {
 	for ( int waspsSpawned = 0; waspsSpawned < numOfWasps; ++waspsSpawned )
 	{
-		bool hasFreeSlot = false;
-		for ( int waspIndex = 0; waspIndex < MAX_WASPS; ++waspIndex )
+		int freeSlotIndex = FindFreeEntityIndex( ( Entity** ) m_wasps, MAX_WASPS );
+		if ( freeSlotIndex != -1 )
 		{
-			if ( m_wasps[waspIndex] == nullptr )
-			{
-				hasFreeSlot = true;
-				Vec2 randomOffscreenPosition = GetRandomOffscreenPosition( WASP_COSMETIC_RADIUS );
-
-				m_wasps[waspIndex] = new Wasp( this, randomOffscreenPosition );
-				break;
-			}
+			Vec2 randomOffscreenPosition = GetRandomOffscreenPosition( WASP_COSMETIC_RADIUS );
+			m_wasps[freeSlotIndex] = new Wasp( this, randomOffscreenPosition );
 		}
-		if ( !hasFreeSlot )
+		else
 		{
 			ERROR_RECOVERABLE( "No available wasp slots!" );
 		}
@@ -1565,22 +1562,16 @@ void Game::SpawnDebrisCluster( int numOfDebris, Vec2 const& position, Vec2 momen
 {
 	for ( int debrisSpawned = 0; debrisSpawned < numOfDebris; ++debrisSpawned )
 	{
-		bool hasFreeSlot = false;
-		for ( int debrisIndex = 0; debrisIndex < MAX_DEBRIS; ++debrisIndex )
+		int freeSlotIndex = FindFreeEntityIndex( ( Entity** ) m_debris, MAX_DEBRIS );
+		if ( freeSlotIndex != -1 )
 		{
-			if ( m_debris[debrisIndex] == nullptr )
-			{
-				hasFreeSlot = true;
-				RandomNumberGenerator rng;
-				Vec2 randomDirection = Vec2::MakeFromPolarDegrees( rng.RollRandomFloatInRange( 0.f, 360.f ), 1.f );
-				Vec2 randomVelocity = randomDirection * rng.RollRandomFloatInRange( 5.f, 15.f ) + momentum;
-				float randomAngularVelocity = rng.RollRandomFloatInRange( -360.f, 360.f );
-
-				m_debris[debrisIndex] = new Debris( this, position, randomVelocity, randomAngularVelocity, color, minRadius, maxRadius );
-				break;
-			}
+			RandomNumberGenerator rng;
+			Vec2 randomDirection = Vec2::MakeFromPolarDegrees( rng.RollRandomFloatInRange( 0.f, 360.f ), 1.f );
+			Vec2 randomVelocity = randomDirection * rng.RollRandomFloatInRange( 5.f, 15.f ) + momentum;
+			float randomAngularVelocity = rng.RollRandomFloatInRange( -360.f, 360.f );
+			m_debris[freeSlotIndex] = new Debris( this, position, randomVelocity, randomAngularVelocity, color, minRadius, maxRadius );
 		}
-		if ( !hasFreeSlot )
+		else
 		{
 			ERROR_RECOVERABLE( "No available debris slots!" );
 		}
@@ -1690,4 +1681,67 @@ void Game::Reset()
 	m_isScanModeOn = false;
 	m_isTargetInitialized = false;
 	m_isDebugFeaturesOn = false;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game::SpawnImpactWave( Vec2 const& worldPosition, Rgba8 color )
+{
+	int freeIndex = -1;
+	int oldestIndex = 0;
+	float oldestAge = -1.f;
+
+	for ( int i = 0; i < MAX_IMPACT_WAVES; ++i )
+	{
+		if ( m_impactWaves[i] == nullptr )
+		{
+			freeIndex = i;
+			break;
+		}
+		if ( m_impactWaves[i]->m_isDead )
+		{
+			freeIndex = i;
+			break;
+		}
+
+		if ( m_impactWaves[i]->m_ageSeconds > oldestAge )
+		{
+			oldestAge = m_impactWaves[i]->m_ageSeconds;
+			oldestIndex = i;
+		}
+	}
+
+	const int slot = ( freeIndex >= 0 ) ? freeIndex : oldestIndex;
+
+	if ( m_impactWaves[slot] != nullptr )
+	{
+		delete m_impactWaves[slot];
+		m_impactWaves[slot] = nullptr;
+	}
+
+	float lifeSeconds = 1.5f;
+	float startRadius = 1.f;
+	float endRadius = 30.f;
+	float startThickness = 10.f;
+	float endThickness = 3.f;
+
+	Rgba8 startColour = color;
+	Rgba8 endColour = Rgba8( color.r, color.g, color.b, 0 );
+
+	m_impactWaves[slot] = new ImpactWave( this, worldPosition, lifeSeconds, startRadius, endRadius, startThickness, endThickness, startColour, endColour );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+int Game::FindFreeEntityIndex( Entity** entityList, int maxCount ) const
+{
+	for ( int entityIndex = 0; entityIndex < maxCount; ++entityIndex )
+	{
+		if ( entityList[entityIndex] == nullptr || !entityList[entityIndex]->IsAlive() )
+		{
+			return entityIndex;
+		}
+	}
+
+	return -1;
 }

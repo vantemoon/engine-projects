@@ -4,6 +4,7 @@
 #include "Game/PlayerShip.hpp"
 #include "Engine/Audio/AudioSystem.hpp"
 #include "Engine/Core/Engine.hpp"
+#include "Engine/Core/Time.hpp"
 #include "Engine/Core/Vertex.hpp"
 #include "Engine/Core/VertexUtils.hpp"
 #include "Engine/Math/MathUtils.hpp"
@@ -21,6 +22,7 @@ Wasp::Wasp( Game* game, Vec2 const& startingPosition )
 	m_physicsRadius = WASP_PHYSICS_RADIUS;
 	m_cosmeticRadius = WASP_COSMETIC_RADIUS;
 	m_health = 2;
+	m_color = Rgba8( 255, 255, 0, 255 );
 	m_isWasp = true;
 
 	InitializeVertexArray();
@@ -70,7 +72,15 @@ void Wasp::Die()
 {
 	Entity::Die();
 
-	m_game->SpawnDebrisCluster( 12, m_position, m_velocity, Rgba8( 255, 255, 0 ), m_cosmeticRadius * 0.1f, m_cosmeticRadius * 0.5f );
+	m_game->SpawnDebrisCluster( 12, m_position, m_velocity, m_color, m_cosmeticRadius * 0.1f, m_cosmeticRadius * 0.5f );
+
+	m_game->SpawnImpactWave( m_position );
+
+	m_game->m_isScreenShaking = true;
+	if ( m_game->m_screenShakeIntensity < 0.5f )
+		m_game->m_screenShakeIntensity = 0.5f;
+	m_game->m_screenShakeDuration = 1.f;
+	m_game->m_screenShakeStartTime = ( float ) GetCurrentTimeSeconds();
 
 	SoundID entityDeathSound = g_engine->m_audioSystem->CreateOrGetSound( "Data/BeetlesWaspsDie.wav" );
 	g_engine->m_audioSystem->StartSound( entityDeathSound, false, 0.6f, 0.f, 0.5f );
@@ -85,16 +95,16 @@ void Wasp::InitializeVertexArray()
 	m_vertexArray[0].m_position = Vec3( -1.f, 1.2f, 0.f );
 	m_vertexArray[1].m_position = Vec3( -0.5f, 0.f, 0.f );
 	m_vertexArray[2].m_position = Vec3( 1.5f, 0.f, 0.f );
-	m_vertexArray[0].m_color = Rgba8( 255, 255, 0 );
-	m_vertexArray[1].m_color = Rgba8( 255, 255, 0 );
-	m_vertexArray[2].m_color = Rgba8( 255, 255, 0 );
+	m_vertexArray[0].m_color = m_color;
+	m_vertexArray[1].m_color = m_color;
+	m_vertexArray[2].m_color = m_color;
 
 	m_vertexArray[3].m_position = Vec3( -1.f, -1.2f, 0.f );
 	m_vertexArray[4].m_position = Vec3( -0.5f, 0.f, 0.f );
 	m_vertexArray[5].m_position = Vec3( 1.5f, 0.f, 0.f );
-	m_vertexArray[3].m_color = Rgba8( 255, 255, 0 );
-	m_vertexArray[4].m_color = Rgba8( 255, 255, 0 );
-	m_vertexArray[5].m_color = Rgba8( 255, 255, 0 );
+	m_vertexArray[3].m_color = m_color;
+	m_vertexArray[4].m_color = m_color;
+	m_vertexArray[5].m_color = m_color;
 }
 
 
