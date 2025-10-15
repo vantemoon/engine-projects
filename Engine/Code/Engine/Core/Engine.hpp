@@ -22,5 +22,5 @@ public:
 public:
 	AudioSystem* m_audioSystem = nullptr;
 	InputSystem* m_inputSystem = nullptr;
-	Renderer* m_renderer = nullptr;
+	Renderer*    m_renderer    = nullptr;
 };

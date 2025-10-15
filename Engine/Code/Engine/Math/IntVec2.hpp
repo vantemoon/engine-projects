@@ -16,13 +16,13 @@ public:
 	explicit IntVec2( int initialX, int initialY );   // explicit constructor (from x, y)
 
 	// Accessors (const methods)
-	float GetLength() const;
-	int GetLengthSquared() const;
-	int GetTaxicabLength() const;
-	float GetOrientationRadians() const;
-	float GetOrientationDegrees() const;
-	IntVec2 const GetRotatedBy90Degrees() const;
-	IntVec2 const GetRotatedByMinus90Degrees() const;
+	float GetLength()							  const;
+	int GetLengthSquared()						  const;
+	int GetTaxicabLength()						  const;
+	float GetOrientationRadians()				  const;
+	float GetOrientationDegrees()				  const;
+	IntVec2 const GetRotatedBy90Degrees()		  const;
+	IntVec2 const GetRotatedByMinus90Degrees()	  const;
 
 	// Mutators (non-const methods)
 	void Rotate90Degrees();

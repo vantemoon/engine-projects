@@ -1,8 +1,8 @@
 #pragma once
+#include "Engine/Core/Rgba8.hpp"
 
 
 //-----------------------------------------------------------------------------------------------
-struct Rgba8; // Forward declaration
 struct Vec2;  // Forward declaration
 
 

@@ -14,14 +14,11 @@ float GetClamped( float value, float minValue, float maxValue )
 	{
 		return minValue;
 	}
-	else if ( value > maxValue )
+	if ( value > maxValue )
 	{
 		return maxValue;
 	}
-	else
-	{
-		return value;
-	}
+	return value;
 }
 
 
@@ -32,14 +29,11 @@ float GetClampedZeroToOne( float value )
 	{
 		return 0.f;
 	}
-	else if ( value > 1.f )
+	if ( value > 1.f )
 	{
 		return 1.f;
 	}
-	else
-	{
-		return value;
-	}
+	return value;
 }
 
 
@@ -58,11 +52,8 @@ float GetFractionWithinRange( float value, float rangeStart, float rangeEnd )
 	{
 		return 0.5f;
 	}
-	else
-	{
-		float fraction = ( value - rangeStart ) / ( rangeEnd - rangeStart );
-		return fraction;
-	}
+	float fraction = ( value - rangeStart ) / ( rangeEnd - rangeStart );
+	return fraction;
 }
 
 
@@ -290,6 +281,7 @@ Vec2 const GetProjectedVector2D( Vec2 const& vectorToProject, Vec2 const& vector
 	{
 		return Vec2( 0.f, 0.f );
 	}
+
 	Vec2 ontoNormalized = vectorToProjectOnto.GetNormalized();
 	float projectedLength = DotProduct2D( vectorToProject, ontoNormalized );
 	Vec2 projectedVector = ontoNormalized * projectedLength;
@@ -363,12 +355,9 @@ Vec2 GetNearestPointOnDisc2D( Vec2 const& referencePos, Vec2 const& discCenter, 
 	{
 		return referencePos;
 	}
-	else
-	{
-		Vec2 direction = toReference.GetNormalized();
-		Vec2 nearestPoint = discCenter + ( direction * discRadius );
-		return nearestPoint;
-	}
+	Vec2 direction = toReference.GetNormalized();
+	Vec2 nearestPoint = discCenter + ( direction * discRadius );
+	return nearestPoint;
 }
 
 
@@ -394,10 +383,7 @@ bool PushDiscOutOfFixedPoint2D( Vec2& mobileDiscCenter, float mobileDiscRadius, 
 		}
 		return true;
 	}
-	else
-	{
-		return false;
-	}
+	return false;
 }
 
 
@@ -423,10 +409,7 @@ bool PushDiscOutOfFixedDisc2D( Vec2& mobileDiscCenter, float mobileDiscRadius, V
 		}
 		return true;
 	}
-	else
-	{
-		return false;
-	}
+	return false;
 }
 
 
@@ -453,10 +436,7 @@ bool PushDiscsOutOfEachOther2D( Vec2& aCenter, float aRadius, Vec2& bCenter, flo
 		}
 		return true;
 	}
-	else
-	{
-		return false;
-	}
+	return false;
 }
 
 

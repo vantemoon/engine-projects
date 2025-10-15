@@ -27,18 +27,6 @@ unsigned char const KEYCODE_RIGHTARROW = VK_RIGHT;
 
 
 //----------------------------------------------------------------
-InputSystem::InputSystem()
-{
-}
-
-
-//----------------------------------------------------------------
-InputSystem::~InputSystem()
-{
-}
-
-
-//----------------------------------------------------------------
 void InputSystem::StartUp()
 {
 	for ( int keyIndex = 0; keyIndex < NUM_KEYCODES; ++keyIndex )

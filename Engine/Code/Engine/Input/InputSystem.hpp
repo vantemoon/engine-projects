@@ -33,8 +33,8 @@ constexpr int NUM_XBOX_CONTROLLERS = 4;
 class InputSystem
 {
 public:
-	InputSystem();
-	~InputSystem();
+	InputSystem() = default;
+	~InputSystem() = default;
 	void StartUp();
 	void ShutDown();
 	void BeginFrame();
