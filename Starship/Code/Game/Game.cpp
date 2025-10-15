@@ -776,6 +776,7 @@ void Game::Render() const
 	
 	RenderParallaxBackground();
 	RenderEntities();
+	RenderOffscreenIndicator();
 
 	if ( m_isScanModeOn )
 	{
@@ -1158,6 +1159,89 @@ void Game::RenderHUD() const
 
 
 //-----------------------------------------------------------------------------------------------
+void Game::RenderOffscreenIndicator() const
+{
+	g_engine->m_renderer->BeginCamera( *m_screenCamera );
+
+	// Get all off-screen beetles and wasps
+	Entity* offscreenEntities[MAX_TARGETS];
+	int numOffscreenEntities = 0;
+
+	float minX = m_worldCamera->GetOrthoBottomLeft().x;
+	float maxX = m_worldCamera->GetOrthoTopRight().x;
+	float minY = m_worldCamera->GetOrthoBottomLeft().y;
+	float maxY = m_worldCamera->GetOrthoTopRight().y;
+
+	// Beetles
+	for ( int beetleIndex = 0; beetleIndex < MAX_BEETLES; ++beetleIndex )
+	{
+		Beetle* beetle = m_beetles[beetleIndex];
+		if ( beetle != nullptr && beetle->IsAlive() )
+		{
+			if ( beetle->m_position.x < minX || beetle->m_position.x > maxX ||
+				 beetle->m_position.y < minY || beetle->m_position.y > maxY )
+			{
+				offscreenEntities[numOffscreenEntities] = beetle;
+				++numOffscreenEntities;
+				if ( numOffscreenEntities >= MAX_TARGETS )
+				{
+					break;
+				}
+			}
+		}
+	}
+
+	// Wasps
+	for ( int waspIndex = 0; waspIndex < MAX_WASPS; ++waspIndex )
+	{
+		Wasp* wasp = m_wasps[waspIndex];
+		if ( wasp != nullptr && wasp->IsAlive() )
+		{
+			if ( wasp->m_position.x < minX || wasp->m_position.x > maxX ||
+				 wasp->m_position.y < minY || wasp->m_position.y > maxY )
+			{
+				offscreenEntities[numOffscreenEntities] = wasp;
+				++numOffscreenEntities;
+				if ( numOffscreenEntities >= MAX_TARGETS )
+				{
+					break;
+				}
+			}
+		}
+	}
+
+	// Draw indicators
+	for ( int entityIndex = 0; entityIndex < numOffscreenEntities; ++entityIndex )
+	{
+		Entity* entity = offscreenEntities[entityIndex];
+		Vec3 worldPosition = Vec3( entity->m_position.x, entity->m_position.y, 0.f );
+		float worldPositionClampedX = GetClamped( worldPosition.x, minX, maxX );
+		float worldPositionClampedY = GetClamped( worldPosition.y, minY, maxY );
+		Vec3 clampedWorldPosition = Vec3( worldPositionClampedX, worldPositionClampedY, 0.f );
+		Vec3 screenPosition = TransformWorldToScreen( clampedWorldPosition );
+		Vec2 toEntity = entity->m_position - m_playerShip->m_position;
+		toEntity.Normalize();
+		float arrowSize = 20.f;
+		Vec2 arrowBase = Vec2( screenPosition.x, screenPosition.y ) - toEntity * arrowSize * 0.5f;
+		Vec2 arrowLeft = arrowBase + toEntity.GetRotatedBy90Degrees() * ( arrowSize * 0.5f );
+		Vec2 arrowRight = arrowBase + toEntity.GetRotatedByMinus90Degrees() * ( arrowSize * 0.5f );
+		Vec2 arrowTip = arrowBase + toEntity * arrowSize;
+		Vertex arrowVerts[6];
+		arrowVerts[0] = Vertex( Vec3( arrowLeft.x, arrowLeft.y, 0.f ), Rgba8( 255, 0, 0 ), Vec2( 0.f, 0.f ) );
+		arrowVerts[1] = Vertex( Vec3( arrowRight.x, arrowRight.y, 0.f ), Rgba8( 255, 0, 0 ), Vec2( 0.f, 0.f ) );
+		arrowVerts[2] = Vertex( Vec3( arrowTip.x, arrowTip.y, 0.f ), Rgba8( 255, 0, 0 ), Vec2( 0.f, 0.f ) );
+		arrowVerts[3] = Vertex( Vec3( arrowLeft.x, arrowLeft.y, 0.f ), Rgba8( 255, 0, 0 ), Vec2( 0.f, 0.f ) );
+		arrowVerts[4] = Vertex( Vec3( arrowTip.x, arrowTip.y, 0.f ), Rgba8( 255, 0, 0 ), Vec2( 0.f, 0.f ) );
+		arrowVerts[5] = Vertex( Vec3( arrowRight.x, arrowRight.y, 0.f ), Rgba8( 255, 0, 0 ), Vec2( 0.f, 0.f ) );
+		g_engine->m_renderer->DrawVertexArray( 6, arrowVerts );
+	}
+
+	g_engine->m_renderer->EndCamera( *m_screenCamera );
+}
+
+
+
+//-----------------------------------------------------------------------------------------------
 void Game::RenderScanMode() const
 {	g_engine->m_renderer->BeginCamera( *m_screenCamera );
 
@@ -1461,7 +1545,8 @@ void Game::SpawnRandomAsteroids( int numOfAsteroid )
 			Vec2 randomDirection = Vec2::MakeFromPolarDegrees( rng.RollRandomFloatInRange( 0.f, 360.f ), 1.f );
 			Vec2 randomVelocity = randomDirection * ASTEROID_SPEED;
 			float randomAngularVelocity = rng.RollRandomFloatInRange( -200.f, 200.f );
-			m_asteroids[freeSlotIndex] = new Asteroid( this, randomOffscreenPosition, randomOrientation, randomVelocity, randomAngularVelocity );
+			float randomScale = rng.RollRandomFloatInRange( 1.f, 3.f );
+			m_asteroids[freeSlotIndex] = new Asteroid( this, randomOffscreenPosition, randomOrientation, randomVelocity, randomAngularVelocity, randomScale );
 		}
 		else
 		{

@@ -53,6 +53,12 @@ public:
 	bool        m_isDebugFeaturesOn = false;
 	bool        m_isPausedAfterNextUpdate = false;
 
+	float m_osdEdgePadding = 18.0f;
+	float m_osdLeadSeconds = 0.35f;
+	float m_osdArrowSize = 16.0f;
+	float m_osdMinShowDistance = 2.0f;
+
+
 public:
 	Game();
 	~Game();
@@ -70,6 +76,7 @@ public:
 	void Render() const;
 	void RenderEntities() const;
 	void RenderHUD() const;
+	void RenderOffscreenIndicator() const;
 	void RenderAttractMode() const;
 	void RenderScanMode() const;
 	void RenderParallaxBackground() const;
