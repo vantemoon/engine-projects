@@ -30,14 +30,14 @@ void Bullet::InitializeVertexArray()
 	m_vertexArray = new Vertex[NUM_BULLET_VERTS];
 
 	// Triangle A (front, yellow)
-	m_vertexArray[0] = Vertex( Vec3( 0.0f, -0.75f, 0.0f ), Rgba8( 255, 255, 0, 255 ), Vec2() );
-	m_vertexArray[1] = Vertex( Vec3( 0.75f, 0.0f, 0.0f ), Rgba8( 255, 255, 0, 255 ), Vec2() );
-	m_vertexArray[2] = Vertex( Vec3( 0.0f, 0.75f, 0.0f ), Rgba8( 255, 255, 0, 255 ), Vec2() );
+	m_vertexArray[0] = Vertex( Vec3( 0.0f, -0.75f, 0.0f ), BULLET_FRONT_COLOR, Vec2() );
+	m_vertexArray[1] = Vertex( Vec3( 0.75f, 0.0f, 0.0f ), BULLET_FRONT_COLOR, Vec2() );
+	m_vertexArray[2] = Vertex( Vec3( 0.0f, 0.75f, 0.0f ), BULLET_FRONT_COLOR, Vec2() );
 
 	// Triangle B (rear, red)
-	m_vertexArray[3] = Vertex( Vec3( 0.0f, -0.75f, 0.0f ), Rgba8( 255, 0, 0, 255 ), Vec2() );
-	m_vertexArray[4] = Vertex( Vec3( 0.0f, 0.75f, 0.0f ), Rgba8( 255, 0, 0, 255 ), Vec2() );
-	m_vertexArray[5] = Vertex( Vec3( -3.0f, 0.0f, 0.0f ), Rgba8( 255, 0, 0, 0 ), Vec2() );
+	m_vertexArray[3] = Vertex( Vec3( 0.0f, -0.75f, 0.0f ), BULLET_REAR_COLOR, Vec2() );
+	m_vertexArray[4] = Vertex( Vec3( 0.0f, 0.75f, 0.0f ), BULLET_REAR_COLOR, Vec2() );
+	m_vertexArray[5] = Vertex( Vec3( -3.0f, 0.0f, 0.0f ), BULLET_REAR_COLOR, Vec2() );
 }
 
 
@@ -87,6 +87,5 @@ void Bullet::Die( bool shouldSpawnDebris )
 	if ( shouldSpawnDebris )
 	{
 		m_game->SpawnDebrisCluster( 3, m_position, m_velocity * -0.2f, Rgba8( 255, 128, 0 ), m_cosmeticRadius * 0.05f, m_cosmeticRadius * 0.1f );
-
 	}
 }

@@ -835,17 +835,17 @@ void Game::RenderAttractMode() const
 	const float wobbleRot = 5.f * SinDegrees( currentTime * 45.f );
 	const float bob = 4.f * SinDegrees( currentTime * 60.f );
 
-	Vertex shipVertexArray1[PlayerShip::NUM_SHIP_VERTS];
-	Vertex shipVertexArray2[PlayerShip::NUM_SHIP_VERTS];
+	Vertex shipVertexArray1[NUM_PLAYER_SHIP_VERTS];
+	Vertex shipVertexArray2[NUM_PLAYER_SHIP_VERTS];
 	m_playerShip->GetVertexArrayCopy( shipVertexArray1 );
 	m_playerShip->GetVertexArrayCopy( shipVertexArray2 );
 
 	TransformVertexArrayXY3D(
-		PlayerShip::NUM_SHIP_VERTS, shipVertexArray1, shipScale,
+		NUM_PLAYER_SHIP_VERTS, shipVertexArray1, shipScale,
 		wobbleRot, Vec2( centerX - shipOffsetX, centerY + bob ) );
 
 	TransformVertexArrayXY3D(
-		PlayerShip::NUM_SHIP_VERTS, shipVertexArray2, -shipScale,
+		NUM_PLAYER_SHIP_VERTS, shipVertexArray2, -shipScale,
 		-wobbleRot, Vec2( centerX + shipOffsetX, centerY - bob ) );
 
 	// Play triangle
@@ -888,8 +888,8 @@ void Game::RenderAttractMode() const
 
 	// Render 
 	RenderParallaxBackground();
-	g_engine->m_renderer->DrawVertexArray( PlayerShip::NUM_SHIP_VERTS, shipVertexArray2 );
-	g_engine->m_renderer->DrawVertexArray( PlayerShip::NUM_SHIP_VERTS, shipVertexArray1 );
+	g_engine->m_renderer->DrawVertexArray( NUM_PLAYER_SHIP_VERTS, shipVertexArray2 );
+	g_engine->m_renderer->DrawVertexArray( NUM_PLAYER_SHIP_VERTS, shipVertexArray1 );
 	g_engine->m_renderer->DrawVertexArray( 3, triangleVertexArray );
 	g_engine->m_renderer->DrawVertexArray( ( int ) textVerts.size(), textVerts.data() );
 
@@ -1093,17 +1093,17 @@ void Game::RenderHUD() const
 
 	for ( int lifeIndex = 0; lifeIndex < m_playerSpareLives; ++lifeIndex )
 	{
-		Vertex shipVertexArray[PlayerShip::NUM_SHIP_VERTS];
+		Vertex shipVertexArray[NUM_PLAYER_SHIP_VERTS];
 		m_playerShip->GetVertexArrayCopy( shipVertexArray );
 
-		for ( int vertIndex = 0; vertIndex < PlayerShip::NUM_SHIP_VERTS; ++vertIndex )
+		for ( int vertIndex = 0; vertIndex < NUM_PLAYER_SHIP_VERTS; ++vertIndex )
 		{
 			shipVertexArray[vertIndex].m_color.a = 204;
 		}
 
 		Vec2 position = Vec2( startX + lifeIndex * spacing, startY );
-		TransformVertexArrayXY3D( PlayerShip::NUM_SHIP_VERTS, shipVertexArray, scale, rotation, position );
-		g_engine->m_renderer->DrawVertexArray( PlayerShip::NUM_SHIP_VERTS, shipVertexArray );
+		TransformVertexArrayXY3D( NUM_PLAYER_SHIP_VERTS, shipVertexArray, scale, rotation, position );
+		g_engine->m_renderer->DrawVertexArray( NUM_PLAYER_SHIP_VERTS, shipVertexArray );
 	}
 
 	const float barX = 24.f;
@@ -1166,7 +1166,7 @@ void Game::RenderHUD() const
 	g_engine->m_renderer->DrawVertexArray( ( int ) textVerts.size(), textVerts.data() );
 
 	const float cellH = 28.f;
-	const Rgba8 textColour( 244, 224, 77, 255 ); // neon yellow (good over cyan bg)
+	const Rgba8 textColour( 244, 224, 77, 255 );
 	const Rgba8 shadowColour( 0, 0, 0, 180 );
 
 	std::string waveText = Stringf( "WAVE %i / %i", m_waveNumber, NUM_OF_WAVES );
@@ -1189,7 +1189,6 @@ void Game::RenderOffscreenIndicator() const
 {
 	g_engine->m_renderer->BeginCamera( *m_screenCamera );
 
-	// Get all off-screen beetles and wasps
 	Entity* offscreenEntities[MAX_TARGETS];
 	int numOffscreenEntities = 0;
 

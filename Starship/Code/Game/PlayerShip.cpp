@@ -28,7 +28,6 @@ PlayerShip::PlayerShip( Game* game, Vec2 const& startingPosition, Vec2 const& st
 	m_physicsRadius = PLAYER_SHIP_PHYSICS_RADIUS;
 	m_cosmeticRadius = PLAYER_SHIP_COSMETIC_RADIUS;
 	m_currentEnergy = m_maxEnergy;
-	m_color = Rgba8( 102, 153, 204, 255 );
 	
 	InitializeVertexArray();
 }
@@ -37,32 +36,32 @@ PlayerShip::PlayerShip( Game* game, Vec2 const& startingPosition, Vec2 const& st
 //--------------------------------------------------------------------------------
 void PlayerShip::InitializeVertexArray()
 {
-	m_vertexArray = new Vertex[NUM_SHIP_VERTS];
+	m_vertexArray = new Vertex[NUM_PLAYER_SHIP_VERTS];
 
 	// Triangle A
-	m_vertexArray[0] = Vertex( Vec3( 2, 1, 0 ), m_color, Vec2() );
-	m_vertexArray[1] = Vertex( Vec3( 0, 2, 0 ), m_color, Vec2() );
-	m_vertexArray[2] = Vertex( Vec3( -2, 1, 0 ), m_color, Vec2() );
+	m_vertexArray[0] = Vertex( Vec3( 2, 1, 0 ), PLAYER_SHIP_COLOR, Vec2() );
+	m_vertexArray[1] = Vertex( Vec3( 0, 2, 0 ), PLAYER_SHIP_COLOR, Vec2() );
+	m_vertexArray[2] = Vertex( Vec3( -2, 1, 0 ), PLAYER_SHIP_COLOR, Vec2() );
 
 	// Triangle B
-	m_vertexArray[3] = Vertex( Vec3( 0, 1, 0 ), m_color, Vec2() );
-	m_vertexArray[4] = Vertex( Vec3( -2, 1, 0 ), m_color, Vec2() );
-	m_vertexArray[5] = Vertex( Vec3( -2, -1, 0 ), m_color, Vec2() );
+	m_vertexArray[3] = Vertex( Vec3( 0, 1, 0 ), PLAYER_SHIP_COLOR, Vec2() );
+	m_vertexArray[4] = Vertex( Vec3( -2, 1, 0 ), PLAYER_SHIP_COLOR, Vec2() );
+	m_vertexArray[5] = Vertex( Vec3( -2, -1, 0 ), PLAYER_SHIP_COLOR, Vec2() );
 
 	// Triangle C
-	m_vertexArray[6] = Vertex( Vec3( 0, 1, 0 ), m_color, Vec2() );
-	m_vertexArray[7] = Vertex( Vec3( -2, -1, 0 ), m_color, Vec2() );
-	m_vertexArray[8] = Vertex( Vec3( 0, -1, 0 ), m_color, Vec2() );
+	m_vertexArray[6] = Vertex( Vec3( 0, 1, 0 ), PLAYER_SHIP_COLOR, Vec2() );
+	m_vertexArray[7] = Vertex( Vec3( -2, -1, 0 ), PLAYER_SHIP_COLOR, Vec2() );
+	m_vertexArray[8] = Vertex( Vec3( 0, -1, 0 ), PLAYER_SHIP_COLOR, Vec2() );
 
 	// Triangle D
-	m_vertexArray[9] = Vertex( Vec3( 1, 0, 0 ), m_color, Vec2() );
-	m_vertexArray[10] = Vertex( Vec3( 0, 1, 0 ), m_color, Vec2() );
-	m_vertexArray[11] = Vertex( Vec3( 0, -1, 0 ), m_color, Vec2() );
+	m_vertexArray[9] = Vertex( Vec3( 1, 0, 0 ), PLAYER_SHIP_COLOR, Vec2() );
+	m_vertexArray[10] = Vertex( Vec3( 0, 1, 0 ), PLAYER_SHIP_COLOR, Vec2() );
+	m_vertexArray[11] = Vertex( Vec3( 0, -1, 0 ), PLAYER_SHIP_COLOR, Vec2() );
 
 	// Triangle E
-	m_vertexArray[12] = Vertex( Vec3( 2, -1, 0 ), m_color, Vec2() );
-	m_vertexArray[13] = Vertex( Vec3( -2, -1, 0 ), m_color, Vec2() );
-	m_vertexArray[14] = Vertex( Vec3( 0, -2, 0 ), m_color, Vec2() );
+	m_vertexArray[12] = Vertex( Vec3( 2, -1, 0 ), PLAYER_SHIP_COLOR, Vec2() );
+	m_vertexArray[13] = Vertex( Vec3( -2, -1, 0 ), PLAYER_SHIP_COLOR, Vec2() );
+	m_vertexArray[14] = Vertex( Vec3( 0, -2, 0 ), PLAYER_SHIP_COLOR, Vec2() );
 };
 
 
@@ -70,29 +69,29 @@ void PlayerShip::InitializeVertexArray()
 void PlayerShip::GetVertexArrayCopy( Vertex* out_vertexArray ) const
 {
 	// Triangle A
-	out_vertexArray[0] = Vertex( Vec3( 2, 1, 0 ), m_color, Vec2() );
-	out_vertexArray[1] = Vertex( Vec3( 0, 2, 0 ), m_color, Vec2() );
-	out_vertexArray[2] = Vertex( Vec3( -2, 1, 0 ), m_color, Vec2() );
+	out_vertexArray[0] = Vertex( Vec3( 2, 1, 0 ), PLAYER_SHIP_COLOR, Vec2() );
+	out_vertexArray[1] = Vertex( Vec3( 0, 2, 0 ), PLAYER_SHIP_COLOR, Vec2() );
+	out_vertexArray[2] = Vertex( Vec3( -2, 1, 0 ), PLAYER_SHIP_COLOR, Vec2() );
 
 	// Triangle B
-	out_vertexArray[3] = Vertex( Vec3( 0, 1, 0 ), m_color, Vec2() );
-	out_vertexArray[4] = Vertex( Vec3( -2, 1, 0 ), m_color, Vec2() );
-	out_vertexArray[5] = Vertex( Vec3( -2, -1, 0 ), m_color, Vec2() );
+	out_vertexArray[3] = Vertex( Vec3( 0, 1, 0 ), PLAYER_SHIP_COLOR, Vec2() );
+	out_vertexArray[4] = Vertex( Vec3( -2, 1, 0 ), PLAYER_SHIP_COLOR, Vec2() );
+	out_vertexArray[5] = Vertex( Vec3( -2, -1, 0 ), PLAYER_SHIP_COLOR, Vec2() );
 
 	// Triangle C
-	out_vertexArray[6] = Vertex( Vec3( 0, 1, 0 ), m_color, Vec2() );
-	out_vertexArray[7] = Vertex( Vec3( -2, -1, 0 ), m_color, Vec2() );
-	out_vertexArray[8] = Vertex( Vec3( 0, -1, 0 ), m_color, Vec2() );
+	out_vertexArray[6] = Vertex( Vec3( 0, 1, 0 ), PLAYER_SHIP_COLOR, Vec2() );
+	out_vertexArray[7] = Vertex( Vec3( -2, -1, 0 ), PLAYER_SHIP_COLOR, Vec2() );
+	out_vertexArray[8] = Vertex( Vec3( 0, -1, 0 ), PLAYER_SHIP_COLOR, Vec2() );
 
 	// Triangle D
-	out_vertexArray[9] = Vertex( Vec3( 1, 0, 0 ), m_color, Vec2() );
-	out_vertexArray[10] = Vertex( Vec3( 0, 1, 0 ), m_color, Vec2() );
-	out_vertexArray[11] = Vertex( Vec3( 0, -1, 0 ), m_color, Vec2() );
+	out_vertexArray[9] = Vertex( Vec3( 1, 0, 0 ), PLAYER_SHIP_COLOR, Vec2() );
+	out_vertexArray[10] = Vertex( Vec3( 0, 1, 0 ), PLAYER_SHIP_COLOR, Vec2() );
+	out_vertexArray[11] = Vertex( Vec3( 0, -1, 0 ), PLAYER_SHIP_COLOR, Vec2() );
 
 	// Triangle E
-	out_vertexArray[12] = Vertex( Vec3( 2, -1, 0 ), m_color, Vec2() );
-	out_vertexArray[13] = Vertex( Vec3( -2, -1, 0 ), m_color, Vec2() );
-	out_vertexArray[14] = Vertex( Vec3( 0, -2, 0 ), m_color, Vec2() );
+	out_vertexArray[12] = Vertex( Vec3( 2, -1, 0 ), PLAYER_SHIP_COLOR, Vec2() );
+	out_vertexArray[13] = Vertex( Vec3( -2, -1, 0 ), PLAYER_SHIP_COLOR, Vec2() );
+	out_vertexArray[14] = Vertex( Vec3( 0, -2, 0 ), PLAYER_SHIP_COLOR, Vec2() );
 }
 
 
@@ -374,8 +373,8 @@ void PlayerShip::Render() const
 	if ( m_isDead )
 		return;
 
-	Vertex tempShipWorldVerts[NUM_SHIP_VERTS];
-	for( int vertIndex = 0; vertIndex < NUM_SHIP_VERTS; ++ vertIndex )
+	Vertex tempShipWorldVerts[NUM_PLAYER_SHIP_VERTS];
+	for( int vertIndex = 0; vertIndex < NUM_PLAYER_SHIP_VERTS; ++ vertIndex )
 	{
 		tempShipWorldVerts[vertIndex] = m_vertexArray[vertIndex];
 	}
@@ -392,12 +391,12 @@ void PlayerShip::Render() const
 			alpha = 255;
 		}
 
-		for ( int vertexIndex = 0; vertexIndex < PlayerShip::NUM_SHIP_VERTS; ++ vertexIndex )
+		for ( int vertexIndex = 0; vertexIndex < NUM_PLAYER_SHIP_VERTS; ++ vertexIndex )
 			tempShipWorldVerts[vertexIndex].m_color.a = alpha;
 	}
 
-	TransformVertexArrayXY3D( NUM_SHIP_VERTS, tempShipWorldVerts, 1.f, m_orientationDegrees, m_position );
-	g_engine->m_renderer->DrawVertexArray( NUM_SHIP_VERTS, tempShipWorldVerts );
+	TransformVertexArrayXY3D( NUM_PLAYER_SHIP_VERTS, tempShipWorldVerts, 1.f, m_orientationDegrees, m_position );
+	g_engine->m_renderer->DrawVertexArray( NUM_PLAYER_SHIP_VERTS, tempShipWorldVerts );
 
 	if ( m_isAccelerating )
 	{

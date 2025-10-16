@@ -5,16 +5,16 @@
 
 
 //-----------------------------------------------------------------------------------------------
-class Asteroid;   // Forward declaration
-class Beetle;     // Forward declaration
-class Bullet;     // Forward declaration
-class Camera;     // Forward declaration
-class Debris;     // Forward declaration
-class Entity;     // Forward declaration
-class ImpactWave; // Forward declaration
-class PlayerShip; // Forward declaration
-class Wasp;       // Forward declaration
-struct Vec3;      // Forward declaration
+class  Asteroid;   // Forward declaration
+class  Beetle;     // Forward declaration
+class  Bullet;     // Forward declaration
+class  Camera;     // Forward declaration
+class  Debris;     // Forward declaration
+class  Entity;     // Forward declaration
+class  ImpactWave; // Forward declaration
+class  PlayerShip; // Forward declaration
+class  Wasp;       // Forward declaration
+struct Vec3;       // Forward declaration
 
 
 //-----------------------------------------------------------------------------------------------
@@ -65,34 +65,34 @@ public:
 	void UpdateFromController();
 	void UpdateWaves();
 	void ScreenShake( float intensity );
-	bool IsReadyToStartNextWave() const;
+	bool IsReadyToStartNextWave()									  const;
 	void StartNextWave();
-	void Render() const;
-	void RenderEntities() const;
-	void RenderHUD() const;
-	void RenderOffscreenIndicator() const;
-	void RenderAttractMode() const;
-	void RenderScanMode() const;
-	void RenderParallaxBackground() const;
-	Vec2 GetRandomOffscreenPosition( float cosmeticRadius ) const;
+	void Render()													  const;
+	void RenderEntities()											  const;
+	void RenderHUD()												  const;
+	void RenderOffscreenIndicator()									  const;
+	void RenderAttractMode()										  const;
+	void RenderScanMode()											  const;
+	void RenderParallaxBackground()									  const;
+	Vec2 GetRandomOffscreenPosition( float cosmeticRadius )		      const;
 	int  BuildScanTargets();
-	int  GetEnemyClosestToPlayer() const;
+	int  GetEnemyClosestToPlayer()									  const;
 	int  StepCurrentSelectedEntityIndex( int currentIndex, int step );
 	void SpawnRandomAsteroids( int numOfAsteroids );
 	void SpawnBulletFromPlayerShip();
 	void SpawnRandomBeetles( int numOfBeetles );
 	void SpawnRandomWasps( int numOfWasps );
 	void SpawnDebrisCluster( int numOfDebris, Vec2 const& position, Vec2 momentum, Rgba8 const& color, float minRadius, float maxRadius);
-	void SpawnImpactWave( Vec2 const& worldPosition, Rgba8 color = Rgba8( 248, 21, 98, 80 ) );
+	void SpawnImpactWave( Vec2 const& worldPosition, Rgba8 color = IMPACT_WAVE_COLOR );
 	void CheckPlayerLives();
-	int  FindFreeEntityIndex( Entity** entityList, int maxCount ) const;
+	int  FindFreeEntityIndex( Entity** entityList, int maxCount )     const;
 	void Reset();
 	void KillAllEnemies(); // For testing and debugging
 
 private:
 	void DeleteGarbageEntities();
-	void DebugDraw() const;
+	void DebugDraw()												   const;
 	void InitializeTargersArray( Entity** out_targetsArray, int maxTargets );
-	Vec3 TransformWorldToScreen( Vec3 const& worldPosition ) const;
+	Vec3 TransformWorldToScreen( Vec3 const& worldPosition )		   const;
 	bool IsOnScreen( Vec2 const& worldPosition, float cosmeticRadius ) const;
 };

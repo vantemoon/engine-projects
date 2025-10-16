@@ -24,10 +24,10 @@ public:
 	void Update( float deltaSeconds );
 	void UpdateFromKeyboard();
 	void UpdateFromController();
-	void Render() const;
+	void Render()									const;
 
 	void SetIsQuitting();
-	bool IsQuitting() const;
+	bool IsQuitting()								const;
 	void HardReset();
 
 public:

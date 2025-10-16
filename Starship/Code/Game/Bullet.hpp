@@ -13,16 +13,15 @@ class Bullet : public Entity
 {
 public:
 	PlayerShip* m_shooter = nullptr;
-	float m_ageSeconds = 0.f;
-	bool m_hasHitTarget = false;
-	static constexpr int NUM_BULLET_VERTS = 6;
+	float       m_ageSeconds = 0.f;
+	bool        m_hasHitTarget = false;
 
 public:
 	Bullet( Game* game, PlayerShip* shooter );
-	~Bullet() override;
+	~Bullet()										override;
 
-	void InitializeVertexArray() override;
-	void Update( float deltaSeconds ) override;
-	void Render() const override;
+	void InitializeVertexArray()					override;
+	void Update( float deltaSeconds )				override;
+	void Render()							  const override;
 	void Die( bool shouldSpawnDebris );
 };

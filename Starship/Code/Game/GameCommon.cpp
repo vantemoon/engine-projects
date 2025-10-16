@@ -43,6 +43,7 @@ void DebugDrawRing( Vec2 center, float radius, float thickness, const Rgba8& col
 		int vertIndexD = segmentIndex * 6 + 3; // Inner end
 		int vertIndexE = segmentIndex * 6 + 4; // Outer start
 		int vertIndexF = segmentIndex * 6 + 5; // Outer end
+
 		// Inner triangle
 		verts[vertIndexA].m_position = innerEnd;
 		verts[vertIndexB].m_position = innerStart;
