@@ -2,10 +2,11 @@
 
 
 //-----------------------------------------------------------------------------------------------
-class AudioSystem; // Forward declaration
 class Engine;      // Forward declaration
-class InputSystem; // Forward declaration
+class Window;      // Forward declaration
 class Renderer;    // Forward declaration
+class InputSystem; // Forward declaration
+class AudioSystem; // Forward declaration
 
 //-----------------------------------------------------------------------------------------------
 extern Engine* g_engine; // Advertisement that this global exists, so external people can use it
@@ -20,7 +21,8 @@ public:
 	void EndFrame();
 
 public:
-	AudioSystem* m_audioSystem = nullptr;
-	InputSystem* m_inputSystem = nullptr;
+	Window*      m_window      = nullptr;
 	Renderer*    m_renderer    = nullptr;
+	InputSystem* m_inputSystem = nullptr;
+	AudioSystem* m_audioSystem = nullptr;
 };
