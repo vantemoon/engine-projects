@@ -16,7 +16,10 @@ HGLRC g_openGLRenderingContext = nullptr;     // ...becomes void* Renderer::m_ap
 
 
 //-----------------------------------------------------------------------------------------------
-Renderer::Renderer() = default;
+Renderer::Renderer( RenderConfig const& config )
+	: m_config( config )
+{
+}
 
 
 //-----------------------------------------------------------------------------------------------

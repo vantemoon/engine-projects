@@ -1,4 +1,8 @@
 #pragma once
+#include "Engine/Window/Window.hpp"
+#include "Engine/Renderer/Renderer.hpp"
+#include "Engine/Input/InputSystem.hpp"
+#include "Engine/Audio/AudioSystem.hpp"
 
 
 //-----------------------------------------------------------------------------------------------
@@ -11,11 +15,22 @@ class AudioSystem; // Forward declaration
 //-----------------------------------------------------------------------------------------------
 extern Engine* g_engine; // Advertisement that this global exists, so external people can use it
 
+
+//-----------------------------------------------------------------------------------------------
+struct EngineConfig
+{
+	WindowConfig  m_windowConfig;
+	RenderConfig  m_rendererConfig;
+	InputConfig   m_inputConfig;
+	AudioConfig   m_audioConfig;
+};
+
+
 //-----------------------------------------------------------------------------------------------
 class Engine
 {
 public: 
-	Engine();
+	Engine( EngineConfig const& config );
 	~Engine();
 	void BeginFrame();
 	void EndFrame();
@@ -25,4 +40,6 @@ public:
 	Renderer*    m_renderer    = nullptr;
 	InputSystem* m_inputSystem = nullptr;
 	AudioSystem* m_audioSystem = nullptr;
+
+	EngineConfig m_config;
 };

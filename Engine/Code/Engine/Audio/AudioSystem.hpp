@@ -18,11 +18,18 @@ constexpr size_t MISSING_SOUND_ID = (size_t)(-1); // for bad SoundIDs and SoundP
 class AudioSystem;
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////
+//-----------------------------------------------------------------------------------------------
+struct AudioConfig
+{
+	bool m_isEnabled = true;
+};
+
+
+//-----------------------------------------------------------------------------------------------
 class AudioSystem
 {
 public:
-	AudioSystem();
+	AudioSystem( AudioConfig const& config );
 	virtual ~AudioSystem();
 
 public:
@@ -39,6 +46,8 @@ public:
 	virtual void				SetSoundPlaybackSpeed( SoundPlaybackID soundPlaybackID, float speed );		// speed is frequency multiplier (1.0 == normal)
 
 	virtual void				ValidateResult( FMOD_RESULT result );
+
+	AudioConfig					m_config;
 
 protected:
 	FMOD::System*						m_fmodSystem;

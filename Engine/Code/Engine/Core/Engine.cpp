@@ -10,20 +10,19 @@ Engine* g_engine = nullptr;
 
 
 //-----------------------------------------------------------------------------------------------
-Engine::Engine()
+Engine::Engine( EngineConfig const& config )
+	: m_config( config )
 {
 	g_engine = this;
 
-	m_window = new Window();
+	m_window = new Window( config.m_windowConfig );
+	m_renderer = new Renderer( config.m_rendererConfig );
+	m_inputSystem = new InputSystem( config.m_inputConfig );
+	m_audioSystem = new AudioSystem( config.m_audioConfig );
+
 	m_window->Startup();
-
-	m_renderer = new Renderer();
 	m_renderer->Startup();
-
-	m_inputSystem = new InputSystem();
 	m_inputSystem->StartUp();
-
-	m_audioSystem = new AudioSystem();
 	m_audioSystem->Startup();
 }
 

@@ -16,7 +16,10 @@
 //-----------------------------------------------------------------------------------------------
 App::App()
 {
-	g_engine = new Engine();
+	EngineConfig engineConfig;
+	
+	g_engine = new Engine( engineConfig );
+
 	m_game = new Game();
 
 	m_lastFrameStartTime = GetCurrentTimeSeconds();

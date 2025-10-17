@@ -5,7 +5,8 @@
 
 
 //-----------------------------------------------------------------------------------------------
-Window::Window()
+Window::Window( WindowConfig const& config)
+	: m_config( config )
 {
 }
 

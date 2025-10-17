@@ -26,6 +26,13 @@ unsigned char const KEYCODE_LEFTARROW = VK_LEFT;
 unsigned char const KEYCODE_RIGHTARROW = VK_RIGHT;
 
 
+//-----------------------------------------------------------------------------------------------
+InputSystem::InputSystem( InputConfig const& config )
+	: m_config( config )
+{
+}
+
+
 //----------------------------------------------------------------
 void InputSystem::StartUp()
 {
