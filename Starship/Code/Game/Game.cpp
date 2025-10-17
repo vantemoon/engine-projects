@@ -1836,7 +1836,13 @@ void Game::SpawnImpactWave( Vec2 const& worldPosition, Rgba8 color )
 		}
 	}
 
-	const int slot = ( freeIndex >= 0 ) ? freeIndex : oldestIndex;
+	int slot;
+	if ( freeIndex >= 0 ) {
+		slot = freeIndex;
+	}
+	else {
+		slot = oldestIndex;
+	}
 
 	if ( m_impactWaves[slot] != nullptr )
 	{
