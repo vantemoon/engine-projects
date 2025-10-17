@@ -1,14 +1,14 @@
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#include <gl/gl.h>
-#pragma comment( lib, "opengl32" )
-
+#include "Engine/Renderer/Renderer.hpp"
 #include "Engine/Core/Rgba8.hpp"
 #include "Engine/Core/Vertex.hpp"
 #include "Engine/Math/Vec2.hpp"
 #include "Engine/Math/Vec3.hpp"
 #include "Engine/Renderer/Camera.hpp"
-#include "Engine/Renderer/Renderer.hpp"
+
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#include <gl/gl.h>
+#pragma comment( lib, "opengl32" )
 
 
 //-----------------------------------------------------------------------------------------------
