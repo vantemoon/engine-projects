@@ -1,0 +1,86 @@
+#pragma once
+#include "Engine/Core/Rgba8.hpp"
+
+
+//-----------------------------------------------------------------------------------------------
+struct Vec2;  // Forward declaration
+
+
+//-----------------------------------------------------------------------------------------------
+enum GameState
+{
+	INVALID_STATE = -1,
+	ATTRACT_MODE,
+	PLAYING,
+	PAUSED,
+	GAME_OVER,
+	VICTORY,
+	NUM_GAME_STATES
+};
+
+
+//-----------------------------------------------------------------------------------------------
+constexpr int NUM_PLAYER_LIVES = 4;
+constexpr int NUM_OF_WAVES = 5;
+constexpr int MAX_ASTEROIDS = 50;
+constexpr int MAX_BULLETS = 50;
+constexpr int MAX_BEETLES = 20;
+constexpr int MAX_WASPS = 20;
+constexpr int MAX_DEBRIS = 300;
+constexpr int MAX_TARGETS = MAX_ASTEROIDS + MAX_BEETLES + MAX_WASPS;
+constexpr int MAX_IMPACT_WAVES = 30;
+
+constexpr float WORLD_SIZE_X = 200.f;
+constexpr float WORLD_SIZE_Y = 100.f;
+constexpr float WORLD_CENTER_X = WORLD_SIZE_X / 2.f;
+constexpr float WORLD_CENTER_Y = WORLD_SIZE_Y / 2.f;
+
+constexpr float SCREEN_SIZE_X = 1600.f;
+constexpr float SCREEN_SIZE_Y = 800.f;
+constexpr float SCREEN_CENTER_X = SCREEN_SIZE_X / 2.f;
+constexpr float SCREEN_CENTER_Y = SCREEN_SIZE_Y / 2.f;
+
+const	  Rgba8 ASTEROID_COLOR = Rgba8( 100, 100, 100, 255 );
+constexpr int   NUM_ASTEROID_VERTS = 48;
+constexpr float ASTEROID_SPEED = 10.f;
+constexpr float ASTEROID_PHYSICS_RADIUS = 1.6f;
+constexpr float ASTEROID_COSMETIC_RADIUS = 2.0f;
+
+const     Rgba8 BULLET_FRONT_COLOR = Rgba8( 255, 255, 0, 255 );
+const     Rgba8 BULLET_REAR_COLOR = Rgba8( 255, 0, 0, 255 );
+constexpr int   NUM_BULLET_VERTS = 6;
+constexpr float BULLET_LIFETIME_SECONDS = 2.0f;
+constexpr float BULLET_SPEED = 50.f;
+constexpr float BULLET_PHYSICS_RADIUS = 0.5f;
+constexpr float BULLET_COSMETIC_RADIUS = 2.0f;
+
+const     Rgba8 PLAYER_SHIP_COLOR = Rgba8( 102, 153, 204, 255 );
+constexpr int   NUM_PLAYER_SHIP_VERTS = 15;
+constexpr float PLAYER_SHIP_ACCELERATION = 30.f;
+constexpr float PLAYER_SHIP_TURN_SPEED = 300.f;
+constexpr float PLAYER_SHIP_PHYSICS_RADIUS = 1.75f;
+constexpr float PLAYER_SHIP_COSMETIC_RADIUS = 2.25f;
+
+const	  Rgba8 BEETLE_COLOR = Rgba8( 153, 255, 51, 255 );
+constexpr int   NUM_BEETLE_VERTS = 18;
+constexpr float BEETLE_SPEED = 10.f;
+constexpr float BEETLE_PHYSICS_RADIUS = 1.5f;
+constexpr float BEETLE_COSMETIC_RADIUS = 2.f;
+
+const	  Rgba8 WASP_COLOR = Rgba8( 255, 255, 0, 255 );
+constexpr int   NUM_WASP_VERTS = 6;
+constexpr float WASP_SPEED = 10.f;
+constexpr float WASP_MAX_SPEED = 30.f;
+constexpr float WASP_ACCELERATION = 10.f;
+constexpr float WASP_PHYSICS_RADIUS = 1.25f;
+constexpr float WASP_COSMETIC_RADIUS = 1.5f;
+
+constexpr int   DEBRIS_MIN_NUM_OF_SIDES = 3;
+constexpr int   DEBRIS_MAX_NUM_OF_SIDES = 7;
+constexpr int   DEBRIS_MAX_NUM_OF_VERTS = DEBRIS_MAX_NUM_OF_SIDES * 3;
+constexpr float DEBRIS_LIFETIME_SECONDS = 2.f;
+
+const     Rgba8 IMPACT_WAVE_COLOR = Rgba8( 248, 21, 98, 80 );
+
+void DebugDrawRing( Vec2 center, float radius, float thickness, const Rgba8& color );
+void DebugDrawLine( Vec2 start, Vec2 end, float thickness, const Rgba8& startColor, const Rgba8& endColor );

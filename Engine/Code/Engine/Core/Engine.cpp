@@ -13,28 +13,18 @@ Engine* g_engine = nullptr;
 Engine::Engine( EngineConfig const& config )
 	: m_config( config )
 {
-	g_engine = this;
+	// g_engine = this;
 
 	m_window = new Window( config.m_windowConfig );
 	m_renderer = new Renderer( config.m_rendererConfig );
 	m_inputSystem = new InputSystem( config.m_inputConfig );
 	m_audioSystem = new AudioSystem( config.m_audioConfig );
-
-	m_window->Startup();
-	m_renderer->Startup();
-	m_inputSystem->StartUp();
-	m_audioSystem->Startup();
 }
 
 
 //-----------------------------------------------------------------------------------------------
 Engine::~Engine()
 {
-	m_audioSystem->Shutdown();
-	m_inputSystem->ShutDown();
-	m_renderer->Shutdown();
-	m_window->Shutdown();
-
 	delete m_audioSystem;
 	m_audioSystem = nullptr;
 
@@ -46,6 +36,26 @@ Engine::~Engine()
 
 	delete m_window;
 	m_window = nullptr;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Engine::Startup()
+{
+	m_window->Startup();
+	m_renderer->Startup();
+	m_inputSystem->StartUp();
+	m_audioSystem->Startup();
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Engine::Shutdown()
+{
+	m_audioSystem->Shutdown();
+	m_inputSystem->ShutDown();
+	m_renderer->Shutdown();
+	m_window->Shutdown();
 }
 
 

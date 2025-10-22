@@ -32,6 +32,8 @@ class Engine
 public: 
 	Engine( EngineConfig const& config );
 	~Engine();
+	void Startup();
+	void Shutdown();
 	void BeginFrame();
 	void EndFrame();
 
