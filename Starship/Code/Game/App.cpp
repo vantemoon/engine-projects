@@ -19,6 +19,7 @@ App::App()
 	EngineConfig engineConfig;
 	
 	g_engine = new Engine( engineConfig );
+	g_engine->Startup();
 
 	m_game = new Game();
 

@@ -13,7 +13,7 @@ Engine* g_engine = nullptr;
 Engine::Engine( EngineConfig const& config )
 	: m_config( config )
 {
-	// g_engine = this;
+	g_engine = this;
 
 	m_window = new Window( config.m_windowConfig );
 	m_renderer = new Renderer( config.m_rendererConfig );
