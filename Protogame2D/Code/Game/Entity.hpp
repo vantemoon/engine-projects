@@ -23,10 +23,6 @@ public:
 	bool		 m_isGarbage = false;
 	Game*		 m_game = nullptr;
 
-	bool         m_isAsteroid;
-	bool         m_isBeetle;
-	bool         m_isWasp;
-
 public:
 	Entity( Game* game, Vec2 startingPosition );
 	virtual ~Entity();
@@ -39,10 +35,10 @@ public:
 	virtual bool IsOffScreen()												 const;
 	virtual Vec2 GetForwardNormal()											 const;
 	bool         IsAlive()													 const;
-	void         GetEnemyTypeAndAction( char** out_type, char** out_action ) const;
+	// void         GetEnemyTypeAndAction( char** out_type, char** out_action ) const;
 
 protected:
 	virtual void InitializeVertexArray();
-	virtual void CheckCollisionWithBullets();
-	virtual void CheckCollisionWithPlayerShip();
+	// virtual void CheckCollisionWithBullets();
+	// virtual void CheckCollisionWithPlayerShip();
 };

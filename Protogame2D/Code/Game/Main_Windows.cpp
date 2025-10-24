@@ -14,7 +14,6 @@
 #include "Engine/Renderer/Camera.hpp"
 #include "Engine/Renderer/Renderer.hpp"
 #include "Game/App.hpp"
-#include "Game/PlayerShip.hpp"
 
 
 //-----------------------------------------------------------------------------------------------

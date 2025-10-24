@@ -1,8 +1,5 @@
 #include "Game/App.hpp"
-#include "Game/Asteroid.hpp"
-#include "Game/Bullet.hpp"
 #include "Game/Game.hpp"
-#include "Game/PlayerShip.hpp"
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/Rgba8.hpp"
 #include "Engine/Core/Time.hpp"
@@ -19,6 +16,7 @@ App::App()
 	EngineConfig engineConfig;
 	
 	g_engine = new Engine( engineConfig );
+	g_engine->Startup();
 
 	m_game = new Game();
 

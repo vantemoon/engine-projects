@@ -6,7 +6,6 @@
 class App;        // Forward declaration
 class Engine;     // Forward declaration
 class Game;       // Forward declaration
-class PlayerShip; // Forward declaration
 
 
 //-----------------------------------------------------------------------------------------------

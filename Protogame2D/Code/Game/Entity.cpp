@@ -1,8 +1,6 @@
 #include "Game/Entity.hpp"
-#include "Game/Bullet.hpp"
 #include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
-#include "Game/PlayerShip.hpp"
 #include "Engine/Audio/AudioSystem.hpp"
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Math/MathUtils.hpp"
@@ -102,71 +100,4 @@ Vec2 Entity::GetForwardNormal() const
 bool Entity::IsAlive() const
 {
 	return !m_isDead;
-}
-
-
-//-----------------------------------------------------------------------------------------------
-void Entity::CheckCollisionWithBullets()
-{
-	if ( m_game == nullptr )
-		return;
-
-	for ( int bulletIndex = 0; bulletIndex < MAX_BULLETS; ++bulletIndex )
-	{
-		Bullet* bullet = m_game->m_bullets[bulletIndex];
-		if ( bullet == nullptr || bullet->m_isDead )
-			continue;
-		float distanceSquared = GetDistanceSquared2D( m_position, bullet->m_position );
-		float combinedRadii = m_physicsRadius + bullet->m_physicsRadius;
-		if ( distanceSquared < ( combinedRadii * combinedRadii ) )
-		{
-			bullet->Die( true );
-			this->TakeDamage( 1 );
-		}
-	}
-}
-
-
-//-----------------------------------------------------------------------------------------------
-void Entity::CheckCollisionWithPlayerShip()
-{
-	if ( m_game == nullptr || m_game->m_playerShip == nullptr || m_game->m_playerShip->m_isDead || m_game->m_playerShip->m_isInvincible || m_isDead )
-		return;
-
-	PlayerShip* playerShip = m_game->m_playerShip;
-	float distanceSquared = GetDistanceSquared2D( m_position, playerShip->m_position );
-	float combinedRadii = m_physicsRadius + playerShip->m_physicsRadius;
-	if ( distanceSquared < ( combinedRadii * combinedRadii ) )
-	{
-		playerShip->Die();
-	}
-}
-
-
-//-----------------------------------------------------------------------------------------------
-void Entity::GetEnemyTypeAndAction( char** out_type, char** out_action ) const
-{
-	*out_type = ( char* ) "Enemy";
-	*out_action = ( char* ) "None";
-
-	if ( m_isAsteroid )
-	{
-		*out_type = ( char* ) "Asteroid";
-		*out_action = ( char* ) "Detonate (40)";
-		return;
-	}
-
-	if ( m_isBeetle )
-	{
-		*out_type = ( char* ) "Beetle";
-		*out_action = ( char* ) "Telefrag (55)";
-		return;
-	}
-
-	if ( m_isWasp )
-	{
-		*out_type = ( char* ) "Wasp";
-		*out_action = ( char* ) "Telefrag (55)";
-		return;
-	}
 }
