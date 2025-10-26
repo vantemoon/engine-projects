@@ -1,4 +1,5 @@
 #include "Engine/Renderer/Renderer.hpp"
+#include "Engine/Core/Engine.hpp"
 #include "Engine/Core/Rgba8.hpp"
 #include "Engine/Core/Vertex.hpp"
 #include "Engine/Math/Vec2.hpp"
@@ -50,7 +51,9 @@ void Renderer::BeginFrame()
 //-----------------------------------------------------------------------------------------------
 void Renderer::EndFrame()
 {
-	// DO NOTHING
+	// "Present" the back-buffer by swapping the front (visible) and back (working) screen buffers
+	HDC displayDeviceContext = (HDC) g_engine->m_window->m_displayDeviceContext;
+	SwapBuffers( displayDeviceContext ); // Note: call this only once at the very end of each frame
 }
 
 

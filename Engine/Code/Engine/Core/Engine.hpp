@@ -6,6 +6,10 @@
 
 
 //-----------------------------------------------------------------------------------------------
+#define UNUSED(x) (void)(x);
+
+
+//-----------------------------------------------------------------------------------------------
 class Engine;      // Forward declaration
 class Window;      // Forward declaration
 class Renderer;    // Forward declaration

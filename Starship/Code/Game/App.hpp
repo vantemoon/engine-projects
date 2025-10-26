@@ -20,6 +20,7 @@ public:
 	App();
 	~App();
 
+	void RunMainLoop();
 	void RunFrame();
 	void Update( float deltaSeconds );
 	void UpdateFromKeyboard();
