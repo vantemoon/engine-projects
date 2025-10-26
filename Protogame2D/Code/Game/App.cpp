@@ -18,7 +18,8 @@ App* g_app = nullptr;
 App::App()
 {
 	EngineConfig engineConfig;
-	engineConfig.m_windowConfig.m_clientAspect = 2.0f; // Request a 2:1 aspect ratio
+	engineConfig.m_windowConfig.m_clientAspect = 2.0f;
+	engineConfig.m_windowConfig.m_windowTitle = "ProtoGame2D";
 
 	g_engine = new Engine( engineConfig );
 	g_engine->Startup();
