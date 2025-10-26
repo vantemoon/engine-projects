@@ -6,6 +6,7 @@
 class App;        // Forward declaration
 class Engine;     // Forward declaration
 class Game;       // Forward declaration
+class PlayerShip; // Forward declaration
 
 
 //-----------------------------------------------------------------------------------------------
@@ -19,6 +20,7 @@ public:
 	App();
 	~App();
 
+	void RunMainLoop();
 	void RunFrame();
 	void Update( float deltaSeconds );
 	void UpdateFromKeyboard();

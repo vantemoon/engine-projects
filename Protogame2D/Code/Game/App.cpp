@@ -11,10 +11,15 @@
 
 
 //-----------------------------------------------------------------------------------------------
+App* g_app = nullptr;
+
+
+//-----------------------------------------------------------------------------------------------
 App::App()
 {
 	EngineConfig engineConfig;
-	
+	engineConfig.m_windowConfig.m_clientAspect = 2.0f; // Request a 2:1 aspect ratio
+
 	g_engine = new Engine( engineConfig );
 	g_engine->Startup();
 
@@ -32,6 +37,16 @@ App::~App()
 
 	delete g_engine;
 	g_engine = nullptr;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void App::RunMainLoop()
+{
+	while ( !IsQuitting() )
+	{
+		RunFrame();
+	}
 }
 
 

@@ -127,7 +127,7 @@ void Game::UpdateAttractMode( [[maybe_unused]] float deltaSeconds )
 
 	if ( !m_isBackgroundMusicPlaying )
 	{
-		m_backgroundMusicSoundID = g_engine->m_audioSystem->CreateOrGetSound( "Data/12 Track 12.mp3" );
+		m_backgroundMusicSoundID = g_engine->m_audioSystem->CreateOrGetSound( "Data/TestSound.mp3" );
 		g_engine->m_audioSystem->StartSound( m_backgroundMusicSoundID, true, 0.8f, 0.f, 1.f );
 		m_isBackgroundMusicPlaying = true;
 	}
