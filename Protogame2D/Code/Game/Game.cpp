@@ -128,7 +128,7 @@ void Game::UpdateAttractMode( [[maybe_unused]] float deltaSeconds )
 	if ( !m_isBackgroundMusicPlaying )
 	{
 		m_backgroundMusicSoundID = g_engine->m_audioSystem->CreateOrGetSound( "Data/TestSound.mp3" );
-		g_engine->m_audioSystem->StartSound( m_backgroundMusicSoundID, true, 0.8f, 0.f, 1.f );
+		g_engine->m_audioSystem->StartSound( m_backgroundMusicSoundID, false, 0.8f, 0.f, 1.f );
 		m_isBackgroundMusicPlaying = true;
 	}
 	else
@@ -307,8 +307,13 @@ void Game::RenderAttractMode() const
 	triangleVertexArray[1].m_color = triangleColor;
 	triangleVertexArray[2].m_color = triangleColor;
 
+	// Text
+	std::vector<Vertex> verts;
+	AddVertsForTextTriangles2D( verts, "PROTOGAME2D", Vec2( 10.f, SCREEN_SIZE_Y - 30.f ), 24.f, Rgba8( 255, 255, 255 ) );
+
 	// Render 
 	g_engine->m_renderer->DrawVertexArray( 3, triangleVertexArray );
+	g_engine->m_renderer->DrawVertexArray( ( int ) verts.size(), verts.data() );
 
 	g_engine->m_renderer->EndCamera( *m_screenCamera );
 }
@@ -321,6 +326,26 @@ void Game::RenderEntities() const
 
 	// #ToDo: Render all entities in the game world
 
+	Vertex squareVertexArray[6];
+	float squareSize = 10.f;
+	float time = ( float ) GetCurrentTimeSeconds();
+	float squareX = WORLD_SIZE_X * 0.5f + ( WORLD_SIZE_X * 0.1f ) * SinDegrees( time * 60.f );
+	squareVertexArray[0].m_position = Vec3( squareX - squareSize, 50.f - squareSize, 0.f );
+	squareVertexArray[1].m_position = Vec3( squareX + squareSize, 50.f - squareSize, 0.f );
+	squareVertexArray[2].m_position = Vec3( squareX + squareSize, 50.f + squareSize, 0.f );
+	squareVertexArray[3].m_position = Vec3( squareX - squareSize, 50.f - squareSize, 0.f );
+	squareVertexArray[4].m_position = Vec3( squareX + squareSize, 50.f + squareSize, 0.f );
+	squareVertexArray[5].m_position = Vec3( squareX - squareSize, 50.f + squareSize, 0.f );
+	Rgba8 squareColor = Rgba8( 200, 50, 50 );
+	squareVertexArray[0].m_color = squareColor;
+	squareVertexArray[1].m_color = squareColor;
+	squareVertexArray[2].m_color = squareColor;
+	squareVertexArray[3].m_color = squareColor;
+	squareVertexArray[4].m_color = squareColor;
+	squareVertexArray[5].m_color = squareColor;
+
+	g_engine->m_renderer->DrawVertexArray( 6, squareVertexArray );
+
 	g_engine->m_renderer->EndCamera( *m_worldCamera );
 }
 
@@ -331,6 +356,11 @@ void Game::RenderHUD() const
 	g_engine->m_renderer->BeginCamera( *m_screenCamera );
 
 	// #ToDo: Render HUD elements (health, score, etc.)
+
+	std::vector<Vertex> verts;
+	AddVertsForTextTriangles2D( verts, "GAME MODE", Vec2( 10.f, SCREEN_SIZE_Y - 30.f ), 24.f, Rgba8( 255, 255, 255 ) );
+
+	g_engine->m_renderer->DrawVertexArray( ( int ) verts.size(), verts.data() );
 
 	g_engine->m_renderer->EndCamera( *m_screenCamera );
 }
