@@ -17,10 +17,16 @@
 #include "Engine/Renderer/Renderer.hpp"
 
 
+//----------------------------------------------------------------------------------------------
+Game* g_game = nullptr;
+
+
 //-----------------------------------------------------------------------------------------------
 Game::Game()
 {
-	m_player = new Player( this, Vec2( WORLD_CENTER_X, WORLD_CENTER_Y ) );
+	g_game = this;
+
+	m_player = new Player( Vec2( WORLD_CENTER_X, WORLD_CENTER_Y ) );
 
 	m_worldCamera = new Camera();
 	m_screenCamera = new Camera();
@@ -261,6 +267,17 @@ void Game::DebugDraw() const
 	{
 		DebugDrawRing( m_player->m_position, m_player->m_physicsRadius, 0.1f, Rgba8( 0, 255, 0 ) );
 		DebugDrawRing( m_player->m_position, m_player->m_cosmeticRadius, 0.1f, Rgba8( 0, 0, 255 ) );
+
+		// Draw forward direction
+		Vec2 forwardNormal = m_player->GetForwardNormal();
+		DebugDrawLine( m_player->m_position, m_player->m_position + forwardNormal * m_player->m_physicsRadius * 1.5f, 0.1f, Rgba8( 255, 0, 0 ), Rgba8( 255, 0, 0 ) );
+
+		// Draw velocity vector
+		DebugDrawLine( m_player->m_position, m_player->m_position + m_player->m_velocity, 0.1f, Rgba8( 255, 255, 0 ), Rgba8( 255, 255, 0 ) );
+
+		// Draw left vector
+		Vec2 leftNormal = Vec2( -forwardNormal.y, forwardNormal.x );
+		DebugDrawLine( m_player->m_position, m_player->m_position + leftNormal * m_player->m_physicsRadius * 1.5f, 0.1f, Rgba8( 0, 255, 255 ), Rgba8( 0, 255, 255 ) );
 	}
 
 	g_engine->m_renderer->EndCamera( *m_worldCamera );

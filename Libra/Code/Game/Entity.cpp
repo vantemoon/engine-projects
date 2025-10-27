@@ -8,9 +8,8 @@
 
 
 //-----------------------------------------------------------------------------------------------
-Entity::Entity( Game* game, Vec2 startingPosition )
-	: m_game( game )
-	, m_position( startingPosition )
+Entity::Entity( Vec2 startingPosition )
+	: m_position( startingPosition )
 {
 	// Default values, should be overridden by derived classes
 	m_velocity = Vec2( 0.f, 0.f );

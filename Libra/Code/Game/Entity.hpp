@@ -21,10 +21,10 @@ public:
 	int			 m_health;
 	bool		 m_isDead = false;
 	bool		 m_isGarbage = false;
-	Game*		 m_game = nullptr;
+	// Game*		 m_game = nullptr;
 
 public:
-	Entity( Game* game, Vec2 startingPosition );
+	Entity( Vec2 startingPosition );
 	virtual ~Entity();
 	virtual void Update( float deltaSeconds );
 	virtual void Render()													 const;
