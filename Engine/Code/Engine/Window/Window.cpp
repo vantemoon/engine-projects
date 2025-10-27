@@ -1,7 +1,6 @@
 #include "Engine/Window/Window.hpp"
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/ErrorWarningAssert.hpp"
-// #include "Game/App.hpp"
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
