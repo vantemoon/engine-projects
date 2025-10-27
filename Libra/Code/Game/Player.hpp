@@ -9,6 +9,10 @@ public:
 	bool				 m_isMovingForward = false;
 	float    			 m_targetMovementDirection = 0.f;
 	float				 m_thrustFraction = 0.f;
+	float				 m_turretOrientationDegrees = 0.f;
+	float				 m_turretRelativeDegrees = 0.f;
+	float				 m_turretTargetDegrees = 0.f;
+	bool				 m_isTurretAiming = false;
 
 public:
 	Player( Vec2 startingPosition );
@@ -24,4 +28,5 @@ public:
 protected:
 	void InitializeVertexArray()								override;
 	void TurnTowardMovementDirection( float deltaSeconds );
+	void TurnTurretTowardAimDirection( float deltaSeconds );
 };

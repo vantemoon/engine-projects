@@ -16,6 +16,8 @@ Player::Player( Vec2 startingPosition )
 	m_physicsRadius = PLAYER_TANK_PHYSICS_RADIUS;
 	m_cosmeticRadius = PLAYER_TANK_COSMETIC_RADIUS;
 	m_orientationDegrees = 45.f;
+	m_turretOrientationDegrees = m_orientationDegrees;
+	m_turretRelativeDegrees = 0.f;
 
 	InitializeVertexArray();
 }
@@ -31,15 +33,8 @@ void Player::Update( float deltaSeconds )
 	UpdateFromKeyboard( deltaSeconds );
 	UpdateFromController( deltaSeconds );
 	TurnTowardMovementDirection( deltaSeconds );
+	TurnTurretTowardAimDirection( deltaSeconds );
 
-	if ( m_isMovingForward )
-	{
-		m_thrustFraction = 1.f;
-	}
-	else
-	{
-		m_thrustFraction = 0.f;
-	}
 	m_velocity = m_thrustFraction * PLAYER_TANK_MAX_SPEED_TILES_PER_SECOND * GetForwardNormal();
 	Entity::Update( deltaSeconds );
 }
@@ -54,47 +49,53 @@ void Player::UpdateFromKeyboard( [[maybe_unused]] float deltaSeconds )
 	bool isSKeyDown = g_engine->m_inputSystem->IsKeyDown( 'S' );
 	bool isDKeyDown = g_engine->m_inputSystem->IsKeyDown( 'D' );
 
-	if ( ( isWKeyDown || isAKeyDown || isSKeyDown || isDKeyDown ) && 
-		!( isWKeyDown && isSKeyDown ) && !( isAKeyDown && isDKeyDown ) )
+	bool isAnyMovementKeyDown = isWKeyDown || isAKeyDown || isSKeyDown || isDKeyDown;
+	bool isMovementCancelledOut = ( isWKeyDown && isSKeyDown ) || ( isAKeyDown && isDKeyDown );
+
+	if ( isAnyMovementKeyDown && !isMovementCancelledOut )
 	{
 		m_isMovingForward = true;
+		m_thrustFraction = 1.f;
 
-		if ( isDKeyDown && !isWKeyDown && !isSKeyDown )
-		{
-			m_targetMovementDirection = 0.f;
-		}
-		else if ( isWKeyDown && !isAKeyDown && !isDKeyDown )
-		{
-			m_targetMovementDirection = 90.f;
-		}
-		else if ( isAKeyDown && !isWKeyDown && !isSKeyDown )
-		{
-			m_targetMovementDirection = 180.f;
-		}
-		else if ( isSKeyDown && !isAKeyDown && !isDKeyDown )
-		{
-			m_targetMovementDirection = 270.f;
-		}
-		else if ( isWKeyDown && isDKeyDown )
-		{
-			m_targetMovementDirection = 45.f;
-		}
-		else if ( isWKeyDown && isAKeyDown )
-		{
-			m_targetMovementDirection = 135.f;
-		}
-		else if ( isSKeyDown && isAKeyDown )
-		{
-			m_targetMovementDirection = 225.f;
-		}
-		else if ( isSKeyDown && isDKeyDown )
-		{
-			m_targetMovementDirection = 315.f;
-		}
+		if ( isDKeyDown && !isWKeyDown && !isSKeyDown )		 m_targetMovementDirection = 0.f;
+		else if ( isWKeyDown && !isAKeyDown && !isDKeyDown ) m_targetMovementDirection = 90.f;
+		else if ( isAKeyDown && !isWKeyDown && !isSKeyDown ) m_targetMovementDirection = 180.f;
+		else if ( isSKeyDown && !isAKeyDown && !isDKeyDown ) m_targetMovementDirection = 270.f;
+		else if ( isWKeyDown && isDKeyDown )				 m_targetMovementDirection = 45.f;
+		else if ( isWKeyDown && isAKeyDown )				 m_targetMovementDirection = 135.f;
+		else if ( isSKeyDown && isAKeyDown )				 m_targetMovementDirection = 225.f;
+		else if ( isSKeyDown && isDKeyDown )				 m_targetMovementDirection = 315.f;
 	}
 	else
 	{
 		m_isMovingForward = false;
+		m_thrustFraction = 0.f;
+	}
+
+	// Turret Aiming
+	bool isIKeyDown = g_engine->m_inputSystem->IsKeyDown( 'I' );
+	bool isJKeyDown = g_engine->m_inputSystem->IsKeyDown( 'J' );
+	bool isKKeyDown = g_engine->m_inputSystem->IsKeyDown( 'K' );
+	bool isLKeyDown = g_engine->m_inputSystem->IsKeyDown( 'L' );
+
+	bool isAiming = isIKeyDown || isJKeyDown || isKKeyDown || isLKeyDown;
+
+	if ( isAiming ) {
+		if ( isLKeyDown && !isIKeyDown && !isKKeyDown )      m_turretTargetDegrees = 0.f;
+		else if ( isIKeyDown && !isJKeyDown && !isLKeyDown ) m_turretTargetDegrees = 90.f;
+		else if ( isJKeyDown && !isIKeyDown && !isKKeyDown ) m_turretTargetDegrees = 180.f;
+		else if ( isKKeyDown && !isJKeyDown && !isLKeyDown ) m_turretTargetDegrees = 270.f;
+		else if ( isIKeyDown && isLKeyDown )                 m_turretTargetDegrees = 45.f;
+		else if ( isIKeyDown && isJKeyDown )                 m_turretTargetDegrees = 135.f;
+		else if ( isKKeyDown && isJKeyDown )                 m_turretTargetDegrees = 225.f;
+		else if ( isKKeyDown && isLKeyDown )                 m_turretTargetDegrees = 315.f;
+
+		m_isTurretAiming = true;
+	} 
+	else 
+	{
+		m_turretTargetDegrees = m_orientationDegrees + m_turretRelativeDegrees;
+		m_isTurretAiming = false;
 	}
 }
 
@@ -110,7 +111,17 @@ void Player::UpdateFromController( [[maybe_unused]] float deltaSeconds )
 	if ( leftJoystickMagnitude > 0.f )
 	{
 		m_isMovingForward = true;
+		m_thrustFraction = leftJoystickMagnitude;
 		m_targetMovementDirection = leftJoystickOrientationDegrees;
+	}
+
+	// Turret Aiming
+	float rightJoystickMagnitude = controller.GetRightJoystick().GetMagnitude();
+	float rightJoystickOrientationDegrees = controller.GetRightJoystick().GetOrientationDegrees();
+	if ( rightJoystickMagnitude > 0.f )
+	{
+		m_turretTargetDegrees = rightJoystickOrientationDegrees;
+		m_isTurretAiming = true;
 	}
 }
 
@@ -122,14 +133,23 @@ void Player::Render() const
 		return;
 	}
 
-	Vertex tempShipWorldVerts[NUM_PLAYER_TANK_VERTS];
-	for ( int vertIndex = 0; vertIndex < NUM_PLAYER_TANK_VERTS; ++ vertIndex )
-	{
-		tempShipWorldVerts[vertIndex] = m_vertexArray[vertIndex];
-	}
+    // Body
+    Vertex tempBodyVerts[NUM_PLAYER_TANK_BODY_VERTS];
+    for (int i = 0; i < NUM_PLAYER_TANK_BODY_VERTS; ++i) {
+        tempBodyVerts[i] = m_vertexArray[i];
+    }
+    TransformVertexArrayXY3D(NUM_PLAYER_TANK_BODY_VERTS, tempBodyVerts, 1.f, m_orientationDegrees, m_position);
+    g_engine->m_renderer->DrawVertexArray(NUM_PLAYER_TANK_BODY_VERTS, tempBodyVerts);
 
-	TransformVertexArrayXY3D( NUM_PLAYER_TANK_VERTS, tempShipWorldVerts, 1.f, m_orientationDegrees, m_position );
-	g_engine->m_renderer->DrawVertexArray( NUM_PLAYER_TANK_VERTS, tempShipWorldVerts );
+    // Turret
+    Vertex tempTurretVerts[NUM_PLAYER_TANK_TURRET_VERTS];
+    for (int i = 0; i < NUM_PLAYER_TANK_TURRET_VERTS; ++i) {
+        tempTurretVerts[i] = m_vertexArray[NUM_PLAYER_TANK_BODY_VERTS + i];
+    }
+
+    TransformVertexArrayXY3D(NUM_PLAYER_TANK_TURRET_VERTS, tempTurretVerts, 1.f, m_turretOrientationDegrees - m_orientationDegrees, Vec2(0.f, 0.f));
+    TransformVertexArrayXY3D(NUM_PLAYER_TANK_TURRET_VERTS, tempTurretVerts, 1.f, m_orientationDegrees, m_position);
+    g_engine->m_renderer->DrawVertexArray(NUM_PLAYER_TANK_TURRET_VERTS, tempTurretVerts);
 }
 
 
@@ -150,8 +170,9 @@ void Player::Die()
 //-----------------------------------------------------------------------------------------------
 void Player::InitializeVertexArray()
 {
-	m_vertexArray = new Vertex[NUM_PLAYER_TANK_VERTS];
+	m_vertexArray = new Vertex[NUM_PLAYER_TANK_BODY_VERTS + NUM_PLAYER_TANK_TURRET_VERTS];
 
+	// Body
 	Vec3 bottomLeft  = Vec3( -m_cosmeticRadius, -m_cosmeticRadius, 0.f );
 	Vec3 bottomRight = Vec3(  m_cosmeticRadius, -m_cosmeticRadius, 0.f );
 	Vec3 topRight    = Vec3(  m_cosmeticRadius,  m_cosmeticRadius, 0.f );
@@ -163,6 +184,23 @@ void Player::InitializeVertexArray()
 	m_vertexArray[3] = Vertex( topRight,    Rgba8( 0, 255, 0 ), Vec2() );
 	m_vertexArray[4] = Vertex( topLeft,     Rgba8( 0, 255, 0 ), Vec2() );
 	m_vertexArray[5] = Vertex( bottomLeft,  Rgba8( 0, 255, 0 ), Vec2() );
+
+	// Turret
+	float turretWidth = m_cosmeticRadius * 0.5f;
+	float turretLength = m_cosmeticRadius * 0.9f;
+	float halfWidth = turretWidth * 0.5f;
+
+	Vec3 turretBottomLeft = Vec3(0.f, -halfWidth, 0.f);
+	Vec3 turretBottomRight = Vec3(turretLength, -halfWidth, 0.f);
+	Vec3 turretTopRight = Vec3(turretLength, halfWidth, 0.f);
+	Vec3 turretTopLeft = Vec3(0.f, halfWidth, 0.f);
+
+	m_vertexArray[6]  = Vertex( turretBottomLeft,  Rgba8( 0, 200, 0 ), Vec2() );
+	m_vertexArray[7]  = Vertex( turretBottomRight,  Rgba8( 0, 200, 0 ), Vec2() );
+	m_vertexArray[8]  = Vertex( turretTopRight,  Rgba8( 0, 200, 0 ), Vec2() );
+	m_vertexArray[9]  = Vertex( turretTopRight,  Rgba8( 0, 200, 0 ), Vec2() );
+	m_vertexArray[10] = Vertex( turretTopLeft,  Rgba8( 0, 200, 0 ), Vec2() );
+	m_vertexArray[11] = Vertex( turretBottomLeft,  Rgba8( 0, 200, 0 ), Vec2() );
 }
 
 
@@ -197,4 +235,29 @@ void Player::TurnTowardMovementDirection( float deltaSeconds )
 		}
 		m_orientationDegrees += deltaToApply;
 	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Player::TurnTurretTowardAimDirection( float deltaSeconds )
+{
+    if ( m_turretOrientationDegrees == m_turretTargetDegrees )
+        return;
+
+    float currentTurretDegrees = m_turretOrientationDegrees;
+    float deltaTurretDegrees = GetShortestAngularDispDegrees( currentTurretDegrees, m_turretTargetDegrees );
+
+    float maxDeltaThisFrame = PLAYER_TANK_TURRET_TURN_SPEED_DEGREES_PER_SECOND * deltaSeconds;
+    if ( fabsf( deltaTurretDegrees ) <= maxDeltaThisFrame )
+    {
+        m_turretOrientationDegrees = m_turretTargetDegrees;
+    }
+    else
+    {
+        m_turretOrientationDegrees += (deltaTurretDegrees > 0.f ? maxDeltaThisFrame : -maxDeltaThisFrame);
+    }
+
+    if ( m_isTurretAiming ) {
+        m_turretRelativeDegrees = m_turretOrientationDegrees - m_orientationDegrees;
+    }
 }
