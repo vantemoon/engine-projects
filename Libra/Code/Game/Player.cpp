@@ -50,21 +50,44 @@ void Player::UpdateFromKeyboard( [[maybe_unused]] float deltaSeconds )
 	bool isDKeyDown = g_engine->m_inputSystem->IsKeyDown( 'D' );
 
 	bool isAnyMovementKeyDown = isWKeyDown || isAKeyDown || isSKeyDown || isDKeyDown;
-	bool isMovementCancelledOut = ( isWKeyDown && isSKeyDown ) || ( isAKeyDown && isDKeyDown );
 
-	if ( isAnyMovementKeyDown && !isMovementCancelledOut )
+	if ( isAnyMovementKeyDown )
 	{
 		m_isMovingForward = true;
 		m_thrustFraction = 1.f;
 
-		if ( isDKeyDown && !isWKeyDown && !isSKeyDown )		 m_targetMovementDirection = 0.f;
-		else if ( isWKeyDown && !isAKeyDown && !isDKeyDown ) m_targetMovementDirection = 90.f;
-		else if ( isAKeyDown && !isWKeyDown && !isSKeyDown ) m_targetMovementDirection = 180.f;
-		else if ( isSKeyDown && !isAKeyDown && !isDKeyDown ) m_targetMovementDirection = 270.f;
-		else if ( isWKeyDown && isDKeyDown )				 m_targetMovementDirection = 45.f;
-		else if ( isWKeyDown && isAKeyDown )				 m_targetMovementDirection = 135.f;
-		else if ( isSKeyDown && isAKeyDown )				 m_targetMovementDirection = 225.f;
-		else if ( isSKeyDown && isDKeyDown )				 m_targetMovementDirection = 315.f;
+		float totalDeltaOrientation = 0.f;
+		int numKeysPressed = 0;
+		if ( isWKeyDown ) {
+			totalDeltaOrientation += 90.f;   
+			numKeysPressed++;
+		}
+		if ( isAKeyDown ) {
+			totalDeltaOrientation += 180.f;  
+			numKeysPressed++;
+		}
+		if ( isSKeyDown ) {
+			totalDeltaOrientation += 270.f;  
+			numKeysPressed++;
+		}
+		if ( isDKeyDown )
+		{
+			if ( isWKeyDown )
+			{
+				totalDeltaOrientation += 0.f;
+			}
+			else if ( isSKeyDown )
+			{
+				totalDeltaOrientation += 360.f;
+			}
+			else
+			{
+				totalDeltaOrientation += 0.f;
+			}
+			numKeysPressed++;
+		}
+		float deltaOrientation = totalDeltaOrientation / ( float ) numKeysPressed;
+		m_targetMovementDirection = deltaOrientation;
 	}
 	else
 	{

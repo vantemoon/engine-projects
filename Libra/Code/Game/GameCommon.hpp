@@ -30,6 +30,9 @@ constexpr float SCREEN_SIZE_Y = 800.f;
 constexpr float SCREEN_CENTER_X = SCREEN_SIZE_X / 2.f;
 constexpr float SCREEN_CENTER_Y = SCREEN_SIZE_Y / 2.f;
 
+constexpr float TILE_SIZE = 1.f;
+constexpr float INNER_STONE_TILE_PROBABILITY = 0.1f;
+
 constexpr int	NUM_PLAYER_TANK_BODY_VERTS = 6;
 constexpr int	NUM_PLAYER_TANK_TURRET_VERTS = 6;
 constexpr float PLAYER_TANK_PHYSICS_RADIUS = 5.f;
