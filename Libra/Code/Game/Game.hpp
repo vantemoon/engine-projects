@@ -1,5 +1,6 @@
 #pragma once
 #include "Game/GameCommon.hpp"
+#include "Game/Player.hpp"
 #include "Engine/Audio/AudioSystem.hpp"
 #include "Engine/Core/Rgba8.hpp"
 
@@ -14,6 +15,8 @@ struct Vec3;       // Forward declaration
 class Game
 {
 public:
+	Player*		m_player = nullptr;
+
 	Camera*     m_worldCamera = nullptr;
 	Camera*     m_screenCamera = nullptr;
 

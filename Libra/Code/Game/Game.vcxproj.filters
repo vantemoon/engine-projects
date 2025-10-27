@@ -25,6 +25,9 @@
     <ClCompile Include="GameCommon.cpp">
       <Filter>Framework</Filter>
     </ClCompile>
+    <ClCompile Include="Player.cpp">
+      <Filter>Gameplay</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.hpp">
@@ -41,6 +44,9 @@
     </ClInclude>
     <ClInclude Include="EngineBuildPreferences.hpp">
       <Filter>Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="Player.hpp">
+      <Filter>Gameplay</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

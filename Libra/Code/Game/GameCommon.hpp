@@ -30,5 +30,9 @@ constexpr float SCREEN_SIZE_Y = 800.f;
 constexpr float SCREEN_CENTER_X = SCREEN_SIZE_X / 2.f;
 constexpr float SCREEN_CENTER_Y = SCREEN_SIZE_Y / 2.f;
 
+constexpr int	NUM_PLAYER_TANK_VERTS = 6;
+constexpr float PLAYER_TANK_PHYSICS_RADIUS = 0.5f;
+constexpr float PLAYER_TANK_COSMETIC_RADIUS = 0.75f;
+
 void DebugDrawRing( Vec2 center, float radius, float thickness, const Rgba8& color );
 void DebugDrawLine( Vec2 start, Vec2 end, float thickness, const Rgba8& startColor, const Rgba8& endColor );
