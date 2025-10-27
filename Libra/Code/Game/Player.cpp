@@ -104,14 +104,39 @@ void Player::UpdateFromKeyboard( [[maybe_unused]] float deltaSeconds )
 	bool isAiming = isIKeyDown || isJKeyDown || isKKeyDown || isLKeyDown;
 
 	if ( isAiming ) {
-		if ( isLKeyDown && !isIKeyDown && !isKKeyDown )      m_turretTargetDegrees = 0.f;
-		else if ( isIKeyDown && !isJKeyDown && !isLKeyDown ) m_turretTargetDegrees = 90.f;
-		else if ( isJKeyDown && !isIKeyDown && !isKKeyDown ) m_turretTargetDegrees = 180.f;
-		else if ( isKKeyDown && !isJKeyDown && !isLKeyDown ) m_turretTargetDegrees = 270.f;
-		else if ( isIKeyDown && isLKeyDown )                 m_turretTargetDegrees = 45.f;
-		else if ( isIKeyDown && isJKeyDown )                 m_turretTargetDegrees = 135.f;
-		else if ( isKKeyDown && isJKeyDown )                 m_turretTargetDegrees = 225.f;
-		else if ( isKKeyDown && isLKeyDown )                 m_turretTargetDegrees = 315.f;
+		float totalDeltaOrientation = 0.f;
+		int numKeysPressed = 0;
+
+		if ( isIKeyDown ) {
+			totalDeltaOrientation += 90.f;   
+			numKeysPressed++;
+		}
+		if ( isJKeyDown ) {
+			totalDeltaOrientation += 180.f;  
+			numKeysPressed++;
+		}
+		if ( isKKeyDown ) {
+			totalDeltaOrientation += 270.f;  
+			numKeysPressed++;
+		}
+		if ( isLKeyDown )
+		{
+			if ( isIKeyDown )
+			{
+				totalDeltaOrientation += 0.f;
+			}
+			else if ( isKKeyDown )
+			{
+				totalDeltaOrientation += 360.f;
+			}
+			else
+			{
+				totalDeltaOrientation += 0.f;
+			}
+			numKeysPressed++;
+		}
+		float deltaOrientation = totalDeltaOrientation / ( float ) numKeysPressed;
+		m_turretTargetDegrees = deltaOrientation;
 
 		m_isTurretAiming = true;
 	} 
