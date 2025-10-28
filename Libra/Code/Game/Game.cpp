@@ -26,7 +26,10 @@ Game::Game()
 {
 	g_game = this;
 
-	m_player = new Player( Vec2( WORLD_CENTER_X, WORLD_CENTER_Y ) );
+	// Start player on (1, 1) on the map
+	Vec2 playerStartPos = Vec2( TILE_SIZE * 2.f, TILE_SIZE * 2.f );
+	m_player = new Player( playerStartPos );
+	m_currentMap = new Map( IntVec2( 25, 25 ) );
 
 	m_worldCamera = new Camera();
 	m_screenCamera = new Camera();
@@ -295,7 +298,8 @@ void Game::Render() const
 
 	g_engine->m_renderer->BeginCamera( *m_worldCamera );
 
-	RenderEntities();
+	// RenderEntities();
+	m_currentMap->Render();
 	RenderHUD();
 
 	if ( m_isDebugFeaturesOn )

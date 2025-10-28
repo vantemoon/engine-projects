@@ -20,4 +20,6 @@ public:
 public:
 	Map( IntVec2 dimensions );
 	~Map();
+
+	void Render() const;
 };

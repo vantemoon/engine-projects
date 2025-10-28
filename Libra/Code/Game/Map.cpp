@@ -1,5 +1,10 @@
 #include "Game/Map.hpp"
+#include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
+#include "Engine/Core/Engine.hpp"
+#include "Engine/Core/Vertex.hpp"
+#include "Engine/Core/VertexUtils.hpp"
+#include "Engine/Math/AABB2.hpp"
 #include "Engine/Math/RandomNumberGenerator.hpp"
 
 
@@ -70,6 +75,8 @@ Map::Map( IntVec2 dimensions )
 			m_tiles.push_back( newTile );
 		}
 	}
+
+	m_allEntities.push_back( g_game->m_player );
 }
 
 
@@ -77,4 +84,42 @@ Map::Map( IntVec2 dimensions )
 Map::~Map()
 {
 	// Do nothing
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Map::Render() const
+{
+	g_engine->m_renderer->BeginCamera( *g_game->m_worldCamera );
+
+	int numTiles = static_cast<int>( m_tiles.size() );
+	std::vector<Vertex> tileVerts;
+	for ( int tileIndex = 0; tileIndex < numTiles; ++tileIndex )
+	{
+		const Tile& tile = m_tiles[tileIndex];
+		AABB2 tileBounds = AABB2( tile.m_tileCoords.x * TILE_SIZE, tile.m_tileCoords.y * TILE_SIZE,
+			( tile.m_tileCoords.x + 1 ) * TILE_SIZE, ( tile.m_tileCoords.y + 1 ) * TILE_SIZE );
+		Rgba8 tileColor;
+		if ( tile.m_type == TileType::GRASS )
+		{
+			tileColor = GRASS_COLOR;
+		}
+		else if ( tile.m_type == TileType::STONE )
+		{
+			tileColor = STONE_COLOR;
+		}
+		AddVertsForAABB2D( tileVerts, tileBounds, tileColor );
+	}
+	g_engine->m_renderer->DrawVertexArray( static_cast<int>( tileVerts.size() ), tileVerts.data() );
+
+	for ( int entityIndex = 0; entityIndex < static_cast<int>( m_allEntities.size() ); ++entityIndex )
+	{
+		Entity* entity = m_allEntities[entityIndex];
+		if ( entity != nullptr )
+		{
+			entity->Render();
+		}
+	}
+
+	g_engine->m_renderer->EndCamera( *g_game->m_worldCamera );
 }
