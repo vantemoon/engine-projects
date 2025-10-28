@@ -713,32 +713,29 @@ Vec2 GetNearestPointOnTriangle2D( Vec2 const& referencePos, Vec2 const& ccw0, Ve
 	float caDot = DotProduct2D( toReferenceFromC, caNormal );
 	bool isOutsideCA = caDot >= 0.f;
 
-	if ( !isOutsideAB && !isOutsideBC && !isOutsideCA )
-	{
-		return referencePos;
-	}
-	else if ( isOutsideAB && !isOutsideBC && !isOutsideCA )
-	{
-		return GetNearestPointOnLineSegment2D( referencePos, ccw0, ccw1 );
-	}
-	else if ( !isOutsideAB && isOutsideBC && !isOutsideCA )
-	{
-		return GetNearestPointOnLineSegment2D( referencePos, ccw1, ccw2 );
-	}
-	else if ( !isOutsideAB && !isOutsideBC && isOutsideCA )
-	{
-		return GetNearestPointOnLineSegment2D( referencePos, ccw2, ccw0 );
-	}
-	else if ( isOutsideAB && isOutsideBC )
-	{
-		return ccw1;
-	}
-	else if ( isOutsideBC && isOutsideCA )
-	{
-		return ccw2;
-	}
-	else // if ( isOutsideCA && isOutsideAB )
+	if ( isOutsideAB && isOutsideCA && !isOutsideBC ) // Vertex A region
 	{
 		return ccw0;
 	}
+	if ( isOutsideAB && isOutsideBC && !isOutsideCA ) // Vertex B region
+	{
+		return ccw1;
+	}
+	if ( isOutsideBC && isOutsideCA && !isOutsideAB ) // Vertex C region
+	{
+		return ccw2;
+	}
+	if ( isOutsideAB ) // Line segment AB region
+	{
+		return GetNearestPointOnLineSegment2D( referencePos, ccw0, ccw1 );
+	}
+	if ( isOutsideBC ) // Line segment BC region
+	{
+		return GetNearestPointOnLineSegment2D( referencePos, ccw1, ccw2 );
+	}
+	if ( isOutsideCA ) // Line segment CA region
+	{
+		return GetNearestPointOnLineSegment2D( referencePos, ccw2, ccw0 );
+	}
+	return referencePos; // Inside triangle region
 }
