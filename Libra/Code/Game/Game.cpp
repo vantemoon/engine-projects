@@ -26,7 +26,6 @@ Game::Game()
 {
 	g_game = this;
 
-	// Start player on (1, 1) on the map
 	Vec2 playerStartPos = Vec2( TILE_SIZE * 2.f, TILE_SIZE * 2.f );
 	m_player = new Player( playerStartPos );
 	m_currentMap = new Map( IntVec2( 25, 25 ) );
