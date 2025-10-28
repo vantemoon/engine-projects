@@ -466,7 +466,7 @@ bool IsPointInsideOrientedSector2D( Vec2 const& point, Vec2 const& sectorTip, fl
 	Vec2 toPoint = point - sectorTip;
 	float angleToPointDegrees = Atan2Degrees( toPoint.y, toPoint.x );
 	float angleDifferenceDegrees = GetShortestAngularDispDegrees( sectorForwardDegrees, angleToPointDegrees );
-	return fabsf( angleDifferenceDegrees ) <= ( sectorApertureDegrees * 0.5f );
+	return fabsf( angleDifferenceDegrees ) < ( sectorApertureDegrees * 0.5f );
 }
 
 
@@ -481,15 +481,15 @@ bool IsPointInsideDirectedSector2D( Vec2 const& point, Vec2 const& sectorTip, Ve
 	Vec2 toPoint = point - sectorTip;
 	float minimumCosine = CosDegrees( sectorApertureDegrees * 0.5f );
 	float actualCosine = DotProduct2D( toPoint.GetNormalized(), sectorForwardNormal );
-	return actualCosine >= minimumCosine;
+	return actualCosine > minimumCosine;
 }
 
 
 //-----------------------------------------------------------------------------------------------
 bool IsPointInsideAABB2D( Vec2 const& point, AABB2 const& alignedBox )
 {
-	bool isInsideX = point.x >= alignedBox.m_mins.x && point.x <= alignedBox.m_maxs.x;
-	bool isInsideY = point.y >= alignedBox.m_mins.y && point.y <= alignedBox.m_maxs.y;
+	bool isInsideX = point.x > alignedBox.m_mins.x && point.x < alignedBox.m_maxs.x;
+	bool isInsideY = point.y > alignedBox.m_mins.y && point.y < alignedBox.m_maxs.y;
 
 	bool isInside = isInsideX && isInsideY;
 	return isInside;
@@ -504,8 +504,8 @@ bool IsPointInsideOBB2D( Vec2 const& point, OBB2 const& orientedBox )
 	Vec2 jBasisNormal = orientedBox.m_iBasisNormal.GetRotatedBy90Degrees();
 	float yProjection = DotProduct2D( toPoint, jBasisNormal );
 
-	bool isInsideX = fabsf( xProjection ) <= orientedBox.m_halfDimensions.x;
-	bool isInsideY = fabsf( yProjection ) <= orientedBox.m_halfDimensions.y;
+	bool isInsideX = fabsf( xProjection ) < orientedBox.m_halfDimensions.x;
+	bool isInsideY = fabsf( yProjection ) < orientedBox.m_halfDimensions.y;
 
 	bool isInside = isInsideX && isInsideY;
 	return isInside;
@@ -515,37 +515,62 @@ bool IsPointInsideOBB2D( Vec2 const& point, OBB2 const& orientedBox )
 //-----------------------------------------------------------------------------------------------
 bool IsPointInsideCapsule2D( Vec2 const& point, Vec2 const& boneStart, Vec2 const& boneEnd, float radius )
 {
+	// Region I check
 	Vec2 boneVector = boneEnd - boneStart;
-	Vec2 toPoint = point - boneStart;
-	float boneLengthSquared = boneVector.GetLengthSquared();
-	if ( boneLengthSquared == 0.f )
+	Vec2 startToPoint = point - boneStart;
+	float startToPointDot = DotProduct2D( startToPoint, boneVector );
+	if ( startToPointDot <= 0.f )
 	{
 		return IsPointInsideDisc2D( point, boneStart, radius );
 	}
-	float fractionAlongBone = DotProduct2D( toPoint, boneVector ) / boneLengthSquared;
-	fractionAlongBone = GetClampedZeroToOne( fractionAlongBone );
-	Vec2 nearestPointOnBone = boneStart + ( boneVector * fractionAlongBone );
-	return IsPointInsideDisc2D( point, nearestPointOnBone, radius );
+
+	// Region II check
+	Vec2 endToPoint = point - boneEnd;
+	float endToPointDot = DotProduct2D( endToPoint, boneVector );
+	if ( endToPointDot >= 0.f )
+	{
+		return IsPointInsideDisc2D( point, boneEnd, radius );
+	}
+
+	// Region III
+	Vec2 nearestPointOnBone = GetNearestPointOnInfiniteLine2D( point, boneStart, boneEnd );
+	float distanceSquared = GetDistanceSquared2D( point, nearestPointOnBone );
+	float radiusSquared = radius * radius;
+	return distanceSquared < radiusSquared;
 }
 
 
 //-----------------------------------------------------------------------------------------------
 bool IsPointInsideTriangle2D( Vec2 const& point, Vec2 const& ccw0, Vec2 const& ccw1, Vec2 const& ccw2 )
 {
-	Vec2 edge0 = ccw1 - ccw0;
-	Vec2 toPoint0 = point - ccw0;
-	float cross0 = ( edge0.x * toPoint0.y ) - ( edge0.y * toPoint0.x );
+	Vec2 edgeAB = ccw1 - ccw0;
+	Vec2 abNormal = edgeAB.GetRotatedByMinus90Degrees();
+	Vec2 toPointFromA = point - ccw0;
+	float abDot = DotProduct2D( toPointFromA, abNormal );
+	if ( abDot >= 0.f )
+	{
+		return false;
+	}
 
-	Vec2 edge1 = ccw2 - ccw1;
-	Vec2 toPoint1 = point - ccw1;
-	float cross1 = ( edge1.x * toPoint1.y ) - ( edge1.y * toPoint1.x );
+	Vec2 edgeBC = ccw2 - ccw1;
+	Vec2 bcNormal = edgeBC.GetRotatedByMinus90Degrees();
+	Vec2 toPointFromB = point - ccw1;
+	float bcDot = DotProduct2D( toPointFromB, bcNormal );
+	if ( bcDot >= 0.f )
+	{
+		return false;
+	}
 
-	Vec2 edge2 = ccw0 - ccw2;
-	Vec2 toPoint2 = point - ccw2;
-	float cross2 = ( edge2.x * toPoint2.y ) - ( edge2.y * toPoint2.x );
+	Vec2 edgeCA = ccw0 - ccw2;
+	Vec2 caNormal = edgeCA.GetRotatedByMinus90Degrees();
+	Vec2 toPointFromC = point - ccw2;
+	float caDot = DotProduct2D( toPointFromC, caNormal );
+	if ( caDot >= 0.f )
+	{
+		return false;
+	}
 
-	bool isInside = ( cross0 >= 0.f ) && ( cross1 >= 0.f ) && ( cross2 >= 0.f );
-	return isInside;
+	return true;
 }
 
 
@@ -594,15 +619,14 @@ Vec2 GetNearestPointOnOBB2D( Vec2 const& referencePos, OBB2 const& orientedBox )
 //-----------------------------------------------------------------------------------------------
 Vec2 GetNearestPointOnInfiniteLine2D( Vec2 const& referencePos, Vec2 const& pointOnLine, Vec2 const& anotherPointOnLine )
 {
-	Vec2 lineDirection = anotherPointOnLine - pointOnLine;
-	if ( lineDirection.GetLengthSquared() == 0.f )
+	Vec2 lineVector = anotherPointOnLine - pointOnLine;
+	if ( lineVector.GetLengthSquared() == 0.f )
 	{
 		return pointOnLine;
 	}
-	lineDirection.Normalize();
 	Vec2 toReference = referencePos - pointOnLine;
-	float projectedLength = DotProduct2D( toReference, lineDirection );
-	Vec2 nearestPoint = pointOnLine + ( lineDirection * projectedLength );
+	Vec2 projectedVector = GetProjectedVector2D( toReference, lineVector );
+	Vec2 nearestPoint = pointOnLine + projectedVector;
 	return nearestPoint;
 }
 
@@ -611,16 +635,29 @@ Vec2 GetNearestPointOnInfiniteLine2D( Vec2 const& referencePos, Vec2 const& poin
 Vec2 GetNearestPointOnLineSegment2D( Vec2 const& referencePos, Vec2 const& start, Vec2 const& end )
 {
 	Vec2 segmentVector = end - start;
-	float segmentLengthSquared = segmentVector.GetLengthSquared();
-	if ( segmentLengthSquared == 0.f )
+	if ( segmentVector.GetLengthSquared() == 0.f )
 	{
 		return start;
 	}
-	Vec2 toReference = referencePos - start;
-	float projectedLength = DotProduct2D( toReference, segmentVector );
-	float fractionAlongSegment = projectedLength / segmentLengthSquared;
-	fractionAlongSegment = GetClampedZeroToOne( fractionAlongSegment );
-	Vec2 nearestPoint = start + ( segmentVector * fractionAlongSegment );
+
+	// Region I check
+	Vec2 startToReference = referencePos - start;
+	float startToRefDot = DotProduct2D( startToReference, segmentVector );
+	if ( startToRefDot <= 0.f )
+	{
+		return start;
+	}
+
+	// Region II check
+	Vec2 endToReference = referencePos - end;
+	float endToRefDot = DotProduct2D( endToReference, segmentVector );
+	if ( endToRefDot >= 0.f )
+	{
+		return end;
+	}
+
+	// Region III
+	Vec2 nearestPoint = GetNearestPointOnInfiniteLine2D( referencePos, start, end );
 	return nearestPoint;
 }
 
@@ -628,43 +665,81 @@ Vec2 GetNearestPointOnLineSegment2D( Vec2 const& referencePos, Vec2 const& start
 //-----------------------------------------------------------------------------------------------
 Vec2 GetNearestPointOnCapsule2D( Vec2 const& referencePos, Vec2 const& boneStart, Vec2 const& boneEnd, float radius )
 {
-	Vec2 nearestPointOnBone = GetNearestPointOnLineSegment2D( referencePos, boneStart, boneEnd );
-	Vec2 toReference = referencePos - nearestPointOnBone;
-	float distanceSquared = toReference.GetLengthSquared();
-	float radiusSquared = radius * radius;
-	if ( distanceSquared <= radiusSquared )
+	// Region I check
+	Vec2 boneVector = boneEnd - boneStart;
+	Vec2 startToReference = referencePos - boneStart;
+	float startToRefDot = DotProduct2D( startToReference, boneVector );
+	if ( startToRefDot <= 0.f )
 	{
-		return referencePos;
+		return GetNearestPointOnDisc2D( referencePos, boneStart, radius );
 	}
-	Vec2 direction = toReference.GetNormalized();
-	Vec2 nearestPointOnCapsule = nearestPointOnBone + ( direction * radius );
-	return nearestPointOnCapsule;
+
+	// Region II check
+	Vec2 endToReference = referencePos - boneEnd;
+	float endToRefDot = DotProduct2D( endToReference, boneVector );
+	if ( endToRefDot >= 0.f )
+	{
+		return GetNearestPointOnDisc2D( referencePos, boneEnd, radius );
+	}
+
+	// Region III
+	Vec2 nearestPointOnBone = GetNearestPointOnInfiniteLine2D( referencePos, boneStart, boneEnd );
+	Vec2 toReferenceClamped = ( referencePos - nearestPointOnBone ).GetClamped( radius );
+	Vec2 nearestPoint = nearestPointOnBone + toReferenceClamped;
+	return nearestPoint;
 }
 
 
 //-----------------------------------------------------------------------------------------------
 Vec2 GetNearestPointOnTriangle2D( Vec2 const& referencePos, Vec2 const& ccw0, Vec2 const& ccw1, Vec2 const& ccw2 )
 {
-	if ( IsPointInsideTriangle2D( referencePos, ccw0, ccw1, ccw2 ) )
+	// Region AB check
+	Vec2 edgeAB = ccw1 - ccw0;
+	Vec2 abNormal = edgeAB.GetRotatedByMinus90Degrees();
+	Vec2 toReferenceFromA = referencePos - ccw0;
+	float abDot = DotProduct2D( toReferenceFromA, abNormal );
+	bool isOutsideAB = abDot >= 0.f;
+
+	// Region BC check
+	Vec2 edgeBC = ccw2 - ccw1;
+	Vec2 bcNormal = edgeBC.GetRotatedByMinus90Degrees();
+	Vec2 toReferenceFromB = referencePos - ccw1;
+	float bcDot = DotProduct2D( toReferenceFromB, bcNormal );
+	bool isOutsideBC = bcDot >= 0.f;
+
+	// Region CA check
+	Vec2 edgeCA = ccw0 - ccw2;
+	Vec2 caNormal = edgeCA.GetRotatedByMinus90Degrees();
+	Vec2 toReferenceFromC = referencePos - ccw2;
+	float caDot = DotProduct2D( toReferenceFromC, caNormal );
+	bool isOutsideCA = caDot >= 0.f;
+
+	if ( !isOutsideAB && !isOutsideBC && !isOutsideCA )
 	{
 		return referencePos;
 	}
-	Vec2 nearest0 = GetNearestPointOnLineSegment2D( referencePos, ccw0, ccw1 );
-	Vec2 nearest1 = GetNearestPointOnLineSegment2D( referencePos, ccw1, ccw2 );
-	Vec2 nearest2 = GetNearestPointOnLineSegment2D( referencePos, ccw2, ccw0 );
-	float distSq0 = GetDistanceSquared2D( referencePos, nearest0 );
-	float distSq1 = GetDistanceSquared2D( referencePos, nearest1 );
-	float distSq2 = GetDistanceSquared2D( referencePos, nearest2 );
-	if ( distSq0 <= distSq1 && distSq0 <= distSq2 )
+	else if ( isOutsideAB && !isOutsideBC && !isOutsideCA )
 	{
-		return nearest0;
+		return GetNearestPointOnLineSegment2D( referencePos, ccw0, ccw1 );
 	}
-	else if ( distSq1 <= distSq0 && distSq1 <= distSq2 )
+	else if ( !isOutsideAB && isOutsideBC && !isOutsideCA )
 	{
-		return nearest1;
+		return GetNearestPointOnLineSegment2D( referencePos, ccw1, ccw2 );
 	}
-	else
+	else if ( !isOutsideAB && !isOutsideBC && isOutsideCA )
 	{
-		return nearest2;
+		return GetNearestPointOnLineSegment2D( referencePos, ccw2, ccw0 );
+	}
+	else if ( isOutsideAB && isOutsideBC )
+	{
+		return ccw1;
+	}
+	else if ( isOutsideBC && isOutsideCA )
+	{
+		return ccw2;
+	}
+	else // if ( isOutsideCA && isOutsideAB )
+	{
+		return ccw0;
 	}
 }
