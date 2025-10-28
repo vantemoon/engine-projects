@@ -605,13 +605,12 @@ Vec2 GetNearestPointOnOBB2D( Vec2 const& referencePos, OBB2 const& orientedBox )
 {
 	Vec2 toReference = referencePos - orientedBox.m_center;
 	float xProjection = DotProduct2D( toReference, orientedBox.m_iBasisNormal );
-	float clampedX = GetClamped( xProjection, -orientedBox.m_halfDimensions.x, orientedBox.m_halfDimensions.x );
-	Vec2 iComponent = orientedBox.m_iBasisNormal * clampedX;
 	Vec2 jBasisNormal = orientedBox.m_iBasisNormal.GetRotatedBy90Degrees();
 	float yProjection = DotProduct2D( toReference, jBasisNormal );
+	float clampedX = GetClamped( xProjection, -orientedBox.m_halfDimensions.x, orientedBox.m_halfDimensions.x );
 	float clampedY = GetClamped( yProjection, -orientedBox.m_halfDimensions.y, orientedBox.m_halfDimensions.y );
-	Vec2 jComponent = jBasisNormal * clampedY;
-	Vec2 nearestPoint = orientedBox.m_center + iComponent + jComponent;
+	Vec2 nearestLocalPos = ( orientedBox.m_iBasisNormal * clampedX ) + ( jBasisNormal * clampedY );
+	Vec2 nearestPoint = orientedBox.m_center + nearestLocalPos;
 	return nearestPoint;
 }
 
