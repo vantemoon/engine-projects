@@ -4,6 +4,7 @@
 //-----------------------------------------------------------------------------------------------
 // Forward type declarations
 struct AABB2;
+struct OBB2;
 struct IntVec2;
 struct Vec2;
 struct Vec3;
@@ -49,10 +50,6 @@ Vec2 const GetProjectedVector2D( Vec2 const& vectorToProject, Vec2 const& vector
 // Geometric queries
 bool DoDiscsOverlap( Vec2 const& centerA, float radiusA, Vec2 const& centerB, float radiusB );
 bool DoSpheresOverlap( Vec3 const& centerA, float radiusA, Vec3 const& centerB, float radiusB );
-bool IsPointInsideDisc2D( Vec2 const& point, Vec2 const& discCenter, float discRadius );
-bool IsPointInsideOrientedSector2D( Vec2 const& point, Vec2 const& sectorTip, float sectorForwardDegrees, float sectorApertureDegrees, float sectorRadius );
-bool IsPointInsideDirectedSector2D( Vec2 const& point, Vec2 const& sectorTip, Vec2 const& sectorForwardNormal, float sectorApertureDegrees, float sectorRadius );
-Vec2 GetNearestPointOnDisc2D( Vec2 const& referencePos, Vec2 const& discCenter, float discRadius );
 bool PushDiscOutOfFixedPoint2D( Vec2& mobileDiscCenter, float mobileDiscRadius, Vec2 const& fixedPoint );
 bool PushDiscOutOfFixedDisc2D( Vec2& mobileDiscCenter, float mobileDiscRadius, Vec2 const& fixedDiscCenter, float fixedDiscRadius );
 bool PushDiscsOutOfEachOther2D( Vec2& aCenter, float aRadius, Vec2& bCenter, float bRadius );
@@ -64,3 +61,23 @@ void TransformPosition2D( Vec2& posToTransform, float uniformScale, float rotati
 void TransformPositionXY3D( Vec3& posToTransform, float uniformScale, float zRotationDegrees, Vec2 const& xyTranslation );
 void TransformPosition2D( Vec2& posToTransform, Vec2 const& iBasis, Vec2 const& jBasis, Vec2 const& translation );
 void TransformPositionXY3D( Vec3& posToTransform, Vec2 const& iBasis, Vec2 const& jBasis, Vec2 const& xyTranslation );
+
+//-----------------------------------------------------------------------------------------------
+// Is point inside shape queries
+bool IsPointInsideDisc2D( Vec2 const& point, Vec2 const& discCenter, float discRadius );
+bool IsPointInsideOrientedSector2D( Vec2 const& point, Vec2 const& sectorTip, float sectorForwardDegrees, float sectorApertureDegrees, float sectorRadius );
+bool IsPointInsideDirectedSector2D( Vec2 const& point, Vec2 const& sectorTip, Vec2 const& sectorForwardNormal, float sectorApertureDegrees, float sectorRadius );
+bool IsPointInsideAABB2D( Vec2 const& point, AABB2 const& alignedBox );
+bool IsPointInsideOBB2D( Vec2 const& point, OBB2 const& orientedBox );
+bool IsPointInsideCapsule2D( Vec2 const& point, Vec2 const& boneStart, Vec2 const& boneEnd, float radius );
+bool IsPointInsideTriangle2D( Vec2 const& point, Vec2 const& ccw0, Vec2 const& ccw1, Vec2 const& ccw2 );
+
+//-----------------------------------------------------------------------------------------------
+// Nearest point calculations
+Vec2 GetNearestPointOnDisc2D( Vec2 const& referencePos, Vec2 const& discCenter, float discRadius );
+Vec2 GetNearestPointOnAABB2D( Vec2 const& referencePos, AABB2 const& alignedBox );
+Vec2 GetNearestPointOnOBB2D( Vec2 const& referencePos, OBB2 const& orientedBox );
+Vec2 GetNearestPointOnInfiniteLine2D( Vec2 const& referencePos, Vec2 const& pointOnLine, Vec2 const& anotherPointOnLine );
+Vec2 GetNearestPointOnLineSegment2D( Vec2 const& referencePos, Vec2 const& start, Vec2 const& end );
+Vec2 GetNearestPointOnCapsule2D( Vec2 const& referencePos, Vec2 const& boneStart, Vec2 const& boneEnd, float radius );
+Vec2 GetNearestPointOnTriangle2D( Vec2 const& referencePos, Vec2 const& ccw0, Vec2 const& ccw1, Vec2 const& ccw2 );
