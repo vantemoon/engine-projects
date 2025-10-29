@@ -5,6 +5,7 @@
 #include "Engine/Core/Rgba8.hpp"
 #include "Engine/Core/Vertex.hpp"
 #include "Engine/Core/VertexUtils.hpp"
+#include "Engine/Math/AABB2.hpp"
 #include "Engine/Math/MathUtils.hpp"
 #include "Engine/Renderer/Renderer.hpp"
 
@@ -181,23 +182,21 @@ void Player::Render() const
 		return;
 	}
 
-    // Body
-    Vertex tempBodyVerts[NUM_PLAYER_TANK_BODY_VERTS];
-    for (int i = 0; i < NUM_PLAYER_TANK_BODY_VERTS; ++i) {
-        tempBodyVerts[i] = m_vertexArray[i];
-    }
-    TransformVertexArrayXY3D(NUM_PLAYER_TANK_BODY_VERTS, tempBodyVerts, 1.f, m_orientationDegrees, m_position);
-    g_engine->m_renderer->DrawVertexArray(NUM_PLAYER_TANK_BODY_VERTS, tempBodyVerts);
+	std::vector<Vertex> tankBodyVerts;
+	tankBodyVerts = m_tankBodyVertexArray;
+	Texture* tankBodyTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Image/PlayerTankBase.png" );
+	g_engine->m_renderer->BindTexture( tankBodyTexture );
+	TransformVertexArrayXY3D( (int) tankBodyVerts.size(), tankBodyVerts.data(), 1.f, m_orientationDegrees, m_position );
+	g_engine->m_renderer->DrawVertexArray( tankBodyVerts );
 
-    // Turret
-    Vertex tempTurretVerts[NUM_PLAYER_TANK_TURRET_VERTS];
-    for (int i = 0; i < NUM_PLAYER_TANK_TURRET_VERTS; ++i) {
-        tempTurretVerts[i] = m_vertexArray[NUM_PLAYER_TANK_BODY_VERTS + i];
-    }
+	std::vector<Vertex> turretVerts;
+	turretVerts = m_turretVertexArray;
+	Texture* turretTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Image/PlayerTankTop.png" );
+	g_engine->m_renderer->BindTexture( turretTexture );
+	TransformVertexArrayXY3D( (int) turretVerts.size(), turretVerts.data(), 1.f, m_turretOrientationDegrees, m_position );
+	g_engine->m_renderer->DrawVertexArray( turretVerts );
 
-    TransformVertexArrayXY3D(NUM_PLAYER_TANK_TURRET_VERTS, tempTurretVerts, 1.f, m_turretOrientationDegrees - m_orientationDegrees, Vec2(0.f, 0.f));
-    TransformVertexArrayXY3D(NUM_PLAYER_TANK_TURRET_VERTS, tempTurretVerts, 1.f, m_orientationDegrees, m_position);
-    g_engine->m_renderer->DrawVertexArray(NUM_PLAYER_TANK_TURRET_VERTS, tempTurretVerts);
+	g_engine->m_renderer->BindTexture( nullptr ); // Unbind texture
 }
 
 
@@ -218,37 +217,45 @@ void Player::Die()
 //-----------------------------------------------------------------------------------------------
 void Player::InitializeVertexArray()
 {
-	m_vertexArray = new Vertex[NUM_PLAYER_TANK_BODY_VERTS + NUM_PLAYER_TANK_TURRET_VERTS];
+	//m_vertexArray = new Vertex[NUM_PLAYER_TANK_BODY_VERTS + NUM_PLAYER_TANK_TURRET_VERTS];
+
+	//// Body
+	//Vec3 bottomLeft  = Vec3( -m_cosmeticRadius, -m_cosmeticRadius, 0.f );
+	//Vec3 bottomRight = Vec3(  m_cosmeticRadius, -m_cosmeticRadius, 0.f );
+	//Vec3 topRight    = Vec3(  m_cosmeticRadius,  m_cosmeticRadius, 0.f );
+	//Vec3 topLeft     = Vec3( -m_cosmeticRadius,  m_cosmeticRadius, 0.f );
+
+	//m_vertexArray[0] = Vertex( bottomLeft,  Rgba8( 0, 255, 0 ), Vec2() );
+	//m_vertexArray[1] = Vertex( bottomRight, Rgba8( 0, 255, 0 ), Vec2() );
+	//m_vertexArray[2] = Vertex( topRight,    Rgba8( 0, 255, 0 ), Vec2() );
+	//m_vertexArray[3] = Vertex( topRight,    Rgba8( 0, 255, 0 ), Vec2() );
+	//m_vertexArray[4] = Vertex( topLeft,     Rgba8( 0, 255, 0 ), Vec2() );
+	//m_vertexArray[5] = Vertex( bottomLeft,  Rgba8( 0, 255, 0 ), Vec2() );
+
+	//// Turret
+	//float turretWidth = m_cosmeticRadius * 0.5f;
+	//float turretLength = m_cosmeticRadius * 0.9f;
+	//float halfWidth = turretWidth * 0.5f;
+
+	//Vec3 turretBottomLeft = Vec3(0.f, -halfWidth, 0.f);
+	//Vec3 turretBottomRight = Vec3(turretLength, -halfWidth, 0.f);
+	//Vec3 turretTopRight = Vec3(turretLength, halfWidth, 0.f);
+	//Vec3 turretTopLeft = Vec3(0.f, halfWidth, 0.f);
+
+	//m_vertexArray[6]  = Vertex( turretBottomLeft,  Rgba8( 0, 200, 0 ), Vec2() );
+	//m_vertexArray[7]  = Vertex( turretBottomRight,  Rgba8( 0, 200, 0 ), Vec2() );
+	//m_vertexArray[8]  = Vertex( turretTopRight,  Rgba8( 0, 200, 0 ), Vec2() );
+	//m_vertexArray[9]  = Vertex( turretTopRight,  Rgba8( 0, 200, 0 ), Vec2() );
+	//m_vertexArray[10] = Vertex( turretTopLeft,  Rgba8( 0, 200, 0 ), Vec2() );
+	//m_vertexArray[11] = Vertex( turretBottomLeft,  Rgba8( 0, 200, 0 ), Vec2() );
 
 	// Body
-	Vec3 bottomLeft  = Vec3( -m_cosmeticRadius, -m_cosmeticRadius, 0.f );
-	Vec3 bottomRight = Vec3(  m_cosmeticRadius, -m_cosmeticRadius, 0.f );
-	Vec3 topRight    = Vec3(  m_cosmeticRadius,  m_cosmeticRadius, 0.f );
-	Vec3 topLeft     = Vec3( -m_cosmeticRadius,  m_cosmeticRadius, 0.f );
-
-	m_vertexArray[0] = Vertex( bottomLeft,  Rgba8( 0, 255, 0 ), Vec2() );
-	m_vertexArray[1] = Vertex( bottomRight, Rgba8( 0, 255, 0 ), Vec2() );
-	m_vertexArray[2] = Vertex( topRight,    Rgba8( 0, 255, 0 ), Vec2() );
-	m_vertexArray[3] = Vertex( topRight,    Rgba8( 0, 255, 0 ), Vec2() );
-	m_vertexArray[4] = Vertex( topLeft,     Rgba8( 0, 255, 0 ), Vec2() );
-	m_vertexArray[5] = Vertex( bottomLeft,  Rgba8( 0, 255, 0 ), Vec2() );
+	AABB2 bodyAABB2 = AABB2( -m_cosmeticRadius, -m_cosmeticRadius, m_cosmeticRadius, m_cosmeticRadius );
+	AddVertsForAABB2D( m_tankBodyVertexArray, bodyAABB2, Rgba8( 255, 255, 255 ) );
 
 	// Turret
-	float turretWidth = m_cosmeticRadius * 0.5f;
-	float turretLength = m_cosmeticRadius * 0.9f;
-	float halfWidth = turretWidth * 0.5f;
-
-	Vec3 turretBottomLeft = Vec3(0.f, -halfWidth, 0.f);
-	Vec3 turretBottomRight = Vec3(turretLength, -halfWidth, 0.f);
-	Vec3 turretTopRight = Vec3(turretLength, halfWidth, 0.f);
-	Vec3 turretTopLeft = Vec3(0.f, halfWidth, 0.f);
-
-	m_vertexArray[6]  = Vertex( turretBottomLeft,  Rgba8( 0, 200, 0 ), Vec2() );
-	m_vertexArray[7]  = Vertex( turretBottomRight,  Rgba8( 0, 200, 0 ), Vec2() );
-	m_vertexArray[8]  = Vertex( turretTopRight,  Rgba8( 0, 200, 0 ), Vec2() );
-	m_vertexArray[9]  = Vertex( turretTopRight,  Rgba8( 0, 200, 0 ), Vec2() );
-	m_vertexArray[10] = Vertex( turretTopLeft,  Rgba8( 0, 200, 0 ), Vec2() );
-	m_vertexArray[11] = Vertex( turretBottomLeft,  Rgba8( 0, 200, 0 ), Vec2() );
+	AABB2 turretAABB2 = AABB2( 0.f, -m_cosmeticRadius * 0.25f, m_cosmeticRadius * 0.9f, m_cosmeticRadius * 0.25f );
+	AddVertsForAABB2D( m_turretVertexArray, turretAABB2, Rgba8( 255, 255, 255 ) );
 }
 
 

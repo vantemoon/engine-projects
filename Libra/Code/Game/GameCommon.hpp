@@ -35,8 +35,8 @@ constexpr float INNER_STONE_TILE_PROBABILITY = 0.1f;
 const     Rgba8 GRASS_COLOR = Rgba8( 0, 100, 0 );
 const     Rgba8 STONE_COLOR = Rgba8( 128, 128, 128 );
 
-constexpr int	NUM_PLAYER_TANK_BODY_VERTS = 6;
-constexpr int	NUM_PLAYER_TANK_TURRET_VERTS = 6;
+//constexpr int	NUM_PLAYER_TANK_BODY_VERTS = 6;
+//constexpr int	NUM_PLAYER_TANK_TURRET_VERTS = 6;
 constexpr float PLAYER_TANK_PHYSICS_RADIUS = 4.f;
 constexpr float PLAYER_TANK_COSMETIC_RADIUS = 5.f;
 constexpr float PLAYER_TANK_MAX_SPEED_TILES_PER_SECOND = 10.f;

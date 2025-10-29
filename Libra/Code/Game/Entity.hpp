@@ -1,5 +1,7 @@
 #pragma once
+#include "Engine/Core/Vertex.hpp"
 #include "Engine/Math/Vec2.hpp"
+#include <vector>
 
 
 //-----------------------------------------------------------------------------------------------
@@ -11,17 +13,16 @@ struct Vertex; // Forward declaration
 class Entity
 {
 public:
-	Vec2		 m_position;
-	Vec2		 m_velocity;
-	Vertex*		 m_vertexArray = nullptr;
-	float		 m_orientationDegrees;
-	float		 m_angularVelocityDegreesPerSecond;
-	float		 m_physicsRadius;
-	float		 m_cosmeticRadius;
-	int			 m_health;
-	bool		 m_isDead = false;
-	bool		 m_isGarbage = false;
-	// Game*		 m_game = nullptr;
+	Vec2				 m_position;
+	Vec2				 m_velocity;
+	std::vector<Vertex>	 m_vertexArray;
+	float				 m_orientationDegrees;
+	float				 m_angularVelocityDegreesPerSecond;
+	float				 m_physicsRadius;
+	float				 m_cosmeticRadius;
+	int					 m_health;
+	bool				 m_isDead = false;
+	bool				 m_isGarbage = false;
 
 public:
 	Entity( Vec2 startingPosition );

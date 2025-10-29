@@ -11,6 +11,7 @@
 #include "Engine/Core/Vertex.hpp"
 #include "Engine/Core/VertexUtils.hpp"
 #include "Engine/Input/InputSystem.hpp"
+#include "Engine/Math/AABB2.hpp"
 #include "Engine/Math/MathUtils.hpp"
 #include "Engine/Math/RandomNumberGenerator.hpp"
 #include "Engine/Renderer/Camera.hpp"
@@ -146,7 +147,7 @@ void Game::UpdateAttractMode( [[maybe_unused]] float deltaSeconds )
 
 	if ( !m_isBackgroundMusicPlaying )
 	{
-		m_backgroundMusicSoundID = g_engine->m_audioSystem->CreateOrGetSound( "Data/TestSound.mp3" );
+		m_backgroundMusicSoundID = g_engine->m_audioSystem->CreateOrGetSound( "Data/Audio/TestSound.mp3" );
 		g_engine->m_audioSystem->StartSound( m_backgroundMusicSoundID, false, 0.8f, 0.f, 1.f );
 		m_isBackgroundMusicPlaying = true;
 	}
@@ -351,7 +352,20 @@ void Game::RenderAttractMode() const
 
 	// Text
 	std::vector<Vertex> verts;
-	AddVertsForTextTriangles2D( verts, "PROTOGAME2D", Vec2( 10.f, SCREEN_SIZE_Y - 30.f ), 24.f, Rgba8( 255, 255, 255 ) );
+	AddVertsForTextTriangles2D( verts, "LIBRA", Vec2( 10.f, SCREEN_SIZE_Y - 30.f ), 24.f, Rgba8( 255, 255, 255 ) );
+
+	// Texture
+	Texture* testTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Image/Test_StbiFlippedAndOpenGL.png" );
+	std::vector<Vertex> testTextureVerts;
+	AABB2 texturedAABB2( 300.f, 100.f, 800.f, 600.f );
+	AddVertsForAABB2D( testTextureVerts, texturedAABB2, Rgba8( 255, 255, 255, 255 ) ); // This should now set UVs on each Vertex!!
+	g_engine->m_renderer->BindTexture( testTexture );
+	g_engine->m_renderer->DrawVertexArray( testTextureVerts );
+
+	std::vector<Vertex> ringVerts;
+	AddVertsForRing2D( ringVerts, Vec2( SCREEN_CENTER_X, SCREEN_CENTER_Y ), 200.f, 20.f, Rgba8( 255, 0, 255 ), 32 );
+	g_engine->m_renderer->BindTexture( nullptr ); // NOTE: We now have to do this before rendering anything UN-textured!
+	g_engine->m_renderer->DrawVertexArray( ringVerts );
 
 	// Render 
 	g_engine->m_renderer->DrawVertexArray( 3, triangleVertexArray );

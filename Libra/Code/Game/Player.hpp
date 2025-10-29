@@ -14,6 +14,9 @@ public:
 	float				 m_turretTargetDegrees = 0.f;
 	bool				 m_isTurretAiming = false;
 
+	std::vector<Vertex>  m_tankBodyVertexArray;
+	std::vector<Vertex>  m_turretVertexArray;
+
 public:
 	Player( Vec2 startingPosition );
 	~Player();
