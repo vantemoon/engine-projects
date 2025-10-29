@@ -8,6 +8,8 @@ public: // NOTE: this is one of the few cases where we break both the "m_" namin
 	int x = 0;
 	int y = 0;
 
+	static const IntVec2 ZERO;
+
 public:
 	// Construction/Destruction
 	IntVec2() = default;                              // default constructor (do nothing)

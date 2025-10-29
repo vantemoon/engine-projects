@@ -100,6 +100,9 @@
     <ClCompile Include="Renderer\Texture.cpp">
       <Filter>Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="Core\Image.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Math\Vec2.hpp">
@@ -203,6 +206,9 @@
     </ClInclude>
     <ClInclude Include="Renderer\Texture.hpp">
       <Filter>Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Image.hpp">
+      <Filter>Core</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
