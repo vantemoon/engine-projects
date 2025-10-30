@@ -21,4 +21,6 @@ public:
 public:
 	Tile( IntVec2 tileCoords, TileType type );
 	~Tile();
+
+	bool IsSolid() const;
 };

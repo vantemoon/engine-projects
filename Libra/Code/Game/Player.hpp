@@ -22,6 +22,7 @@ public:
 	~Player();
 
 	void Update( float deltaSeconds )							override;
+	void UpdatePhysics( float deltaSeconds );
 	void UpdateFromKeyboard( float deltaSeconds );
 	void UpdateFromController( float deltaSeconds );
 	void Render()									      const override;

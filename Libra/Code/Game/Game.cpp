@@ -165,13 +165,14 @@ void Game::UpdateFromKeyboard()
 	else
 	{
 		// Return to attract mode
-		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_ESCAPE ) )
+		if ( m_currentGameState == GameState::PAUSED && g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_ESCAPE ) )
 		{
 			m_currentGameState = GameState::ATTRACT_MODE;
 		}
 
 		// Pause and resume the game
-		if ( m_currentGameState != GameState::PAUSED && g_engine->m_inputSystem->WasKeyJustPressed( 'P' ) )
+		if ( m_currentGameState == GameState::PLAYING && ( g_engine->m_inputSystem->WasKeyJustPressed( 'P' ) || 
+														   g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_ESCAPE ) ) )
 		{
 			m_currentGameState = GameState::PAUSED;
 		}
@@ -184,18 +185,18 @@ void Game::UpdateFromKeyboard()
 		// Toggle debug features
 		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_F1 ) )
 		{
-			m_isDebugFeaturesOn = !m_isDebugFeaturesOn;
+			m_isDebugOn = !m_isDebugOn;
 		}
 
 		// Pause the game after the next update (for debugging)
-		if ( m_isDebugFeaturesOn && g_engine->m_inputSystem->WasKeyJustPressed( 'O' ) )
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'O' ) )
 		{
 			m_currentGameState = GameState::PLAYING;
 			m_isPausedAfterNextUpdate = true;
 		}
 
 		// Kill all enemies (for debugging)
-		if ( m_isDebugFeaturesOn && g_engine->m_inputSystem->WasKeyJustPressed( 'K' ) )
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'K' ) )
 		{
 			KillAllEnemies();
 		}
@@ -343,5 +344,5 @@ void Game::Reset()
 {
 	// #ToDo: Delete all entities and reset game state
 	m_isScreenShaking = false;
-	m_isDebugFeaturesOn = false;
+	m_isDebugOn = false;
 }

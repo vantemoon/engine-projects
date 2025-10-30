@@ -31,5 +31,6 @@ public:
 	void RotateMinus90Degrees();
 
 	// Operators
-	void operator=( const IntVec2& copyFrom );        // IntVec2 = IntVec2
+	void operator=( const IntVec2& copyFrom );          // IntVec2 = IntVec2
+	IntVec2 operator+( const IntVec2& vecToAdd ) const; // IntVec2 + IntVec2
 };

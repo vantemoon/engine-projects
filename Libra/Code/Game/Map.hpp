@@ -6,6 +6,10 @@
 
 
 //-----------------------------------------------------------------------------------------------
+struct AABB2;
+
+
+//-----------------------------------------------------------------------------------------------
 typedef std::vector<Entity*> EntityList;
 
 
@@ -23,10 +27,15 @@ public:
 
 	void Update( float deltaSeconds );
 	void UpdateEntities( float deltaSeconds );
-	void Render()									const;
-	void RenderTiles()								const;
-	void RenderEntities()							const;
-	void DebugRender() 								const;
+	void Render()											const;
+	void RenderTiles()										const;
+	void RenderEntities()									const;
+	void DebugRender() 										const;
+
+	Tile*   GetTile( IntVec2 tileCoords )					const;
+	AABB2   GetTileBounds( IntVec2 tileCoords )				const;
+	bool    IsTileCoordsInBounds( IntVec2 tileCoords )		const;
+	IntVec2 GetTileCoordsForWorldPosition( Vec2 worldPos )	const;
 
 private:
 	void PopulateTiles();

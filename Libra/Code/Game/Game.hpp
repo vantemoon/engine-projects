@@ -37,7 +37,7 @@ public:
 
 	GameState   m_currentGameState;
 
-	bool        m_isDebugFeaturesOn = false;
+	bool        m_isDebugOn = false;
 	bool        m_isPausedAfterNextUpdate = false;
 
 public:

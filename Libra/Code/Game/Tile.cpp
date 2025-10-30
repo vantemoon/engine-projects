@@ -14,3 +14,14 @@ Tile::~Tile()
 {
 	// DO NOTHING
 }
+
+
+//-----------------------------------------------------------------------------------------------
+bool Tile::IsSolid() const
+{
+	if ( m_type == TileType::STONE )
+	{
+		return true;
+	}
+	return false;
+}

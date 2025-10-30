@@ -101,7 +101,7 @@ void Map::Render() const
     RenderTiles();
     RenderEntities();
 
-    if ( g_game->m_isDebugFeaturesOn ) {
+    if ( g_game->m_isDebugOn ) {
         DebugRender();
     }
 
@@ -161,6 +161,50 @@ void Map::DebugRender() const
 			DebugDrawRing( entity->m_position, entity->m_cosmeticRadius, 0.1f, Rgba8( 0, 0, 255 ) );
 		}
 	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+Tile* Map::GetTile( IntVec2 tileCoords ) const
+{
+	if ( !IsTileCoordsInBounds( tileCoords ) )
+	{
+		return nullptr;
+	}
+	int tileIndex = tileCoords.y * m_dimensions.x + tileCoords.x;
+	return const_cast<Tile*>( &m_tiles[tileIndex] );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+AABB2 Map::GetTileBounds( IntVec2 tileCoords ) const
+{
+	float minX = static_cast<float>( tileCoords.x ) * TILE_SIZE;
+	float minY = static_cast<float>( tileCoords.y ) * TILE_SIZE;
+	float maxX = static_cast<float>( tileCoords.x + 1 ) * TILE_SIZE;
+	float maxY = static_cast<float>( tileCoords.y + 1 ) * TILE_SIZE;
+	return AABB2( minX, minY, maxX, maxY );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool Map::IsTileCoordsInBounds( IntVec2 tileCoords ) const
+{
+	if ( tileCoords.x < 0 || tileCoords.y < 0 ||
+		 tileCoords.x >= m_dimensions.x || tileCoords.y >= m_dimensions.y )
+	{
+		return false;
+	}
+	return true;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+IntVec2 Map::GetTileCoordsForWorldPosition( Vec2 worldPos ) const
+{
+	int tileX = static_cast<int>( worldPos.x / TILE_SIZE );
+	int tileY = static_cast<int>( worldPos.y / TILE_SIZE );
+	return IntVec2( tileX, tileY );
 }
 
 
