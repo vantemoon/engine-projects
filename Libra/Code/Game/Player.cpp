@@ -39,7 +39,8 @@ void Player::Update( float deltaSeconds )
 	m_velocity = m_thrustFraction * PLAYER_TANK_MAX_SPEED_TILES_PER_SECOND * GetForwardNormal();
 	Entity::Update( deltaSeconds );
 
-	UpdatePhysics( deltaSeconds );
+	if ( !m_noClip )
+		UpdatePhysics( deltaSeconds );
 }
 
 

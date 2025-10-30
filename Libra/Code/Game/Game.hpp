@@ -40,7 +40,11 @@ public:
 	GameState   m_currentGameState;
 
 	bool        m_isDebugOn = false;
+	bool		m_isDebugCameraActive = false;
 	bool        m_isPausedAfterNextUpdate = false;
+
+	bool        m_isSlowMo = false;
+	bool        m_isFastMo = false;
 
 public:
 	Game();

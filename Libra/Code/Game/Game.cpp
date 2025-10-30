@@ -29,7 +29,7 @@ Game::Game()
 
 	Vec2 playerStartPos = Vec2( TILE_SIZE * 2.f, TILE_SIZE * 2.f );
 	m_player = new Player( playerStartPos );
-	m_currentMap = new Map( IntVec2( 25, 25 ) );
+	m_currentMap = new Map( IntVec2( 32, 64 ) );
 
 	m_worldCamera = new Camera();
 	m_screenCamera = new Camera();
@@ -84,9 +84,25 @@ void Game::Update( float deltaSeconds )
 	UpdateFromKeyboard();
 	UpdateFromController();
 
+	if ( m_isSlowMo )
+	{
+		deltaSeconds *= 0.1f;
+	}
+	else if ( m_isFastMo )
+	{
+		deltaSeconds *= 4.f;
+	}
 	m_currentMap->Update( deltaSeconds );
 
-	m_worldCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( WORLD_SIZE_X, WORLD_SIZE_Y ) );
+	if ( m_isDebugCameraActive )
+	{
+		IntVec2 mapDims = m_currentMap->m_dimensions;
+		m_worldCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( 3200.f, 1600.f ) );
+	}
+	else
+	{
+		m_worldCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( WORLD_SIZE_X, WORLD_SIZE_Y ) );
+	}
 	m_screenCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) );
 
 	if ( m_isScreenShaking )
@@ -146,7 +162,18 @@ void Game::UpdateMusic()
 		}
 		if ( m_isGameplayMusicPlaying )
 		{
-			g_engine->m_audioSystem->SetSoundPlaybackSpeed( m_gameplayMusicID, 1.f );
+			if ( m_isSlowMo )
+			{
+				g_engine->m_audioSystem->SetSoundPlaybackSpeed( m_gameplayMusicID, 0.5f );
+			}
+			else if ( m_isFastMo )
+			{
+				g_engine->m_audioSystem->SetSoundPlaybackSpeed( m_gameplayMusicID, 1.5f );
+			}
+			else
+			{
+				g_engine->m_audioSystem->SetSoundPlaybackSpeed( m_gameplayMusicID, 1.f );
+			}
 		}
 	}
 	else if ( m_currentGameState == GameState::PAUSED )
@@ -228,6 +255,41 @@ void Game::UpdateFromKeyboard()
 			m_isDebugOn = !m_isDebugOn;
 		}
 
+		// Toggle slow motion
+		if ( g_engine->m_inputSystem->IsKeyDown( 'T' ) && !g_engine->m_inputSystem->IsKeyDown( 'Y' ) )
+		{
+			m_isSlowMo = true;
+			UpdateMusic();
+		}
+		else
+		{
+			m_isSlowMo = false;
+			UpdateMusic();
+		}
+
+		// Toggle fast motion
+		if ( g_engine->m_inputSystem->IsKeyDown( 'Y' ) && !g_engine->m_inputSystem->IsKeyDown( 'T' ) )
+		{
+			m_isFastMo = true;
+			UpdateMusic();
+		}
+		else
+		{
+			m_isFastMo = false;
+			UpdateMusic();
+		}
+
+		// Toggle no-clip (for debugging)
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_F3 ) )
+		{
+			m_player->m_noClip = !m_player->m_noClip;
+		}
+
+		// Toggle debug camera (for debugging)
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_F4 ) )
+		{
+			m_isDebugCameraActive = !m_isDebugCameraActive;
+		}
 		
 		// Pause the game after the next update (for debugging)
 		/*
@@ -301,17 +363,16 @@ void Game::Render() const
 	{
 		RenderAttractMode();
 		return;
-	};
+	}
 
 	g_engine->m_renderer->BeginCamera( *m_worldCamera );
 
 	m_currentMap->Render();
-	RenderHUD();
-
 	if ( m_currentGameState == GameState::PAUSED )
 	{
 		RenderPauseScreenOverlay();
 	};
+	RenderHUD();
 
 	g_engine->m_renderer->EndCamera( *m_worldCamera );
 }

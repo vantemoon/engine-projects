@@ -9,10 +9,13 @@ public:
 	bool				 m_isMovingForward = false;
 	float    			 m_targetMovementDirection = 0.f;
 	float				 m_thrustFraction = 0.f;
+
 	float				 m_turretOrientationDegrees = 0.f;
 	float				 m_turretRelativeDegrees = 0.f;
 	float				 m_turretTargetDegrees = 0.f;
 	bool				 m_isTurretAiming = false;
+
+	bool                 m_noClip = false;
 
 	std::vector<Vertex>  m_tankBodyVertexArray;
 	std::vector<Vertex>  m_turretVertexArray;
