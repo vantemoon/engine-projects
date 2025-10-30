@@ -217,44 +217,12 @@ void Player::Die()
 //-----------------------------------------------------------------------------------------------
 void Player::InitializeVertexArray()
 {
-	//m_vertexArray = new Vertex[NUM_PLAYER_TANK_BODY_VERTS + NUM_PLAYER_TANK_TURRET_VERTS];
-
-	//// Body
-	//Vec3 bottomLeft  = Vec3( -m_cosmeticRadius, -m_cosmeticRadius, 0.f );
-	//Vec3 bottomRight = Vec3(  m_cosmeticRadius, -m_cosmeticRadius, 0.f );
-	//Vec3 topRight    = Vec3(  m_cosmeticRadius,  m_cosmeticRadius, 0.f );
-	//Vec3 topLeft     = Vec3( -m_cosmeticRadius,  m_cosmeticRadius, 0.f );
-
-	//m_vertexArray[0] = Vertex( bottomLeft,  Rgba8( 0, 255, 0 ), Vec2() );
-	//m_vertexArray[1] = Vertex( bottomRight, Rgba8( 0, 255, 0 ), Vec2() );
-	//m_vertexArray[2] = Vertex( topRight,    Rgba8( 0, 255, 0 ), Vec2() );
-	//m_vertexArray[3] = Vertex( topRight,    Rgba8( 0, 255, 0 ), Vec2() );
-	//m_vertexArray[4] = Vertex( topLeft,     Rgba8( 0, 255, 0 ), Vec2() );
-	//m_vertexArray[5] = Vertex( bottomLeft,  Rgba8( 0, 255, 0 ), Vec2() );
-
-	//// Turret
-	//float turretWidth = m_cosmeticRadius * 0.5f;
-	//float turretLength = m_cosmeticRadius * 0.9f;
-	//float halfWidth = turretWidth * 0.5f;
-
-	//Vec3 turretBottomLeft = Vec3(0.f, -halfWidth, 0.f);
-	//Vec3 turretBottomRight = Vec3(turretLength, -halfWidth, 0.f);
-	//Vec3 turretTopRight = Vec3(turretLength, halfWidth, 0.f);
-	//Vec3 turretTopLeft = Vec3(0.f, halfWidth, 0.f);
-
-	//m_vertexArray[6]  = Vertex( turretBottomLeft,  Rgba8( 0, 200, 0 ), Vec2() );
-	//m_vertexArray[7]  = Vertex( turretBottomRight,  Rgba8( 0, 200, 0 ), Vec2() );
-	//m_vertexArray[8]  = Vertex( turretTopRight,  Rgba8( 0, 200, 0 ), Vec2() );
-	//m_vertexArray[9]  = Vertex( turretTopRight,  Rgba8( 0, 200, 0 ), Vec2() );
-	//m_vertexArray[10] = Vertex( turretTopLeft,  Rgba8( 0, 200, 0 ), Vec2() );
-	//m_vertexArray[11] = Vertex( turretBottomLeft,  Rgba8( 0, 200, 0 ), Vec2() );
-
 	// Body
 	AABB2 bodyAABB2 = AABB2( -m_cosmeticRadius, -m_cosmeticRadius, m_cosmeticRadius, m_cosmeticRadius );
 	AddVertsForAABB2D( m_tankBodyVertexArray, bodyAABB2, Rgba8( 255, 255, 255 ) );
 
 	// Turret
-	AABB2 turretAABB2 = AABB2( 0.f, -m_cosmeticRadius * 0.25f, m_cosmeticRadius * 0.9f, m_cosmeticRadius * 0.25f );
+	AABB2 turretAABB2 = AABB2( -m_cosmeticRadius, -m_cosmeticRadius, m_cosmeticRadius, m_cosmeticRadius );
 	AddVertsForAABB2D( m_turretVertexArray, turretAABB2, Rgba8( 255, 255, 255 ) );
 }
 
