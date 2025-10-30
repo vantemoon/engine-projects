@@ -217,12 +217,13 @@ void Player::Die()
 //-----------------------------------------------------------------------------------------------
 void Player::InitializeVertexArray()
 {
+	float halfSize = m_physicsRadius * 1.5f;
 	// Body
-	AABB2 bodyAABB2 = AABB2( -m_cosmeticRadius, -m_cosmeticRadius, m_cosmeticRadius, m_cosmeticRadius );
+	AABB2 bodyAABB2 = AABB2( -halfSize, -halfSize, halfSize, halfSize );
 	AddVertsForAABB2D( m_tankBodyVertexArray, bodyAABB2, Rgba8( 255, 255, 255 ) );
 
 	// Turret
-	AABB2 turretAABB2 = AABB2( -m_cosmeticRadius, -m_cosmeticRadius, m_cosmeticRadius, m_cosmeticRadius );
+	AABB2 turretAABB2 = AABB2( -halfSize, -halfSize, halfSize, halfSize );
 	AddVertsForAABB2D( m_turretVertexArray, turretAABB2, Rgba8( 255, 255, 255 ) );
 }
 

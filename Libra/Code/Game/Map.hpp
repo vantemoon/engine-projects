@@ -21,5 +21,14 @@ public:
 	Map( IntVec2 dimensions );
 	~Map();
 
-	void Render() const;
+	void Update( float deltaSeconds );
+	void UpdateEntities( float deltaSeconds );
+	void Render()									const;
+	void RenderTiles()								const;
+	void RenderEntities()							const;
+	void DebugRender() 								const;
+
+private:
+	void PopulateTiles();
+	void DeleteGarbageEntities();
 };

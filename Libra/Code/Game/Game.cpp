@@ -34,6 +34,9 @@ Game::Game()
 	m_worldCamera = new Camera();
 	m_screenCamera = new Camera();
 
+	m_numTilesInViewVertically = NUM_TILES_VISIBLE_VERTICALLY;
+	m_numTilesInViewHorizontally = NUM_TILES_VISIBLE_HORIZONTALLY;
+
 	m_worldCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( WORLD_SIZE_X, WORLD_SIZE_Y ) );
 	m_screenCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) );
 
@@ -56,22 +59,6 @@ Game::~Game()
 
 
 //-----------------------------------------------------------------------------------------------
-void Game::DeleteGarbageEntities()
-{
-	if ( g_app->m_game == nullptr )
-		return;
-
-	// #ToDo: Delete entities that are marked as garbage
-
-	if ( m_player != nullptr && m_player->m_isGarbage )
-	{
-		delete m_player;
-		m_player = nullptr;
-	}
-}
-
-
-//-----------------------------------------------------------------------------------------------
 void Game::Update( float deltaSeconds )
 {
 	if ( m_currentGameState == GameState::ATTRACT_MODE )
@@ -89,9 +76,8 @@ void Game::Update( float deltaSeconds )
 
 	UpdateFromKeyboard();
 	UpdateFromController();
-	UpdateEntities( deltaSeconds );
 
-	g_app->m_game->DeleteGarbageEntities();
+	m_currentMap->Update( deltaSeconds );
 
 	if ( m_isBackgroundMusicPlaying )
 		g_engine->m_audioSystem->SetSoundPlaybackVolume( m_backgroundMusicSoundID, 0.25f );
@@ -248,46 +234,6 @@ void Game::UpdateFromController()
 
 
 //-----------------------------------------------------------------------------------------------
-void Game::UpdateEntities( [[maybe_unused]] float deltaSeconds )
-{
-	// #ToDo: Update all entities in the game world
-
-	if ( m_player != nullptr )
-	{
-		m_player->Update( deltaSeconds );
-	}
-}
-
-
-//-----------------------------------------------------------------------------------------------
-void Game::DebugDraw() const
-{
-	g_engine->m_renderer->BeginCamera( *m_worldCamera );
-
-	// #ToDo: Draw debug information about entities, collisions, etc.
-
-	if ( m_player != nullptr )
-	{
-		DebugDrawRing( m_player->m_position, m_player->m_physicsRadius, 0.1f, Rgba8( 0, 255, 0 ) );
-		DebugDrawRing( m_player->m_position, m_player->m_cosmeticRadius, 0.1f, Rgba8( 0, 0, 255 ) );
-
-		// Draw forward direction
-		Vec2 forwardNormal = m_player->GetForwardNormal();
-		DebugDrawLine( m_player->m_position, m_player->m_position + forwardNormal * m_player->m_physicsRadius * 1.5f, 0.1f, Rgba8( 255, 0, 0 ), Rgba8( 255, 0, 0 ) );
-
-		// Draw velocity vector
-		DebugDrawLine( m_player->m_position, m_player->m_position + m_player->m_velocity, 0.1f, Rgba8( 255, 255, 0 ), Rgba8( 255, 255, 0 ) );
-
-		// Draw left vector
-		Vec2 leftNormal = Vec2( -forwardNormal.y, forwardNormal.x );
-		DebugDrawLine( m_player->m_position, m_player->m_position + leftNormal * m_player->m_physicsRadius * 1.5f, 0.1f, Rgba8( 0, 255, 255 ), Rgba8( 0, 255, 255 ) );
-	}
-
-	g_engine->m_renderer->EndCamera( *m_worldCamera );
-}
-
-
-//-----------------------------------------------------------------------------------------------
 void Game::Render() const
 {
 	if ( m_currentGameState == GameState::ATTRACT_MODE )
@@ -298,14 +244,8 @@ void Game::Render() const
 
 	g_engine->m_renderer->BeginCamera( *m_worldCamera );
 
-	// RenderEntities();
 	m_currentMap->Render();
 	RenderHUD();
-
-	if ( m_isDebugFeaturesOn )
-	{
-		DebugDraw();
-	}
 
 	g_engine->m_renderer->EndCamera( *m_worldCamera );
 }
@@ -376,22 +316,6 @@ void Game::RenderAttractMode() const
 
 
 //-----------------------------------------------------------------------------------------------
-void Game::RenderEntities() const
-{
-	g_engine->m_renderer->BeginCamera( *m_worldCamera );
-
-	// #ToDo: Render all entities in the game world
-
-	if ( m_player != nullptr )
-	{
-		m_player->Render();
-	}
-
-	g_engine->m_renderer->EndCamera( *m_worldCamera );
-}
-
-
-//-----------------------------------------------------------------------------------------------
 void Game::RenderHUD() const
 {
 	g_engine->m_renderer->BeginCamera( *m_screenCamera );
@@ -404,70 +328,6 @@ void Game::RenderHUD() const
 	g_engine->m_renderer->DrawVertexArray( ( int ) verts.size(), verts.data() );
 
 	g_engine->m_renderer->EndCamera( *m_screenCamera );
-}
-
-
-//-----------------------------------------------------------------------------------------------
-Vec3 Game::TransformWorldToScreen( Vec3 const& worldPosition ) const
-{
-	Vec2 worldBottomLeft = m_worldCamera->GetOrthoBottomLeft();
-	Vec2 worldTopRight = m_worldCamera->GetOrthoTopRight();
-
-	Vec2 screenBottomLeft = m_screenCamera->GetOrthoBottomLeft();
-	Vec2 screenTopRight = m_screenCamera->GetOrthoTopRight();
-
-	float worldWidth = worldTopRight.x - worldBottomLeft.x;
-	float worldHeight = worldTopRight.y - worldBottomLeft.y;
-	float normX = ( worldPosition.x - worldBottomLeft.x ) / worldWidth;
-	float normY = ( worldPosition.y - worldBottomLeft.y ) / worldHeight;
-
-	float screenWidth = screenTopRight.x - screenBottomLeft.x;
-	float screenHeight = screenTopRight.y - screenBottomLeft.y;
-	float screenX = screenBottomLeft.x + normX * screenWidth;
-	float screenY = screenBottomLeft.y + normY * screenHeight;
-
-	return Vec3( screenX, screenY, worldPosition.z );
-}
-
-
-//-----------------------------------------------------------------------------------------------
-bool Game::IsOnScreen( Vec2 const& worldPosition, float cosmeticRadius ) const
-{
-	Vec2 worldBottomLeft = m_worldCamera->GetOrthoBottomLeft();
-	Vec2 worldTopRight = m_worldCamera->GetOrthoTopRight();
-	if ( worldPosition.x + cosmeticRadius < worldBottomLeft.x ) return false;
-	if ( worldPosition.x - cosmeticRadius > worldTopRight.x ) return false;
-	if ( worldPosition.y + cosmeticRadius < worldBottomLeft.y ) return false;
-	if ( worldPosition.y - cosmeticRadius > worldTopRight.y ) return false;
-	return true;
-}
-
-
-//-----------------------------------------------------------------------------------------------
-Vec2 Game::GetRandomOffscreenPosition( float cosmeticRadius ) const
-{
-	RandomNumberGenerator rng;
-	float randomX = rng.RollRandomFloatInRange( -cosmeticRadius, WORLD_SIZE_X + cosmeticRadius );
-	float randomY = rng.RollRandomFloatInRange( -cosmeticRadius, WORLD_SIZE_Y + cosmeticRadius );
-	int side = rng.RollRandomIntLessThan( 4 ); // 0: left, 1: right, 2: bottom, 3: top
-	switch ( side )
-	{
-		case 0: // left
-			randomX = -cosmeticRadius;
-			break;
-		case 1: // right
-			randomX = WORLD_SIZE_X + cosmeticRadius;
-			break;
-		case 2: // bottom
-			randomY = -cosmeticRadius;
-			break;
-		case 3: // top
-			randomY = WORLD_SIZE_Y + cosmeticRadius;
-			break;
-		default:
-			break;
-	}
-	return Vec2( randomX, randomY );
 }
 
 

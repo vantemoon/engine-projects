@@ -24,6 +24,8 @@ public:
 
 	Camera*     m_worldCamera = nullptr;
 	Camera*     m_screenCamera = nullptr;
+	int			m_numTilesInViewVertically;
+	int 	    m_numTilesInViewHorizontally;
 
 	bool        m_isBackgroundMusicPlaying = false;
 	SoundID     m_backgroundMusicSoundID = 0;
@@ -44,21 +46,12 @@ public:
 
 	void Update( float deltaSeconds);
 	void UpdateAttractMode( float deltaSeconds );
-	void UpdateEntities( float deltaSeconds );
 	void UpdateFromKeyboard();
 	void UpdateFromController();
 	void ScreenShake( float intensity );
 	void Render()													  const;
-	void RenderEntities()											  const;
 	void RenderHUD()												  const;
 	void RenderAttractMode()										  const;
-	Vec2 GetRandomOffscreenPosition( float cosmeticRadius )		      const;
 	void Reset();
 	void KillAllEnemies(); // For testing and debugging
-
-private:
-	void DeleteGarbageEntities();
-	void DebugDraw()												   const;
-	Vec3 TransformWorldToScreen( Vec3 const& worldPosition )		   const;
-	bool IsOnScreen( Vec2 const& worldPosition, float cosmeticRadius ) const;
 };

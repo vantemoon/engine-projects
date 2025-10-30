@@ -6,11 +6,166 @@
 #include "Engine/Core/VertexUtils.hpp"
 #include "Engine/Math/AABB2.hpp"
 #include "Engine/Math/RandomNumberGenerator.hpp"
+#include "Engine/Renderer/Camera.hpp"
 
 
 //-----------------------------------------------------------------------------------------------
 Map::Map( IntVec2 dimensions )
 	: m_dimensions( dimensions )
+{
+	PopulateTiles();
+
+	m_allEntities.push_back( g_game->m_player );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+Map::~Map()
+{
+	// Do nothing
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Map::Update( float deltaSeconds )
+{
+	UpdateEntities( deltaSeconds );
+	DeleteGarbageEntities();
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Map::UpdateEntities( float deltaSeconds )
+{
+	for ( int entityIndex = 0; entityIndex < static_cast<int>( m_allEntities.size() ); ++ entityIndex )
+	{
+		Entity* entity = m_allEntities[entityIndex];
+		if ( entity != nullptr )
+		{
+			entity->Update( deltaSeconds );
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------------------------
+void Map::Render() const
+{
+    Vec2 camCenter;
+    if ( g_game->m_player != nullptr && !g_game->m_player->m_isGarbage )
+        camCenter = g_game->m_player->m_position;
+    else
+        camCenter = Vec2( WORLD_CENTER_X, WORLD_CENTER_Y );
+
+    float viewHeight = static_cast<float>( g_game->m_numTilesInViewVertically ) * TILE_SIZE;
+    float aspect = g_engine->m_window->m_config.m_clientAspect;
+    float viewWidth = viewHeight * aspect;
+
+    Vec2 halfExtents( viewWidth * 0.5f, viewHeight * 0.5f );
+
+    float mapMinX = 0.f;
+    float mapMinY = 0.f;
+    float mapMaxX = static_cast<float>( m_dimensions.x ) * TILE_SIZE;
+    float mapMaxY = static_cast<float>( m_dimensions.y ) * TILE_SIZE;
+
+    float minCamX = mapMinX + halfExtents.x;
+    float maxCamX = mapMaxX - halfExtents.x;
+    float minCamY = mapMinY + halfExtents.y;
+    float maxCamY = mapMaxY - halfExtents.y;
+
+    if ( viewWidth >= ( mapMaxX - mapMinX ) ) 
+	{
+        camCenter.x = ( mapMinX + mapMaxX ) * 0.5f;
+    } 
+	else 
+	{
+        if ( camCenter.x < minCamX ) camCenter.x = minCamX;
+        if ( camCenter.x > maxCamX ) camCenter.x = maxCamX;
+    }
+    if ( viewHeight >= ( mapMaxY - mapMinY ) ) 
+	{
+        camCenter.y = ( mapMinY + mapMaxY ) * 0.5f;
+    } 
+	else 
+	{
+        if ( camCenter.y < minCamY ) camCenter.y = minCamY;
+        if ( camCenter.y > maxCamY ) camCenter.y = maxCamY;
+    }
+
+    Vec2 bottomLeft = camCenter - halfExtents;
+    Vec2 topRight = camCenter + halfExtents;
+
+    g_game->m_worldCamera->SetOrthoView( bottomLeft, topRight );
+
+    g_engine->m_renderer->BeginCamera( *g_game->m_worldCamera );
+
+    RenderTiles();
+    RenderEntities();
+
+    if ( g_game->m_isDebugFeaturesOn ) {
+        DebugRender();
+    }
+
+    g_engine->m_renderer->EndCamera( *g_game->m_worldCamera );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Map::RenderTiles() const
+{
+	int numTiles = static_cast< int >( m_tiles.size() );
+	std::vector<Vertex> tileVerts;
+	for ( int tileIndex = 0; tileIndex < numTiles; ++ tileIndex )
+	{
+		const Tile& tile = m_tiles[tileIndex];
+		AABB2 tileBounds = AABB2( tile.m_tileCoords.x * TILE_SIZE, tile.m_tileCoords.y * TILE_SIZE,
+			( tile.m_tileCoords.x + 1 ) * TILE_SIZE, ( tile.m_tileCoords.y + 1 ) * TILE_SIZE );
+		Rgba8 tileColor;
+		if ( tile.m_type == TileType::GRASS )
+		{
+			tileColor = GRASS_COLOR;
+		}
+		else if ( tile.m_type == TileType::STONE )
+		{
+			tileColor = STONE_COLOR;
+		}
+		AddVertsForAABB2D( tileVerts, tileBounds, tileColor );
+	}
+	g_engine->m_renderer->BindTexture( nullptr );
+	g_engine->m_renderer->DrawVertexArray( static_cast< int >( tileVerts.size() ), tileVerts.data() );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Map::RenderEntities() const
+{
+	for ( int entityIndex = 0; entityIndex < static_cast<int>( m_allEntities.size() ); ++ entityIndex )
+	{
+		Entity* entity = m_allEntities[entityIndex];
+		if ( entity != nullptr )
+		{
+			entity->Render();
+		}
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Map::DebugRender() const
+{
+	for ( int entityIndex = 0; entityIndex < static_cast<int>( m_allEntities.size() ); ++ entityIndex )
+	{
+		Entity* entity = m_allEntities[entityIndex];
+		if ( entity != nullptr )
+		{
+			DebugDrawRing( entity->m_position, entity->m_physicsRadius, 0.1f, Rgba8( 255, 0, 0 ) );
+			DebugDrawRing( entity->m_position, entity->m_cosmeticRadius, 0.1f, Rgba8( 0, 0, 255 ) );
+		}
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Map::PopulateTiles()
 {
 	for ( int y = 0; y < m_dimensions.y; ++y )
 	{
@@ -31,7 +186,7 @@ Map::Map( IntVec2 dimensions )
 				if ( isInnerReserved )
 				{
 					if ( ( x == 2 && y == 4 ) || ( x == 3 && y == 4 ) || ( x == 4 && y == 4 ) ||
-						 ( x == 4 && y == 3 ) || ( x == 4 && y == 2 ) )
+						( x == 4 && y == 3 ) || ( x == 4 && y == 2 ) )
 					{
 						type = TileType::STONE;
 					}
@@ -43,12 +198,12 @@ Map::Map( IntVec2 dimensions )
 				else if ( isOuterReserved )
 				{
 					if ( ( x == m_dimensions.x - 6 && y == m_dimensions.y - 3 ) ||
-						 ( x == m_dimensions.x - 6 && y == m_dimensions.y - 4 ) ||
-						 ( x == m_dimensions.x - 6 && y == m_dimensions.y - 5 ) ||
-						 ( x == m_dimensions.x - 6 && y == m_dimensions.y - 6 ) ||
-						 ( x == m_dimensions.x - 5 && y == m_dimensions.y - 6 ) ||
-						 ( x == m_dimensions.x - 4 && y == m_dimensions.y - 6 ) ||
-						 ( x == m_dimensions.x - 3 && y == m_dimensions.y - 6 ) )
+						( x == m_dimensions.x - 6 && y == m_dimensions.y - 4 ) ||
+						( x == m_dimensions.x - 6 && y == m_dimensions.y - 5 ) ||
+						( x == m_dimensions.x - 6 && y == m_dimensions.y - 6 ) ||
+						( x == m_dimensions.x - 5 && y == m_dimensions.y - 6 ) ||
+						( x == m_dimensions.x - 4 && y == m_dimensions.y - 6 ) ||
+						( x == m_dimensions.x - 3 && y == m_dimensions.y - 6 ) )
 					{
 						type = TileType::STONE;
 					}
@@ -75,51 +230,20 @@ Map::Map( IntVec2 dimensions )
 			m_tiles.push_back( newTile );
 		}
 	}
-
-	m_allEntities.push_back( g_game->m_player );
 }
 
 
 //-----------------------------------------------------------------------------------------------
-Map::~Map()
+void Map::DeleteGarbageEntities()
 {
-	// Do nothing
-}
-
-
-//-----------------------------------------------------------------------------------------------
-void Map::Render() const
-{
-	g_engine->m_renderer->BeginCamera( *g_game->m_worldCamera );
-
-	int numTiles = static_cast<int>( m_tiles.size() );
-	std::vector<Vertex> tileVerts;
-	for ( int tileIndex = 0; tileIndex < numTiles; ++tileIndex )
-	{
-		const Tile& tile = m_tiles[tileIndex];
-		AABB2 tileBounds = AABB2( tile.m_tileCoords.x * TILE_SIZE, tile.m_tileCoords.y * TILE_SIZE,
-			( tile.m_tileCoords.x + 1 ) * TILE_SIZE, ( tile.m_tileCoords.y + 1 ) * TILE_SIZE );
-		Rgba8 tileColor;
-		if ( tile.m_type == TileType::GRASS )
-		{
-			tileColor = GRASS_COLOR;
-		}
-		else if ( tile.m_type == TileType::STONE )
-		{
-			tileColor = STONE_COLOR;
-		}
-		AddVertsForAABB2D( tileVerts, tileBounds, tileColor );
-	}
-	g_engine->m_renderer->DrawVertexArray( static_cast<int>( tileVerts.size() ), tileVerts.data() );
-
-	for ( int entityIndex = 0; entityIndex < static_cast<int>( m_allEntities.size() ); ++entityIndex )
+	for ( int entityIndex = static_cast<int>( m_allEntities.size() ) - 1; entityIndex >= 0; -- entityIndex )
 	{
 		Entity* entity = m_allEntities[entityIndex];
-		if ( entity != nullptr )
+		if ( entity != nullptr && entity->m_isGarbage )
 		{
-			entity->Render();
+			delete entity;
+			entity = nullptr;
+			m_allEntities.erase( m_allEntities.begin() + entityIndex );
 		}
 	}
-
-	g_engine->m_renderer->EndCamera( *g_game->m_worldCamera );
 }
