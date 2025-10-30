@@ -40,7 +40,14 @@ Game::Game()
 	m_worldCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( WORLD_SIZE_X, WORLD_SIZE_Y ) );
 	m_screenCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) );
 
+	g_engine->m_audioSystem->CreateOrGetSound( "Data/Audio/02 Magnetik Chaos [Music by Guido Arcella Diez].mp3" );
+	g_engine->m_audioSystem->CreateOrGetSound( "Data/Audio/01 Welcome To The RS-Magnetikia [Music by Guido Arcella Diez].mp3" );
+
+	m_isAttractMusicPlaying = false;
+	m_isGameplayMusicPlaying = false;
+
 	m_currentGameState = ATTRACT_MODE;
+	UpdateMusic();
 }
 
 
@@ -79,9 +86,6 @@ void Game::Update( float deltaSeconds )
 
 	m_currentMap->Update( deltaSeconds );
 
-	if ( m_isBackgroundMusicPlaying )
-		g_engine->m_audioSystem->SetSoundPlaybackVolume( m_backgroundMusicSoundID, 0.25f );
-
 	m_worldCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( WORLD_SIZE_X, WORLD_SIZE_Y ) );
 	m_screenCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) );
 
@@ -113,6 +117,49 @@ void Game::Update( float deltaSeconds )
 
 
 //-----------------------------------------------------------------------------------------------
+void Game::UpdateMusic()
+{
+	if ( m_currentGameState == GameState::ATTRACT_MODE )
+	{
+		if ( m_isGameplayMusicPlaying)
+		{
+			g_engine->m_audioSystem->StopSound( m_gameplayMusicID );
+			m_isGameplayMusicPlaying = false;
+		}
+		if ( !m_isAttractMusicPlaying )
+		{
+			m_attractMusicID = g_engine->m_audioSystem->StartSound( m_attractMusicID, true );
+			m_isAttractMusicPlaying = true;
+		}
+	}
+	else if ( m_currentGameState == GameState::PLAYING )
+	{
+		if ( m_isAttractMusicPlaying)
+		{
+			g_engine->m_audioSystem->StopSound( m_attractMusicID );
+			m_isAttractMusicPlaying = false;
+		}
+		if ( !m_isGameplayMusicPlaying )
+		{
+			m_gameplayMusicID = g_engine->m_audioSystem->StartSound( m_gameplayMusicID, true );
+			m_isGameplayMusicPlaying = true;
+		}
+		if ( m_isGameplayMusicPlaying )
+		{
+			g_engine->m_audioSystem->SetSoundPlaybackSpeed( m_gameplayMusicID, 1.f );
+		}
+	}
+	else if ( m_currentGameState == GameState::PAUSED )
+	{
+		if ( m_isGameplayMusicPlaying )
+		{
+			g_engine->m_audioSystem->SetSoundPlaybackSpeed( m_gameplayMusicID, 0.f );
+		}
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
 void Game::ScreenShake( float intensity )
 {
 	if ( m_worldCamera == nullptr || intensity <= 0.f )
@@ -130,17 +177,6 @@ void Game::UpdateAttractMode( [[maybe_unused]] float deltaSeconds )
 {
 	UpdateFromKeyboard();
 	UpdateFromController();
-
-	if ( !m_isBackgroundMusicPlaying )
-	{
-		m_backgroundMusicSoundID = g_engine->m_audioSystem->CreateOrGetSound( "Data/Audio/TestSound.mp3" );
-		g_engine->m_audioSystem->StartSound( m_backgroundMusicSoundID, false, 0.8f, 0.f, 1.f );
-		m_isBackgroundMusicPlaying = true;
-	}
-	else
-	{
-		g_engine->m_audioSystem->SetSoundPlaybackVolume( m_backgroundMusicSoundID, 0.8f );
-	}
 }
 
 
@@ -150,10 +186,11 @@ void Game::UpdateFromKeyboard()
 	if ( m_currentGameState == GameState::ATTRACT_MODE )
 	{
 		// Start the game
-		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_SPACE ) || g_engine->m_inputSystem->WasKeyJustPressed( 'N' ) )
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'P' ) )
 		{
 			Reset();
 			m_currentGameState = GameState::PLAYING;
+			UpdateMusic();
 		};
 
 		// Quit the game
@@ -168,6 +205,7 @@ void Game::UpdateFromKeyboard()
 		if ( m_currentGameState == GameState::PAUSED && g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_ESCAPE ) )
 		{
 			m_currentGameState = GameState::ATTRACT_MODE;
+			UpdateMusic();
 		}
 
 		// Pause and resume the game
@@ -175,11 +213,13 @@ void Game::UpdateFromKeyboard()
 														   g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_ESCAPE ) ) )
 		{
 			m_currentGameState = GameState::PAUSED;
+			UpdateMusic();
 		}
 
 		else if ( m_currentGameState == GameState::PAUSED && g_engine->m_inputSystem->WasKeyJustPressed( 'P' ) )
 		{
 			m_currentGameState = GameState::PLAYING;
+			UpdateMusic();
 		}
 
 		// Toggle debug features
@@ -188,18 +228,23 @@ void Game::UpdateFromKeyboard()
 			m_isDebugOn = !m_isDebugOn;
 		}
 
+		
 		// Pause the game after the next update (for debugging)
+		/*
 		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'O' ) )
 		{
 			m_currentGameState = GameState::PLAYING;
 			m_isPausedAfterNextUpdate = true;
 		}
+		*/
 
 		// Kill all enemies (for debugging)
+		/*
 		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'K' ) )
 		{
 			KillAllEnemies();
 		}
+		*/
 	}
 }
 
@@ -216,6 +261,7 @@ void Game::UpdateFromController()
 		{
 			Reset();
 			m_currentGameState = GameState::PLAYING;
+			UpdateMusic();
 		};
 		// Quit the game
 		if ( controller.WasButtonJustPressed( XBOX_BUTTON_BACK ) )
@@ -226,9 +272,23 @@ void Game::UpdateFromController()
 	else
 	{
 		// Return to attract mode
-		if ( controller.WasButtonJustPressed( XBOX_BUTTON_BACK ) )
+		if ( m_currentGameState == GameState::PAUSED && controller.WasButtonJustPressed( XBOX_BUTTON_BACK ) )
 		{
 			m_currentGameState = GameState::ATTRACT_MODE;
+			UpdateMusic();
+		}
+
+		// Pause and resume the game
+		if ( m_currentGameState == GameState::PLAYING && ( controller.WasButtonJustPressed( XBOX_BUTTON_START ) ||
+														   controller.WasButtonJustPressed( XBOX_BUTTON_BACK ) ) )
+		{
+			m_currentGameState = GameState::PAUSED;
+			UpdateMusic();
+		}
+		else if ( m_currentGameState == GameState::PAUSED && controller.WasButtonJustPressed( XBOX_BUTTON_START ) )
+		{
+			m_currentGameState = GameState::PLAYING;
+			UpdateMusic();
 		}
 	}
 }
@@ -247,6 +307,11 @@ void Game::Render() const
 
 	m_currentMap->Render();
 	RenderHUD();
+
+	if ( m_currentGameState == GameState::PAUSED )
+	{
+		RenderPauseScreenOverlay();
+	};
 
 	g_engine->m_renderer->EndCamera( *m_worldCamera );
 }
@@ -323,10 +388,33 @@ void Game::RenderHUD() const
 
 	// #ToDo: Render HUD elements (health, score, etc.)
 
-	std::vector<Vertex> verts;
-	AddVertsForTextTriangles2D( verts, "GAME MODE", Vec2( 10.f, SCREEN_SIZE_Y - 30.f ), 24.f, Rgba8( 255, 255, 255 ) );
+	if ( m_currentGameState == GameState::PLAYING )
+	{
+		std::vector<Vertex> verts;
+		AddVertsForTextTriangles2D( verts, "GAME MODE", Vec2( 10.f, SCREEN_SIZE_Y - 30.f ), 24.f, Rgba8( 255, 255, 255 ) );
+		g_engine->m_renderer->DrawVertexArray( ( int ) verts.size(), verts.data() );
+	}
+	else if ( m_currentGameState == GameState::PAUSED )
+	{
+		std::vector<Vertex> verts;
+		AddVertsForTextTriangles2D( verts, "PAUSED", Vec2( 10.f, SCREEN_SIZE_Y - 30.f ), 24.f, Rgba8( 255, 255, 255 ) );
+		g_engine->m_renderer->DrawVertexArray( ( int ) verts.size(), verts.data() );
+	}
 
-	g_engine->m_renderer->DrawVertexArray( ( int ) verts.size(), verts.data() );
+	g_engine->m_renderer->EndCamera( *m_screenCamera );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game::RenderPauseScreenOverlay() const
+{
+	g_engine->m_renderer->BeginCamera( *m_screenCamera );
+
+	std::vector<Vertex> quadVerts;
+	AABB2 fullScreenAABB2( 0.f, 0.f, SCREEN_SIZE_X, SCREEN_SIZE_Y );
+	AddVertsForAABB2D( quadVerts, fullScreenAABB2, Rgba8( 0, 0, 0, 100 ) );
+	g_engine->m_renderer->BindTexture( nullptr );
+	g_engine->m_renderer->DrawVertexArray( quadVerts );
 
 	g_engine->m_renderer->EndCamera( *m_screenCamera );
 }

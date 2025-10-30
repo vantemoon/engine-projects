@@ -27,8 +27,10 @@ public:
 	int			m_numTilesInViewVertically;
 	int 	    m_numTilesInViewHorizontally;
 
-	bool        m_isBackgroundMusicPlaying = false;
-	SoundID     m_backgroundMusicSoundID = 0;
+	SoundID		m_attractMusicID;
+	SoundID     m_gameplayMusicID;
+	bool		m_isAttractMusicPlaying = false;
+	bool 		m_isGameplayMusicPlaying = false;
 
 	bool        m_isScreenShaking = false;
 	float	    m_screenShakeIntensity = 0.f;
@@ -48,10 +50,12 @@ public:
 	void UpdateAttractMode( float deltaSeconds );
 	void UpdateFromKeyboard();
 	void UpdateFromController();
+	void UpdateMusic();
 	void ScreenShake( float intensity );
 	void Render()													  const;
 	void RenderHUD()												  const;
 	void RenderAttractMode()										  const;
+	void RenderPauseScreenOverlay()										  const;
 	void Reset();
 	void KillAllEnemies(); // For testing and debugging
 };
