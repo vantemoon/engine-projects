@@ -93,6 +93,18 @@ void App::HardReset()
 {
 	if ( m_game != nullptr )
 	{
+		// Stop any playing music
+		if ( m_game->m_isAttractMusicPlaying )
+		{
+			g_engine->m_audioSystem->StopSound( m_game->m_attractMusicPlaybackID );
+			m_game->m_isAttractMusicPlaying = false;
+		}
+		if ( m_game->m_isGameplayMusicPlaying )
+		{
+			g_engine->m_audioSystem->StopSound( m_game->m_gameplayMusicPlaybackID );
+			m_game->m_isGameplayMusicPlaying = false;
+		}
+
 		delete m_game;
 		m_game = nullptr;
 	}
