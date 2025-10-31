@@ -50,62 +50,8 @@ void Map::UpdateEntities( float deltaSeconds )
 //-----------------------------------------------------------------------------------------------
 void Map::Render() const
 {
-    Vec2 camCenter;
-    if ( g_game->m_player != nullptr && !g_game->m_player->m_isGarbage )
-        camCenter = g_game->m_player->m_position;
-    else
-        camCenter = Vec2( WORLD_CENTER_X, WORLD_CENTER_Y );
-
-    float viewHeight = static_cast<float>( g_game->m_numTilesInViewVertically ) * TILE_SIZE;
-    float aspect = g_engine->m_window->m_config.m_clientAspect;
-    float viewWidth = viewHeight * aspect;
-
-    Vec2 halfExtents( viewWidth * 0.5f, viewHeight * 0.5f );
-
-    float mapMinX = 0.f;
-    float mapMinY = 0.f;
-    float mapMaxX = static_cast<float>( m_dimensions.x ) * TILE_SIZE;
-    float mapMaxY = static_cast<float>( m_dimensions.y ) * TILE_SIZE;
-
-    float minCamX = mapMinX + halfExtents.x;
-    float maxCamX = mapMaxX - halfExtents.x;
-    float minCamY = mapMinY + halfExtents.y;
-    float maxCamY = mapMaxY - halfExtents.y;
-
-    if ( viewWidth >= ( mapMaxX - mapMinX ) ) 
-	{
-        camCenter.x = ( mapMinX + mapMaxX ) * 0.5f;
-    } 
-	else 
-	{
-        if ( camCenter.x < minCamX ) camCenter.x = minCamX;
-        if ( camCenter.x > maxCamX ) camCenter.x = maxCamX;
-    }
-    if ( viewHeight >= ( mapMaxY - mapMinY ) ) 
-	{
-        camCenter.y = ( mapMinY + mapMaxY ) * 0.5f;
-    } 
-	else 
-	{
-        if ( camCenter.y < minCamY ) camCenter.y = minCamY;
-        if ( camCenter.y > maxCamY ) camCenter.y = maxCamY;
-    }
-
-    Vec2 bottomLeft = camCenter - halfExtents;
-    Vec2 topRight = camCenter + halfExtents;
-
-    g_game->m_worldCamera->SetOrthoView( bottomLeft, topRight );
-
-    g_engine->m_renderer->BeginCamera( *g_game->m_worldCamera );
-
-    RenderTiles();
-    RenderEntities();
-
-    if ( g_game->m_isDebugOn ) {
-        DebugRender();
-    }
-
-    g_engine->m_renderer->EndCamera( *g_game->m_worldCamera );
+	RenderTiles();
+	RenderEntities();
 }
 
 
@@ -152,13 +98,68 @@ void Map::RenderEntities() const
 //-----------------------------------------------------------------------------------------------
 void Map::DebugRender() const
 {
-	for ( int entityIndex = 0; entityIndex < static_cast<int>( m_allEntities.size() ); ++ entityIndex )
+	if (!g_game->m_isDebugOn) {
+		return;
+	}
+
+	const float ringThickness = 0.7f;
+	const float thinLineThickness = 0.7f;
+	const float thickLineThickness = 1.5f;
+
+	Rgba8 cyan = Rgba8( 0, 255, 255 );
+	Rgba8 magenta = Rgba8( 255, 0, 255 );
+	Rgba8 yellow = Rgba8( 255, 255, 0 );
+	Rgba8 red = Rgba8( 255, 0, 0 );
+	Rgba8 green = Rgba8( 0, 255, 0 );
+	Rgba8 blue = Rgba8( 0, 0, 255 );
+	Rgba8 purple = Rgba8( 128, 0, 255 );
+
+	for ( int entityIndex = 0; entityIndex < static_cast<int>( m_allEntities.size() ); ++entityIndex ) 
 	{
 		Entity* entity = m_allEntities[entityIndex];
-		if ( entity != nullptr )
+		if ( entity == nullptr ) continue;
+
+		Player* player = dynamic_cast<Player*>( entity );
+		if ( player != nullptr ) 
 		{
-			DebugDrawRing( entity->m_position, entity->m_physicsRadius, 0.1f, Rgba8( 255, 0, 0 ) );
-			DebugDrawRing( entity->m_position, entity->m_cosmeticRadius, 0.1f, Rgba8( 0, 0, 255 ) );
+			// Draw turret current orientation
+			float turretDegrees = player->m_turretOrientationDegrees;
+			Vec2 turretLineEnd = player->m_position + Vec2::MakeFromPolarDegrees( turretDegrees, player->m_cosmeticRadius * 0.6f );
+			DebugDrawLine( player->m_position, turretLineEnd, thickLineThickness, purple, purple );
+
+			// Draw turret goal orientation
+			float turretGoalDegrees = player->m_turretTargetDegrees;
+			Vec2 turretGoalStart = player->m_position + Vec2::MakeFromPolarDegrees( turretGoalDegrees, player->m_cosmeticRadius * 1.05f );
+			Vec2 turretGoalEnd = player->m_position + Vec2::MakeFromPolarDegrees( turretGoalDegrees, player->m_cosmeticRadius * 1.18f );
+			DebugDrawLine( turretGoalStart, turretGoalEnd, thickLineThickness, purple, purple );
+
+			// Draw tank current orientation
+			float tankDegrees = player->m_orientationDegrees;
+			Vec2 tankLineEnd = player->m_position + Vec2::MakeFromPolarDegrees( tankDegrees, player->m_cosmeticRadius * 0.8f );
+			DebugDrawLine( player->m_position, tankLineEnd, thinLineThickness, blue, blue );
+
+			// Draw tank goal orientation
+			float goalDegrees = player->m_targetMovementDirection;
+			Vec2 goalShortStart = player->m_position + Vec2::MakeFromPolarDegrees( goalDegrees, player->m_cosmeticRadius * 1.05f );
+			Vec2 goalShortEnd = player->m_position + Vec2::MakeFromPolarDegrees( goalDegrees, player->m_cosmeticRadius * 1.4f );
+			DebugDrawLine( goalShortStart, goalShortEnd, thinLineThickness, blue, blue );
+		}
+
+		if (entity != nullptr) 
+		{
+			// Draw physics and cosmetic radius rings
+			DebugDrawRing( entity->m_position, entity->m_physicsRadius, ringThickness, cyan );
+			DebugDrawRing( entity->m_position, entity->m_cosmeticRadius, ringThickness, magenta );
+
+			// Draw velocity vector
+			Vec2 velocityEnd = entity->m_position + entity->m_velocity;
+			DebugDrawLine( entity->m_position, velocityEnd, thinLineThickness, yellow, yellow );
+
+			// Draw forward and left vectors
+			Vec2 forward = Vec2::MakeFromPolarDegrees( entity->m_orientationDegrees, entity->m_cosmeticRadius * 0.8f );
+			Vec2 left = forward.GetRotatedBy90Degrees();
+			DebugDrawLine( entity->m_position, entity->m_position + forward, thinLineThickness, red, red );
+			DebugDrawLine( entity->m_position, entity->m_position + left, thinLineThickness, green, green );
 		}
 	}
 }

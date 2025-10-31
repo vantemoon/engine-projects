@@ -33,6 +33,7 @@ Game::Game()
 
 	m_worldCamera = new Camera();
 	m_screenCamera = new Camera();
+	m_debugCamera = new Camera();
 
 	m_numTilesInViewVertically = NUM_TILES_VISIBLE_VERTICALLY;
 	m_numTilesInViewHorizontally = NUM_TILES_VISIBLE_HORIZONTALLY;
@@ -97,7 +98,23 @@ void Game::Update( float deltaSeconds )
 	if ( m_isDebugCameraActive )
 	{
 		IntVec2 mapDims = m_currentMap->m_dimensions;
-		m_worldCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( 3200.f, 1600.f ) );
+		int mapWidthInTiles = mapDims.x;
+		int mapHeightInTiles = mapDims.y;
+
+		if ( mapWidthInTiles > mapHeightInTiles )
+		{
+			m_numTilesInViewHorizontally = mapWidthInTiles;
+			float aspect = g_engine->m_window->m_config.m_clientAspect;
+			m_numTilesInViewVertically = static_cast<int>( ( float ) m_numTilesInViewHorizontally / aspect );
+		}
+		else
+		{
+			m_numTilesInViewVertically = mapHeightInTiles;
+			float aspect = g_engine->m_window->m_config.m_clientAspect;
+			m_numTilesInViewHorizontally = static_cast<int>( ( float ) m_numTilesInViewVertically * aspect );
+		}
+
+		m_debugCamera->SetOrthoView(Vec2( 0.f, 0.f ), Vec2( ( float ) m_numTilesInViewHorizontally * TILE_SIZE, ( float ) m_numTilesInViewVertically * TILE_SIZE ) );
 	}
 	else
 	{
@@ -365,16 +382,23 @@ void Game::Render() const
 		return;
 	}
 
-	g_engine->m_renderer->BeginCamera( *m_worldCamera );
+	Camera* cameraToUse = m_isDebugCameraActive ? m_debugCamera : m_worldCamera;
+	g_engine->m_renderer->BeginCamera( *cameraToUse );
 
 	m_currentMap->Render();
+
+	if ( m_isDebugOn )
+	{
+		m_currentMap->DebugRender();
+	}
+
 	if ( m_currentGameState == GameState::PAUSED )
 	{
 		RenderPauseScreenOverlay();
 	};
 	RenderHUD();
 
-	g_engine->m_renderer->EndCamera( *m_worldCamera );
+	g_engine->m_renderer->EndCamera( *cameraToUse );
 }
 
 
@@ -421,20 +445,22 @@ void Game::RenderAttractMode() const
 	std::vector<Vertex> verts;
 	AddVertsForTextTriangles2D( verts, "LIBRA", Vec2( 10.f, SCREEN_SIZE_Y - 30.f ), 24.f, Rgba8( 255, 255, 255 ) );
 
+	// Ring
+	std::vector<Vertex> ringVerts;
+	AddVertsForRing2D( ringVerts, Vec2( SCREEN_CENTER_X, SCREEN_CENTER_Y ), 350.f, 20.f, Rgba8( 255, 0, 255 ), 64 );
+
 	// Texture
 	Texture* testTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Image/Test_StbiFlippedAndOpenGL.png" );
 	std::vector<Vertex> testTextureVerts;
 	AABB2 texturedAABB2( 300.f, 100.f, 800.f, 600.f );
-	AddVertsForAABB2D( testTextureVerts, texturedAABB2, Rgba8( 255, 255, 255, 255 ) ); // This should now set UVs on each Vertex!!
-	g_engine->m_renderer->BindTexture( testTexture );
-	g_engine->m_renderer->DrawVertexArray( testTextureVerts );
-
-	std::vector<Vertex> ringVerts;
-	AddVertsForRing2D( ringVerts, Vec2( SCREEN_CENTER_X, SCREEN_CENTER_Y ), 200.f, 20.f, Rgba8( 255, 0, 255 ), 32 );
-	g_engine->m_renderer->BindTexture( nullptr ); // NOTE: We now have to do this before rendering anything UN-textured!
-	g_engine->m_renderer->DrawVertexArray( ringVerts );
+	AddVertsForAABB2D( testTextureVerts, texturedAABB2, Rgba8( 255, 255, 255, 255 ) );
 
 	// Render 
+	g_engine->m_renderer->BindTexture( nullptr );
+	g_engine->m_renderer->DrawVertexArray( ringVerts );
+	g_engine->m_renderer->BindTexture( testTexture );
+	g_engine->m_renderer->DrawVertexArray( testTextureVerts );
+	g_engine->m_renderer->BindTexture( nullptr );
 	g_engine->m_renderer->DrawVertexArray( 3, triangleVertexArray );
 	g_engine->m_renderer->DrawVertexArray( ( int ) verts.size(), verts.data() );
 

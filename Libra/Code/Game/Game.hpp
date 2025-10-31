@@ -24,6 +24,7 @@ public:
 
 	Camera*     m_worldCamera = nullptr;
 	Camera*     m_screenCamera = nullptr;
+	Camera*		m_debugCamera = nullptr;
 	int			m_numTilesInViewVertically;
 	int 	    m_numTilesInViewHorizontally;
 
@@ -59,7 +60,7 @@ public:
 	void Render()													  const;
 	void RenderHUD()												  const;
 	void RenderAttractMode()										  const;
-	void RenderPauseScreenOverlay()										  const;
+	void RenderPauseScreenOverlay()									  const;
 	void Reset();
 	void KillAllEnemies(); // For testing and debugging
 };

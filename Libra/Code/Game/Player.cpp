@@ -17,7 +17,9 @@ Player::Player( Vec2 startingPosition )
 	m_physicsRadius = PLAYER_TANK_PHYSICS_RADIUS;
 	m_cosmeticRadius = PLAYER_TANK_COSMETIC_RADIUS;
 	m_orientationDegrees = 45.f;
+	m_targetMovementDirection = m_orientationDegrees;
 	m_turretOrientationDegrees = m_orientationDegrees;
+	m_turretTargetDegrees = m_orientationDegrees;
 	m_turretRelativeDegrees = 0.f;
 
 	InitializeVertexArray();
@@ -34,6 +36,12 @@ void Player::Update( float deltaSeconds )
 	UpdateFromKeyboard( deltaSeconds );
 	UpdateFromController( deltaSeconds );
 	TurnTowardMovementDirection( deltaSeconds );
+
+    if ( !m_isTurretAiming ) 
+	{
+        m_turretOrientationDegrees = m_orientationDegrees + m_turretRelativeDegrees;
+    }
+
 	TurnTurretTowardAimDirection( deltaSeconds );
 
 	m_velocity = m_thrustFraction * PLAYER_TANK_MAX_SPEED_TILES_PER_SECOND * GetForwardNormal();
@@ -194,7 +202,6 @@ void Player::UpdateFromKeyboard( [[maybe_unused]] float deltaSeconds )
 	} 
 	else 
 	{
-		m_turretTargetDegrees = m_orientationDegrees + m_turretRelativeDegrees;
 		m_isTurretAiming = false;
 	}
 }
@@ -247,7 +254,7 @@ void Player::Render() const
 	TransformVertexArrayXY3D( (int) turretVerts.size(), turretVerts.data(), 1.f, m_turretOrientationDegrees, m_position );
 	g_engine->m_renderer->DrawVertexArray( turretVerts );
 
-	g_engine->m_renderer->BindTexture( nullptr ); // Unbind texture
+	g_engine->m_renderer->BindTexture( nullptr );
 }
 
 
@@ -313,9 +320,13 @@ void Player::TurnTowardMovementDirection( float deltaSeconds )
 }
 
 
-//-----------------------------------------------------------------------------------------------
 void Player::TurnTurretTowardAimDirection( float deltaSeconds )
 {
+	if ( !m_isTurretAiming )
+	{
+		return;
+	}
+
     if ( m_turretOrientationDegrees == m_turretTargetDegrees )
         return;
 
@@ -332,7 +343,5 @@ void Player::TurnTurretTowardAimDirection( float deltaSeconds )
         m_turretOrientationDegrees += (deltaTurretDegrees > 0.f ? maxDeltaThisFrame : -maxDeltaThisFrame);
     }
 
-    if ( m_isTurretAiming ) {
-        m_turretRelativeDegrees = m_turretOrientationDegrees - m_orientationDegrees;
-    }
+    m_turretRelativeDegrees = m_turretOrientationDegrees - m_orientationDegrees;
 }
