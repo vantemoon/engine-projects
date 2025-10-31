@@ -5,6 +5,7 @@
 #include "Engine/Core/Vertex.hpp"
 #include "Engine/Core/VertexUtils.hpp"
 #include "Engine/Math/AABB2.hpp"
+#include "Engine/Math/MathUtils.hpp"
 #include "Engine/Math/RandomNumberGenerator.hpp"
 #include "Engine/Renderer/Camera.hpp"
 
@@ -50,6 +51,8 @@ void Map::UpdateEntities( float deltaSeconds )
 //-----------------------------------------------------------------------------------------------
 void Map::Render() const
 {
+	UpdateWorldCameraView();
+
 	RenderTiles();
 	RenderEntities();
 }
@@ -291,4 +294,47 @@ void Map::DeleteGarbageEntities()
 			m_allEntities.erase( m_allEntities.begin() + entityIndex );
 		}
 	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Map::UpdateWorldCameraView() const
+{
+	float tilesInViewY = static_cast< float >( g_game->m_numTilesInViewVertically );
+	float aspect = g_engine->m_window->m_config.m_clientAspect;
+	float viewHeight = tilesInViewY * TILE_SIZE;
+	float viewWidth = viewHeight * aspect;
+
+	float mapWidth = static_cast< float >( m_dimensions.x ) * TILE_SIZE;
+	float mapHeight = static_cast< float >( m_dimensions.y ) * TILE_SIZE;
+
+	Vec2 cameraCenter = Vec2( mapWidth * 0.5f, mapHeight * 0.5f );
+	if ( g_game->m_player && g_game->m_player->IsAlive() ) {
+		cameraCenter = g_game->m_player->m_position;
+	}
+
+	float halfViewWidth = viewWidth * 0.5f;
+	float halfViewHeight = viewHeight * 0.5f;
+
+	float minX = halfViewWidth;
+	float maxX = mapWidth - halfViewWidth;
+	float minY = halfViewHeight;
+	float maxY = mapHeight - halfViewHeight;
+
+	if ( mapWidth < viewWidth ) {
+		cameraCenter.x = mapWidth * 0.5f;
+	}
+	else {
+		cameraCenter.x = GetClamped( cameraCenter.x, minX, maxX );
+	}
+	if ( mapHeight < viewHeight ) {
+		cameraCenter.y = mapHeight * 0.5f;
+	}
+	else {
+		cameraCenter.y = GetClamped( cameraCenter.y, minY, maxY );
+	}
+
+	Vec2 cameraBottomLeft = Vec2( cameraCenter.x - halfViewWidth, cameraCenter.y - halfViewHeight );
+	Vec2 cameraTopRight = Vec2( cameraCenter.x + halfViewWidth, cameraCenter.y + halfViewHeight );
+	g_game->m_worldCamera->SetOrthoView( cameraBottomLeft, cameraTopRight );
 }

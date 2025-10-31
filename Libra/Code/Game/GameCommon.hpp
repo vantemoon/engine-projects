@@ -31,8 +31,8 @@ constexpr float SCREEN_CENTER_X = SCREEN_SIZE_X / 2.f;
 constexpr float SCREEN_CENTER_Y = SCREEN_SIZE_Y / 2.f;
 
 constexpr float TILE_SIZE = 10.f;
-constexpr int   NUM_TILES_VISIBLE_VERTICALLY = 8;
-constexpr int   NUM_TILES_VISIBLE_HORIZONTALLY = 16;
+constexpr int   NUM_TILES_VISIBLE_VERTICALLY = 10;
+constexpr int   NUM_TILES_VISIBLE_HORIZONTALLY = 20;
 constexpr float INNER_STONE_TILE_PROBABILITY = 0.1f;
 const     Rgba8 GRASS_COLOR = Rgba8( 0, 100, 0 );
 const     Rgba8 STONE_COLOR = Rgba8( 128, 128, 128 );

@@ -31,6 +31,7 @@ public:
 	void RenderTiles()										const;
 	void RenderEntities()									const;
 	void DebugRender() 										const;
+	void UpdateWorldCameraView()							const;
 
 	Tile*   GetTile( IntVec2 tileCoords )					const;
 	AABB2   GetTileBounds( IntVec2 tileCoords )				const;

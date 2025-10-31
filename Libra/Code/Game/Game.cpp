@@ -116,10 +116,6 @@ void Game::Update( float deltaSeconds )
 
 		m_debugCamera->SetOrthoView(Vec2( 0.f, 0.f ), Vec2( ( float ) m_numTilesInViewHorizontally * TILE_SIZE, ( float ) m_numTilesInViewVertically * TILE_SIZE ) );
 	}
-	else
-	{
-		m_worldCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( WORLD_SIZE_X, WORLD_SIZE_Y ) );
-	}
 	m_screenCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) );
 
 	if ( m_isScreenShaking )
@@ -306,24 +302,14 @@ void Game::UpdateFromKeyboard()
 		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_F4 ) )
 		{
 			m_isDebugCameraActive = !m_isDebugCameraActive;
-		}
-		
-		// Pause the game after the next update (for debugging)
-		/*
-		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'O' ) )
-		{
-			m_currentGameState = GameState::PLAYING;
-			m_isPausedAfterNextUpdate = true;
-		}
-		*/
 
-		// Kill all enemies (for debugging)
-		/*
-		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'K' ) )
-		{
-			KillAllEnemies();
+			if ( !m_isDebugCameraActive )
+			{
+				m_numTilesInViewVertically = NUM_TILES_VISIBLE_VERTICALLY;
+				m_numTilesInViewHorizontally = NUM_TILES_VISIBLE_HORIZONTALLY;
+			}
 		}
-		*/
+
 	}
 }
 
@@ -380,6 +366,11 @@ void Game::Render() const
 	{
 		RenderAttractMode();
 		return;
+	}
+
+	if ( !m_isDebugCameraActive )
+	{
+		m_currentMap->UpdateWorldCameraView();
 	}
 
 	Camera* cameraToUse = m_isDebugCameraActive ? m_debugCamera : m_worldCamera;
