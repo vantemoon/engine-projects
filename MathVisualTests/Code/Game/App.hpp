@@ -1,4 +1,5 @@
 #pragma once
+#include "Game/GameCommon.hpp"
 #include "Engine/Renderer/Camera.hpp"
 
 
@@ -29,10 +30,11 @@ public:
 
 	void SetIsQuitting();
 	bool IsQuitting()								const;
-	void HardReset();
+	void HardReset( GameMode newGameMode );
 
 public:
 	Game*			m_game = nullptr;
+	GameMode		m_gameMode = INVALID_MODE;
 
 	double			m_lastFrameStartTime = 0.0;
 	bool			m_isQuitting = false;

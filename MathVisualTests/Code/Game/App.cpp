@@ -1,5 +1,7 @@
 #include "Game/App.hpp"
 #include "Game/Game.hpp"
+#include "Game/GameNearestPoint.hpp"
+#include "Game/GameRaycastVsDiscs.hpp"
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/Rgba8.hpp"
 #include "Engine/Core/Time.hpp"
@@ -24,7 +26,7 @@ App::App()
 	g_engine = new Engine( engineConfig );
 	g_engine->Startup();
 
-	m_game = new Game();
+	m_game = new GameNearestPoint();
 
 	m_lastFrameStartTime = GetCurrentTimeSeconds();
 }
@@ -75,6 +77,21 @@ void App::UpdateFromKeyboard()
 	{
 		SetIsQuitting();
 	}
+
+	if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_F7 ) )
+	{
+		GameMode nextMode = static_cast<GameMode>( ( m_gameMode + 1 ) % NUM_GAME_MODES );
+		if ( nextMode == INVALID_MODE )
+		{
+			nextMode = GAMEMODE_NEAREST_POINT;
+		}
+		else if ( nextMode == NUM_GAME_MODES )
+		{
+			nextMode = GAMEMODE_NEAREST_POINT;
+		}
+		m_gameMode = nextMode;
+		HardReset( nextMode );
+	}
 }
 
 
@@ -91,7 +108,7 @@ void App::UpdateFromController()
 
 
 //-----------------------------------------------------------------------------------------------
-void App::HardReset()
+void App::HardReset( GameMode newGameMode )
 {
 	if ( m_game != nullptr )
 	{
@@ -99,7 +116,25 @@ void App::HardReset()
 		m_game = nullptr;
 	}
 
-	m_game = new Game();
+	switch ( newGameMode )
+	{
+		case INVALID_MODE:
+			break;
+
+		case GAMEMODE_NEAREST_POINT:
+			m_game = new GameNearestPoint();
+			break;
+
+		case GAMEMODE_RAYCAST_VS_DISCS:
+			m_game = new GameRaycastVsDiscs();
+			break;
+
+		case NUM_GAME_MODES:
+			break;
+
+		default:
+			break;
+	}
 }
 
 

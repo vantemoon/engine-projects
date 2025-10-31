@@ -25,6 +25,18 @@
     <ClCompile Include="GameCommon.cpp">
       <Filter>Framework</Filter>
     </ClCompile>
+    <ClCompile Include="GameNearestPoint.cpp">
+      <Filter>Gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="GameRaycastVsDiscs.cpp">
+      <Filter>Gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="TestShape.cpp">
+      <Filter>Gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="TestShapeTriangle.cpp">
+      <Filter>Gameplay</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.hpp">
@@ -42,5 +54,19 @@
     <ClInclude Include="EngineBuildPreferences.hpp">
       <Filter>Framework</Filter>
     </ClInclude>
+    <ClInclude Include="GameNearestPoint.hpp">
+      <Filter>Gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="GameRaycastVsDiscs.hpp">
+      <Filter>Gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="TestShape.hpp">
+      <Filter>Gameplay</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="TestShapeTriangle.hpp">
+      <Filter>Gameplay</Filter>
+    </None>
   </ItemGroup>
 </Project>

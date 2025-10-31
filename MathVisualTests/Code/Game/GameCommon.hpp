@@ -20,6 +20,16 @@ enum GameState
 
 
 //-----------------------------------------------------------------------------------------------
+enum GameMode
+{
+	INVALID_MODE = -1,
+	GAMEMODE_NEAREST_POINT,
+	GAMEMODE_RAYCAST_VS_DISCS,
+	NUM_GAME_MODES
+};
+
+
+//-----------------------------------------------------------------------------------------------
 constexpr float WORLD_SIZE_X = 200.f;
 constexpr float WORLD_SIZE_Y = 100.f;
 constexpr float WORLD_CENTER_X = WORLD_SIZE_X / 2.f;
