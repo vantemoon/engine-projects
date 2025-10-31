@@ -71,12 +71,9 @@ void App::RunFrame()
 //-----------------------------------------------------------------------------------------------
 void App::UpdateFromKeyboard()
 {
-	if ( !m_game->m_currentGameState == GameState::ATTRACT_MODE )
+	if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_ESCAPE ) )
 	{
-		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_F8 ) )
-		{
-			HardReset();
-		}
+		SetIsQuitting();
 	}
 }
 
@@ -84,7 +81,12 @@ void App::UpdateFromKeyboard()
 //-----------------------------------------------------------------------------------------------
 void App::UpdateFromController()
 {
-	// Currently no global controller actions
+	XboxController const& controller = g_engine->m_inputSystem->GetController( 0 );
+
+	if ( controller.WasButtonJustPressed( XBOX_BUTTON_BACK ) )
+	{
+		SetIsQuitting();
+	}
 }
 
 
