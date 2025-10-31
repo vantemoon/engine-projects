@@ -41,8 +41,8 @@ Game::Game()
 	m_worldCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( WORLD_SIZE_X, WORLD_SIZE_Y ) );
 	m_screenCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) );
 
-	g_engine->m_audioSystem->CreateOrGetSound( "Data/Audio/02 Magnetik Chaos [Music by Guido Arcella Diez].mp3" );
-	g_engine->m_audioSystem->CreateOrGetSound( "Data/Audio/01 Welcome To The RS-Magnetikia [Music by Guido Arcella Diez].mp3" );
+	m_attractMusicID = g_engine->m_audioSystem->CreateOrGetSound( "Data/Audio/02 Magnetik Chaos [Music by Guido Arcella Diez].mp3" );
+	m_gameplayMusicID = g_engine->m_audioSystem->CreateOrGetSound( "Data/Audio/01 Welcome To The RS-Magnetikia [Music by Guido Arcella Diez].mp3" );
 
 	m_isAttractMusicPlaying = false;
 	m_isGameplayMusicPlaying = false;
@@ -156,12 +156,12 @@ void Game::UpdateMusic()
 	{
 		if ( m_isGameplayMusicPlaying)
 		{
-			g_engine->m_audioSystem->StopSound( m_gameplayMusicID );
+			g_engine->m_audioSystem->StopSound( m_gameplayMusicPlaybackID );
 			m_isGameplayMusicPlaying = false;
 		}
 		if ( !m_isAttractMusicPlaying )
 		{
-			m_attractMusicID = g_engine->m_audioSystem->StartSound( m_attractMusicID, true );
+			m_attractMusicPlaybackID = g_engine->m_audioSystem->StartSound( m_attractMusicID, true );
 			m_isAttractMusicPlaying = true;
 		}
 	}
@@ -169,27 +169,27 @@ void Game::UpdateMusic()
 	{
 		if ( m_isAttractMusicPlaying)
 		{
-			g_engine->m_audioSystem->StopSound( m_attractMusicID );
+			g_engine->m_audioSystem->StopSound( m_attractMusicPlaybackID );
 			m_isAttractMusicPlaying = false;
 		}
 		if ( !m_isGameplayMusicPlaying )
 		{
-			m_gameplayMusicID = g_engine->m_audioSystem->StartSound( m_gameplayMusicID, true );
+			m_gameplayMusicPlaybackID = g_engine->m_audioSystem->StartSound( m_gameplayMusicID, true );
 			m_isGameplayMusicPlaying = true;
 		}
 		if ( m_isGameplayMusicPlaying )
 		{
 			if ( m_isSlowMo )
 			{
-				g_engine->m_audioSystem->SetSoundPlaybackSpeed( m_gameplayMusicID, 0.5f );
+				g_engine->m_audioSystem->SetSoundPlaybackSpeed( m_gameplayMusicPlaybackID, 0.5f );
 			}
 			else if ( m_isFastMo )
 			{
-				g_engine->m_audioSystem->SetSoundPlaybackSpeed( m_gameplayMusicID, 1.5f );
+				g_engine->m_audioSystem->SetSoundPlaybackSpeed( m_gameplayMusicPlaybackID, 1.5f );
 			}
 			else
 			{
-				g_engine->m_audioSystem->SetSoundPlaybackSpeed( m_gameplayMusicID, 1.f );
+				g_engine->m_audioSystem->SetSoundPlaybackSpeed( m_gameplayMusicPlaybackID, 1.f );
 			}
 		}
 	}
@@ -197,7 +197,7 @@ void Game::UpdateMusic()
 	{
 		if ( m_isGameplayMusicPlaying )
 		{
-			g_engine->m_audioSystem->SetSoundPlaybackSpeed( m_gameplayMusicID, 0.f );
+			g_engine->m_audioSystem->SetSoundPlaybackSpeed( m_gameplayMusicPlaybackID, 0.f );
 		}
 	}
 }
