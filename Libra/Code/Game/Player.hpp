@@ -8,6 +8,7 @@ class Player : public Entity
 public:
 	bool				 m_isMovingForward = false;
 	float    			 m_targetMovementDirection = 0.f;
+	float                m_prevOrientationDegrees = 0.f;
 	float				 m_thrustFraction = 0.f;
 
 	float				 m_turretOrientationDegrees = 0.f;

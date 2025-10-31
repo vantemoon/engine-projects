@@ -21,6 +21,7 @@ Player::Player( Vec2 startingPosition )
 	m_turretOrientationDegrees = m_orientationDegrees;
 	m_turretTargetDegrees = m_orientationDegrees;
 	m_turretRelativeDegrees = 0.f;
+	m_prevOrientationDegrees = m_orientationDegrees;
 
 	InitializeVertexArray();
 }
@@ -37,10 +38,12 @@ void Player::Update( float deltaSeconds )
 	UpdateFromController( deltaSeconds );
 	TurnTowardMovementDirection( deltaSeconds );
 
-    if ( !m_isTurretAiming ) 
+	if ( !m_isTurretAiming )
 	{
-        m_turretOrientationDegrees = m_orientationDegrees + m_turretRelativeDegrees;
-    }
+		float orientationDelta = m_orientationDegrees - m_prevOrientationDegrees;
+		m_turretTargetDegrees += orientationDelta;
+		m_turretOrientationDegrees = m_orientationDegrees + m_turretRelativeDegrees;
+	}
 
 	TurnTurretTowardAimDirection( deltaSeconds );
 
@@ -49,6 +52,8 @@ void Player::Update( float deltaSeconds )
 
 	if ( !m_noClip )
 		UpdatePhysics( deltaSeconds );
+
+	m_prevOrientationDegrees = m_orientationDegrees;
 }
 
 
