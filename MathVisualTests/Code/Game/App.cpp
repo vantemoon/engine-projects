@@ -27,6 +27,7 @@ App::App()
 	g_engine->Startup();
 
 	m_game = new GameNearestPoint();
+	m_gameMode = GAMEMODE_NEAREST_POINT;
 
 	m_lastFrameStartTime = GetCurrentTimeSeconds();
 }
