@@ -32,6 +32,14 @@ public:
 	TestShapeDisc*			m_nearestPointOnLineSegment;
 	TestShapeDisc*			m_nearestPointOnInfiniteLine;
 
+	bool 					m_isPointInTriangle = false;
+	bool 					m_isPointInDisc = false;
+	bool 					m_isPointInAABB = false;
+	bool 					m_isPointInOBB = false;
+	bool 					m_isPointInCapsule = false;
+	bool 					m_isPointOnLineSegment = false;
+	bool 					m_isPointOnInfiniteLine = false;
+
 	bool                    m_isSlowMo = false;
 
 public:
@@ -44,4 +52,6 @@ public:
 
 private:
 	void GetNearestPoints();
+	void CheckIfPointIsInsideShapes();
+	void RandomizeAllShapes();
 };

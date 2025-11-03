@@ -11,6 +11,7 @@
 #include "Engine/Core/VertexUtils.hpp"
 #include "Engine/Math/AABB2.hpp"
 #include "Engine/Math/MathUtils.hpp"
+#include "Engine/Math/RandomNumberGenerator.hpp"
 #include "Engine/Math/Vec2.hpp"
 #include "Engine/Renderer/Camera.hpp"
 #include "Engine/Renderer/Renderer.hpp"
@@ -62,6 +63,7 @@ void GameNearestPoint::Update( float deltaSeconds )
 	m_screenCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) );
 
 	GetNearestPoints();
+	CheckIfPointIsInsideShapes();
 	UpdateFromKeyboard();
 	Render();
 }
@@ -103,6 +105,12 @@ void GameNearestPoint::UpdateFromKeyboard()
 	{
 		m_isSlowMo = false;
 	}
+
+	// Randomize all shape positions with F8
+	if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_F8 ) )
+	{
+		RandomizeAllShapes();
+	}
 }
 
 
@@ -112,19 +120,79 @@ void GameNearestPoint::Render() const
 	g_engine->m_renderer->BeginCamera( *m_worldCamera );
 
 	Rgba8 darkBlue = Rgba8( 50, 80, 150, 255 );
+	Rgba8 lightBlue = Rgba8( 100, 150, 255, 255 );
 	Rgba8 white = Rgba8( 255, 255, 255, 255 );
 	Rgba8 orange = Rgba8( 255, 165, 0, 255 );
+	Rgba8 translucentWhite = Rgba8( 255, 255, 255, 30 );
 
 	std::vector<Vertex> verts;
 
 	// Draw shapes
-	AddVertsForTriangle2D( verts, m_triangle->m_ccw0, m_triangle->m_ccw1, m_triangle->m_ccw2, darkBlue );
-	AddVertsForDisc2D( verts, m_disc->m_center, m_disc->m_radius, darkBlue, m_disc->m_numSides );
-	AddVertsForAABB2D( verts, m_aabb->m_alignedBox, darkBlue );
-	AddVertsForOBB2D( verts, m_obb->m_orientedBox, darkBlue );
-	AddVertsForCapsule2D( verts, m_capsule->m_boneStart, m_capsule->m_boneEnd, m_capsule->m_radius, darkBlue, m_capsule->m_numSides );
-	AddVertsForLineSegment2D( verts, m_lineSegment->m_start, m_lineSegment->m_end, m_lineSegment->m_thickness, darkBlue );
-	AddVertsForLineSegment2D( verts, m_infiniteLine->m_start, m_infiniteLine->m_end, m_infiniteLine->m_thickness, darkBlue );
+	if ( m_isPointInTriangle )
+	{
+		AddVertsForTriangle2D( verts, m_triangle->m_ccw0, m_triangle->m_ccw1, m_triangle->m_ccw2, lightBlue );
+	}
+	else
+	{
+		AddVertsForTriangle2D( verts, m_triangle->m_ccw0, m_triangle->m_ccw1, m_triangle->m_ccw2, darkBlue );
+	}
+	if ( m_isPointInDisc )
+	{
+		AddVertsForDisc2D( verts, m_disc->m_center, m_disc->m_radius, lightBlue, m_disc->m_numSides );
+	}
+	else
+	{
+		AddVertsForDisc2D( verts, m_disc->m_center, m_disc->m_radius, darkBlue, m_disc->m_numSides );
+	}
+	if ( m_isPointInAABB )
+	{
+		AddVertsForAABB2D( verts, m_aabb->m_alignedBox, lightBlue );
+	}
+	else
+	{
+		AddVertsForAABB2D( verts, m_aabb->m_alignedBox, darkBlue );
+	}
+	if ( m_isPointInOBB )
+	{
+		AddVertsForOBB2D( verts, m_obb->m_orientedBox, lightBlue );
+	}
+	else
+	{
+		AddVertsForOBB2D( verts, m_obb->m_orientedBox, darkBlue );
+	}
+	if ( m_isPointInCapsule )
+	{
+		AddVertsForCapsule2D( verts, m_capsule->m_boneStart, m_capsule->m_boneEnd, m_capsule->m_radius, lightBlue, m_capsule->m_numSides );
+	}
+	else
+	{
+		AddVertsForCapsule2D( verts, m_capsule->m_boneStart, m_capsule->m_boneEnd, m_capsule->m_radius, darkBlue, m_capsule->m_numSides );
+	}
+	if ( m_isPointOnLineSegment )
+	{
+		AddVertsForLineSegment2D( verts, m_lineSegment->m_start, m_lineSegment->m_end, m_lineSegment->m_thickness, lightBlue );
+	}
+	else
+	{
+		AddVertsForLineSegment2D( verts, m_lineSegment->m_start, m_lineSegment->m_end, m_lineSegment->m_thickness, darkBlue );
+	}
+	if ( m_isPointOnInfiniteLine )
+	{
+		AddVertsForLineSegment2D( verts, m_infiniteLine->m_start, m_infiniteLine->m_end, m_infiniteLine->m_thickness, lightBlue );
+	}
+	else
+	{
+		AddVertsForLineSegment2D( verts, m_infiniteLine->m_start, m_infiniteLine->m_end, m_infiniteLine->m_thickness, darkBlue );
+	}
+
+	// Draw lines from reference point to nearest points
+	AddVertsForLineSegment2D( verts, m_referencePoint->m_center, m_nearestPointOnTriangle->m_center, 0.2f, translucentWhite );
+	AddVertsForLineSegment2D( verts, m_referencePoint->m_center, m_nearestPointOnDisc->m_center, 0.2f, translucentWhite );
+	AddVertsForLineSegment2D( verts, m_referencePoint->m_center, m_nearestPointOnAABB->m_center, 0.2f, translucentWhite );
+	AddVertsForLineSegment2D( verts, m_referencePoint->m_center, m_nearestPointOnOBB->m_center, 0.2f, translucentWhite );
+	AddVertsForLineSegment2D( verts, m_referencePoint->m_center, m_nearestPointOnCapsule->m_center, 0.2f, translucentWhite );
+	AddVertsForLineSegment2D( verts, m_referencePoint->m_center, m_nearestPointOnLineSegment->m_center, 0.2f, translucentWhite );
+	AddVertsForLineSegment2D( verts, m_referencePoint->m_center, m_nearestPointOnInfiniteLine->m_center, 0.2f, translucentWhite );
 
 	// Draw nearest points
 	AddVertsForDisc2D( verts, m_nearestPointOnTriangle->m_center, m_nearestPointOnTriangle->m_radius, orange, m_nearestPointOnTriangle->m_numSides );
@@ -155,4 +223,92 @@ void GameNearestPoint::GetNearestPoints()
 	m_nearestPointOnCapsule->m_center = GetNearestPointOnCapsule2D( m_referencePoint->m_center, m_capsule->m_boneStart, m_capsule->m_boneEnd, m_capsule->m_radius );
 	m_nearestPointOnLineSegment->m_center = GetNearestPointOnLineSegment2D( m_referencePoint->m_center, m_lineSegment->m_start, m_lineSegment->m_end );
 	m_nearestPointOnInfiniteLine->m_center = GetNearestPointOnInfiniteLine2D( m_referencePoint->m_center, m_infiniteLine->m_start, m_infiniteLine->m_end );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void GameNearestPoint::CheckIfPointIsInsideShapes()
+{
+	m_isPointInTriangle = IsPointInsideTriangle2D( m_referencePoint->m_center, m_triangle->m_ccw0, m_triangle->m_ccw1, m_triangle->m_ccw2 );
+	m_isPointInDisc = IsPointInsideDisc2D( m_referencePoint->m_center, m_disc->m_center, m_disc->m_radius );
+	m_isPointInAABB = IsPointInsideAABB2D( m_referencePoint->m_center, m_aabb->m_alignedBox );
+	m_isPointInOBB = IsPointInsideOBB2D( m_referencePoint->m_center, m_obb->m_orientedBox );
+	m_isPointInCapsule = IsPointInsideCapsule2D( m_referencePoint->m_center, m_capsule->m_boneStart, m_capsule->m_boneEnd, m_capsule->m_radius );
+	m_isPointOnLineSegment = ( GetDistanceSquared2D( m_referencePoint->m_center, m_nearestPointOnLineSegment->m_center ) < 0.001f );
+	m_isPointOnInfiniteLine = ( GetDistanceSquared2D( m_referencePoint->m_center, m_nearestPointOnInfiniteLine->m_center ) < 0.001f );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void GameNearestPoint::RandomizeAllShapes()
+{
+	RandomNumberGenerator rng;
+
+	// Randomize triangle
+	Vec2 triangleCenter = Vec2( rng.RollRandomFloatInRange( 15.f, 185.f ), rng.RollRandomFloatInRange( 15.f, 85.f ) );
+	float minRadius = 10.f;
+	float maxRadius = 20.f;
+
+	float baseAngle = rng.RollRandomFloatInRange( 0.f, 360.f );
+	float angle1 = baseAngle;
+	float angle2 = baseAngle + rng.RollRandomFloatInRange( 100.f, 140.f );
+	float angle3 = baseAngle + rng.RollRandomFloatInRange( 220.f, 260.f );
+
+	Vec2 ccw0 = triangleCenter + Vec2::MakeFromPolarDegrees( angle1, rng.RollRandomFloatInRange( minRadius, maxRadius ) );
+	Vec2 ccw1 = triangleCenter + Vec2::MakeFromPolarDegrees( angle2, rng.RollRandomFloatInRange( minRadius, maxRadius ) );
+	Vec2 ccw2 = triangleCenter + Vec2::MakeFromPolarDegrees( angle3, rng.RollRandomFloatInRange( minRadius, maxRadius ) );
+
+	m_triangle->m_ccw0 = ccw0;
+	m_triangle->m_ccw1 = ccw1;
+	m_triangle->m_ccw2 = ccw2;
+
+	// Randomize disc
+	Vec2 discCenter = Vec2( rng.RollRandomFloatInRange( 15.f, 185.f ), rng.RollRandomFloatInRange( 15.f, 85.f ) );
+	float discRadius = rng.RollRandomFloatInRange( 5.f, 15.f );
+
+	m_disc->m_center = discCenter;
+	m_disc->m_radius = discRadius;
+
+	// Randomize AABB
+	Vec2 aabbCenter = Vec2( rng.RollRandomFloatInRange( 15.f, 185.f ), rng.RollRandomFloatInRange( 15.f, 85.f ) );
+	Vec2 aabbHalfDimensions = Vec2( rng.RollRandomFloatInRange( 5.f, 15.f ), rng.RollRandomFloatInRange( 5.f, 10.f ) );
+
+	m_aabb->m_alignedBox = AABB2( aabbCenter - aabbHalfDimensions, aabbCenter + aabbHalfDimensions );
+
+	// Randomize OBB
+	Vec2 obbCenter = Vec2( rng.RollRandomFloatInRange( 15.f, 185.f ), rng.RollRandomFloatInRange( 15.f, 85.f ) );
+	Vec2 obbHalfDimensions = Vec2( rng.RollRandomFloatInRange( 5.f, 15.f ), rng.RollRandomFloatInRange( 5.f, 10.f ) );
+	float obbRotationDegrees = rng.RollRandomFloatInRange( 0.f, 360.f );
+	Vec2 iBasisNormal = Vec2::MakeFromPolarDegrees( obbRotationDegrees, 1.f );
+
+	m_obb->m_orientedBox = OBB2( obbCenter, iBasisNormal, obbHalfDimensions );
+
+	// Randomize capsule
+	Vec2 capsuleBoneStart = Vec2( rng.RollRandomFloatInRange( 15.f, 185.f ), rng.RollRandomFloatInRange( 15.f, 85.f ) );
+	float capsuleBoneAngle = rng.RollRandomFloatInRange( 0.f, 360.f );
+	float capsuleBoneLength = rng.RollRandomFloatInRange( 10.f, 30.f );
+	Vec2 capsuleBoneEnd = capsuleBoneStart + Vec2::MakeFromPolarDegrees( capsuleBoneAngle, capsuleBoneLength );
+	float capsuleRadius = rng.RollRandomFloatInRange( 2.f, 5.f );
+
+	m_capsule->m_boneStart = capsuleBoneStart;
+	m_capsule->m_boneEnd = capsuleBoneEnd;
+	m_capsule->m_radius = capsuleRadius;
+
+	// Randomize line segment
+	Vec2 lineSegmentStart = Vec2( rng.RollRandomFloatInRange( 15.f, 185.f ), rng.RollRandomFloatInRange( 15.f, 85.f ) );
+	float lineSegmentAngle = rng.RollRandomFloatInRange( 0.f, 360.f );
+	float lineSegmentLength = rng.RollRandomFloatInRange( 10.f, 30.f );
+	Vec2 lineSegmentEnd = lineSegmentStart + Vec2::MakeFromPolarDegrees( lineSegmentAngle, lineSegmentLength );
+
+	m_lineSegment->m_start = lineSegmentStart;
+	m_lineSegment->m_end = lineSegmentEnd;
+
+	// Randomize infinite line
+	Vec2 infiniteLinePoint = Vec2( rng.RollRandomFloatInRange( 15.f, 185.f ), rng.RollRandomFloatInRange( 15.f, 85.f ) );
+	float infiniteLineAngle = rng.RollRandomFloatInRange( 0.f, 360.f );
+	Vec2 infiniteLineDirection = Vec2::MakeFromPolarDegrees( infiniteLineAngle, 1.f );
+	Vec2 infiniteLinePerp = infiniteLineDirection.GetRotatedBy90Degrees();
+
+	m_infiniteLine->m_start = infiniteLinePoint - infiniteLinePerp * 200.f;
+	m_infiniteLine->m_end = infiniteLinePoint + infiniteLinePerp * 200.f;
 }
