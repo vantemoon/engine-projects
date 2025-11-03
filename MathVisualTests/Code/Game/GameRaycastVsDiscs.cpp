@@ -51,6 +51,7 @@ void GameRaycastVsDiscs::Render() const
 	Rgba8 blue = Rgba8( 0, 0, 255, 255 );
 	AddVertsForDisc2D( verts, discCenter, discRadius, blue, 32 );
 
+	g_engine->m_renderer->BindTexture( nullptr );
 	g_engine->m_renderer->DrawVertexArray( verts );
 
 	g_engine->m_renderer->EndCamera( *m_worldCamera );

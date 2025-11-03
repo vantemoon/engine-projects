@@ -32,6 +32,11 @@
     <ClCompile Include="GameRaycastVsDiscs.cpp" />
     <ClCompile Include="Main_Windows.cpp" />
     <ClCompile Include="TestShape.cpp" />
+    <ClCompile Include="TestShapeAABB.cpp" />
+    <ClCompile Include="TestShapeCapsule.cpp" />
+    <ClCompile Include="TestShapeDisc.cpp" />
+    <ClCompile Include="TestShapeLineSegment.cpp" />
+    <ClCompile Include="TestShapeOBB.cpp" />
     <ClCompile Include="TestShapeTriangle.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -43,6 +48,11 @@
     <ClInclude Include="GameNearestPoint.hpp" />
     <ClInclude Include="GameRaycastVsDiscs.hpp" />
     <ClInclude Include="TestShape.hpp" />
+    <ClInclude Include="TestShapeAABB.hpp" />
+    <ClInclude Include="TestShapeCapsule.hpp" />
+    <ClInclude Include="TestShapeDisc.hpp" />
+    <ClInclude Include="TestShapeLineSegment.hpp" />
+    <ClInclude Include="TestShapeOBB.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="TestShapeTriangle.hpp" />

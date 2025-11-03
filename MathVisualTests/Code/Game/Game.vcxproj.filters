@@ -8,6 +8,9 @@
     <Filter Include="Gameplay">
       <UniqueIdentifier>{7b6b75cb-8cd0-43ff-8c38-ebc826d155b4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Test Shape">
+      <UniqueIdentifier>{c357c09a-4196-49cc-bc7b-b4e1247ed7bd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main_Windows.cpp">
@@ -32,10 +35,25 @@
       <Filter>Gameplay</Filter>
     </ClCompile>
     <ClCompile Include="TestShape.cpp">
-      <Filter>Gameplay</Filter>
+      <Filter>Test Shape</Filter>
+    </ClCompile>
+    <ClCompile Include="TestShapeAABB.cpp">
+      <Filter>Test Shape</Filter>
+    </ClCompile>
+    <ClCompile Include="TestShapeCapsule.cpp">
+      <Filter>Test Shape</Filter>
+    </ClCompile>
+    <ClCompile Include="TestShapeDisc.cpp">
+      <Filter>Test Shape</Filter>
+    </ClCompile>
+    <ClCompile Include="TestShapeLineSegment.cpp">
+      <Filter>Test Shape</Filter>
+    </ClCompile>
+    <ClCompile Include="TestShapeOBB.cpp">
+      <Filter>Test Shape</Filter>
     </ClCompile>
     <ClCompile Include="TestShapeTriangle.cpp">
-      <Filter>Gameplay</Filter>
+      <Filter>Test Shape</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -61,12 +79,27 @@
       <Filter>Gameplay</Filter>
     </ClInclude>
     <ClInclude Include="TestShape.hpp">
-      <Filter>Gameplay</Filter>
+      <Filter>Test Shape</Filter>
+    </ClInclude>
+    <ClInclude Include="TestShapeAABB.hpp">
+      <Filter>Test Shape</Filter>
+    </ClInclude>
+    <ClInclude Include="TestShapeCapsule.hpp">
+      <Filter>Test Shape</Filter>
+    </ClInclude>
+    <ClInclude Include="TestShapeDisc.hpp">
+      <Filter>Test Shape</Filter>
+    </ClInclude>
+    <ClInclude Include="TestShapeLineSegment.hpp">
+      <Filter>Test Shape</Filter>
+    </ClInclude>
+    <ClInclude Include="TestShapeOBB.hpp">
+      <Filter>Test Shape</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="TestShapeTriangle.hpp">
-      <Filter>Gameplay</Filter>
+      <Filter>Test Shape</Filter>
     </None>
   </ItemGroup>
 </Project>
