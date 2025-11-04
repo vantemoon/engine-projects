@@ -69,11 +69,11 @@ void Map::RenderTiles() const
 		AABB2 tileBounds = AABB2( tile.m_tileCoords.x * TILE_SIZE, tile.m_tileCoords.y * TILE_SIZE,
 			( tile.m_tileCoords.x + 1 ) * TILE_SIZE, ( tile.m_tileCoords.y + 1 ) * TILE_SIZE );
 		Rgba8 tileColor;
-		if ( tile.m_type == TileType::GRASS )
+		if ( tile.m_type == TileType::TILE_TYPE_GRASS )
 		{
 			tileColor = GRASS_COLOR;
 		}
-		else if ( tile.m_type == TileType::STONE )
+		else if ( tile.m_type == TileType::TILE_TYPE_STONE )
 		{
 			tileColor = STONE_COLOR;
 		}
@@ -227,7 +227,7 @@ void Map::PopulateTiles()
 			bool isOuterReserved = ( x >= m_dimensions.x - 7 && x <= m_dimensions.x - 2 && y >= m_dimensions.y - 7 && y <= m_dimensions.y - 2 );
 			if ( isOnEdge )
 			{
-				type = TileType::STONE;
+				type = TileType::TILE_TYPE_STONE;
 			}
 			else
 			{
@@ -236,11 +236,11 @@ void Map::PopulateTiles()
 					if ( ( x == 2 && y == 4 ) || ( x == 3 && y == 4 ) || ( x == 4 && y == 4 ) ||
 						( x == 4 && y == 3 ) || ( x == 4 && y == 2 ) )
 					{
-						type = TileType::STONE;
+						type = TileType::TILE_TYPE_STONE;
 					}
 					else
 					{
-						type = TileType::GRASS;
+						type = TileType::TILE_TYPE_GRASS;
 					}
 				}
 				else if ( isOuterReserved )
@@ -253,11 +253,11 @@ void Map::PopulateTiles()
 						( x == m_dimensions.x - 4 && y == m_dimensions.y - 6 ) ||
 						( x == m_dimensions.x - 3 && y == m_dimensions.y - 6 ) )
 					{
-						type = TileType::STONE;
+						type = TileType::TILE_TYPE_STONE;
 					}
 					else
 					{
-						type = TileType::GRASS;
+						type = TileType::TILE_TYPE_GRASS;
 					}
 				}
 				else
@@ -266,11 +266,11 @@ void Map::PopulateTiles()
 					float roll = rng.RollRandomFloatZeroToOne();
 					if ( roll < INNER_STONE_TILE_PROBABILITY )
 					{
-						type = TileType::STONE;
+						type = TileType::TILE_TYPE_STONE;
 					}
 					else
 					{
-						type = TileType::GRASS;
+						type = TileType::TILE_TYPE_GRASS;
 					}
 				}
 			}
