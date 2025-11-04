@@ -168,22 +168,8 @@ void GameNearestPoint::Render() const
 	{
 		AddVertsForCapsule2D( verts, m_capsule->m_boneStart, m_capsule->m_boneEnd, m_capsule->m_radius, darkBlue, m_capsule->m_numSides );
 	}
-	if ( m_isPointOnLineSegment )
-	{
-		AddVertsForLineSegment2D( verts, m_lineSegment->m_start, m_lineSegment->m_end, m_lineSegment->m_thickness, lightBlue );
-	}
-	else
-	{
-		AddVertsForLineSegment2D( verts, m_lineSegment->m_start, m_lineSegment->m_end, m_lineSegment->m_thickness, darkBlue );
-	}
-	if ( m_isPointOnInfiniteLine )
-	{
-		AddVertsForLineSegment2D( verts, m_infiniteLine->m_start, m_infiniteLine->m_end, m_infiniteLine->m_thickness, lightBlue );
-	}
-	else
-	{
-		AddVertsForLineSegment2D( verts, m_infiniteLine->m_start, m_infiniteLine->m_end, m_infiniteLine->m_thickness, darkBlue );
-	}
+	AddVertsForLineSegment2D( verts, m_lineSegment->m_start, m_lineSegment->m_end, m_lineSegment->m_thickness, darkBlue );
+	AddVertsForLineSegment2D( verts, m_infiniteLine->m_start, m_infiniteLine->m_end, m_infiniteLine->m_thickness, darkBlue );
 
 	// Draw lines from reference point to nearest points
 	AddVertsForLineSegment2D( verts, m_referencePoint->m_center, m_nearestPointOnTriangle->m_center, 0.2f, translucentWhite );
@@ -234,8 +220,6 @@ void GameNearestPoint::CheckIfPointIsInsideShapes()
 	m_isPointInAABB = IsPointInsideAABB2D( m_referencePoint->m_center, m_aabb->m_alignedBox );
 	m_isPointInOBB = IsPointInsideOBB2D( m_referencePoint->m_center, m_obb->m_orientedBox );
 	m_isPointInCapsule = IsPointInsideCapsule2D( m_referencePoint->m_center, m_capsule->m_boneStart, m_capsule->m_boneEnd, m_capsule->m_radius );
-	m_isPointOnLineSegment = ( GetDistanceSquared2D( m_referencePoint->m_center, m_nearestPointOnLineSegment->m_center ) < 0.001f );
-	m_isPointOnInfiniteLine = ( GetDistanceSquared2D( m_referencePoint->m_center, m_nearestPointOnInfiniteLine->m_center ) < 0.001f );
 }
 
 

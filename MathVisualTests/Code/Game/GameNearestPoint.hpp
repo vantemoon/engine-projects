@@ -37,8 +37,6 @@ public:
 	bool 					m_isPointInAABB = false;
 	bool 					m_isPointInOBB = false;
 	bool 					m_isPointInCapsule = false;
-	bool 					m_isPointOnLineSegment = false;
-	bool 					m_isPointOnInfiniteLine = false;
 
 	bool                    m_isSlowMo = false;
 
