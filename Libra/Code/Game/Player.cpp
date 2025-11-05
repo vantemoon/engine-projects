@@ -11,12 +11,11 @@
 
 
 //-----------------------------------------------------------------------------------------------
-Player::Player( Vec2 startingPosition )
-	: Entity( startingPosition )
+Player::Player( Vec2 startingPosition, float orientationDegrees )
+	: Entity( startingPosition, orientationDegrees )
 {
 	m_physicsRadius = PLAYER_TANK_PHYSICS_RADIUS;
 	m_cosmeticRadius = PLAYER_TANK_COSMETIC_RADIUS;
-	m_orientationDegrees = 45.f;
 	m_targetMovementDirection = m_orientationDegrees;
 	m_turretOrientationDegrees = m_orientationDegrees;
 	m_turretTargetDegrees = m_orientationDegrees;
@@ -84,7 +83,7 @@ void Player::UpdatePhysics( [[maybe_unused]] float deltaSeconds )
         if ( !map->IsTileCoordsInBounds( neighborTileCoords ) ) continue;
 
         Tile* neighborTile = map->GetTile( neighborTileCoords );
-        if ( !neighborTile || !neighborTile->IsSolid() ) continue;
+		if ( !neighborTile || !map->IsTileSolid( *neighborTile ) ) continue;
 
         AABB2 tileBounds = map->GetTileBounds( neighborTileCoords );
         PushDiscOutOfFixedAABB2D(m_position, m_physicsRadius, tileBounds);
@@ -97,7 +96,7 @@ void Player::UpdatePhysics( [[maybe_unused]] float deltaSeconds )
         if ( !map->IsTileCoordsInBounds( neighborTileCoords ) ) continue;
 
         Tile* neighborTile = map->GetTile( neighborTileCoords );
-        if ( !neighborTile || !neighborTile->IsSolid() ) continue;
+		if ( !neighborTile || !map->IsTileSolid( *neighborTile ) ) continue;
 
         AABB2 tileBounds = map->GetTileBounds( neighborTileCoords );
         PushDiscOutOfFixedAABB2D( m_position, m_physicsRadius, tileBounds );
@@ -266,6 +265,9 @@ void Player::Render() const
 //-----------------------------------------------------------------------------------------------
 void Player::TakeDamage( int damage )
 {
+	if ( m_isInvincible )
+		return;
+
 	Entity::TakeDamage( damage );
 }
 

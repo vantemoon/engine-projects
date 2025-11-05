@@ -27,8 +27,6 @@ Game::Game()
 {
 	g_game = this;
 
-	Vec2 playerStartPos = Vec2( TILE_SIZE * 2.f, TILE_SIZE * 2.f );
-	m_player = new Player( playerStartPos );
 	m_currentMap = new Map( IntVec2( 32, 64 ) );
 
 	m_worldCamera = new Camera();
@@ -290,6 +288,12 @@ void Game::UpdateFromKeyboard()
 		{
 			m_isFastMo = false;
 			UpdateMusic();
+		}
+
+		// Toggle player invincibility (for debugging)
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_F2 ) )
+		{
+			m_player->m_isInvincible = !m_player->m_isInvincible;
 		}
 
 		// Toggle no-clip (for debugging)

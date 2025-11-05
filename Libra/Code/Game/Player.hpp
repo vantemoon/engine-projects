@@ -16,13 +16,14 @@ public:
 	float				 m_turretTargetDegrees = 0.f;
 	bool				 m_isTurretAiming = false;
 
+	bool                 m_isInvincible = false;
 	bool                 m_noClip = false;
 
 	std::vector<Vertex>  m_tankBodyVertexArray;
 	std::vector<Vertex>  m_turretVertexArray;
 
 public:
-	Player( Vec2 startingPosition );
+	Player( Vec2 startingPosition, float orientationDegrees );
 	~Player();
 
 	void Update( float deltaSeconds )							override;

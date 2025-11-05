@@ -2,6 +2,7 @@
 #include "Engine/Core/Rgba8.hpp"
 #include "Engine/Math/AABB2.hpp"
 #include "Engine/Math/IntVec2.hpp"
+#include <vector>
 
 
 //-----------------------------------------------------------------------------------------------
@@ -15,7 +16,7 @@ enum TileType
 
 
 //-----------------------------------------------------------------------------------------------
-class TileDef
+class TileDefinition
 {
 public:
 	// std::string	m_name;
@@ -23,10 +24,10 @@ public:
 	AABB2		m_UVs = AABB2( Vec2( 0.f, 0.f ), Vec2( 1.f, 1.f ) );
 	Rgba8		m_tint = Rgba8( 255, 255, 255 );
 
-	static TileDef s_tileDefs[NUM_TILE_TYPES];
+	static std::vector<TileDefinition> s_definitions;
 
 public:
-	static void InitializeTileDefs();
+	static void InitializeTileDefinitions();
 };
 
 
@@ -40,6 +41,4 @@ public:
 public:
 	Tile( IntVec2 tileCoords, TileType type );
 	~Tile();
-
-	bool IsSolid() const;
 };

@@ -16,7 +16,9 @@ Map::Map( IntVec2 dimensions )
 {
 	PopulateTiles();
 
-	m_allEntities.push_back( g_game->m_player );
+	Vec2 playerStartPos = Vec2( TILE_SIZE * 2.f, TILE_SIZE * 2.f );
+	g_game->m_player = static_cast<Player*>( SpawnNewEntity( ENTITY_TYPE_GOOD_PLAYER, playerStartPos, 45.f ) );
+	AddEntityToMap( *g_game->m_player, ENTITY_TYPE_GOOD_PLAYER );
 }
 
 
@@ -163,6 +165,17 @@ void Map::DebugRender() const
 			Vec2 left = forward.GetRotatedBy90Degrees();
 			DebugDrawLine( entity->m_position, entity->m_position + forward, thinLineThickness, red, red );
 			DebugDrawLine( entity->m_position, entity->m_position + left, thinLineThickness, green, green );
+
+			// Draw line of sight only hit a solid tile
+			RaycastResult2D raycastResult = RaycastVsTiles( entity->m_position, forward.GetNormalized(), 500.f, 0.1f );
+			if ( raycastResult.m_didImpact ) 
+			{
+				DebugDrawLine( entity->m_position, raycastResult.m_impactPos, thinLineThickness, red, red );
+			} 
+			else 
+			{
+				DebugDrawLine( entity->m_position, entity->m_position + forward, thinLineThickness, green, green );
+			}
 		}
 	}
 }
@@ -215,6 +228,14 @@ IntVec2 Map::GetTileCoordsForWorldPosition( Vec2 worldPos ) const
 //-----------------------------------------------------------------------------------------------
 void Map::PopulateTiles()
 {
+	if ( TileDefinition::s_definitions.size() != NUM_TILE_TYPES )
+	{
+		TileDefinition::s_definitions.resize( NUM_TILE_TYPES );
+		TileDefinition::InitializeTileDefinitions();
+	}
+
+	m_tiles.clear();
+
 	for ( int y = 0; y < m_dimensions.y; ++y )
 	{
 		for ( int x = 0; x < m_dimensions.x; ++x )
@@ -337,4 +358,155 @@ void Map::UpdateWorldCameraView() const
 	Vec2 cameraBottomLeft = Vec2( cameraCenter.x - halfViewWidth, cameraCenter.y - halfViewHeight );
 	Vec2 cameraTopRight = Vec2( cameraCenter.x + halfViewWidth, cameraCenter.y + halfViewHeight );
 	g_game->m_worldCamera->SetOrthoView( cameraBottomLeft, cameraTopRight );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool Map::IsPointInSolid( Vec2 const& point ) const
+{
+	IntVec2 tileCoords = GetTileCoordsForWorldPosition( point );
+	Tile* tile = GetTile( tileCoords );
+	if ( tile == nullptr )
+	{
+		return false;
+	}
+	const TileDefinition& tileDef = TileDefinition::s_definitions[tile->m_type];
+	return tileDef.m_isSolid;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool Map::IsTileSolid( Tile tile ) const
+{
+	int typeIndex = static_cast< int >( tile.m_type );
+	if ( typeIndex < 0 || typeIndex >= static_cast< int >( TileDefinition::s_definitions.size() ) ) {
+		return false;
+	}
+	const TileDefinition& tileDef = TileDefinition::s_definitions[typeIndex];
+	return tileDef.m_isSolid;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+RaycastResult2D Map::RaycastVsTiles( Vec2 const& startPos, Vec2 const& fwdNormal, float maxDist, float stepSize ) const
+{
+	RaycastResult2D result;
+	result.m_rayStartPos = startPos;
+	result.m_rayFwdNormal = fwdNormal;
+	result.m_rayMaxLength = maxDist;
+
+	Vec2 currentPos = startPos;
+	float traveledDist = 0.f;
+	while ( traveledDist < maxDist )
+	{
+		IntVec2 tileCoords = GetTileCoordsForWorldPosition( currentPos );
+		Tile* tile = GetTile( tileCoords );
+		if ( !IsTileCoordsInBounds( tileCoords ) )
+		{
+			break;
+		}
+		if ( tile != nullptr && IsTileSolid( *tile ) )
+		{
+			result.m_didImpact = true;
+			result.m_impactDist = traveledDist;
+			result.m_impactPos = currentPos;
+
+			AABB2 tileBounds = GetTileBounds( tileCoords );
+			Vec2 nearestPoint = tileBounds.GetNearestPoint( currentPos );
+			Vec2 impactNormal = ( currentPos - nearestPoint ).GetNormalized();
+			result.m_impactNormal = impactNormal;
+
+			return result;
+		}
+		currentPos += fwdNormal * stepSize;
+		traveledDist += stepSize;
+	}
+
+	return result;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool Map::HasLineOfSight( Vec2 const& startPos, Vec2 const& endPos, float stepSize ) const
+{
+	Vec2 displacement = endPos - startPos;
+	float distance = displacement.GetLength();
+	Vec2 direction = displacement.GetNormalized();
+	RaycastResult2D raycast = RaycastVsTiles( startPos, direction, distance, stepSize );
+	return !raycast.m_didImpact;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+Entity* Map::SpawnNewEntity( EntityType type, Vec2 const& position, float orientationDegrees )
+{
+	Entity* newEntity = nullptr;
+	if ( type == ENTITY_TYPE_GOOD_PLAYER )
+	{
+		newEntity = new Player( position, orientationDegrees );
+	}
+	else if ( type == ENTITY_TYPE_EVIL_SCORPIO )
+	{
+		// newEntity = new Scorpio( position, orientationDegrees );
+	}
+	else if ( type == ENTITY_TYPE_EVIL_LEO )
+	{
+		// newEntity = new Leo( position, orientationDegrees );
+	}
+	else if ( type == ENTITY_TYPE_EVIL_ARIES )
+	{
+		// newEntity = new Aries( position, orientationDegrees );
+	}
+	else if ( type == ENTITY_TYPE_GOOD_BULLET )
+	{
+		// newEntity = new GoodBullet( position, orientationDegrees );
+	}
+	else if ( type == ENTITY_TYPE_EVIL_BULLET )
+	{
+		// newEntity = new EvilBullet( position, orientationDegrees );
+	}
+	else
+	{
+		return nullptr;
+	}
+	if ( newEntity != nullptr )
+	{
+		m_allEntities.push_back( newEntity );
+		m_entityListsByType[type].push_back( newEntity );
+	}
+	return newEntity;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Map::AddEntityToMap( Entity& entity, EntityType type )
+{
+	m_allEntities.push_back( &entity );
+	m_entityListsByType[type].push_back( &entity );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Map::RemoveEntityFromMap( Entity& entity, EntityType type )
+{
+	// Remove from all entities list
+	for ( int entityIndex = 0; entityIndex < static_cast<int>( m_allEntities.size() ); ++ entityIndex )
+	{
+		if ( m_allEntities[entityIndex] == &entity )
+		{
+			m_allEntities.erase( m_allEntities.begin() + entityIndex );
+			break;
+		}
+	}
+
+	// Remove from type-specific entity list
+	EntityList& typeList = m_entityListsByType[type];
+	for ( int entityIndex = 0; entityIndex < static_cast<int>( typeList.size() ); ++ entityIndex )
+	{
+		if ( typeList[entityIndex] == &entity )
+		{
+			typeList.erase( typeList.begin() + entityIndex );
+			break;
+		}
+	}
 }

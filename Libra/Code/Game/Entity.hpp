@@ -10,6 +10,20 @@ struct Vertex; // Forward declaration
 
 
 //-----------------------------------------------------------------------------------------------
+enum EntityType
+{
+	ENTITY_TYPE_INVALID = -1,
+	ENTITY_TYPE_GOOD_PLAYER,
+	ENTITY_TYPE_EVIL_SCORPIO,
+	ENTITY_TYPE_EVIL_LEO,
+	ENTITY_TYPE_EVIL_ARIES,
+	ENTITY_TYPE_GOOD_BULLET,
+	ENTITY_TYPE_EVIL_BULLET,
+	NUM_ENTITY_TYPES
+};
+
+
+//-----------------------------------------------------------------------------------------------
 class Entity
 {
 public:
@@ -20,12 +34,18 @@ public:
 	float				 m_angularVelocityDegreesPerSecond;
 	float				 m_physicsRadius;
 	float				 m_cosmeticRadius;
+
 	int					 m_health;
 	bool				 m_isDead = false;
 	bool				 m_isGarbage = false;
 
+	bool                 m_pushedByWalls;
+	bool                 m_pushedByEntities;
+	bool                 m_pushesEntities;
+	bool                 m_hitByBullets;
+
 public:
-	Entity( Vec2 startingPosition );
+	Entity( Vec2 startingPosition, float orientationDegrees );
 	virtual ~Entity();
 	virtual void Update( float deltaSeconds );
 	virtual void Render()													 const;
@@ -36,10 +56,11 @@ public:
 	virtual bool IsOffScreen()												 const;
 	virtual Vec2 GetForwardNormal()											 const;
 	bool         IsAlive()													 const;
-	// void         GetEnemyTypeAndAction( char** out_type, char** out_action ) const;
 
 protected:
 	virtual void InitializeVertexArray();
-	// virtual void CheckCollisionWithBullets();
-	// virtual void CheckCollisionWithPlayerShip();
 };
+
+
+//-----------------------------------------------------------------------------------------------
+typedef std::vector<Entity*> EntityList;

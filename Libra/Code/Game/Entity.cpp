@@ -8,12 +8,12 @@
 
 
 //-----------------------------------------------------------------------------------------------
-Entity::Entity( Vec2 startingPosition )
+Entity::Entity( Vec2 startingPosition, float orientationDegrees )
 	: m_position( startingPosition )
+	, m_orientationDegrees( orientationDegrees )
 {
 	// Default values, should be overridden by derived classes
 	m_velocity = Vec2( 0.f, 0.f );
-	m_orientationDegrees = 0.f;
 	m_angularVelocityDegreesPerSecond = 0.f;
 	m_physicsRadius = 1.f;
 	m_cosmeticRadius = 1.f;
