@@ -24,6 +24,17 @@ enum EntityType
 
 
 //-----------------------------------------------------------------------------------------------
+enum EntityFaction
+{
+	ENTITY_FACTION_INVALID = -1,
+	ENTITY_FACTION_GOOD,
+	ENTITY_FACTION_NEUTRAL,
+	ENTITY_FACTION_EVIL,
+	NUM_ENTITY_FACTIONS
+};
+
+
+//-----------------------------------------------------------------------------------------------
 class Entity
 {
 public:
@@ -39,10 +50,12 @@ public:
 	bool				 m_isDead = false;
 	bool				 m_isGarbage = false;
 
-	bool                 m_pushedByWalls;
-	bool                 m_pushedByEntities;
-	bool                 m_pushesEntities;
-	bool                 m_hitByBullets;
+	bool                 m_isPushedByWalls;
+	bool                 m_isPushedByEntities;
+	bool                 m_doesPushEntities;
+	bool                 m_isHitByBullets;
+
+	EntityFaction		 m_faction = ENTITY_FACTION_INVALID;
 
 public:
 	Entity( Vec2 startingPosition, float orientationDegrees );

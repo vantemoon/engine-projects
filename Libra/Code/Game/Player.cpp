@@ -16,11 +16,20 @@ Player::Player( Vec2 startingPosition, float orientationDegrees )
 {
 	m_physicsRadius = PLAYER_TANK_PHYSICS_RADIUS;
 	m_cosmeticRadius = PLAYER_TANK_COSMETIC_RADIUS;
+
 	m_targetMovementDirection = m_orientationDegrees;
+	m_prevOrientationDegrees = m_orientationDegrees;
+
 	m_turretOrientationDegrees = m_orientationDegrees;
 	m_turretTargetDegrees = m_orientationDegrees;
 	m_turretRelativeDegrees = 0.f;
-	m_prevOrientationDegrees = m_orientationDegrees;
+
+	m_faction = ENTITY_FACTION_GOOD;
+
+	m_isPushedByWalls = true;
+	m_isPushedByEntities = true;
+	m_doesPushEntities = true;
+	m_isHitByBullets = true;
 
 	InitializeVertexArray();
 }
