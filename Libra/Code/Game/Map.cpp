@@ -1,4 +1,5 @@
 #include "Game/Map.hpp"
+#include "Game/Bullet.hpp"
 #include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
 #include "Engine/Core/Engine.hpp"
@@ -461,9 +462,17 @@ Entity* Map::SpawnNewEntity( EntityType type, Vec2 const& position, float orient
 	{
 		// newEntity = new GoodBullet( position, orientationDegrees );
 	}
+	else if ( type == ENTITY_TYPE_GOOD_BOLT )
+	{
+		newEntity = new Bullet( position, orientationDegrees, ENTITY_TYPE_GOOD_BOLT );
+	}
 	else if ( type == ENTITY_TYPE_EVIL_BULLET )
 	{
 		// newEntity = new EvilBullet( position, orientationDegrees );
+	}
+	else if ( type == ENTITY_TYPE_EVIL_BOLT )
+	{
+		// newEntity = new EvilBolt( position, orientationDegrees );
 	}
 	else
 	{

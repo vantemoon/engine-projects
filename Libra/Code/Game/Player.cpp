@@ -42,6 +42,8 @@ Player::~Player() = default;
 //-----------------------------------------------------------------------------------------------
 void Player::Update( float deltaSeconds )
 {
+	m_timeSinceLastFire += deltaSeconds;
+
 	UpdateFromKeyboard( deltaSeconds );
 	UpdateFromController( deltaSeconds );
 	TurnTowardMovementDirection( deltaSeconds );
@@ -217,6 +219,16 @@ void Player::UpdateFromKeyboard( [[maybe_unused]] float deltaSeconds )
 	{
 		m_isTurretAiming = false;
 	}
+
+	// Fire
+	if ( g_engine->m_inputSystem->IsKeyDown( KEYCODE_SPACE ) )
+	{
+		if ( m_timeSinceLastFire >= PLAYER_TANK_FIRE_COOLDOWN_SECONDS )
+		{
+			FireProjectile();
+			m_timeSinceLastFire = 0.f;
+		}
+	}
 }
 
 
@@ -243,6 +255,17 @@ void Player::UpdateFromController( [[maybe_unused]] float deltaSeconds )
 		m_turretTargetDegrees = rightJoystickOrientationDegrees;
 		m_isTurretAiming = true;
 	}
+
+	// Fire
+	float rightTrigger = controller.GetRightTrigger();
+	if ( rightTrigger > 0.f )
+	{
+		if ( m_timeSinceLastFire >= PLAYER_TANK_FIRE_COOLDOWN_SECONDS )
+		{
+			FireProjectile();
+			m_timeSinceLastFire = 0.f;
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------------------------
@@ -255,14 +278,14 @@ void Player::Render() const
 
 	std::vector<Vertex> tankBodyVerts;
 	tankBodyVerts = m_tankBodyVertexArray;
-	Texture* tankBodyTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Image/PlayerTankBase.png" );
+	Texture* tankBodyTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/PlayerTankBase.png" );
 	g_engine->m_renderer->BindTexture( tankBodyTexture );
 	TransformVertexArrayXY3D( (int) tankBodyVerts.size(), tankBodyVerts.data(), 1.f, m_orientationDegrees, m_position );
 	g_engine->m_renderer->DrawVertexArray( tankBodyVerts );
 
 	std::vector<Vertex> turretVerts;
 	turretVerts = m_turretVertexArray;
-	Texture* turretTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Image/PlayerTankTop.png" );
+	Texture* turretTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/PlayerTankTop.png" );
 	g_engine->m_renderer->BindTexture( turretTexture );
 	TransformVertexArrayXY3D( (int) turretVerts.size(), turretVerts.data(), 1.f, m_turretOrientationDegrees, m_position );
 	g_engine->m_renderer->DrawVertexArray( turretVerts );
@@ -294,11 +317,11 @@ void Player::InitializeVertexArray()
 	float halfSize = m_physicsRadius * 1.5f;
 	// Body
 	AABB2 bodyAABB2 = AABB2( -halfSize, -halfSize, halfSize, halfSize );
-	AddVertsForAABB2D( m_tankBodyVertexArray, bodyAABB2, Rgba8( 255, 255, 255 ) );
+	AddVertsForAABB2D( m_tankBodyVertexArray, bodyAABB2, Rgba8::WHITE );
 
 	// Turret
 	AABB2 turretAABB2 = AABB2( -halfSize, -halfSize, halfSize, halfSize );
-	AddVertsForAABB2D( m_turretVertexArray, turretAABB2, Rgba8( 255, 255, 255 ) );
+	AddVertsForAABB2D( m_turretVertexArray, turretAABB2, Rgba8::WHITE );
 }
 
 
@@ -360,4 +383,13 @@ void Player::TurnTurretTowardAimDirection( float deltaSeconds )
     }
 
     m_turretRelativeDegrees = m_turretOrientationDegrees - m_orientationDegrees;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Player::FireProjectile()
+{
+	Vec2 muzzleOffset = Vec2::MakeFromPolarDegrees( m_turretOrientationDegrees, m_physicsRadius + 0.5f );
+	Vec2 projectileSpawnPosition = m_position + muzzleOffset;
+	g_game->m_currentMap->SpawnNewEntity( ENTITY_TYPE_GOOD_BOLT, projectileSpawnPosition, m_turretOrientationDegrees );
 }

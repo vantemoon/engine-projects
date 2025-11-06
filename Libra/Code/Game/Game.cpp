@@ -39,8 +39,8 @@ Game::Game()
 	m_worldCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( WORLD_SIZE_X, WORLD_SIZE_Y ) );
 	m_screenCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) );
 
-	m_attractMusicID = g_engine->m_audioSystem->CreateOrGetSound( "Data/Audio/02 Magnetik Chaos [Music by Guido Arcella Diez].mp3" );
-	m_gameplayMusicID = g_engine->m_audioSystem->CreateOrGetSound( "Data/Audio/01 Welcome To The RS-Magnetikia [Music by Guido Arcella Diez].mp3" );
+	m_attractMusicID = g_engine->m_audioSystem->CreateOrGetSound( "Data/Audio/AttractMusic.mp3" );
+	m_gameplayMusicID = g_engine->m_audioSystem->CreateOrGetSound( "Data/Audio/GameplayMusic.mp3" );
 
 	m_isAttractMusicPlaying = false;
 	m_isGameplayMusicPlaying = false;
@@ -445,7 +445,7 @@ void Game::RenderAttractMode() const
 	AddVertsForRing2D( ringVerts, Vec2( SCREEN_CENTER_X, SCREEN_CENTER_Y ), 350.f, 20.f, Rgba8( 255, 0, 255 ), 64 );
 
 	// Texture
-	Texture* testTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Image/Test_StbiFlippedAndOpenGL.png" );
+	Texture* testTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/Test_StbiFlippedAndOpenGL.png" );
 	std::vector<Vertex> testTextureVerts;
 	AABB2 texturedAABB2( 300.f, 100.f, 800.f, 600.f );
 	AddVertsForAABB2D( testTextureVerts, texturedAABB2, Rgba8( 255, 255, 255, 255 ) );

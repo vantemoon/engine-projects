@@ -42,6 +42,13 @@ constexpr float PLAYER_TANK_COSMETIC_RADIUS = 8.f;
 constexpr float PLAYER_TANK_MAX_SPEED_TILES_PER_SECOND = 10.f;
 constexpr float PLAYER_TANK_TURN_SPEED_DEGREES_PER_SECOND = 180.f;
 constexpr float PLAYER_TANK_TURRET_TURN_SPEED_DEGREES_PER_SECOND = 360.f;
+constexpr float PLAYER_TANK_FIRE_COOLDOWN_SECONDS = 0.2f;
+
+constexpr float BULLET_WIDTH = 1.5f;
+constexpr float BULLET_LENGTH = 3.f;
+constexpr float BULLET_PHYSICS_RADIUS = 1.f;
+constexpr float BULLET_COSMETIC_RADIUS = 2.f;
+constexpr float BULLET_SPEED_TILES_PER_SECOND = 80.f;
 
 void DebugDrawRing( Vec2 center, float radius, float thickness, const Rgba8& color );
 void DebugDrawLine( Vec2 start, Vec2 end, float thickness, const Rgba8& startColor, const Rgba8& endColor );

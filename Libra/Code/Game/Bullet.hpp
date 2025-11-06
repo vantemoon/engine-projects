@@ -1,0 +1,19 @@
+#pragma once
+#include "Entity.hpp"
+
+
+//-----------------------------------------------------------------------------------------------
+class Bullet : public Entity
+{
+public:
+	Bullet( Vec2 startingPosition, float orientationDegrees, EntityType type );
+	~Bullet() override;
+
+	void Update( float deltaSeconds )							override;
+	void Render()									      const override;
+	void TakeDamage( int damage )								override;
+	void Die()													override;
+
+protected:
+	void InitializeVertexArray()								override;
+};

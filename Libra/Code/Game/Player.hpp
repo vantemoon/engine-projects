@@ -22,6 +22,8 @@ public:
 	std::vector<Vertex>  m_tankBodyVertexArray;
 	std::vector<Vertex>  m_turretVertexArray;
 
+	float 				 m_timeSinceLastFire = 0.f;
+
 public:
 	Player( Vec2 startingPosition, float orientationDegrees );
 	~Player();
@@ -38,4 +40,5 @@ protected:
 	void InitializeVertexArray()								override;
 	void TurnTowardMovementDirection( float deltaSeconds );
 	void TurnTurretTowardAimDirection( float deltaSeconds );
+	void FireProjectile();
 };
