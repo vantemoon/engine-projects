@@ -51,7 +51,7 @@ public:
 	bool			IsTileCoordsInBounds( IntVec2 tileCoords )		const;
 	IntVec2			GetTileCoordsForWorldPosition( Vec2 worldPos )	const;
 
-	bool			IsPointInSolid( Vec2 const& point )				const;
+	bool			IsPointInSolidTile( Vec2 const& point )				const;
 	bool			IsTileSolid( Tile tile )						const;
 
 	RaycastResult2D RaycastVsTiles( Vec2 const& startPos, Vec2 const& fwdNormal, float maxDist, float stepSize ) const;

@@ -61,7 +61,7 @@ void Bullet::Update( float deltaSeconds )
 void Bullet::UpdatePhysics( float deltaSeconds )
 {
 	Vec2 nextPosition = m_position + m_velocity * deltaSeconds;
-	if ( g_game->m_currentMap->IsPointInSolid( nextPosition ) )
+	if ( g_game->m_currentMap->IsPointInSolidTile( nextPosition ) )
 	{
 		TakeDamage( 1 );
 		IntVec2 currentTileCoords = g_game->m_currentMap->GetTileCoordsForWorldPosition( m_position );

@@ -33,6 +33,7 @@
     <ClCompile Include="Map.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="Tile.cpp" />
+    <ClCompile Include="TileDefinition.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.hpp" />
@@ -44,6 +45,7 @@
     <ClInclude Include="Map.hpp" />
     <ClInclude Include="Player.hpp" />
     <ClInclude Include="Tile.hpp" />
+    <ClInclude Include="TileDefinition.hpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

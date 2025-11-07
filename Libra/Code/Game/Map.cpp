@@ -2,6 +2,7 @@
 #include "Game/Bullet.hpp"
 #include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
+#include "Game//TileDefinition.hpp"
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/Vertex.hpp"
 #include "Engine/Core/VertexUtils.hpp"
@@ -363,28 +364,22 @@ void Map::UpdateWorldCameraView() const
 
 
 //-----------------------------------------------------------------------------------------------
-bool Map::IsPointInSolid( Vec2 const& point ) const
+bool Map::IsPointInSolidTile( Vec2 const& point ) const
 {
 	IntVec2 tileCoords = GetTileCoordsForWorldPosition( point );
-	Tile* tile = GetTile( tileCoords );
-	if ( tile == nullptr )
+	if ( !IsTileCoordsInBounds( tileCoords ) )
 	{
-		return false;
+		return true;
 	}
-	const TileDefinition& tileDef = TileDefinition::s_definitions[tile->m_type];
-	return tileDef.m_isSolid;
+	Tile* tile = GetTile( tileCoords );
+	return IsTileSolid( *tile );
 }
 
 
 //-----------------------------------------------------------------------------------------------
 bool Map::IsTileSolid( Tile tile ) const
 {
-	int typeIndex = static_cast< int >( tile.m_type );
-	if ( typeIndex < 0 || typeIndex >= static_cast< int >( TileDefinition::s_definitions.size() ) ) {
-		return false;
-	}
-	const TileDefinition& tileDef = TileDefinition::s_definitions[typeIndex];
-	return tileDef.m_isSolid;
+	return tile.IsSolid();
 }
 
 
