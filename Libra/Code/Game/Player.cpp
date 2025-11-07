@@ -31,6 +31,8 @@ Player::Player( Vec2 startingPosition, float orientationDegrees )
 	m_doesPushEntities = true;
 	m_isHitByBullets = true;
 
+	m_health = 10;
+
 	InitializeVertexArray();
 }
 

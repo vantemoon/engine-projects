@@ -10,10 +10,12 @@ public:
 	~Bullet() override;
 
 	void Update( float deltaSeconds )							override;
+	void UpdatePhysics( float deltaSeconds );
 	void Render()									      const override;
 	void TakeDamage( int damage )								override;
 	void Die()													override;
 
 protected:
 	void InitializeVertexArray()								override;
+	void CheckForCollisions();
 };

@@ -1,4 +1,5 @@
 #include "Engine/Math/Vec2.hpp"
+#include "Engine/Math/IntVec2.hpp"
 #include "Engine/Math/MathUtils.hpp"
 #include <math.h>
 
@@ -35,6 +36,13 @@ Vec2 const Vec2::MakeFromPolarRadians( float orientationRadians, float length )
 	float degrees = ConvertRadiansToDegrees( orientationRadians );
 	Vec2 result = MakeFromPolarDegrees( degrees, length );
 	return result;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+Vec2 const Vec2::MakeFromIntVec2( struct IntVec2 const& intVec2 )
+{
+	return Vec2( static_cast<float>( intVec2.x ), static_cast<float>( intVec2.y ) );
 }
 
 

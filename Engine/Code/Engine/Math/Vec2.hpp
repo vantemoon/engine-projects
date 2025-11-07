@@ -18,6 +18,7 @@ public:
 	// Static methods (e.g. creation functions)
 	static Vec2 const MakeFromPolarDegrees( float orientationDegrees, float length = 1.f );
 	static Vec2 const MakeFromPolarRadians( float orientationRadians, float length = 1.f );
+	static Vec2 const MakeFromIntVec2( struct IntVec2 const& intVec2 );
 
 	// Accessors (const methods)
 	float		GetLength()													const;

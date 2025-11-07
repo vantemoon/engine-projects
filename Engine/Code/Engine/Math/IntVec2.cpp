@@ -105,3 +105,10 @@ IntVec2 IntVec2::operator+( const IntVec2& vecToAdd ) const
 {
 	return IntVec2( x + vecToAdd.x, y + vecToAdd.y );
 }
+
+
+//-----------------------------------------------------------------------------------------------
+IntVec2 IntVec2::operator-( const IntVec2& vecToSubtract ) const
+{
+	return IntVec2( x - vecToSubtract.x, y - vecToSubtract.y );
+}

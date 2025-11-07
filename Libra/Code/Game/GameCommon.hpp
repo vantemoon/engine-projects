@@ -46,9 +46,9 @@ constexpr float PLAYER_TANK_FIRE_COOLDOWN_SECONDS = 0.2f;
 
 constexpr float BULLET_WIDTH = 1.5f;
 constexpr float BULLET_LENGTH = 3.f;
-constexpr float BULLET_PHYSICS_RADIUS = 1.f;
-constexpr float BULLET_COSMETIC_RADIUS = 2.f;
-constexpr float BULLET_SPEED_TILES_PER_SECOND = 80.f;
+constexpr float BULLET_PHYSICS_RADIUS = 2.f;
+constexpr float BULLET_COSMETIC_RADIUS = 3.f;
+constexpr float GOOD_BOLT_SPEED_TILES_PER_SECOND = 80.f;
 
 void DebugDrawRing( Vec2 center, float radius, float thickness, const Rgba8& color );
 void DebugDrawLine( Vec2 start, Vec2 end, float thickness, const Rgba8& startColor, const Rgba8& endColor );
