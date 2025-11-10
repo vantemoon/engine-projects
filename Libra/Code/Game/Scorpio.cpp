@@ -41,10 +41,9 @@ void Scorpio::Update( float deltaSeconds )
 		return;
 	}
 
-	// Check if can see player tank and set target orientation
-	bool canSeePlayer = g_game->m_currentMap->HasLineOfSight( m_position, g_game->m_player->m_position, 0.1f );
 	float distanceToPlayer = ( g_game->m_player->m_position - m_position ).GetLength();
-	if ( canSeePlayer && distanceToPlayer <= SCORPIO_MAX_RANGE )
+	bool hasLineOfSightToPlayer = g_game->m_currentMap->HasLineOfSight( m_position, g_game->m_player->m_position, 0.1f );
+	if ( distanceToPlayer <= VISIBLE_RANGE_RADIUS && hasLineOfSightToPlayer )
 	{
 		Vec2 toPlayer = g_game->m_player->m_position - m_position;
 		m_targetOrientationDegrees = toPlayer.GetOrientationDegrees();

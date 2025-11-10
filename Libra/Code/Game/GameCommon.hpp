@@ -37,6 +37,8 @@ constexpr float INNER_STONE_TILE_PROBABILITY = 0.1f;
 const     Rgba8 GRASS_COLOR = Rgba8( 0, 100, 0 );
 const     Rgba8 STONE_COLOR = Rgba8( 128, 128, 128 );
 
+constexpr float VISIBLE_RANGE_RADIUS = 10.f * TILE_SIZE;
+
 constexpr float PLAYER_TANK_PHYSICS_RADIUS = 4.f;
 constexpr float PLAYER_TANK_COSMETIC_RADIUS = 6.f;
 constexpr float PLAYER_TANK_MOVE_SPEED_TILES_PER_SECOND = 10.f;
@@ -50,7 +52,7 @@ constexpr float SCORPIO_COSMETIC_RADIUS = 6.f;
 constexpr float SCORPIO_TURN_SPEED_DEGREES_PER_SECOND = 60.f;
 constexpr float SCORPIO_FIRE_COOLDOWN_SECONDS = 0.3f;
 constexpr int   SCORPIO_HEALTH = 10;
-constexpr float SCORPIO_MAX_RANGE = 100.f;
+constexpr float SCORPIO_MAX_RANGE = VISIBLE_RANGE_RADIUS;
 
 constexpr float LEO_PHYSICS_RADIUS = 4.f;
 constexpr float LEO_COSMETIC_RADIUS = 6.f;

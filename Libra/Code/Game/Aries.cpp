@@ -37,8 +37,9 @@ Aries::~Aries() = default;
 //-----------------------------------------------------------------------------------------------
 void Aries::Update( float deltaSeconds )
 {
-	bool canSeePlayer = g_game->m_currentMap->HasLineOfSight( m_position, g_game->m_player->m_position, 0.1f );
-	if ( canSeePlayer )
+	float distanceToPlayer = ( g_game->m_player->m_position - m_position ).GetLength();
+	bool hasLineOfSightToPlayer = g_game->m_currentMap->HasLineOfSight( m_position, g_game->m_player->m_position, 0.1f );
+	if ( distanceToPlayer <= VISIBLE_RANGE_RADIUS && hasLineOfSightToPlayer )
 	{
 		m_targetPosition = g_game->m_player->m_position;
 	}
