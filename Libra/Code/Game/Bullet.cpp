@@ -13,29 +13,46 @@ Bullet::Bullet( Vec2 startingPosition, float orientationDegrees, EntityType type
 {
 	m_type = type;
 
-	m_physicsRadius = BULLET_PHYSICS_RADIUS;
-	m_cosmeticRadius = BULLET_COSMETIC_RADIUS;
-
 	switch ( m_type )
 	{
 		case ENTITY_TYPE_GOOD_BULLET:
 			m_faction = ENTITY_FACTION_GOOD;
+			// m_health = GOOD_BULLET_HEALTH;
+			// m_velocity = GOOD_BULLET_SPEED_TILES_PER_SECOND * GetForwardNormal();
+			m_physicsRadius = BULLET_PHYSICS_RADIUS;
+			m_cosmeticRadius = BULLET_COSMETIC_RADIUS;
+			m_isBullet = true;
+			m_isBolt = false;
 			break;
 
 		case ENTITY_TYPE_GOOD_BOLT:
 			m_faction = ENTITY_FACTION_GOOD;
 			m_health = GOOD_BOLT_HEALTH;
 			m_velocity = GOOD_BOLT_SPEED_TILES_PER_SECOND * GetForwardNormal();
+			m_physicsRadius = BOLT_PHYSICS_RADIUS;
+			m_cosmeticRadius = BOLT_COSMETIC_RADIUS;
+			m_isBullet = false;
+			m_isBolt = true;
 			break;
 
 		case ENTITY_TYPE_EVIL_BULLET:
 			m_faction = ENTITY_FACTION_EVIL;
+			m_health = EVIL_BULLET_HEALTH;
+			m_velocity = EVIL_BULLET_SPEED_TILES_PER_SECOND * GetForwardNormal();
+			m_physicsRadius = BULLET_PHYSICS_RADIUS;
+			m_cosmeticRadius = BULLET_COSMETIC_RADIUS;
+			m_isBullet = true;
+			m_isBolt = false;
 			break;
 
 		case ENTITY_TYPE_EVIL_BOLT:
 			m_faction = ENTITY_FACTION_EVIL;
 			m_health = EVIL_BOLT_HEALTH;
 			m_velocity = EVIL_BOLT_SPEED_TILES_PER_SECOND * GetForwardNormal();
+			m_physicsRadius = BOLT_PHYSICS_RADIUS;
+			m_cosmeticRadius = BOLT_COSMETIC_RADIUS;
+			m_isBullet = false;
+			m_isBolt = true;
 			break;
 
 		default:
@@ -139,10 +156,20 @@ void Bullet::Die()
 //-----------------------------------------------------------------------------------------------
 void Bullet::InitializeVertexArray()
 {
-	float halfWidth = BULLET_LENGTH * 0.5f;
-	float halfHeight = BULLET_WIDTH * 0.5f;
-	AABB2 bulletAABB2 = AABB2( -halfWidth, -halfHeight, halfWidth, halfHeight );
-	AddVertsForAABB2D( m_vertexArray, bulletAABB2, Rgba8::WHITE );
+	if ( m_isBolt )
+	{
+		float halfWidth = BOLT_LENGTH * 0.5f;
+		float halfHeight = BOLT_WIDTH * 0.5f;
+		AABB2 bulletAABB2 = AABB2( -halfWidth, -halfHeight, halfWidth, halfHeight );
+		AddVertsForAABB2D( m_vertexArray, bulletAABB2, Rgba8::WHITE );
+	}
+	else if ( m_isBullet )
+	{
+		float halfWidth = BULLET_LENGTH * 0.5f;
+		float halfHeight = BULLET_WIDTH * 0.5f;
+		AABB2 bulletAABB2 = AABB2( -halfWidth, -halfHeight, halfWidth, halfHeight );
+		AddVertsForAABB2D( m_vertexArray, bulletAABB2, Rgba8::WHITE );
+	}
 }
 
 

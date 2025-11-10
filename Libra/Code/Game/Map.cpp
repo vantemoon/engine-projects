@@ -2,6 +2,7 @@
 #include "Game/Bullet.hpp"
 #include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
+#include "Game/Leo.hpp"
 #include "Game/Player.hpp"
 #include "Game/Scorpio.hpp"
 #include "Game/TileDefinition.hpp"
@@ -32,6 +33,12 @@ Map::Map( IntVec2 dimensions )
 	Vec2 scorpioStartPos = GetWorldPositionForTileCoords( scorpioStartTileCoords );
 	Scorpio* scorpio = static_cast<Scorpio*>( SpawnNewEntity( ENTITY_TYPE_EVIL_SCORPIO, scorpioStartPos, 0.f ) );
 	AddEntityToMap( *scorpio, ENTITY_TYPE_EVIL_SCORPIO );
+
+	// Spawn Leo
+	IntVec2 leoStartTileCoords = IntVec2( 6, 3 );
+	Vec2 leoStartPos = GetWorldPositionForTileCoords( leoStartTileCoords );
+	Leo* leo = static_cast<Leo*>( SpawnNewEntity( ENTITY_TYPE_EVIL_LEO, leoStartPos, 90.f ) );
+	AddEntityToMap( *leo, ENTITY_TYPE_EVIL_LEO );
 }
 
 
@@ -467,7 +474,7 @@ Entity* Map::SpawnNewEntity( EntityType type, Vec2 const& position, float orient
 	}
 	else if ( type == ENTITY_TYPE_EVIL_LEO )
 	{
-		// newEntity = new Leo( position, orientationDegrees );
+		newEntity = new Leo( position, orientationDegrees );
 	}
 	else if ( type == ENTITY_TYPE_EVIL_ARIES )
 	{
@@ -483,7 +490,7 @@ Entity* Map::SpawnNewEntity( EntityType type, Vec2 const& position, float orient
 	}
 	else if ( type == ENTITY_TYPE_EVIL_BULLET )
 	{
-		// newEntity = new EvilBullet( position, orientationDegrees );
+		newEntity = new Bullet( position, orientationDegrees, ENTITY_TYPE_EVIL_BULLET );
 	}
 	else if ( type == ENTITY_TYPE_EVIL_BOLT )
 	{

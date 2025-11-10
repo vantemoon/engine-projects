@@ -61,7 +61,7 @@ void Player::Update( float deltaSeconds )
 
 	TurnTurretTowardAimDirection( deltaSeconds );
 
-	m_velocity = m_thrustFraction * PLAYER_TANK_MAX_SPEED_TILES_PER_SECOND * GetForwardNormal();
+	m_velocity = m_thrustFraction * PLAYER_TANK_MOVE_SPEED_TILES_PER_SECOND * GetForwardNormal();
 	Entity::Update( deltaSeconds );
 
 	if ( !m_noClip )

@@ -6,7 +6,9 @@
 class Bullet : public Entity
 {
 public:
-	EntityType m_type;
+	EntityType	m_type;
+	bool		m_isBullet = true;
+	bool		m_isBolt = false;
 
 public:
 	Bullet( Vec2 startingPosition, float orientationDegrees, EntityType type );

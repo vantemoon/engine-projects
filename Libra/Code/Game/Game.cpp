@@ -512,7 +512,9 @@ void Game::KillAllEnemies()
 //-----------------------------------------------------------------------------------------------
 void Game::Reset()
 {
-	// #ToDo: Delete all entities and reset game state
+	// Reset current map
+	delete m_currentMap;
+	m_currentMap = new Map( IntVec2( 32, 64 ) );
 	m_isScreenShaking = false;
 	m_isDebugOn = false;
 }

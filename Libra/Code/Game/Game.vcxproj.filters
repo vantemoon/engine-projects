@@ -43,6 +43,9 @@
     <ClCompile Include="Scorpio.cpp">
       <Filter>Gameplay</Filter>
     </ClCompile>
+    <ClCompile Include="Leo.cpp">
+      <Filter>Gameplay</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.hpp">
@@ -76,6 +79,9 @@
       <Filter>Gameplay</Filter>
     </ClInclude>
     <ClInclude Include="Scorpio.hpp">
+      <Filter>Gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="Leo.hpp">
       <Filter>Gameplay</Filter>
     </ClInclude>
   </ItemGroup>
