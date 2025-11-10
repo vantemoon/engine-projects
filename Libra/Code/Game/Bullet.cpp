@@ -19,8 +19,8 @@ Bullet::Bullet( Vec2 startingPosition, float orientationDegrees, EntityType type
 	{
 		case ENTITY_TYPE_GOOD_BULLET:
 			m_faction = ENTITY_FACTION_GOOD;
-			// m_health = GOOD_BULLET_HEALTH;
-			// m_velocity = GOOD_BULLET_SPEED_TILES_PER_SECOND * GetForwardNormal();
+			m_health = GOOD_BULLET_HEALTH;
+			m_velocity = GOOD_BULLET_SPEED_TILES_PER_SECOND * GetForwardNormal();
 			m_physicsRadius = BULLET_PHYSICS_RADIUS;
 			m_cosmeticRadius = BULLET_COSMETIC_RADIUS;
 			m_isBullet = true;

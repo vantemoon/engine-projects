@@ -59,14 +59,14 @@ constexpr float LEO_COSMETIC_RADIUS = 6.f;
 constexpr float LEO_MOVE_SPEED_TILES_PER_SECOND = 6.f;
 constexpr float LEO_TURN_SPEED_DEGREES_PER_SECOND = 60.f;
 constexpr float LEO_FIRE_COOLDOWN_SECONDS = 1.2f;
-constexpr float LEO_TURN_COOLDOWN_SECONDS = 2.f;
+constexpr float LEO_TURN_COOLDOWN_SECONDS = 1.5f;
 constexpr int   LEO_HEALTH = 10;
 
 constexpr float ARIES_PHYSICS_RADIUS = 4.f;
 constexpr float ARIES_COSMETIC_RADIUS = 6.f;
 constexpr float ARIES_MOVE_SPEED_TILES_PER_SECOND = 6.f;
 constexpr float ARIES_TURN_SPEED_DEGREES_PER_SECOND = 60.f;
-constexpr float ARIES_TURN_COOLDOWN_SECONDS = 2.f;
+constexpr float ARIES_TURN_COOLDOWN_SECONDS = 1.5f;
 constexpr int   ARIES_HEALTH = 10;
 
 constexpr float BULLET_WIDTH = 1.f;
@@ -77,6 +77,8 @@ constexpr float BOLT_WIDTH = 1.5f;
 constexpr float BOLT_LENGTH = 3.f;
 constexpr float BOLT_PHYSICS_RADIUS = 1.f;
 constexpr float BOLT_COSMETIC_RADIUS = 3.f;
+constexpr float GOOD_BULLET_SPEED_TILES_PER_SECOND = 80.f;
+constexpr int   GOOD_BULLET_HEALTH = 3;
 constexpr float GOOD_BOLT_SPEED_TILES_PER_SECOND = 80.f;
 constexpr int   GOOD_BOLT_HEALTH = 3;
 constexpr float EVIL_BULLET_SPEED_TILES_PER_SECOND = 60.f;

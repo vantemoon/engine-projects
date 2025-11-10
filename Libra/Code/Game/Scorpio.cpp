@@ -43,7 +43,7 @@ void Scorpio::Update( float deltaSeconds )
 
 	float distanceToPlayer = ( g_game->m_player->m_position - m_position ).GetLength();
 	bool hasLineOfSightToPlayer = g_game->m_currentMap->HasLineOfSight( m_position, g_game->m_player->m_position, 0.1f );
-	if ( distanceToPlayer <= VISIBLE_RANGE_RADIUS && hasLineOfSightToPlayer )
+	if ( g_game->m_player->IsAlive() && distanceToPlayer <= VISIBLE_RANGE_RADIUS && hasLineOfSightToPlayer )
 	{
 		Vec2 toPlayer = g_game->m_player->m_position - m_position;
 		m_targetOrientationDegrees = toPlayer.GetOrientationDegrees();

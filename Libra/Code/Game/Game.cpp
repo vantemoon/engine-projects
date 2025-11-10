@@ -377,7 +377,16 @@ void Game::Render() const
 		m_currentMap->UpdateWorldCameraView();
 	}
 
-	Camera* cameraToUse = m_isDebugCameraActive ? m_debugCamera : m_worldCamera;
+	Camera* cameraToUse;
+	if ( m_isDebugCameraActive )
+	{
+		cameraToUse = m_debugCamera;
+	}
+	else
+	{
+		cameraToUse = m_worldCamera;
+	}
+
 	g_engine->m_renderer->BeginCamera( *cameraToUse );
 
 	m_currentMap->Render();

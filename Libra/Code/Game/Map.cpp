@@ -369,7 +369,7 @@ void Map::UpdateWorldCameraView() const
 	float mapHeight = static_cast< float >( m_dimensions.y ) * TILE_SIZE;
 
 	Vec2 cameraCenter = Vec2( mapWidth * 0.5f, mapHeight * 0.5f );
-	if ( g_game->m_player && g_game->m_player->IsAlive() ) {
+	if ( g_game->m_player ) {
 		cameraCenter = g_game->m_player->m_position;
 	}
 

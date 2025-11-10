@@ -37,11 +37,17 @@ Aries::~Aries() = default;
 //-----------------------------------------------------------------------------------------------
 void Aries::Update( float deltaSeconds )
 {
+	bool playerIsAlive = g_game->m_player->IsAlive();
 	float distanceToPlayer = ( g_game->m_player->m_position - m_position ).GetLength();
 	bool hasLineOfSightToPlayer = g_game->m_currentMap->HasLineOfSight( m_position, g_game->m_player->m_position, 0.1f );
-	if ( distanceToPlayer <= VISIBLE_RANGE_RADIUS && hasLineOfSightToPlayer )
+
+	if ( playerIsAlive && distanceToPlayer <= VISIBLE_RANGE_RADIUS && hasLineOfSightToPlayer )
 	{
 		m_targetPosition = g_game->m_player->m_position;
+	}
+	else if ( !playerIsAlive )
+	{
+		m_targetPosition = Vec2::ZERO;
 	}
 
 	float distanceToTarget = ( m_targetPosition - m_position ).GetLength();
@@ -58,10 +64,29 @@ void Aries::Update( float deltaSeconds )
 	{
 		RandomNumberGenerator rng;
 		m_timeSinceLastTurn += deltaSeconds;
-		if ( m_timeSinceLastTurn >= ARIES_TURN_COOLDOWN_SECONDS )
+		bool needNewTarget = false;
+
+		// Check if current random target is unreachable or reached
+		if ( m_targetPosition == Vec2::ZERO ||
+			!g_game->m_currentMap->HasLineOfSight( m_position, m_targetPosition, 0.1f ) ||
+			( m_targetPosition - m_position ).GetLength() <= m_physicsRadius )
 		{
-			float randomAngle = rng.RollRandomFloatInRange( 0.f, 360.f );
-			m_targetPosition = m_position + Vec2::MakeFromPolarDegrees( randomAngle, 20.f );
+			needNewTarget = true;
+		}
+
+		if ( m_timeSinceLastTurn >= ARIES_TURN_COOLDOWN_SECONDS || needNewTarget )
+		{
+			// Try to find a reachable random target
+			for ( int attempts = 0; attempts < 5; ++attempts )
+			{
+				float randomAngle = rng.RollRandomFloatInRange( 0.f, 360.f );
+				Vec2 candidate = m_position + Vec2::MakeFromPolarDegrees( randomAngle, 20.f );
+				if ( g_game->m_currentMap->HasLineOfSight( m_position, candidate, 0.1f ) )
+				{
+					m_targetPosition = candidate;
+					break;
+				}
+			}
 			m_timeSinceLastTurn = 0.f;
 		}
 		MoveTowardTargetPosition( deltaSeconds );

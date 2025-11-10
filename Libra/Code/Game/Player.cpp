@@ -260,9 +260,7 @@ void Player::TakeDamage( int damage )
 //-----------------------------------------------------------------------------------------------
 void Player::Die()
 {
-	// #ToDo: Handle player death (lives, respawn, game over, etc.)
-
-	Entity::Die();
+	m_isDead = true;
 }
 
 
