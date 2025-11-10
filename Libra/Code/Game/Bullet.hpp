@@ -22,5 +22,6 @@ public:
 
 protected:
 	void InitializeVertexArray()								override;
-	void CheckForCollisions();
+	void ResolveCollision();
+	EntityFaction GetOppositeFaction() const;
 };

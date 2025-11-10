@@ -5,6 +5,7 @@
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/VertexUtils.hpp"
 #include "Engine/Math/AABB2.hpp"
+#include "Engine/Math/MathUtils.hpp"
 #include "Engine/Renderer/Texture.hpp"
 
 
@@ -78,13 +79,43 @@ Bullet::~Bullet() = default;
 void Bullet::Update( float deltaSeconds )
 {
 	UpdatePhysics( deltaSeconds );
-	CheckForCollisions();
+	ResolveCollision();
 }
 
 
 //-----------------------------------------------------------------------------------------------
 void Bullet::UpdatePhysics( float deltaSeconds )
 {
+	// If current position is in solid tile, push out and reflect
+	if ( g_game->m_currentMap->IsPointInSolidTile( m_position ) )
+	{
+		// Push out
+		Vec2 bulletCenter = m_position;
+		float bulletRadius = m_physicsRadius;
+		AABB2 tileBounds = g_game->m_currentMap->GetTileBounds( g_game->m_currentMap->GetTileCoordsForWorldPosition( m_position ) );
+		if ( PushDiscOutOfFixedAABB2D( bulletCenter, bulletRadius, tileBounds ) ) {
+			Vec2 tileCenter = tileBounds.GetCenter();
+			Vec2 toTileCenter = bulletCenter - tileCenter;
+			Vec2 normal;
+
+			bool hitFromSide = fabsf( toTileCenter.x ) > fabsf( toTileCenter.y );
+			if ( hitFromSide )
+			{
+				if ( toTileCenter.x > 0.f ) normal = Vec2( 1.f, 0.f );
+				else normal = Vec2( -1.f, 0.f );
+			}
+			else
+			{
+				if ( toTileCenter.y > 0.f ) normal = Vec2( 0.f, 1.f );
+				else normal = Vec2( 0.f, -1.f );
+			}
+
+			m_velocity.Reflect( normal );
+			m_orientationDegrees = m_velocity.GetOrientationDegrees();
+			m_position = bulletCenter;
+		}
+	}
+
 	Vec2 nextPosition = m_position + m_velocity * deltaSeconds;
 	if ( g_game->m_currentMap->IsPointInSolidTile( nextPosition ) )
 	{
@@ -175,38 +206,57 @@ void Bullet::InitializeVertexArray()
 
 
 //-----------------------------------------------------------------------------------------------
-void Bullet::CheckForCollisions()
+void Bullet::ResolveCollision()
 {
 	// If overlapping with an entity of different faction, deal damage and die
-	for ( Entity* otherEntity : g_game->m_currentMap->m_allEntities )
+	EntityFaction oppositeFaction = GetOppositeFaction();
+	for ( Entity* otherEntity : g_game->m_currentMap->m_entityListsByFaction[oppositeFaction] )
 	{
-		if ( otherEntity == this )
+		if ( otherEntity->m_isDead || !otherEntity->m_isHitByBullets )
 		{
 			continue;
 		}
 		
-		if ( otherEntity->m_faction != m_faction && !otherEntity->m_isDead )
+		float distanceSquared = ( otherEntity->m_position - m_position ).GetLengthSquared();
+		float combinedRadii = otherEntity->m_physicsRadius + m_physicsRadius;
+		if ( distanceSquared <= ( combinedRadii * combinedRadii ) )
 		{
-			float distSquared = ( otherEntity->m_position - m_position ).GetLengthSquared();
-			float combinedRadii = otherEntity->m_physicsRadius + m_physicsRadius;
-			if ( distSquared <= ( combinedRadii * combinedRadii ) )
+			Aries* aries = dynamic_cast<Aries*>( otherEntity );
+			if ( aries != nullptr )
 			{
-				Aries* aries = dynamic_cast<Aries*>(otherEntity);
-				if (aries != nullptr)
-				{
-					Vec2 oldVelocity = m_velocity;
-					aries->ReflectBullet( *this );
-					if (m_velocity != oldVelocity)
-					{
-						TakeDamage( 1 );
-						return;
-					}
-				}
+      				Vec2 oldVelocity = m_velocity;
+				aries->ReflectBullet( *this );
 
-				otherEntity->TakeDamage( 1 );
-				Die();
-				return;
+				// Bullet was reflected
+				if ( m_velocity != oldVelocity )
+				{
+					TakeDamage( 1 );
+					return; 
+				}
 			}
+
+			// Bullet was not reflected, deal damage and die
+			otherEntity->TakeDamage( 1 );
+			Die();
+			return;
 		}
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+EntityFaction Bullet::GetOppositeFaction() const
+{
+	if ( m_faction == ENTITY_FACTION_GOOD )
+	{
+		return ENTITY_FACTION_EVIL;
+	}
+	if ( m_faction == ENTITY_FACTION_EVIL )
+	{
+		return ENTITY_FACTION_GOOD;
+	}
+	else
+	{
+		return ENTITY_FACTION_NEUTRAL;
 	}
 }

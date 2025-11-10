@@ -348,5 +348,5 @@ void Player::FireProjectile()
 	Vec2 projectileSpawnPosition = m_position + muzzleOffset;
 	Entity* newBullet = g_game->m_currentMap->SpawnNewEntity( ENTITY_TYPE_GOOD_BOLT, projectileSpawnPosition, m_turretOrientationDegrees );
 	if ( newBullet != nullptr )
-		g_game->m_currentMap->AddEntityToMap( *newBullet, ENTITY_TYPE_GOOD_BOLT );
+		g_game->m_currentMap->AddEntityToMap( *newBullet, ENTITY_TYPE_GOOD_BOLT, ENTITY_FACTION_GOOD );
 }

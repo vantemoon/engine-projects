@@ -27,25 +27,25 @@ Map::Map( IntVec2 dimensions )
 	Vec2 playerStartPos = GetWorldPositionForTileCoords( playerStartTileCoords );
 	Player* player = static_cast<Player*>( SpawnNewEntity( ENTITY_TYPE_GOOD_PLAYER, playerStartPos, 45.f ) );
 	g_game->m_player = player;
-	AddEntityToMap( *g_game->m_player, ENTITY_TYPE_GOOD_PLAYER );
+	AddEntityToMap( *g_game->m_player, ENTITY_TYPE_GOOD_PLAYER, ENTITY_FACTION_GOOD );
 
 	// Spawn Scorpio
 	IntVec2 scorpioStartTileCoords = IntVec2( 4, 1 );
 	Vec2 scorpioStartPos = GetWorldPositionForTileCoords( scorpioStartTileCoords );
 	Scorpio* scorpio = static_cast<Scorpio*>( SpawnNewEntity( ENTITY_TYPE_EVIL_SCORPIO, scorpioStartPos, 0.f ) );
-	AddEntityToMap( *scorpio, ENTITY_TYPE_EVIL_SCORPIO );
+	AddEntityToMap( *scorpio, ENTITY_TYPE_EVIL_SCORPIO, ENTITY_FACTION_EVIL );
 
 	// Spawn Leo
 	IntVec2 leoStartTileCoords = IntVec2( 6, 3 );
 	Vec2 leoStartPos = GetWorldPositionForTileCoords( leoStartTileCoords );
 	Leo* leo = static_cast<Leo*>( SpawnNewEntity( ENTITY_TYPE_EVIL_LEO, leoStartPos, 90.f ) );
-	AddEntityToMap( *leo, ENTITY_TYPE_EVIL_LEO );
+	AddEntityToMap( *leo, ENTITY_TYPE_EVIL_LEO, ENTITY_FACTION_EVIL );
 
 	// Spawn Aries
 	IntVec2 ariesStartTileCoords = IntVec2( 8, 5 );
 	Vec2 ariesStartPos = GetWorldPositionForTileCoords( ariesStartTileCoords );
 	Aries* aries = static_cast< Aries* >( SpawnNewEntity( ENTITY_TYPE_EVIL_ARIES, ariesStartPos, 180.f ) );
-	AddEntityToMap( *aries, ENTITY_TYPE_EVIL_ARIES );
+	AddEntityToMap( *aries, ENTITY_TYPE_EVIL_ARIES, ENTITY_FACTION_EVIL );
 }
 
 
@@ -76,8 +76,8 @@ void Map::UpdateEntities( float deltaSeconds )
 		}
 	}
 
-	DoEntityVsEntityCollision();
-	DoEntityVsTileCollision();
+	ResolveEntityVsEntityCollision();
+	ResolveEntityVsTileCollision();
 }
 
 //-----------------------------------------------------------------------------------------------
@@ -515,15 +515,16 @@ Entity* Map::SpawnNewEntity( EntityType type, Vec2 const& position, float orient
 
 
 //-----------------------------------------------------------------------------------------------
-void Map::AddEntityToMap( Entity& entity, EntityType type )
+void Map::AddEntityToMap( Entity& entity, EntityType type, EntityFaction faction )
 {
 	m_allEntities.push_back( &entity );
 	m_entityListsByType[type].push_back( &entity );
+	m_entityListsByFaction[faction].push_back( &entity );
 }
 
 
 //-----------------------------------------------------------------------------------------------
-void Map::RemoveEntityFromMap( Entity& entity, EntityType type )
+void Map::RemoveEntityFromMap( Entity& entity, EntityType type, EntityFaction faction )
 {
 	// Remove from all entities list
 	for ( int entityIndex = 0; entityIndex < static_cast<int>( m_allEntities.size() ); ++ entityIndex )
@@ -545,11 +546,22 @@ void Map::RemoveEntityFromMap( Entity& entity, EntityType type )
 			break;
 		}
 	}
+
+	// Remove from faction-specific entity list
+	EntityList& factionList = m_entityListsByFaction[faction];
+	for ( int entityIndex = 0; entityIndex < static_cast<int>( factionList.size() ); ++ entityIndex )
+	{
+		if ( factionList[entityIndex] == &entity )
+		{
+			factionList.erase( factionList.begin() + entityIndex );
+			break;
+		}
+	}
 }
 
 
 //-----------------------------------------------------------------------------------------------
-void Map::DoEntityVsEntityCollision()
+void Map::ResolveEntityVsEntityCollision()
 {
 	for ( int i = 0; i < static_cast<int>( m_allEntities.size() ); ++ i )
 	{
@@ -612,7 +624,7 @@ void Map::DoEntityVsEntityCollision()
 
 
 //-----------------------------------------------------------------------------------------------
-void Map::DoEntityVsTileCollision()
+void Map::ResolveEntityVsTileCollision()
 {
 	for ( int entityIndex = 0; entityIndex < static_cast<int>( m_allEntities.size() ); ++ entityIndex )
 	{

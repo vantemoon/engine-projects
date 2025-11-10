@@ -161,5 +161,5 @@ void Leo::FireProjectile()
 	Vec2 projectileSpawnPosition = m_position + muzzleOffset;
 	Entity* newBullet = g_game->m_currentMap->SpawnNewEntity( ENTITY_TYPE_EVIL_BULLET, projectileSpawnPosition, m_orientationDegrees );
 	if ( newBullet != nullptr )
-		g_game->m_currentMap->AddEntityToMap( *newBullet, ENTITY_TYPE_EVIL_BULLET );
+		g_game->m_currentMap->AddEntityToMap( *newBullet, ENTITY_TYPE_EVIL_BULLET, ENTITY_FACTION_EVIL );
 }
