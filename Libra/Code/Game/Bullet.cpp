@@ -1,4 +1,5 @@
 #include "Game/Bullet.hpp"
+#include "Game/Aries.hpp"
 #include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
 #include "Engine/Core/Engine.hpp"
@@ -190,6 +191,18 @@ void Bullet::CheckForCollisions()
 			float combinedRadii = otherEntity->m_physicsRadius + m_physicsRadius;
 			if ( distSquared <= ( combinedRadii * combinedRadii ) )
 			{
+				Aries* aries = dynamic_cast<Aries*>(otherEntity);
+				if (aries != nullptr)
+				{
+					Vec2 oldVelocity = m_velocity;
+					aries->ReflectBullet( *this );
+					if (m_velocity != oldVelocity)
+					{
+						TakeDamage( 1 );
+						return;
+					}
+				}
+
 				otherEntity->TakeDamage( 1 );
 				Die();
 				return;

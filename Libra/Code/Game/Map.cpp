@@ -1,4 +1,5 @@
 #include "Game/Map.hpp"
+#include "Game/Aries.hpp"
 #include "Game/Bullet.hpp"
 #include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
@@ -39,6 +40,12 @@ Map::Map( IntVec2 dimensions )
 	Vec2 leoStartPos = GetWorldPositionForTileCoords( leoStartTileCoords );
 	Leo* leo = static_cast<Leo*>( SpawnNewEntity( ENTITY_TYPE_EVIL_LEO, leoStartPos, 90.f ) );
 	AddEntityToMap( *leo, ENTITY_TYPE_EVIL_LEO );
+
+	// Spawn Aries
+	IntVec2 ariesStartTileCoords = IntVec2( 8, 5 );
+	Vec2 ariesStartPos = GetWorldPositionForTileCoords( ariesStartTileCoords );
+	Aries* aries = static_cast< Aries* >( SpawnNewEntity( ENTITY_TYPE_EVIL_ARIES, ariesStartPos, 180.f ) );
+	AddEntityToMap( *aries, ENTITY_TYPE_EVIL_ARIES );
 }
 
 
@@ -478,11 +485,11 @@ Entity* Map::SpawnNewEntity( EntityType type, Vec2 const& position, float orient
 	}
 	else if ( type == ENTITY_TYPE_EVIL_ARIES )
 	{
-		// newEntity = new Aries( position, orientationDegrees );
+		newEntity = new Aries( position, orientationDegrees );
 	}
 	else if ( type == ENTITY_TYPE_GOOD_BULLET )
 	{
-		// newEntity = new GoodBullet( position, orientationDegrees );
+		newEntity = new Bullet( position, orientationDegrees, ENTITY_TYPE_GOOD_BULLET );
 	}
 	else if ( type == ENTITY_TYPE_GOOD_BOLT )
 	{
