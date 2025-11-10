@@ -50,6 +50,7 @@ public:
 	AABB2			GetTileBounds( IntVec2 tileCoords )				const;
 	bool			IsTileCoordsInBounds( IntVec2 tileCoords )		const;
 	IntVec2			GetTileCoordsForWorldPosition( Vec2 worldPos )	const;
+	Vec2			GetWorldPositionForTileCoords( IntVec2 tileCoords )	const;
 
 	bool			IsPointInSolidTile( Vec2 const& point )				const;
 	bool			IsTileSolid( Tile tile )						const;

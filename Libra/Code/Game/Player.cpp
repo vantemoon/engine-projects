@@ -1,6 +1,8 @@
 #include "Game/Player.hpp"
+#include "Game/Bullet.hpp"
 #include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
+#include "Game/Map.hpp"
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/Rgba8.hpp"
 #include "Engine/Core/Vertex.hpp"
@@ -21,8 +23,8 @@ Player::Player( Vec2 startingPosition, float orientationDegrees )
 	m_prevOrientationDegrees = m_orientationDegrees;
 
 	m_turretOrientationDegrees = m_orientationDegrees;
-	m_turretTargetDegrees = m_orientationDegrees;
-	m_turretRelativeDegrees = 0.f;
+	m_turretTargetOrientationDegrees = m_orientationDegrees;
+	m_turretRelativeOrientationDegrees = 0.f;
 
 	m_faction = ENTITY_FACTION_GOOD;
 
@@ -31,7 +33,7 @@ Player::Player( Vec2 startingPosition, float orientationDegrees )
 	m_doesPushEntities = true;
 	m_isHitByBullets = true;
 
-	m_health = 10;
+	m_health = PLAYER_TANK_HEALTH;
 
 	InitializeVertexArray();
 }
@@ -53,8 +55,8 @@ void Player::Update( float deltaSeconds )
 	if ( !m_isTurretAiming )
 	{
 		float orientationDelta = m_orientationDegrees - m_prevOrientationDegrees;
-		m_turretTargetDegrees += orientationDelta;
-		m_turretOrientationDegrees = m_orientationDegrees + m_turretRelativeDegrees;
+		m_turretTargetOrientationDegrees += orientationDelta;
+		m_turretOrientationDegrees = m_orientationDegrees + m_turretRelativeOrientationDegrees;
 	}
 
 	TurnTurretTowardAimDirection( deltaSeconds );
@@ -213,7 +215,7 @@ void Player::UpdateFromKeyboard( [[maybe_unused]] float deltaSeconds )
 			numKeysPressed++;
 		}
 		float deltaOrientation = totalDeltaOrientation / ( float ) numKeysPressed;
-		m_turretTargetDegrees = deltaOrientation;
+		m_turretTargetOrientationDegrees = deltaOrientation;
 
 		m_isTurretAiming = true;
 	} 
@@ -254,7 +256,7 @@ void Player::UpdateFromController( [[maybe_unused]] float deltaSeconds )
 	float rightJoystickOrientationDegrees = controller.GetRightJoystick().GetOrientationDegrees();
 	if ( rightJoystickMagnitude > 0.f )
 	{
-		m_turretTargetDegrees = rightJoystickOrientationDegrees;
+		m_turretTargetOrientationDegrees = rightJoystickOrientationDegrees;
 		m_isTurretAiming = true;
 	}
 
@@ -309,6 +311,8 @@ void Player::TakeDamage( int damage )
 //-----------------------------------------------------------------------------------------------
 void Player::Die()
 {
+	// #ToDo: Handle player death (lives, respawn, game over, etc.)
+
 	Entity::Die();
 }
 
@@ -316,13 +320,12 @@ void Player::Die()
 //-----------------------------------------------------------------------------------------------
 void Player::InitializeVertexArray()
 {
-	float halfSize = m_physicsRadius * 1.5f;
 	// Body
-	AABB2 bodyAABB2 = AABB2( -halfSize, -halfSize, halfSize, halfSize );
+	AABB2 bodyAABB2 = AABB2( -m_cosmeticRadius, -m_cosmeticRadius, m_cosmeticRadius, m_cosmeticRadius );
 	AddVertsForAABB2D( m_tankBodyVertexArray, bodyAABB2, Rgba8::WHITE );
 
 	// Turret
-	AABB2 turretAABB2 = AABB2( -halfSize, -halfSize, halfSize, halfSize );
+	AABB2 turretAABB2 = AABB2( -m_cosmeticRadius, -m_cosmeticRadius, m_cosmeticRadius, m_cosmeticRadius );
 	AddVertsForAABB2D( m_turretVertexArray, turretAABB2, Rgba8::WHITE );
 }
 
@@ -361,6 +364,7 @@ void Player::TurnTowardMovementDirection( float deltaSeconds )
 }
 
 
+//-----------------------------------------------------------------------------------------------
 void Player::TurnTurretTowardAimDirection( float deltaSeconds )
 {
 	if ( !m_isTurretAiming )
@@ -368,23 +372,23 @@ void Player::TurnTurretTowardAimDirection( float deltaSeconds )
 		return;
 	}
 
-    if ( m_turretOrientationDegrees == m_turretTargetDegrees )
+    if ( m_turretOrientationDegrees == m_turretTargetOrientationDegrees )
         return;
 
     float currentTurretDegrees = m_turretOrientationDegrees;
-    float deltaTurretDegrees = GetShortestAngularDispDegrees( currentTurretDegrees, m_turretTargetDegrees );
+    float deltaTurretDegrees = GetShortestAngularDispDegrees( currentTurretDegrees, m_turretTargetOrientationDegrees );
 
     float maxDeltaThisFrame = PLAYER_TANK_TURRET_TURN_SPEED_DEGREES_PER_SECOND * deltaSeconds;
     if ( fabsf( deltaTurretDegrees ) <= maxDeltaThisFrame )
     {
-        m_turretOrientationDegrees = m_turretTargetDegrees;
+        m_turretOrientationDegrees = m_turretTargetOrientationDegrees;
     }
     else
     {
         m_turretOrientationDegrees += (deltaTurretDegrees > 0.f ? maxDeltaThisFrame : -maxDeltaThisFrame);
     }
 
-    m_turretRelativeDegrees = m_turretOrientationDegrees - m_orientationDegrees;
+    m_turretRelativeOrientationDegrees = m_turretOrientationDegrees - m_orientationDegrees;
 }
 
 
@@ -393,5 +397,7 @@ void Player::FireProjectile()
 {
 	Vec2 muzzleOffset = Vec2::MakeFromPolarDegrees( m_turretOrientationDegrees, m_physicsRadius + 0.5f );
 	Vec2 projectileSpawnPosition = m_position + muzzleOffset;
-	g_game->m_currentMap->SpawnNewEntity( ENTITY_TYPE_GOOD_BOLT, projectileSpawnPosition, m_turretOrientationDegrees );
+	Entity* newBullet = g_game->m_currentMap->SpawnNewEntity( ENTITY_TYPE_GOOD_BOLT, projectileSpawnPosition, m_turretOrientationDegrees );
+	if ( newBullet != nullptr )
+		g_game->m_currentMap->AddEntityToMap( *newBullet, ENTITY_TYPE_GOOD_BOLT );
 }

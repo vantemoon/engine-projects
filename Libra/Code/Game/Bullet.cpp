@@ -11,9 +11,12 @@
 Bullet::Bullet( Vec2 startingPosition, float orientationDegrees, EntityType type )
 	: Entity( startingPosition, orientationDegrees )
 {
+	m_type = type;
+
 	m_physicsRadius = BULLET_PHYSICS_RADIUS;
 	m_cosmeticRadius = BULLET_COSMETIC_RADIUS;
-	switch ( type )
+
+	switch ( m_type )
 	{
 		case ENTITY_TYPE_GOOD_BULLET:
 			m_faction = ENTITY_FACTION_GOOD;
@@ -21,6 +24,8 @@ Bullet::Bullet( Vec2 startingPosition, float orientationDegrees, EntityType type
 
 		case ENTITY_TYPE_GOOD_BOLT:
 			m_faction = ENTITY_FACTION_GOOD;
+			m_health = GOOD_BOLT_HEALTH;
+			m_velocity = GOOD_BOLT_SPEED_TILES_PER_SECOND * GetForwardNormal();
 			break;
 
 		case ENTITY_TYPE_EVIL_BULLET:
@@ -29,18 +34,20 @@ Bullet::Bullet( Vec2 startingPosition, float orientationDegrees, EntityType type
 
 		case ENTITY_TYPE_EVIL_BOLT:
 			m_faction = ENTITY_FACTION_EVIL;
+			m_health = EVIL_BOLT_HEALTH;
+			m_velocity = EVIL_BOLT_SPEED_TILES_PER_SECOND * GetForwardNormal();
 			break;
 
 		default:
 			m_faction = ENTITY_FACTION_NEUTRAL;
 			break;
 	}
+
 	m_isPushedByWalls = false;
 	m_isPushedByEntities = false;
 	m_doesPushEntities = false;
 	m_isHitByBullets = false;
-	m_velocity = GOOD_BOLT_SPEED_TILES_PER_SECOND * GetForwardNormal();
-	m_health = 3;
+
 	InitializeVertexArray();
 }
 
@@ -84,7 +91,29 @@ void Bullet::Render() const
 	}
 
 	std::vector<Vertex> verts = m_vertexArray;
-	Texture* bulletTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/FriendlyBolt.png" );
+
+	Texture* bulletTexture = nullptr;
+	switch ( m_type )
+	{
+		default:
+			break;
+
+		case ENTITY_TYPE_GOOD_BULLET:
+			bulletTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/FriendlyBullet.png" );
+			break;
+
+		case ENTITY_TYPE_GOOD_BOLT:
+			bulletTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/FriendlyBolt.png" );
+			break;
+
+		case ENTITY_TYPE_EVIL_BULLET:
+			bulletTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/EnemyBullet.png" );
+			break;
+
+		case ENTITY_TYPE_EVIL_BOLT:
+			bulletTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/EnemyBolt.png" );
+			break;
+	}
 	g_engine->m_renderer->BindTexture( bulletTexture );
 	TransformVertexArrayXY3D( ( int ) verts.size(), verts.data(), 1.f, m_orientationDegrees, m_position );
 	g_engine->m_renderer->DrawVertexArray( verts );

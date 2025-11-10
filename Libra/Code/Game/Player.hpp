@@ -12,8 +12,8 @@ public:
 	float				 m_thrustFraction = 0.f;
 
 	float				 m_turretOrientationDegrees = 0.f;
-	float				 m_turretRelativeDegrees = 0.f;
-	float				 m_turretTargetDegrees = 0.f;
+	float				 m_turretRelativeOrientationDegrees = 0.f;
+	float				 m_turretTargetOrientationDegrees = 0.f;
 	bool				 m_isTurretAiming = false;
 
 	bool                 m_isInvincible = false;

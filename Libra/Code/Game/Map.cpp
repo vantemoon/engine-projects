@@ -2,7 +2,9 @@
 #include "Game/Bullet.hpp"
 #include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
-#include "Game//TileDefinition.hpp"
+#include "Game/Player.hpp"
+#include "Game/Scorpio.hpp"
+#include "Game/TileDefinition.hpp"
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/Vertex.hpp"
 #include "Engine/Core/VertexUtils.hpp"
@@ -18,9 +20,18 @@ Map::Map( IntVec2 dimensions )
 {
 	PopulateTiles();
 
-	Vec2 playerStartPos = Vec2( TILE_SIZE * 2.f, TILE_SIZE * 2.f );
-	g_game->m_player = static_cast<Player*>( SpawnNewEntity( ENTITY_TYPE_GOOD_PLAYER, playerStartPos, 45.f ) );
+	// Spawn Player
+	IntVec2 playerStartTileCoords = IntVec2( 1, 1 );
+	Vec2 playerStartPos = GetWorldPositionForTileCoords( playerStartTileCoords );
+	Player* player = static_cast<Player*>( SpawnNewEntity( ENTITY_TYPE_GOOD_PLAYER, playerStartPos, 45.f ) );
+	g_game->m_player = player;
 	AddEntityToMap( *g_game->m_player, ENTITY_TYPE_GOOD_PLAYER );
+
+	// Spawn Scorpio
+	IntVec2 scorpioStartTileCoords = IntVec2( 4, 1 );
+	Vec2 scorpioStartPos = GetWorldPositionForTileCoords( scorpioStartTileCoords );
+	Scorpio* scorpio = static_cast<Scorpio*>( SpawnNewEntity( ENTITY_TYPE_EVIL_SCORPIO, scorpioStartPos, 0.f ) );
+	AddEntityToMap( *scorpio, ENTITY_TYPE_EVIL_SCORPIO );
 }
 
 
@@ -109,9 +120,9 @@ void Map::DebugRender() const
 		return;
 	}
 
-	const float ringThickness = 0.7f;
-	const float thinLineThickness = 0.7f;
-	const float thickLineThickness = 1.5f;
+	const float ringThickness = 0.3f;
+	const float thinLineThickness = 0.3f;
+	const float thickLineThickness = 0.5f;
 
 	Rgba8 cyan = Rgba8( 0, 255, 255 );
 	Rgba8 magenta = Rgba8( 255, 0, 255 );
@@ -135,7 +146,7 @@ void Map::DebugRender() const
 			DebugDrawLine( player->m_position, turretLineEnd, thickLineThickness, purple, purple );
 
 			// Draw turret goal orientation
-			float turretGoalDegrees = player->m_turretTargetDegrees;
+			float turretGoalDegrees = player->m_turretTargetOrientationDegrees;
 			Vec2 turretGoalStart = player->m_position + Vec2::MakeFromPolarDegrees( turretGoalDegrees, player->m_cosmeticRadius * 1.05f );
 			Vec2 turretGoalEnd = player->m_position + Vec2::MakeFromPolarDegrees( turretGoalDegrees, player->m_cosmeticRadius * 1.18f );
 			DebugDrawLine( turretGoalStart, turretGoalEnd, thickLineThickness, purple, purple );
@@ -224,6 +235,15 @@ IntVec2 Map::GetTileCoordsForWorldPosition( Vec2 worldPos ) const
 	int tileX = static_cast<int>( worldPos.x / TILE_SIZE );
 	int tileY = static_cast<int>( worldPos.y / TILE_SIZE );
 	return IntVec2( tileX, tileY );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+Vec2 Map::GetWorldPositionForTileCoords( IntVec2 tileCoords ) const
+{
+	float worldX = ( static_cast<float>( tileCoords.x ) + 0.5f ) * TILE_SIZE;
+	float worldY = ( static_cast<float>( tileCoords.y ) + 0.5f ) * TILE_SIZE;
+	return Vec2( worldX, worldY );
 }
 
 
@@ -443,7 +463,7 @@ Entity* Map::SpawnNewEntity( EntityType type, Vec2 const& position, float orient
 	}
 	else if ( type == ENTITY_TYPE_EVIL_SCORPIO )
 	{
-		// newEntity = new Scorpio( position, orientationDegrees );
+		newEntity = new Scorpio( position, orientationDegrees );
 	}
 	else if ( type == ENTITY_TYPE_EVIL_LEO )
 	{
@@ -467,16 +487,11 @@ Entity* Map::SpawnNewEntity( EntityType type, Vec2 const& position, float orient
 	}
 	else if ( type == ENTITY_TYPE_EVIL_BOLT )
 	{
-		// newEntity = new EvilBolt( position, orientationDegrees );
+		newEntity = new Bullet( position, orientationDegrees, ENTITY_TYPE_EVIL_BOLT );
 	}
 	else
 	{
 		return nullptr;
-	}
-	if ( newEntity != nullptr )
-	{
-		m_allEntities.push_back( newEntity );
-		m_entityListsByType[type].push_back( newEntity );
 	}
 	return newEntity;
 }

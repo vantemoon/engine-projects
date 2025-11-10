@@ -6,6 +6,9 @@
 class Bullet : public Entity
 {
 public:
+	EntityType m_type;
+
+public:
 	Bullet( Vec2 startingPosition, float orientationDegrees, EntityType type );
 	~Bullet() override;
 
