@@ -64,58 +64,7 @@ void Player::Update( float deltaSeconds )
 	m_velocity = m_thrustFraction * PLAYER_TANK_MOVE_SPEED_TILES_PER_SECOND * GetForwardNormal();
 	Entity::Update( deltaSeconds );
 
-	/*if ( !m_noClip )
-		UpdatePhysics( deltaSeconds );*/
-
 	m_prevOrientationDegrees = m_orientationDegrees;
-}
-
-
-//----------------------------------------------------------------------------------------------
-void Player::UpdatePhysics( [[maybe_unused]] float deltaSeconds )
-{
-	Map* map = g_game->m_currentMap;
-    if ( !map ) return;
-
-    IntVec2 playerTileCoords = map->GetTileCoordsForWorldPosition( m_position );
-
-    static const IntVec2 neighborOffsets[8] = 
-	{
-        IntVec2(0, 1),   // North
-        IntVec2(1, 0),   // East
-        IntVec2(0, -1),  // South
-        IntVec2(-1, 0),  // West
-        IntVec2(1, 1),   // NorthEast
-        IntVec2(-1, 1),  // NorthWest
-        IntVec2(1, -1),  // SouthEast
-        IntVec2(-1, -1)  // SouthWest
-    };
-
-    // First, resolve cardinal neighbors
-    for ( int i = 0; i < 4; ++ i ) 
-	{
-        IntVec2 neighborTileCoords = playerTileCoords + neighborOffsets[i];
-        if ( !map->IsTileCoordsInBounds( neighborTileCoords ) ) continue;
-
-        Tile* neighborTile = map->GetTile( neighborTileCoords );
-		if ( !neighborTile || !map->IsTileSolid( *neighborTile ) ) continue;
-
-        AABB2 tileBounds = map->GetTileBounds( neighborTileCoords );
-        PushDiscOutOfFixedAABB2D(m_position, m_physicsRadius, tileBounds);
-    }
-
-    // Then, resolve diagonal neighbors
-    for ( int i = 4; i < 8; ++ i) 
-	{
-        IntVec2 neighborTileCoords = playerTileCoords + neighborOffsets[i];
-        if ( !map->IsTileCoordsInBounds( neighborTileCoords ) ) continue;
-
-        Tile* neighborTile = map->GetTile( neighborTileCoords );
-		if ( !neighborTile || !map->IsTileSolid( *neighborTile ) ) continue;
-
-        AABB2 tileBounds = map->GetTileBounds( neighborTileCoords );
-        PushDiscOutOfFixedAABB2D( m_position, m_physicsRadius, tileBounds );
-    }
 }
 
 

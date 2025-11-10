@@ -76,7 +76,8 @@ void Map::UpdateEntities( float deltaSeconds )
 		}
 	}
 
-	PushEntitiesOutOfEachOther();
+	DoEntityVsEntityCollision();
+	DoEntityVsTileCollision();
 }
 
 //-----------------------------------------------------------------------------------------------
@@ -548,7 +549,7 @@ void Map::RemoveEntityFromMap( Entity& entity, EntityType type )
 
 
 //-----------------------------------------------------------------------------------------------
-void Map::PushEntitiesOutOfEachOther()
+void Map::DoEntityVsEntityCollision()
 {
 	for ( int i = 0; i < static_cast<int>( m_allEntities.size() ); ++ i )
 	{
@@ -604,6 +605,57 @@ void Map::PushEntitiesOutOfEachOther()
 					entityA->m_position = aCenter;
 				}
 				continue;
+			}
+		}
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Map::DoEntityVsTileCollision()
+{
+	for ( int entityIndex = 0; entityIndex < static_cast<int>( m_allEntities.size() ); ++ entityIndex )
+	{
+		Entity* entity = m_allEntities[entityIndex];
+		if ( entity == nullptr ) continue;
+		if ( !entity->m_isPushedByWalls ) continue;
+		if ( entity == g_game->m_player )
+		{
+			Player* player = static_cast<Player*>( entity );
+			if ( player->m_noClip ) continue;
+		}
+		IntVec2 entityTileCoords = GetTileCoordsForWorldPosition( entity->m_position );
+		
+		IntVec2 neighboringOffsets[] = {
+			IntVec2( -1,  0 ), IntVec2(  1, 0 ), IntVec2( 0, -1 ), IntVec2( 0, 1 ), // Cardinal neighbors
+			IntVec2( -1, -1 ), IntVec2( -1, 1 ), IntVec2( 1, -1 ), IntVec2( 1, 1 )  // Diagonal neighbors
+		};
+
+		// Resolve cardinal neighbors first
+		for ( int offsetIndex = 0; offsetIndex < 4; ++ offsetIndex )
+		{
+			IntVec2 neighborCoords = entityTileCoords + neighboringOffsets[offsetIndex];
+			Tile* tile = GetTile( neighborCoords );
+			if ( tile != nullptr && IsTileSolid( *tile ) )
+			{
+				if ( PushDiscOutOfFixedAABB2D( entity->m_position, entity->m_physicsRadius, GetTileBounds( neighborCoords ) ) )
+				{
+					entity->m_position = entity->m_position;
+				}
+			}
+		}
+
+		// Then resolve diagonal neighbors
+		for ( int offsetIndex = 4; offsetIndex < 8; ++ offsetIndex )
+		{
+			IntVec2 neighborCoords = entityTileCoords + neighboringOffsets[offsetIndex];
+			Tile* tile = GetTile( neighborCoords );
+			if ( tile != nullptr && IsTileSolid( *tile ) )
+			{
+				if ( PushDiscOutOfFixedAABB2D( entity->m_position, entity->m_physicsRadius, GetTileBounds( neighborCoords ) ) )
+				{
+					entity->m_position = entity->m_position;
+				}
 			}
 		}
 	}
