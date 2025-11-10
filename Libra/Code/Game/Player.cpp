@@ -64,8 +64,8 @@ void Player::Update( float deltaSeconds )
 	m_velocity = m_thrustFraction * PLAYER_TANK_MOVE_SPEED_TILES_PER_SECOND * GetForwardNormal();
 	Entity::Update( deltaSeconds );
 
-	if ( !m_noClip )
-		UpdatePhysics( deltaSeconds );
+	/*if ( !m_noClip )
+		UpdatePhysics( deltaSeconds );*/
 
 	m_prevOrientationDegrees = m_orientationDegrees;
 }

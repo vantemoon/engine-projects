@@ -65,4 +65,5 @@ public:
 private:
 	void PopulateTiles();
 	void DeleteGarbageEntities();
+	void PushEntitiesOutOfEachOther();
 };

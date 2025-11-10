@@ -75,6 +75,8 @@ void Map::UpdateEntities( float deltaSeconds )
 			entity->Update( deltaSeconds );
 		}
 	}
+
+	PushEntitiesOutOfEachOther();
 }
 
 //-----------------------------------------------------------------------------------------------
@@ -540,6 +542,69 @@ void Map::RemoveEntityFromMap( Entity& entity, EntityType type )
 		{
 			typeList.erase( typeList.begin() + entityIndex );
 			break;
+		}
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Map::PushEntitiesOutOfEachOther()
+{
+	for ( int i = 0; i < static_cast<int>( m_allEntities.size() ); ++ i )
+	{
+		Entity* entityA = m_allEntities[i];
+		if ( entityA == nullptr ) continue;
+		if ( entityA == g_game->m_player )
+		{
+			Player* playerA = static_cast<Player*>( entityA );
+			if ( playerA->m_noClip ) continue;
+		}
+		for ( int j = i + 1; j < static_cast<int>( m_allEntities.size() ); ++ j )
+		{
+			Entity* entityB = m_allEntities[j];
+			if ( entityB == nullptr ) continue;
+			if ( entityB == g_game->m_player )
+			{
+				Player* playerB = static_cast<Player*>( entityB );
+				if ( playerB->m_noClip ) continue;
+			}
+			Vec2 aCenter = entityA->m_position;
+			Vec2 bCenter = entityB->m_position;
+			float aRadius = entityA->m_physicsRadius;
+			float bRadius = entityB->m_physicsRadius;
+			
+			// A pushes B and B pushes A
+			if ( entityA->m_isPushedByEntities && entityA->m_doesPushEntities &&
+				 entityB->m_isPushedByEntities && entityB->m_doesPushEntities )
+			{
+				// Both push out of each other
+				if ( PushDiscsOutOfEachOther2D( aCenter, aRadius, bCenter, bRadius ) )
+				{
+					entityA->m_position = aCenter;
+					entityB->m_position = bCenter;
+				}
+				continue;
+			}
+
+			// A is fixed, A pushes B out of A
+			if ( !entityA->m_isPushedByEntities && entityA->m_doesPushEntities && entityB->m_isPushedByEntities)
+			{
+				if ( PushDiscOutOfFixedDisc2D( bCenter, bRadius, aCenter, aRadius ) )
+				{
+					entityB->m_position = bCenter;
+				}
+				continue;
+			}
+
+			// B is fixed, B pushes A out of B
+			if ( entityA->m_isPushedByEntities && !entityB->m_isPushedByEntities && entityB->m_doesPushEntities )
+			{
+				if ( PushDiscOutOfFixedDisc2D( aCenter, aRadius, bCenter, bRadius ) )
+				{
+					entityA->m_position = aCenter;
+				}
+				continue;
+			}
 		}
 	}
 }
