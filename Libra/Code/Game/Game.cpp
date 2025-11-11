@@ -1,6 +1,7 @@
 #include "Game/Game.hpp"
 #include "Game/App.hpp"
 #include "Game/GameCommon.hpp"
+#include "Game/MapDefinition.hpp"
 #include "Engine/Audio/AudioSystem.hpp"
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/ErrorWarningAssert.hpp"
@@ -25,10 +26,27 @@ Game* g_game = nullptr;
 //-----------------------------------------------------------------------------------------------
 Game::Game()
 {
+	if ( MapDefinition::s_definitions.size() != NUM_MAPS )
+	{
+		MapDefinition::s_definitions.resize( NUM_MAPS );
+		MapDefinition::InitializeMapDefinitions();
+	}
+
 	g_game = this;
 
-	m_currentMap = new Map( IntVec2( 32, 64 ) );
+	Map* map1 = new Map( MapDefinition::s_definitions[0].m_dimensions, 0 );
+	Map* map2 = new Map( MapDefinition::s_definitions[1].m_dimensions, 1 );
+	Map* map3 = new Map( MapDefinition::s_definitions[2].m_dimensions, 2 );
+	m_currentMap = map1;
+	m_maps.push_back( map1 );
+	m_maps.push_back( map2 );
+	m_maps.push_back( map3 );
 
+	IntVec2 playerStartTileCoords = IntVec2( 1, 1 );
+	Vec2 playerStartPos = m_currentMap->GetWorldPositionForTileCoords( playerStartTileCoords );
+	Player* player = static_cast< Player* >( m_currentMap->SpawnNewEntity( ENTITY_TYPE_GOOD_PLAYER, playerStartPos, 45.f ) );
+	g_game->m_player = player;
+	
 	m_worldCamera = new Camera();
 	m_screenCamera = new Camera();
 	m_debugCamera = new Camera();
@@ -80,6 +98,13 @@ void Game::Update( float deltaSeconds )
 		return;
 	};
 
+	if ( m_currentGameState == GameState::GAME_OVER )
+	{
+		UpdateFromKeyboard();
+		UpdateFromController();
+		return;
+	}
+
 	UpdateFromKeyboard();
 	UpdateFromController();
 
@@ -92,6 +117,32 @@ void Game::Update( float deltaSeconds )
 		deltaSeconds *= 4.f;
 	}
 	m_currentMap->Update( deltaSeconds );
+
+	static float s_timeSincePlayerDeath = 0.f;
+	static bool s_playerDeathHandled = false;
+
+	if ( m_player && m_player->m_isDead ) 
+	{
+		if ( !s_playerDeathHandled ) 
+		{
+			s_timeSincePlayerDeath = 0.f;
+			s_playerDeathHandled = true;
+		}
+		else 
+		{
+			s_timeSincePlayerDeath += deltaSeconds;
+			if ( s_timeSincePlayerDeath >= PLAYER_TANK_DEATH_DELAY_SECONDS ) 
+			{
+				m_currentGameState = GameState::GAME_OVER;
+				s_playerDeathHandled = false;
+			}
+		}
+	}
+	else 
+	{
+		s_playerDeathHandled = false;
+		s_timeSincePlayerDeath = 0.f;
+	}
 
 	if ( m_isDebugCameraActive )
 	{
@@ -237,6 +288,23 @@ void Game::UpdateFromKeyboard()
 			g_app->SetIsQuitting();
 		}
 	}
+	else if ( m_currentGameState == GameState::GAME_OVER )
+	{
+		// Respawn the player
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'N' ) )
+		{
+			m_player->Respawn( m_player->m_position );
+			m_currentGameState = GameState::PLAYING;
+			UpdateMusic();
+		}
+
+		// Return to attract mode
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_ESCAPE ) )
+		{
+			m_currentGameState = GameState::ATTRACT_MODE;
+			UpdateMusic();
+		}
+	}
 	else
 	{
 		// Return to attract mode
@@ -338,6 +406,23 @@ void Game::UpdateFromController()
 			g_app->SetIsQuitting();
 		}
 	}
+	else if ( m_currentGameState == GameState::GAME_OVER )
+	{
+		// Respawn the player
+		if ( controller.WasButtonJustPressed( XBOX_BUTTON_START ) )
+		{
+			m_player->Respawn( m_player->m_position );
+			m_currentGameState = GameState::PLAYING;
+			UpdateMusic();
+		}
+
+		// Return to attract mode
+		if ( controller.WasButtonJustPressed( XBOX_BUTTON_BACK ) )
+		{
+			m_currentGameState = GameState::ATTRACT_MODE;
+			UpdateMusic();
+		}
+	}
 	else
 	{
 		// Return to attract mode
@@ -400,6 +485,12 @@ void Game::Render() const
 	{
 		RenderPauseScreenOverlay();
 	};
+
+	if ( m_currentGameState == GameState::GAME_OVER )
+	{
+		RenderGameOverScreenOverlay();
+	};
+
 	RenderHUD();
 
 	g_engine->m_renderer->EndCamera( *cameraToUse );
@@ -491,6 +582,12 @@ void Game::RenderHUD() const
 		AddVertsForTextTriangles2D( verts, "PAUSED", Vec2( 10.f, SCREEN_SIZE_Y - 30.f ), 24.f, Rgba8( 255, 255, 255 ) );
 		g_engine->m_renderer->DrawVertexArray( ( int ) verts.size(), verts.data() );
 	}
+	else if ( m_currentGameState == GameState::GAME_OVER )
+	{
+		std::vector<Vertex> verts;
+		AddVertsForTextTriangles2D( verts, "GAME OVER", Vec2( 10.f, SCREEN_SIZE_Y - 30.f ), 24.f, Rgba8( 255, 0, 0 ) );
+		g_engine->m_renderer->DrawVertexArray( ( int ) verts.size(), verts.data() );
+	}
 
 	g_engine->m_renderer->EndCamera( *m_screenCamera );
 }
@@ -504,8 +601,25 @@ void Game::RenderPauseScreenOverlay() const
 	std::vector<Vertex> quadVerts;
 	AABB2 fullScreenAABB2( 0.f, 0.f, SCREEN_SIZE_X, SCREEN_SIZE_Y );
 	AddVertsForAABB2D( quadVerts, fullScreenAABB2, Rgba8( 0, 0, 0, 100 ) );
-	g_engine->m_renderer->BindTexture( nullptr );
 	g_engine->m_renderer->DrawVertexArray( quadVerts );
+
+	g_engine->m_renderer->EndCamera( *m_screenCamera );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game::RenderGameOverScreenOverlay() const
+{
+	g_engine->m_renderer->BeginCamera( *m_screenCamera );
+	
+	std::vector<Vertex> quadVerts;
+	AABB2 fullScreenAABB2( 0.f, 0.f, SCREEN_SIZE_X, SCREEN_SIZE_Y );
+	AddVertsForAABB2D( quadVerts, fullScreenAABB2, Rgba8( 0, 0, 0, 150 ) );
+	g_engine->m_renderer->DrawVertexArray( quadVerts );
+
+	std::vector<Vertex> textVerts;
+	AddVertsForTextTriangles2D( textVerts, "GAME OVER", Vec2( SCREEN_CENTER_X - 100.f, SCREEN_CENTER_Y ), 48.f, Rgba8( 255, 0, 0 ) );
+	g_engine->m_renderer->DrawVertexArray( ( int ) textVerts.size(), textVerts.data() );
 
 	g_engine->m_renderer->EndCamera( *m_screenCamera );
 }
@@ -523,7 +637,17 @@ void Game::Reset()
 {
 	// Reset current map
 	delete m_currentMap;
-	m_currentMap = new Map( IntVec2( 32, 64 ) );
+
+	// Recreate all maps
+	m_maps.clear();
+	Map* map1 = new Map( MapDefinition::s_definitions[0].m_dimensions, 0 );
+	Map* map2 = new Map( MapDefinition::s_definitions[1].m_dimensions, 1 );
+	Map* map3 = new Map( MapDefinition::s_definitions[2].m_dimensions, 2 );
+	m_currentMap = map1;
+	m_maps.push_back( map1 );
+	m_maps.push_back( map2 );
+	m_maps.push_back( map3 );
+
 	m_isScreenShaking = false;
 	m_isDebugOn = false;
 }

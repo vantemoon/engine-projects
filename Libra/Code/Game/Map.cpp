@@ -17,16 +17,13 @@
 
 
 //-----------------------------------------------------------------------------------------------
-Map::Map( IntVec2 dimensions )
+Map::Map( IntVec2 dimensions, int index )
 	: m_dimensions( dimensions )
+	, m_index( index )
 {
 	PopulateTiles();
 
-	// Spawn Player
-	IntVec2 playerStartTileCoords = IntVec2( 1, 1 );
-	Vec2 playerStartPos = GetWorldPositionForTileCoords( playerStartTileCoords );
-	Player* player = static_cast<Player*>( SpawnNewEntity( ENTITY_TYPE_GOOD_PLAYER, playerStartPos, 45.f ) );
-	g_game->m_player = player;
+	// Add player to the map
 	AddEntityToMap( *g_game->m_player, ENTITY_TYPE_GOOD_PLAYER, ENTITY_FACTION_GOOD );
 
 	// Spawn Scorpio
@@ -101,11 +98,11 @@ void Map::RenderTiles() const
 		AABB2 tileBounds = AABB2( tile.m_tileCoords.x * TILE_SIZE, tile.m_tileCoords.y * TILE_SIZE,
 			( tile.m_tileCoords.x + 1 ) * TILE_SIZE, ( tile.m_tileCoords.y + 1 ) * TILE_SIZE );
 		Rgba8 tileColor;
-		if ( tile.m_type == TileType::TILE_TYPE_GRASS )
+		if ( tile.m_type == TileType::TILE_TYPE_GRASS_1 )
 		{
 			tileColor = GRASS_COLOR;
 		}
-		else if ( tile.m_type == TileType::TILE_TYPE_STONE )
+		else if ( tile.m_type == TileType::TILE_TYPE_STONE_2 )
 		{
 			tileColor = STONE_COLOR;
 		}
@@ -287,7 +284,7 @@ void Map::PopulateTiles()
 			bool isOuterReserved = ( x >= m_dimensions.x - 7 && x <= m_dimensions.x - 2 && y >= m_dimensions.y - 7 && y <= m_dimensions.y - 2 );
 			if ( isOnEdge )
 			{
-				type = TileType::TILE_TYPE_STONE;
+				type = TileType::TILE_TYPE_STONE_2;
 			}
 			else
 			{
@@ -296,11 +293,11 @@ void Map::PopulateTiles()
 					if ( ( x == 2 && y == 4 ) || ( x == 3 && y == 4 ) || ( x == 4 && y == 4 ) ||
 						( x == 4 && y == 3 ) || ( x == 4 && y == 2 ) )
 					{
-						type = TileType::TILE_TYPE_STONE;
+						type = TileType::TILE_TYPE_STONE_2;
 					}
 					else
 					{
-						type = TileType::TILE_TYPE_GRASS;
+						type = TileType::TILE_TYPE_GRASS_1;
 					}
 				}
 				else if ( isOuterReserved )
@@ -313,11 +310,11 @@ void Map::PopulateTiles()
 						( x == m_dimensions.x - 4 && y == m_dimensions.y - 6 ) ||
 						( x == m_dimensions.x - 3 && y == m_dimensions.y - 6 ) )
 					{
-						type = TileType::TILE_TYPE_STONE;
+						type = TileType::TILE_TYPE_STONE_2;
 					}
 					else
 					{
-						type = TileType::TILE_TYPE_GRASS;
+						type = TileType::TILE_TYPE_GRASS_1;
 					}
 				}
 				else
@@ -326,11 +323,11 @@ void Map::PopulateTiles()
 					float roll = rng.RollRandomFloatZeroToOne();
 					if ( roll < INNER_STONE_TILE_PROBABILITY )
 					{
-						type = TileType::TILE_TYPE_STONE;
+						type = TileType::TILE_TYPE_STONE_2;
 					}
 					else
 					{
-						type = TileType::TILE_TYPE_GRASS;
+						type = TileType::TILE_TYPE_GRASS_1;
 					}
 				}
 			}

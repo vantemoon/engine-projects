@@ -71,6 +71,8 @@ void Player::Update( float deltaSeconds )
 //-----------------------------------------------------------------------------------------------
 void Player::UpdateFromKeyboard( [[maybe_unused]] float deltaSeconds )
 {
+	if ( !IsAlive() ) return;
+
 	// Movement
 	bool isWKeyDown = g_engine->m_inputSystem->IsKeyDown( 'W' );
 	bool isAKeyDown = g_engine->m_inputSystem->IsKeyDown( 'A' );
@@ -188,6 +190,8 @@ void Player::UpdateFromKeyboard( [[maybe_unused]] float deltaSeconds )
 //-----------------------------------------------------------------------------------------------
 void Player::UpdateFromController( [[maybe_unused]] float deltaSeconds )
 {
+	if ( !IsAlive() ) return;
+
 	XboxController const& controller = g_engine->m_inputSystem->GetController( 0 );
 
 	// Movement
@@ -261,6 +265,15 @@ void Player::TakeDamage( int damage )
 void Player::Die()
 {
 	m_isDead = true;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Player::Respawn( Vec2 spawnPosition )
+{
+	m_position = spawnPosition;
+	m_health = PLAYER_TANK_HEALTH;
+	m_isDead = false;
 }
 
 

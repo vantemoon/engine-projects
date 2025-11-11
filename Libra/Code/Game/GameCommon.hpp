@@ -30,6 +30,8 @@ constexpr float SCREEN_SIZE_Y = 800.f;
 constexpr float SCREEN_CENTER_X = SCREEN_SIZE_X / 2.f;
 constexpr float SCREEN_CENTER_Y = SCREEN_SIZE_Y / 2.f;
 
+constexpr int   NUM_MAPS = 3;
+
 constexpr float TILE_SIZE = 12.5f;
 constexpr int   NUM_TILES_VISIBLE_VERTICALLY = 8;
 constexpr int   NUM_TILES_VISIBLE_HORIZONTALLY = 16;
@@ -46,6 +48,7 @@ constexpr float PLAYER_TANK_TURN_SPEED_DEGREES_PER_SECOND = 180.f;
 constexpr float PLAYER_TANK_TURRET_TURN_SPEED_DEGREES_PER_SECOND = 360.f;
 constexpr float PLAYER_TANK_FIRE_COOLDOWN_SECONDS = 0.1f;
 constexpr int   PLAYER_TANK_HEALTH = 10;
+constexpr float PLAYER_TANK_DEATH_DELAY_SECONDS = 3.f;
 
 constexpr float SCORPIO_PHYSICS_RADIUS = 4.f;
 constexpr float SCORPIO_COSMETIC_RADIUS = 6.f;

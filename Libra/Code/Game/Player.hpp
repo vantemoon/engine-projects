@@ -34,6 +34,7 @@ public:
 	void Render()									      const override;
 	void TakeDamage( int damage )								override;
 	void Die()													override;
+	void Respawn( Vec2 spawnPosition );
 
 protected:
 	void InitializeVertexArray()								override;

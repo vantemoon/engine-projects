@@ -19,35 +19,38 @@ extern Game*	g_game;
 class Game
 {
 public:
-	Player*			m_player = nullptr;
-	Map*			m_currentMap = nullptr;
+	Player*				m_player = nullptr;
+	Map*				m_currentMap = nullptr;
+	std::vector<Map*>	m_maps;
 
-	Camera*			m_worldCamera = nullptr;
-	Camera*			m_screenCamera = nullptr;
-	Camera*			m_debugCamera = nullptr;
-	int				m_numTilesInViewVertically;
-	int 			m_numTilesInViewHorizontally;
+	Camera*				m_worldCamera = nullptr;
+	Camera*				m_screenCamera = nullptr;
+	Camera*				m_debugCamera = nullptr;
+	int					m_numTilesInViewVertically;
+	int 				m_numTilesInViewHorizontally;
 
-	SoundID			m_attractMusicID;
-	SoundID			m_gameplayMusicID;
-	SoundPlaybackID m_attractMusicPlaybackID;
-	SoundPlaybackID m_gameplayMusicPlaybackID;
-	bool			m_isAttractMusicPlaying = false;
-	bool 			m_isGameplayMusicPlaying = false;
+	SoundID				m_attractMusicID;
+	SoundID				m_gameplayMusicID;
+	SoundPlaybackID		m_attractMusicPlaybackID;
+	SoundPlaybackID		m_gameplayMusicPlaybackID;
+	bool				m_isAttractMusicPlaying = false;
+	bool 				m_isGameplayMusicPlaying = false;
 
-	bool			m_isScreenShaking = false;
-	float			m_screenShakeIntensity = 0.f;
-	float			m_screenShakeDuration = 0.f;
-	float			m_screenShakeStartTime = 0.f;
+	bool				m_isScreenShaking = false;
+	float				m_screenShakeIntensity = 0.f;
+	float				m_screenShakeDuration = 0.f;
+	float				m_screenShakeStartTime = 0.f;
 
-	GameState		m_currentGameState;
+	GameState			m_currentGameState;
+	float				m_timeSincePlayerDeath = 0.f;
+	bool				m_playerDeathHandled = false;
 
-	bool			m_isDebugOn = false;
-	bool			m_isDebugCameraActive = false;
-	bool			m_isPausedAfterNextUpdate = false;
+	bool				m_isDebugOn = false;
+	bool				m_isDebugCameraActive = false;
+	bool				m_isPausedAfterNextUpdate = false;
 
-	bool			m_isSlowMo = false;
-	bool			m_isFastMo = false;
+	bool				m_isSlowMo = false;
+	bool				m_isFastMo = false;
 
 public:
 	Game();
@@ -63,6 +66,7 @@ public:
 	void RenderHUD()												  const;
 	void RenderAttractMode()										  const;
 	void RenderPauseScreenOverlay()									  const;
+	void RenderGameOverScreenOverlay()								  const;
 	void Reset();
 	void KillAllEnemies(); // For testing and debugging
 };
