@@ -4,6 +4,7 @@
 #include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
 #include "Game/Leo.hpp"
+#include "Game/MapDefinition.hpp"
 #include "Game/Player.hpp"
 #include "Game/Scorpio.hpp"
 #include "Game/TileDefinition.hpp"
@@ -26,23 +27,23 @@ Map::Map( IntVec2 dimensions, int index )
 	// Add player to the map
 	AddEntityToMap( *g_game->m_player, ENTITY_TYPE_GOOD_PLAYER, ENTITY_FACTION_GOOD );
 
-	// Spawn Scorpio
-	IntVec2 scorpioStartTileCoords = IntVec2( 4, 1 );
-	Vec2 scorpioStartPos = GetWorldPositionForTileCoords( scorpioStartTileCoords );
-	Scorpio* scorpio = static_cast<Scorpio*>( SpawnNewEntity( ENTITY_TYPE_EVIL_SCORPIO, scorpioStartPos, 0.f ) );
-	AddEntityToMap( *scorpio, ENTITY_TYPE_EVIL_SCORPIO, ENTITY_FACTION_EVIL );
+	//// Spawn Scorpio
+	//IntVec2 scorpioStartTileCoords = IntVec2( 4, 1 );
+	//Vec2 scorpioStartPos = GetWorldPositionForTileCoords( scorpioStartTileCoords );
+	//Scorpio* scorpio = static_cast<Scorpio*>( SpawnNewEntity( ENTITY_TYPE_EVIL_SCORPIO, scorpioStartPos, 0.f ) );
+	//AddEntityToMap( *scorpio, ENTITY_TYPE_EVIL_SCORPIO, ENTITY_FACTION_EVIL );
 
-	// Spawn Leo
-	IntVec2 leoStartTileCoords = IntVec2( 6, 3 );
-	Vec2 leoStartPos = GetWorldPositionForTileCoords( leoStartTileCoords );
-	Leo* leo = static_cast<Leo*>( SpawnNewEntity( ENTITY_TYPE_EVIL_LEO, leoStartPos, 90.f ) );
-	AddEntityToMap( *leo, ENTITY_TYPE_EVIL_LEO, ENTITY_FACTION_EVIL );
+	//// Spawn Leo
+	//IntVec2 leoStartTileCoords = IntVec2( 6, 3 );
+	//Vec2 leoStartPos = GetWorldPositionForTileCoords( leoStartTileCoords );
+	//Leo* leo = static_cast<Leo*>( SpawnNewEntity( ENTITY_TYPE_EVIL_LEO, leoStartPos, 90.f ) );
+	//AddEntityToMap( *leo, ENTITY_TYPE_EVIL_LEO, ENTITY_FACTION_EVIL );
 
-	// Spawn Aries
-	IntVec2 ariesStartTileCoords = IntVec2( 8, 5 );
-	Vec2 ariesStartPos = GetWorldPositionForTileCoords( ariesStartTileCoords );
-	Aries* aries = static_cast< Aries* >( SpawnNewEntity( ENTITY_TYPE_EVIL_ARIES, ariesStartPos, 180.f ) );
-	AddEntityToMap( *aries, ENTITY_TYPE_EVIL_ARIES, ENTITY_FACTION_EVIL );
+	//// Spawn Aries
+	//IntVec2 ariesStartTileCoords = IntVec2( 8, 5 );
+	//Vec2 ariesStartPos = GetWorldPositionForTileCoords( ariesStartTileCoords );
+	//Aries* aries = static_cast< Aries* >( SpawnNewEntity( ENTITY_TYPE_EVIL_ARIES, ariesStartPos, 180.f ) );
+	//AddEntityToMap( *aries, ENTITY_TYPE_EVIL_ARIES, ENTITY_FACTION_EVIL );
 }
 
 
@@ -98,13 +99,88 @@ void Map::RenderTiles() const
 		AABB2 tileBounds = AABB2( tile.m_tileCoords.x * TILE_SIZE, tile.m_tileCoords.y * TILE_SIZE,
 			( tile.m_tileCoords.x + 1 ) * TILE_SIZE, ( tile.m_tileCoords.y + 1 ) * TILE_SIZE );
 		Rgba8 tileColor;
-		if ( tile.m_type == TileType::TILE_TYPE_GRASS_1 )
+		switch ( tile.m_type )
 		{
-			tileColor = GRASS_COLOR;
-		}
-		else if ( tile.m_type == TileType::TILE_TYPE_STONE_2 )
-		{
-			tileColor = STONE_COLOR;
+			// Grass tiles
+			case TILE_TYPE_GRASS_1:
+			case TILE_TYPE_GRASS_2:
+			case TILE_TYPE_GRASS_3:
+			case TILE_TYPE_GRASS_4:
+			case TILE_TYPE_GRASS_5:
+			case TILE_TYPE_GRASS_6:
+			case TILE_TYPE_GRASS_7:
+			case TILE_TYPE_GRASS_8:
+			case TILE_TYPE_GRASS_9:
+			case TILE_TYPE_GRASS_10:
+			case TILE_TYPE_GRASS_11:
+				tileColor = GRASS_COLOR;
+				break;
+
+			// Stone tiles
+			case TILE_TYPE_STONE_1:
+			case TILE_TYPE_STONE_2:
+			case TILE_TYPE_STONE_3:
+			case TILE_TYPE_STONE_4:
+			case TILE_TYPE_STONE_5:
+			case TILE_TYPE_STONE_6:
+			case TILE_TYPE_STONE_7:
+			case TILE_TYPE_STONE_8:
+			case TILE_TYPE_STONE_9:
+			case TILE_TYPE_STONE_10:
+			case TILE_TYPE_STONE_11:
+			case TILE_TYPE_STONE_BRICK_1:
+			case TILE_TYPE_STONE_BRICK_2:
+			case TILE_TYPE_STONE_BRICK_3:
+			case TILE_TYPE_STONE_BRICK_4:
+			case TILE_TYPE_STONE_BRICK_5:
+			case TILE_TYPE_STONE_BRICK_6:
+			case TILE_TYPE_STONE_BRICK_7:
+			case TILE_TYPE_STONE_BRICK_8:
+			case TILE_TYPE_STONE_BRICK_9:
+			case TILE_TYPE_STONE_BRICK_10:
+			case TILE_TYPE_STONE_BRICK_11:
+				tileColor = STONE_COLOR;
+				break;
+
+			// Dirt tiles
+			case TILE_TYPE_DIRT_1:
+			case TILE_TYPE_DIRT_2:
+			case TILE_TYPE_DIRT_3:
+			case TILE_TYPE_DIRT_4:
+			case TILE_TYPE_DIRT_5:
+				tileColor = DIRT_COLOR;
+				break;
+
+			// Sand tiles
+			case TILE_TYPE_SAND_1:
+			case TILE_TYPE_SAND_2:
+			case TILE_TYPE_SAND_3:
+			case TILE_TYPE_SAND_4:
+				tileColor = SAND_COLOR;
+				break;
+
+			// Mud tiles
+			case TILE_TYPE_MUD_1:
+			case TILE_TYPE_MUD_2:
+				tileColor = MUD_COLOR;
+				break;
+
+			// Wood tiles
+			case TILE_TYPE_WOOD_FLOOR_VERTICAL:
+			case TILE_TYPE_WOOD_FLOOR_HORIZONTAL:
+				tileColor = WOOD_COLOR;
+				break;
+
+			// Water tiles
+			case TILE_TYPE_WATER_1:
+			case TILE_TYPE_WATER_2:
+				tileColor = WATER_COLOR;
+				break;
+
+			// Default
+			default:
+				tileColor = Rgba8::WHITE;
+				break;
 		}
 		AddVertsForAABB2D( tileVerts, tileBounds, tileColor );
 	}
@@ -284,7 +360,7 @@ void Map::PopulateTiles()
 			bool isOuterReserved = ( x >= m_dimensions.x - 7 && x <= m_dimensions.x - 2 && y >= m_dimensions.y - 7 && y <= m_dimensions.y - 2 );
 			if ( isOnEdge )
 			{
-				type = TileType::TILE_TYPE_STONE_2;
+				type = MapDefinition::s_definitions[m_index].m_borderTileType;
 			}
 			else
 			{
@@ -293,11 +369,11 @@ void Map::PopulateTiles()
 					if ( ( x == 2 && y == 4 ) || ( x == 3 && y == 4 ) || ( x == 4 && y == 4 ) ||
 						( x == 4 && y == 3 ) || ( x == 4 && y == 2 ) )
 					{
-						type = TileType::TILE_TYPE_STONE_2;
+						type = MapDefinition::s_definitions[m_index].m_startbunkerWallTileType;
 					}
 					else
 					{
-						type = TileType::TILE_TYPE_GRASS_1;
+						type = MapDefinition::s_definitions[m_index].m_bunkerFloorTileType;
 					}
 				}
 				else if ( isOuterReserved )
@@ -310,24 +386,33 @@ void Map::PopulateTiles()
 						( x == m_dimensions.x - 4 && y == m_dimensions.y - 6 ) ||
 						( x == m_dimensions.x - 3 && y == m_dimensions.y - 6 ) )
 					{
-						type = TileType::TILE_TYPE_STONE_2;
+						type = MapDefinition::s_definitions[m_index].m_exitbunkerWallTileType;
 					}
 					else
 					{
-						type = TileType::TILE_TYPE_GRASS_1;
+						type = MapDefinition::s_definitions[m_index].m_bunkerFloorTileType;
 					}
 				}
 				else
 				{
 					RandomNumberGenerator rng;
+
 					float roll = rng.RollRandomFloatZeroToOne();
-					if ( roll < INNER_STONE_TILE_PROBABILITY )
+					if ( roll < MapDefinition::s_definitions[m_index].m_sprinkle1Probability )
 					{
-						type = TileType::TILE_TYPE_STONE_2;
+						type = MapDefinition::s_definitions[m_index].m_sprinkle1TileType;
 					}
 					else
 					{
-						type = TileType::TILE_TYPE_GRASS_1;
+						roll = rng.RollRandomFloatZeroToOne();
+						if ( roll < MapDefinition::s_definitions[m_index].m_sprinkle2Probability )
+						{
+							type = MapDefinition::s_definitions[m_index].m_sprinkle2TileType;
+						}
+						else
+						{
+							type = MapDefinition::s_definitions[m_index].m_fillTileType;
+						}
 					}
 				}
 			}

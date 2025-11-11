@@ -38,6 +38,11 @@ constexpr int   NUM_TILES_VISIBLE_HORIZONTALLY = 16;
 constexpr float INNER_STONE_TILE_PROBABILITY = 0.1f;
 const     Rgba8 GRASS_COLOR = Rgba8( 0, 100, 0 );
 const     Rgba8 STONE_COLOR = Rgba8( 128, 128, 128 );
+const     Rgba8 MUD_COLOR = Rgba8( 102, 51, 0 );
+const     Rgba8 SAND_COLOR = Rgba8( 194, 178, 128 );
+const	  Rgba8 DIRT_COLOR = Rgba8( 139, 69, 19 );
+const     Rgba8 WOOD_COLOR = Rgba8( 101, 67, 33 );
+const     Rgba8 WATER_COLOR = Rgba8( 0, 0, 255 );
 
 constexpr float VISIBLE_RANGE_RADIUS = 10.f * TILE_SIZE;
 
