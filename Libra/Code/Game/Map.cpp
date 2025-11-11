@@ -26,24 +26,6 @@ Map::Map( IntVec2 dimensions, int index )
 
 	// Add player to the map
 	AddEntityToMap( *g_game->m_player, ENTITY_TYPE_GOOD_PLAYER, ENTITY_FACTION_GOOD );
-
-	//// Spawn Scorpio
-	//IntVec2 scorpioStartTileCoords = IntVec2( 4, 1 );
-	//Vec2 scorpioStartPos = GetWorldPositionForTileCoords( scorpioStartTileCoords );
-	//Scorpio* scorpio = static_cast<Scorpio*>( SpawnNewEntity( ENTITY_TYPE_EVIL_SCORPIO, scorpioStartPos, 0.f ) );
-	//AddEntityToMap( *scorpio, ENTITY_TYPE_EVIL_SCORPIO, ENTITY_FACTION_EVIL );
-
-	//// Spawn Leo
-	//IntVec2 leoStartTileCoords = IntVec2( 6, 3 );
-	//Vec2 leoStartPos = GetWorldPositionForTileCoords( leoStartTileCoords );
-	//Leo* leo = static_cast<Leo*>( SpawnNewEntity( ENTITY_TYPE_EVIL_LEO, leoStartPos, 90.f ) );
-	//AddEntityToMap( *leo, ENTITY_TYPE_EVIL_LEO, ENTITY_FACTION_EVIL );
-
-	//// Spawn Aries
-	//IntVec2 ariesStartTileCoords = IntVec2( 8, 5 );
-	//Vec2 ariesStartPos = GetWorldPositionForTileCoords( ariesStartTileCoords );
-	//Aries* aries = static_cast< Aries* >( SpawnNewEntity( ENTITY_TYPE_EVIL_ARIES, ariesStartPos, 180.f ) );
-	//AddEntityToMap( *aries, ENTITY_TYPE_EVIL_ARIES, ENTITY_FACTION_EVIL );
 }
 
 
@@ -599,9 +581,52 @@ Entity* Map::SpawnNewEntity( EntityType type, Vec2 const& position, float orient
 //-----------------------------------------------------------------------------------------------
 void Map::AddEntityToMap( Entity& entity, EntityType type, EntityFaction faction )
 {
-	m_allEntities.push_back( &entity );
-	m_entityListsByType[type].push_back( &entity );
-	m_entityListsByFaction[faction].push_back( &entity );
+	// Add to all entities list
+	bool addedToAllEntities = false;
+	for ( int i = 0; i < static_cast<int>( m_allEntities.size() ); ++ i )
+	{
+		Entity* existingEntity = m_allEntities[i];
+		if ( existingEntity == &entity ) break;
+		if ( existingEntity == nullptr ) 
+		{
+			addedToAllEntities = true;
+			m_allEntities[i] = &entity;
+			break;
+		}
+	}
+	if ( !addedToAllEntities ) m_allEntities.push_back( &entity );
+
+	// Add to type-specific entity list
+	bool addedToTypeList = false;
+	EntityList& typeList = m_entityListsByType[type];
+	for ( int i = 0; i < static_cast<int>( typeList.size() ); ++ i )
+	{
+		Entity* existingEntity = typeList[i];
+		if ( existingEntity == &entity ) break;
+		if ( existingEntity == nullptr ) 
+		{
+			addedToTypeList = true;
+			typeList[i] = &entity;
+			break;
+		}
+	}
+	if ( !addedToTypeList ) m_entityListsByType[type].push_back( &entity );
+
+	// Add to faction-specific entity list
+	bool addedToFactionList = false;
+	EntityList& factionList = m_entityListsByFaction[faction];
+	for ( int i = 0; i < static_cast<int>( factionList.size() ); ++ i )
+	{
+		Entity* existingEntity = factionList[i];
+		if ( existingEntity == &entity ) break;
+		if ( existingEntity == nullptr ) 
+		{
+			addedToFactionList = true;
+			factionList[i] = &entity;
+			break;
+		}
+	}
+	if ( !addedToFactionList ) m_entityListsByFaction[faction].push_back( &entity );
 }
 
 
@@ -609,33 +634,36 @@ void Map::AddEntityToMap( Entity& entity, EntityType type, EntityFaction faction
 void Map::RemoveEntityFromMap( Entity& entity, EntityType type, EntityFaction faction )
 {
 	// Remove from all entities list
-	for ( int entityIndex = 0; entityIndex < static_cast<int>( m_allEntities.size() ); ++ entityIndex )
+	for ( int i = 0; i < static_cast<int>( m_allEntities.size() ); ++ i )
 	{
-		if ( m_allEntities[entityIndex] == &entity )
+		Entity* existingEntity = m_allEntities[i];
+		if ( existingEntity == &entity )
 		{
-			m_allEntities.erase( m_allEntities.begin() + entityIndex );
+			existingEntity = nullptr;
 			break;
 		}
 	}
 
 	// Remove from type-specific entity list
 	EntityList& typeList = m_entityListsByType[type];
-	for ( int entityIndex = 0; entityIndex < static_cast<int>( typeList.size() ); ++ entityIndex )
+	for ( int i = 0; i < static_cast<int>( typeList.size() ); ++ i )
 	{
-		if ( typeList[entityIndex] == &entity )
+		Entity* existingEntity = typeList[i];
+		if ( existingEntity == &entity )
 		{
-			typeList.erase( typeList.begin() + entityIndex );
+			existingEntity = nullptr;
 			break;
 		}
 	}
 
 	// Remove from faction-specific entity list
 	EntityList& factionList = m_entityListsByFaction[faction];
-	for ( int entityIndex = 0; entityIndex < static_cast<int>( factionList.size() ); ++ entityIndex )
+	for ( int i = 0; i < static_cast<int>( factionList.size() ); ++ i )
 	{
-		if ( factionList[entityIndex] == &entity )
+		Entity* existingEntity = factionList[i];
+		if ( existingEntity == &entity )
 		{
-			factionList.erase( factionList.begin() + entityIndex );
+			existingEntity = nullptr;
 			break;
 		}
 	}

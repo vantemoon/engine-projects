@@ -44,7 +44,7 @@ Game::Game()
 
 	IntVec2 playerStartTileCoords = IntVec2( 1, 1 );
 	Vec2 playerStartPos = m_currentMap->GetWorldPositionForTileCoords( playerStartTileCoords );
-	Player* player = static_cast< Player* >( m_currentMap->SpawnNewEntity( ENTITY_TYPE_GOOD_PLAYER, playerStartPos, 45.f ) );
+	Player* player = static_cast<Player*>( m_currentMap->SpawnNewEntity( ENTITY_TYPE_GOOD_PLAYER, playerStartPos, 45.f ) );
 	g_game->m_player = player;
 	
 	m_worldCamera = new Camera();
