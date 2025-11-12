@@ -1,4 +1,4 @@
-#include "Game/Game.hpp"
+﻿#include "Game/Game.hpp"
 #include "Game/App.hpp"
 #include "Game/GameCommon.hpp"
 #include "Game/MapDefinition.hpp"
@@ -29,6 +29,7 @@ Game* g_game = nullptr;
 Game::Game()
 {
 	LoadTextures();
+	LoadSounds();
 
 	if ( MapDefinition::s_definitions.size() != NUM_MAPS )
 	{
@@ -60,9 +61,6 @@ Game::Game()
 
 	m_worldCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( WORLD_SIZE_X, WORLD_SIZE_Y ) );
 	m_screenCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) );
-
-	m_attractMusicID = g_engine->m_audioSystem->CreateOrGetSound( "Data/Audio/AttractMusic.mp3" );
-	m_gameplayMusicID = g_engine->m_audioSystem->CreateOrGetSound( "Data/Audio/GameplayMusic.mp3" );
 
 	m_isAttractMusicPlaying = false;
 	m_isGameplayMusicPlaying = false;
@@ -141,6 +139,7 @@ void Game::Update( float deltaSeconds )
 			s_timeSincePlayerDeath += deltaSeconds;
 			if ( s_timeSincePlayerDeath >= PLAYER_TANK_DEATH_DELAY_SECONDS ) 
 			{
+				g_engine->m_audioSystem->StartSound( m_gameOverSoundID );
 				m_currentGameState = GameState::GAME_OVER;
 				s_playerDeathHandled = false;
 			}
@@ -311,6 +310,7 @@ void Game::UpdateFromKeyboard()
 		{
 			Reset();
 			m_currentGameState = GameState::PLAYING;
+			g_engine->m_audioSystem->StartSound( m_startGameSoundID, false );
 			UpdateMusic();
 		};
 
@@ -327,6 +327,7 @@ void Game::UpdateFromKeyboard()
 			g_engine->m_inputSystem->WasKeyJustPressed( 'N' ) )
 		{
 			m_currentGameState = GameState::ATTRACT_MODE;
+			g_engine->m_audioSystem->StartSound( m_startGameSoundID, false );
 			UpdateMusic();
 		}
 	}
@@ -344,6 +345,7 @@ void Game::UpdateFromKeyboard()
 		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_ESCAPE ) )
 		{
 			m_currentGameState = GameState::ATTRACT_MODE;
+			g_engine->m_audioSystem->StartSound( m_startGameSoundID, false );
 			UpdateMusic();
 		}
 	}
@@ -353,6 +355,7 @@ void Game::UpdateFromKeyboard()
 		if ( m_currentGameState == GameState::PAUSED && g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_ESCAPE ) )
 		{
 			m_currentGameState = GameState::ATTRACT_MODE;
+			g_engine->m_audioSystem->StartSound( m_startGameSoundID, false );
 			UpdateMusic();
 		}
 
@@ -361,12 +364,13 @@ void Game::UpdateFromKeyboard()
 														   g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_ESCAPE ) ) )
 		{
 			m_currentGameState = GameState::PAUSED;
+			g_engine->m_audioSystem->StartSound( m_pauseSoundID, false );
 			UpdateMusic();
 		}
-
 		else if ( m_currentGameState == GameState::PAUSED && g_engine->m_inputSystem->WasKeyJustPressed( 'P' ) )
 		{
 			m_currentGameState = GameState::PLAYING;
+			g_engine->m_audioSystem->StartSound( m_unpauseSoundID, false );
 			UpdateMusic();
 		}
 
@@ -445,6 +449,7 @@ void Game::UpdateFromController()
 		{
 			Reset();
 			m_currentGameState = GameState::PLAYING;
+			g_engine->m_audioSystem->StartSound( m_startGameSoundID, false );
 			UpdateMusic();
 		};
 		// Quit the game
@@ -460,6 +465,7 @@ void Game::UpdateFromController()
 			controller.WasButtonJustPressed( XBOX_BUTTON_START ) )
 		{
 			m_currentGameState = GameState::ATTRACT_MODE;
+			g_engine->m_audioSystem->StartSound( m_startGameSoundID, false );
 			UpdateMusic();
 		}
 	}
@@ -477,6 +483,7 @@ void Game::UpdateFromController()
 		if ( controller.WasButtonJustPressed( XBOX_BUTTON_BACK ) )
 		{
 			m_currentGameState = GameState::ATTRACT_MODE;
+			g_engine->m_audioSystem->StartSound( m_startGameSoundID, false );
 			UpdateMusic();
 		}
 	}
@@ -486,6 +493,7 @@ void Game::UpdateFromController()
 		if ( m_currentGameState == GameState::PAUSED && controller.WasButtonJustPressed( XBOX_BUTTON_BACK ) )
 		{
 			m_currentGameState = GameState::ATTRACT_MODE;
+			g_engine->m_audioSystem->StartSound( m_startGameSoundID, false );
 			UpdateMusic();
 		}
 
@@ -494,11 +502,13 @@ void Game::UpdateFromController()
 														   controller.WasButtonJustPressed( XBOX_BUTTON_BACK ) ) )
 		{
 			m_currentGameState = GameState::PAUSED;
+			g_engine->m_audioSystem->StartSound( m_pauseSoundID, false );
 			UpdateMusic();
 		}
 		else if ( m_currentGameState == GameState::PAUSED && controller.WasButtonJustPressed( XBOX_BUTTON_START ) )
 		{
 			m_currentGameState = GameState::PLAYING;
+			g_engine->m_audioSystem->StartSound( m_unpauseSoundID, false );
 			UpdateMusic();
 		}
 	}
@@ -568,64 +578,36 @@ void Game::Render() const
 //-----------------------------------------------------------------------------------------------
 void Game::RenderAttractMode() const
 {
-	// Colors
-	const Rgba8 brightYellow = Rgba8( 253, 239, 3 );
-	const Rgba8 brightCyan = Rgba8( 87, 231, 239 );
-	const Rgba8 dimCyan = Rgba8( 87, 231, 239, 80 );
-	const Rgba8 dimYellow = Rgba8( 253, 239, 3, 80 );
-	const Rgba8 neonPink = Rgba8( 248, 21, 98 );
-
-	float flicker = 0.9f + 0.1f * SinDegrees( ( float ) GetCurrentTimeSeconds() * 720.f );
-	Rgba8 flickerCol = Rgba8(
-		( unsigned char ) ( brightCyan.r * flicker ),
-		( unsigned char ) ( brightCyan.g * flicker ),
-		( unsigned char ) ( brightCyan.b * flicker )
-	);
-
 	g_engine->m_renderer->BeginCamera( *m_screenCamera );
 
-	const float currentTime = ( float ) GetCurrentTimeSeconds();
-	const float centerX = SCREEN_SIZE_X * 0.5f;
-	const float centerY = SCREEN_SIZE_Y * 0.5f;
-
-	// Play triangle
-	float triBase = SCREEN_SIZE_X * 0.05f;
-	float triPulse = 1.f + 0.06f * SinDegrees( currentTime * 180.f );
-	float triSize = triBase * triPulse;
-
-	Vertex triangleVertexArray[3];
-	triangleVertexArray[0].m_position = Vec3( centerX - triSize, centerY - triSize, 0.f );
-	triangleVertexArray[1].m_position = Vec3( centerX - triSize, centerY + triSize, 0.f );
-	triangleVertexArray[2].m_position = Vec3( centerX + triSize, centerY, 0.f );
-
-	float triAlpha = 0.55f + 0.45f * SinDegrees( currentTime * 180.f );
-	Rgba8 triangleColor = Rgba8( 0, 153, 0, ( unsigned char ) ( triAlpha * 255.f ) );
-	triangleVertexArray[0].m_color = triangleColor;
-	triangleVertexArray[1].m_color = triangleColor;
-	triangleVertexArray[2].m_color = triangleColor;
-
-	// Text
-	std::vector<Vertex> verts;
-	AddVertsForTextTriangles2D( verts, "LIBRA", Vec2( 10.f, SCREEN_SIZE_Y - 30.f ), 24.f, Rgba8( 255, 255, 255 ) );
+	// Texture
+	AABB2 fullScreenAABB2( 0.f, 0.f, SCREEN_SIZE_X, SCREEN_SIZE_Y );
+	std::vector<Vertex> backgroundVerts;
+	AddVertsForAABB2D( backgroundVerts, fullScreenAABB2, Rgba8::WHITE );
+	Texture* backgroundTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/AttractScreen.png" );
 
 	// Ring
-	std::vector<Vertex> ringVerts;
-	AddVertsForRing2D( ringVerts, Vec2( SCREEN_CENTER_X, SCREEN_CENTER_Y ), 350.f, 20.f, Rgba8( 255, 0, 255 ), 64 );
+	float time = ( float ) GetCurrentTimeSeconds();
+	float pulse = ( SinDegrees( time * 180.f ) * 0.5f ) + 0.5f; // oscillates 0 → 1
 
-	// Texture
-	Texture* testTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/Test_StbiFlippedAndOpenGL.png" );
-	std::vector<Vertex> testTextureVerts;
-	AABB2 texturedAABB2( 300.f, 100.f, 800.f, 600.f );
-	AddVertsForAABB2D( testTextureVerts, texturedAABB2, Rgba8( 255, 255, 255, 255 ) );
+	float baseRadius = 150.f;
+	float pulseRadiusRange = 40.f;
+	float currentRadius = baseRadius + pulseRadiusRange * pulse;
+
+	float baseThickness = 20.f;
+	float pulseThicknessRange = 20.f;
+	float currentThickness = baseThickness + pulseThicknessRange * pulse;
+
+	std::vector<Vertex> ringVerts;
+	AddVertsForRing2D( ringVerts, Vec2( SCREEN_CENTER_X, SCREEN_CENTER_Y ), currentRadius, currentThickness, Rgba8( 255, 165, 0 ), 64 );
 
 	// Render 
+	g_engine->m_renderer->BindTexture( backgroundTexture );
+	g_engine->m_renderer->DrawVertexArray( ( int ) backgroundVerts.size(), backgroundVerts.data() );
 	g_engine->m_renderer->BindTexture( nullptr );
-	g_engine->m_renderer->DrawVertexArray( ringVerts );
-	g_engine->m_renderer->BindTexture( testTexture );
-	g_engine->m_renderer->DrawVertexArray( testTextureVerts );
+	g_engine->m_renderer->DrawVertexArray( ( int ) ringVerts.size(), ringVerts.data() );
+
 	g_engine->m_renderer->BindTexture( nullptr );
-	g_engine->m_renderer->DrawVertexArray( 3, triangleVertexArray );
-	g_engine->m_renderer->DrawVertexArray( ( int ) verts.size(), verts.data() );
 
 	g_engine->m_renderer->EndCamera( *m_screenCamera );
 }
@@ -722,9 +704,11 @@ void Game::LoadNextMap()
 	int currentMapIndex = m_currentMap->m_index;
 	if ( currentMapIndex == NUM_MAPS - 1 )
 	{
+		g_engine->m_audioSystem->StartSound( m_victorySoundID, false );
 		m_currentGameState = GameState::VICTORY;
 		return;
 	}
+	g_engine->m_audioSystem->StartSound( m_nextLevelSoundID, false );
 	int nextMapIndex = ( currentMapIndex + 1 ) % static_cast<int>( m_maps.size() );
 	m_currentMap = m_maps[nextMapIndex];
 	IntVec2 playerStartTileCoords = IntVec2( 1, 1 );
@@ -760,4 +744,27 @@ void Game::LoadTextures()
 	// Tile SpriteSheet
 	Texture* tileTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/Terrain_8x8.png" );
 	m_tileSpriteSheet = new SpriteSheet( *tileTexture, IntVec2( 8, 8 ) );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game::LoadSounds()
+{
+	// Background Music
+	m_attractMusicID = g_engine->m_audioSystem->CreateOrGetSound( "Data/Audio/AttractMusic.mp3" );
+	m_gameplayMusicID = g_engine->m_audioSystem->CreateOrGetSound( "Data/Audio/GameplayMusic.mp3" );
+
+	// Sound Effects
+	m_startGameSoundID = g_engine->m_audioSystem->CreateOrGetSound( "Data/Audio/Click.mp3" );
+	m_pauseSoundID = g_engine->m_audioSystem->CreateOrGetSound( "Data/Audio/Pause.mp3" );
+	m_unpauseSoundID = g_engine->m_audioSystem->CreateOrGetSound( "Data/Audio/Unpause.mp3" );
+	m_playerShootSoundID = g_engine->m_audioSystem->CreateOrGetSound( "Data/Audio/PlayerShootNormal.ogg" );
+	m_enemyShootSoundID = g_engine->m_audioSystem->CreateOrGetSound( "Data/Audio/EnemyShoot.wav" );
+	m_playerHitSoundID = g_engine->m_audioSystem->CreateOrGetSound( "Data/Audio/PlayerHit.wav" );
+	m_enemyHitSoundID = g_engine->m_audioSystem->CreateOrGetSound( "Data/Audio/EnemyHit.wav" );
+	m_playerDeathSoundID = g_engine->m_audioSystem->CreateOrGetSound( "Data/Audio/EnemyDied.wav" ); // Using same sound as enemy death for now
+	m_enemyDeathSoundID = g_engine->m_audioSystem->CreateOrGetSound( "Data/Audio/EnemyDied.wav" );
+	m_nextLevelSoundID = g_engine->m_audioSystem->CreateOrGetSound( "Data/Audio/ExitMap.wav" );
+	m_gameOverSoundID = g_engine->m_audioSystem->CreateOrGetSound( "Data/Audio/GameOver.mp3" );
+	m_victorySoundID = g_engine->m_audioSystem->CreateOrGetSound( "Data/Audio/Victory.mp3" );
 }

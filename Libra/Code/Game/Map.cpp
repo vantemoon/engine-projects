@@ -511,10 +511,12 @@ void Map::SpawnEntitiesForMapDefinition()
 		Vec2 spawnPos = GetWorldPositionForTileCoords( spawnTileCoords );
 
 		// Ensure not spawning on solid tile
-		if ( IsPointInSolidTile( spawnPos ) )
+		while ( IsTileSolid( *GetTile( spawnTileCoords ) ) )
 		{
-			AABB2 tileBounds = GetTileBounds( spawnTileCoords );
-			PushDiscOutOfFixedAABB2D( spawnPos, TILE_SIZE, tileBounds );
+			rawSpawnPos.x = rng.RollRandomFloatInRange( 2.f * TILE_SIZE, ( static_cast<float>( m_dimensions.x ) - 3.f ) * TILE_SIZE );
+			rawSpawnPos.y = rng.RollRandomFloatInRange( 2.f * TILE_SIZE, ( static_cast<float>( m_dimensions.y ) - 3.f ) * TILE_SIZE );
+			spawnTileCoords = GetTileCoordsForWorldPosition( rawSpawnPos );
+			spawnPos = GetWorldPositionForTileCoords( spawnTileCoords );
 		}
 
 		Entity* newEntity = SpawnNewEntity( ENTITY_TYPE_EVIL_SCORPIO, spawnPos, 0.f );

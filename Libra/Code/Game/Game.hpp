@@ -31,11 +31,25 @@ public:
 	int 				m_numTilesInViewHorizontally;
 
 	SoundID				m_attractMusicID;
-	SoundID				m_gameplayMusicID;
 	SoundPlaybackID		m_attractMusicPlaybackID;
-	SoundPlaybackID		m_gameplayMusicPlaybackID;
 	bool				m_isAttractMusicPlaying = false;
+
+	SoundID				m_gameplayMusicID;
+	SoundPlaybackID		m_gameplayMusicPlaybackID;
 	bool 				m_isGameplayMusicPlaying = false;
+
+	SoundID             m_startGameSoundID;
+	SoundID             m_pauseSoundID;
+	SoundID             m_unpauseSoundID;
+	SoundID             m_playerShootSoundID;
+	SoundID             m_enemyShootSoundID;
+	SoundID             m_playerHitSoundID;
+	SoundID             m_enemyHitSoundID;
+	SoundID             m_playerDeathSoundID;
+	SoundID             m_enemyDeathSoundID;
+	SoundID             m_nextLevelSoundID;
+	SoundID             m_gameOverSoundID;
+	SoundID             m_victorySoundID;
 
 	bool				m_isScreenShaking = false;
 	float				m_screenShakeIntensity = 0.f;
@@ -69,6 +83,7 @@ public:
 	void UpdateMusic();
 	void ScreenShake( float intensity );
 	void LoadTextures();
+	void LoadSounds();
 	void Render()													  const;
 	void RenderHUD()												  const;
 	void RenderAttractMode()										  const;

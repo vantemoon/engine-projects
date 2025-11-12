@@ -168,4 +168,6 @@ void Scorpio::FireProjectile()
 	Entity* newBullet = g_game->m_currentMap->SpawnNewEntity( ENTITY_TYPE_EVIL_BOLT, projectileSpawnPosition, m_orientationDegrees );
 	if ( newBullet != nullptr )
 		g_game->m_currentMap->AddEntityToMap( *newBullet, ENTITY_TYPE_EVIL_BOLT, ENTITY_FACTION_EVIL );
+
+	g_engine->m_audioSystem->StartSound( g_game->m_enemyShootSoundID );
 }

@@ -256,6 +256,11 @@ void Player::Render() const
 	g_engine->m_renderer->DrawVertexArray( turretVerts );
 
 	g_engine->m_renderer->BindTexture( nullptr );
+
+	if ( m_isInvincible )
+	{
+		DebugDrawRing( m_position, m_physicsRadius + 0.1f, 0.5f, Rgba8::WHITE );
+	}
 }
 
 
@@ -265,6 +270,8 @@ void Player::TakeDamage( int damage )
 	if ( m_isInvincible )
 		return;
 
+	g_engine->m_audioSystem->StartSound( g_game->m_playerHitSoundID );
+
 	Entity::TakeDamage( damage );
 }
 
@@ -272,6 +279,8 @@ void Player::TakeDamage( int damage )
 //-----------------------------------------------------------------------------------------------
 void Player::Die()
 {
+	g_engine->m_audioSystem->StartSound( g_game->m_playerDeathSoundID );
+
 	m_isDead = true;
 }
 
@@ -368,4 +377,6 @@ void Player::FireProjectile()
 	Entity* newBullet = g_game->m_currentMap->SpawnNewEntity( ENTITY_TYPE_GOOD_BOLT, projectileSpawnPosition, m_turretOrientationDegrees );
 	if ( newBullet != nullptr )
 		g_game->m_currentMap->AddEntityToMap( *newBullet, ENTITY_TYPE_GOOD_BOLT, ENTITY_FACTION_GOOD );
+
+	g_engine->m_audioSystem->StartSound( g_game->m_playerShootSoundID );
 }
