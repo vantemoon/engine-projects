@@ -119,6 +119,8 @@ void Scorpio::Render() const
 //-----------------------------------------------------------------------------------------------
 void Scorpio::TakeDamage( int damage )
 {
+	g_engine->m_audioSystem->StartSound( g_game->m_enemyHitSoundID );
+
 	Entity::TakeDamage( damage );
 }
 
@@ -126,6 +128,8 @@ void Scorpio::TakeDamage( int damage )
 //-----------------------------------------------------------------------------------------------
 void Scorpio::Die()
 {
+	g_engine->m_audioSystem->StartSound( g_game->m_enemyDeathSoundID );
+
 	Entity::Die();
 }
 

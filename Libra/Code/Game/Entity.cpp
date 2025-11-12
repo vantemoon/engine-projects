@@ -54,8 +54,6 @@ void Entity::Render() const
 //-----------------------------------------------------------------------------------------------
 void Entity::TakeDamage( int damage )
 {
-	g_engine->m_audioSystem->StartSound( g_game->m_enemyHitSoundID );
-
 	m_health -= damage;
 	if ( m_health <= 0 )
 	{
@@ -67,8 +65,6 @@ void Entity::TakeDamage( int damage )
 //-----------------------------------------------------------------------------------------------
 void Entity::Die()
 {
-	g_engine->m_audioSystem->StartSound( g_game->m_enemyDeathSoundID );
-
 	m_isDead = true;
 	m_isGarbage = true;
 }

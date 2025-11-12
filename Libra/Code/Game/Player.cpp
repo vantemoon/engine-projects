@@ -47,6 +47,8 @@ Player::~Player() = default;
 //-----------------------------------------------------------------------------------------------
 void Player::Update( float deltaSeconds )
 {
+	if ( !IsAlive() ) return;
+
 	m_timeSinceLastFire += deltaSeconds;
 
 	UpdateFromKeyboard( deltaSeconds );

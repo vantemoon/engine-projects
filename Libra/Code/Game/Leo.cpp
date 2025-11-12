@@ -129,6 +129,8 @@ void Leo::Render() const
 //-----------------------------------------------------------------------------------------------
 void Leo::TakeDamage( int damage )
 {
+	g_engine->m_audioSystem->StartSound( g_game->m_enemyHitSoundID );
+
 	Entity::TakeDamage( damage );
 }
 
@@ -136,6 +138,8 @@ void Leo::TakeDamage( int damage )
 //-----------------------------------------------------------------------------------------------
 void Leo::Die()
 {
+	g_engine->m_audioSystem->StartSound( g_game->m_enemyDeathSoundID );
+
 	Entity::Die();
 }
 

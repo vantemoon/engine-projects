@@ -115,6 +115,8 @@ void Aries::Render() const
 //-----------------------------------------------------------------------------------------------
 void Aries::TakeDamage( int damage )
 {
+	g_engine->m_audioSystem->StartSound( g_game->m_enemyHitSoundID );
+
 	Entity::TakeDamage( damage );
 }
 
@@ -122,6 +124,8 @@ void Aries::TakeDamage( int damage )
 //-----------------------------------------------------------------------------------------------
 void Aries::Die()
 {
+	g_engine->m_audioSystem->StartSound( g_game->m_enemyDeathSoundID );
+
 	Entity::Die();
 }
 
