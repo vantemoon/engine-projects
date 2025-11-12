@@ -61,7 +61,9 @@ public:
 
 	void Update( float deltaSeconds);
 	void UpdateAttractMode( float deltaSeconds );
+	void UpdatePausedMode( float deltaSeconds );
 	void UpdateVicoryMode( float deltaSeconds );
+	void UpdateGameOverMode( float deltaSeconds );
 	void UpdateFromKeyboard();
 	void UpdateFromController();
 	void UpdateMusic();
@@ -70,9 +72,9 @@ public:
 	void Render()													  const;
 	void RenderHUD()												  const;
 	void RenderAttractMode()										  const;
+	void RenderPausedMode()									  const;
 	void RenderVictoryMode()										  const;
-	void RenderPauseScreenOverlay()									  const;
-	void RenderGameOverScreenOverlay()								  const;
+	void RenderGameOverMode()								  const;
 	void Reset();
 	void KillAllEnemies();
 	void LoadNextMap();

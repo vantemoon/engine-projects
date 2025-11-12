@@ -24,6 +24,7 @@ Map::Map( IntVec2 dimensions, int index )
 	, m_index( index )
 {
 	PopulateTiles();
+	SpawnEntitiesForMapDefinition();
 
 	// Add player to the map
 	AddEntityToMap( *g_game->m_player, ENTITY_TYPE_GOOD_PLAYER, ENTITY_FACTION_GOOD );
@@ -464,6 +465,64 @@ bool Map::HasLineOfSight( Vec2 const& startPos, Vec2 const& endPos, float stepSi
 	Vec2 direction = displacement.GetNormalized();
 	RaycastResult2D raycast = RaycastVsTiles( startPos, direction, distance, stepSize );
 	return !raycast.m_didImpact;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Map::SpawnEntitiesForMapDefinition()
+{
+	int mapIndex = m_index;
+	MapDefinition const& mapDef = MapDefinition::s_definitions[mapIndex];
+
+	RandomNumberGenerator rng;
+
+	// Spawn Scorpios
+	for ( int i = 0; i < mapDef.m_numOfScorpios; ++ i )
+	{
+		Vec2 rawSpawnPos;
+		rawSpawnPos.x = rng.RollRandomFloatInRange( 2.f * TILE_SIZE, ( static_cast<float>( m_dimensions.x ) - 3.f ) * TILE_SIZE );
+		rawSpawnPos.y = rng.RollRandomFloatInRange( 2.f * TILE_SIZE, ( static_cast<float>( m_dimensions.y ) - 3.f ) * TILE_SIZE );
+		IntVec2 spawnTileCoords = GetTileCoordsForWorldPosition( rawSpawnPos );
+		Vec2 spawnPos = GetWorldPositionForTileCoords( spawnTileCoords );
+
+		Entity* newEntity = SpawnNewEntity( ENTITY_TYPE_EVIL_SCORPIO, spawnPos, 0.f );
+		if ( newEntity != nullptr )
+		{
+			AddEntityToMap( *newEntity, ENTITY_TYPE_EVIL_SCORPIO, ENTITY_FACTION_EVIL );
+		}
+	}
+
+	// Spawn Leos
+	for ( int i = 0; i < mapDef.m_numOfLeos; ++ i )
+	{
+		Vec2 rawSpawnPos;
+		rawSpawnPos.x = rng.RollRandomFloatInRange( 2.f * TILE_SIZE, ( static_cast<float>( m_dimensions.x ) - 3.f ) * TILE_SIZE );
+		rawSpawnPos.y = rng.RollRandomFloatInRange( 2.f * TILE_SIZE, ( static_cast<float>( m_dimensions.y ) - 3.f ) * TILE_SIZE );
+		IntVec2 spawnTileCoords = GetTileCoordsForWorldPosition( rawSpawnPos );
+		Vec2 spawnPos = GetWorldPositionForTileCoords( spawnTileCoords );
+		
+		Entity* newEntity = SpawnNewEntity( ENTITY_TYPE_EVIL_LEO, spawnPos, 0.f );
+		if ( newEntity != nullptr )
+		{
+			AddEntityToMap( *newEntity, ENTITY_TYPE_EVIL_LEO, ENTITY_FACTION_EVIL );
+		}
+	}
+
+	// Spawn Aries
+	for ( int i = 0; i < mapDef.m_numOfAries; ++ i )
+	{
+		Vec2 rawSpawnPos;
+		rawSpawnPos.x = rng.RollRandomFloatInRange( 2.f * TILE_SIZE, ( static_cast<float>( m_dimensions.x ) - 3.f ) * TILE_SIZE );
+		rawSpawnPos.y = rng.RollRandomFloatInRange( 2.f * TILE_SIZE, ( static_cast<float>( m_dimensions.y ) - 3.f ) * TILE_SIZE );
+		IntVec2 spawnTileCoords = GetTileCoordsForWorldPosition( rawSpawnPos );
+		Vec2 spawnPos = GetWorldPositionForTileCoords( spawnTileCoords );
+		
+		Entity* newEntity = SpawnNewEntity( ENTITY_TYPE_EVIL_ARIES, spawnPos, 0.f );
+		if ( newEntity != nullptr )
+		{
+			AddEntityToMap( *newEntity, ENTITY_TYPE_EVIL_ARIES, ENTITY_FACTION_EVIL );
+		}
+	}
 }
 
 

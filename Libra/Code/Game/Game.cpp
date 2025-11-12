@@ -97,15 +97,19 @@ void Game::Update( float deltaSeconds )
 
 	if ( m_currentGameState == GameState::PAUSED )
 	{
-		UpdateFromKeyboard();
-		UpdateFromController();
+		UpdatePausedMode( deltaSeconds );
 		return;
 	};
 
+	if ( m_currentGameState == GameState::VICTORY )
+	{
+		UpdateVicoryMode( deltaSeconds );
+		return;
+	}
+
 	if ( m_currentGameState == GameState::GAME_OVER )
 	{
-		UpdateFromKeyboard();
-		UpdateFromController();
+		UpdateGameOverMode( deltaSeconds );
 		return;
 	}
 
@@ -274,7 +278,23 @@ void Game::UpdateAttractMode( [[maybe_unused]] float deltaSeconds )
 
 
 //-----------------------------------------------------------------------------------------------
+void Game::UpdatePausedMode( [[maybe_unused]] float deltaSeconds )
+{
+	UpdateFromKeyboard();
+	UpdateFromController();
+}
+
+
+//-----------------------------------------------------------------------------------------------
 void Game::UpdateVicoryMode( [[maybe_unused]] float deltaSeconds )
+{
+	UpdateFromKeyboard();
+	UpdateFromController();
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game::UpdateGameOverMode( [[maybe_unused]] float deltaSeconds )
 {
 	UpdateFromKeyboard();
 	UpdateFromController();
@@ -526,12 +546,17 @@ void Game::Render() const
 
 	if ( m_currentGameState == GameState::PAUSED )
 	{
-		RenderPauseScreenOverlay();
+		RenderPausedMode();
+	};
+
+	if ( m_currentGameState == GameState::VICTORY )
+	{
+		RenderVictoryMode();
 	};
 
 	if ( m_currentGameState == GameState::GAME_OVER )
 	{
-		RenderGameOverScreenOverlay();
+		RenderGameOverMode();
 	};
 
 	// RenderHUD();
@@ -607,23 +632,6 @@ void Game::RenderAttractMode() const
 
 
 //-----------------------------------------------------------------------------------------------
-void Game::RenderVictoryMode() const
-{
-	g_engine->m_renderer->BeginCamera( *m_screenCamera );
-
-	Texture* victoryTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/VictoryScreen.jpg" );
-	std::vector<Vertex> verts;
-	AABB2 fullScreenAABB2( 0.f, 0.f, SCREEN_SIZE_X, SCREEN_SIZE_Y );
-	AddVertsForAABB2D( verts, fullScreenAABB2, Rgba8( 255, 255, 255, 255 ) );
-	g_engine->m_renderer->BindTexture( victoryTexture );
-	g_engine->m_renderer->DrawVertexArray( ( int ) verts.size(), verts.data() );
-	g_engine->m_renderer->BindTexture( nullptr );
-
-	g_engine->m_renderer->EndCamera( *m_screenCamera );
-}
-
-
-//-----------------------------------------------------------------------------------------------
 void Game::RenderHUD() const
 {
 	g_engine->m_renderer->BeginCamera( *m_screenCamera );
@@ -654,7 +662,7 @@ void Game::RenderHUD() const
 
 
 //-----------------------------------------------------------------------------------------------
-void Game::RenderPauseScreenOverlay() const
+void Game::RenderPausedMode() const
 {
 	g_engine->m_renderer->BeginCamera( *m_screenCamera );
 
@@ -668,18 +676,34 @@ void Game::RenderPauseScreenOverlay() const
 
 
 //-----------------------------------------------------------------------------------------------
-void Game::RenderGameOverScreenOverlay() const
+void Game::RenderVictoryMode() const
+{
+	g_engine->m_renderer->BeginCamera( *m_screenCamera );
+
+	Texture* victoryTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/VictoryScreen.jpg" );
+	std::vector<Vertex> verts;
+	AABB2 fullScreenAABB2( 0.f, 0.f, SCREEN_SIZE_X, SCREEN_SIZE_Y );
+	AddVertsForAABB2D( verts, fullScreenAABB2, Rgba8( 255, 255, 255, 255 ) );
+	g_engine->m_renderer->BindTexture( victoryTexture );
+	g_engine->m_renderer->DrawVertexArray( ( int ) verts.size(), verts.data() );
+	g_engine->m_renderer->BindTexture( nullptr );
+
+	g_engine->m_renderer->EndCamera( *m_screenCamera );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game::RenderGameOverMode() const
 {
 	g_engine->m_renderer->BeginCamera( *m_screenCamera );
 	
-	std::vector<Vertex> quadVerts;
+	Texture* gameOverTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/YouDiedScreen.png" );
+	std::vector<Vertex> verts;
 	AABB2 fullScreenAABB2( 0.f, 0.f, SCREEN_SIZE_X, SCREEN_SIZE_Y );
-	AddVertsForAABB2D( quadVerts, fullScreenAABB2, Rgba8( 0, 0, 0, 150 ) );
-	g_engine->m_renderer->DrawVertexArray( quadVerts );
-
-	std::vector<Vertex> textVerts;
-	AddVertsForTextTriangles2D( textVerts, "GAME OVER", Vec2( SCREEN_CENTER_X - 100.f, SCREEN_CENTER_Y ), 48.f, Rgba8( 255, 0, 0 ) );
-	g_engine->m_renderer->DrawVertexArray( ( int ) textVerts.size(), textVerts.data() );
+	AddVertsForAABB2D( verts, fullScreenAABB2, Rgba8( 255, 255, 255, 255 ) );
+	g_engine->m_renderer->BindTexture( gameOverTexture );
+	g_engine->m_renderer->DrawVertexArray( ( int ) verts.size(), verts.data() );
+	g_engine->m_renderer->BindTexture( nullptr );
 
 	g_engine->m_renderer->EndCamera( *m_screenCamera );
 }
