@@ -10,6 +10,7 @@
 class  Camera;      // Forward declaration
 class  Entity;      // Forward declaration
 class  SpriteSheet; // Forward declaration
+class  Texture;     // Forward declaration
 struct Vec3;        // Forward declaration
 
 
@@ -50,6 +51,21 @@ public:
 	SoundID             m_nextLevelSoundID;
 	SoundID             m_gameOverSoundID;
 	SoundID             m_victorySoundID;
+
+	Texture*			m_attractModeBackgroundTexture = nullptr;
+	Texture*			m_victoryScreenTexture = nullptr;
+	Texture*			m_gameOverScreenTexture = nullptr;
+	Texture*			m_ariesTexture = nullptr;
+	Texture*			m_leoTexture = nullptr;
+	Texture*			m_scorpioBaseTexture = nullptr;
+	Texture*			m_scorpioTurretTexture = nullptr;
+	Texture*			m_playerTankBaseTexture = nullptr;
+	Texture*			m_playerTankTurretTexture = nullptr;
+	Texture*			m_goodBulletTexture = nullptr;
+	Texture*			m_goodBoltTexture = nullptr;
+	Texture*			m_evilBulletTexture = nullptr;
+	Texture*			m_evilBoltTexture = nullptr;
+
 
 	bool				m_isScreenShaking = false;
 	float				m_screenShakeIntensity = 0.f;

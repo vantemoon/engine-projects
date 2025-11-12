@@ -245,15 +245,13 @@ void Player::Render() const
 
 	std::vector<Vertex> tankBodyVerts;
 	tankBodyVerts = m_tankBodyVertexArray;
-	Texture* tankBodyTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/PlayerTankBase.png" );
-	g_engine->m_renderer->BindTexture( tankBodyTexture );
+	g_engine->m_renderer->BindTexture( g_game->m_playerTankBaseTexture );
 	TransformVertexArrayXY3D( (int) tankBodyVerts.size(), tankBodyVerts.data(), 1.f, m_orientationDegrees, m_position );
 	g_engine->m_renderer->DrawVertexArray( tankBodyVerts );
 
 	std::vector<Vertex> turretVerts;
 	turretVerts = m_turretVertexArray;
-	Texture* turretTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/PlayerTankTop.png" );
-	g_engine->m_renderer->BindTexture( turretTexture );
+	g_engine->m_renderer->BindTexture( g_game->m_playerTankTurretTexture );
 	TransformVertexArrayXY3D( (int) turretVerts.size(), turretVerts.data(), 1.f, m_turretOrientationDegrees, m_position );
 	g_engine->m_renderer->DrawVertexArray( turretVerts );
 

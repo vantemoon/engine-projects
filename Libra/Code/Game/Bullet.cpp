@@ -148,19 +148,19 @@ void Bullet::Render() const
 			break;
 
 		case ENTITY_TYPE_GOOD_BULLET:
-			bulletTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/FriendlyBullet.png" );
+			bulletTexture = g_game->m_goodBulletTexture;
 			break;
 
 		case ENTITY_TYPE_GOOD_BOLT:
-			bulletTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/FriendlyBolt.png" );
+			bulletTexture = g_game->m_goodBoltTexture;
 			break;
 
 		case ENTITY_TYPE_EVIL_BULLET:
-			bulletTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/EnemyBullet.png" );
+			bulletTexture = g_game->m_evilBulletTexture;
 			break;
 
 		case ENTITY_TYPE_EVIL_BOLT:
-			bulletTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/EnemyBolt.png" );
+			bulletTexture = g_game->m_evilBoltTexture;
 			break;
 	}
 	g_engine->m_renderer->BindTexture( bulletTexture );

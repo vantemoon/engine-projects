@@ -79,15 +79,13 @@ void Scorpio::Render() const
 
 	// Base (not rotated)
 	std::vector<Vertex> baseVerts = m_scorpioBaseVertexArray;
-	Texture* scorpioBaseTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/EnemyTurretBase.png" );
-	g_engine->m_renderer->BindTexture( scorpioBaseTexture );
+	g_engine->m_renderer->BindTexture( g_game->m_scorpioBaseTexture );
 	TransformVertexArrayXY3D( ( int ) baseVerts.size(), baseVerts.data(), 1.f, 0.f, m_position );
 	g_engine->m_renderer->DrawVertexArray( baseVerts );
 
 	// Top (rotated)
 	std::vector<Vertex> topVerts = m_scorpioTopVertexArray;
-	Texture* scorpioTopTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/EnemyCannon.png" );
-	g_engine->m_renderer->BindTexture( scorpioTopTexture );
+	g_engine->m_renderer->BindTexture( g_game->m_scorpioTurretTexture );
 	TransformVertexArrayXY3D( ( int ) topVerts.size(), topVerts.data(), 1.f, m_orientationDegrees, m_position );
 	g_engine->m_renderer->DrawVertexArray( topVerts );
 

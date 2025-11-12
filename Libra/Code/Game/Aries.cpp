@@ -103,8 +103,7 @@ void Aries::Render() const
 	}
 
 	std::vector<Vertex> verts = m_vertexArray;
-	Texture* ariesTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/EnemyAries.png" );
-	g_engine->m_renderer->BindTexture( ariesTexture );
+	g_engine->m_renderer->BindTexture( g_game->m_ariesTexture );
 	TransformVertexArrayXY3D( ( int ) verts.size(), verts.data(), 1.f, m_orientationDegrees, m_position );
 	g_engine->m_renderer->DrawVertexArray( verts );
 

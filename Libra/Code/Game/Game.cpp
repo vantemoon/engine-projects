@@ -584,7 +584,6 @@ void Game::RenderAttractMode() const
 	AABB2 fullScreenAABB2( 0.f, 0.f, SCREEN_SIZE_X, SCREEN_SIZE_Y );
 	std::vector<Vertex> backgroundVerts;
 	AddVertsForAABB2D( backgroundVerts, fullScreenAABB2, Rgba8::WHITE );
-	Texture* backgroundTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/AttractScreen.png" );
 
 	// Ring
 	float time = ( float ) GetCurrentTimeSeconds();
@@ -602,7 +601,7 @@ void Game::RenderAttractMode() const
 	AddVertsForRing2D( ringVerts, Vec2( SCREEN_CENTER_X, SCREEN_CENTER_Y ), currentRadius, currentThickness, Rgba8( 255, 165, 0 ), 64 );
 
 	// Render 
-	g_engine->m_renderer->BindTexture( backgroundTexture );
+	g_engine->m_renderer->BindTexture( m_attractModeBackgroundTexture );
 	g_engine->m_renderer->DrawVertexArray( ( int ) backgroundVerts.size(), backgroundVerts.data() );
 	g_engine->m_renderer->BindTexture( nullptr );
 	g_engine->m_renderer->DrawVertexArray( ( int ) ringVerts.size(), ringVerts.data() );
@@ -662,11 +661,10 @@ void Game::RenderVictoryMode() const
 {
 	g_engine->m_renderer->BeginCamera( *m_screenCamera );
 
-	Texture* victoryTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/VictoryScreen.jpg" );
 	std::vector<Vertex> verts;
 	AABB2 fullScreenAABB2( 0.f, 0.f, SCREEN_SIZE_X, SCREEN_SIZE_Y );
 	AddVertsForAABB2D( verts, fullScreenAABB2, Rgba8( 255, 255, 255, 255 ) );
-	g_engine->m_renderer->BindTexture( victoryTexture );
+	g_engine->m_renderer->BindTexture( m_victoryScreenTexture );
 	g_engine->m_renderer->DrawVertexArray( ( int ) verts.size(), verts.data() );
 	g_engine->m_renderer->BindTexture( nullptr );
 
@@ -679,11 +677,10 @@ void Game::RenderGameOverMode() const
 {
 	g_engine->m_renderer->BeginCamera( *m_screenCamera );
 	
-	Texture* gameOverTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/YouDiedScreen.png" );
 	std::vector<Vertex> verts;
 	AABB2 fullScreenAABB2( 0.f, 0.f, SCREEN_SIZE_X, SCREEN_SIZE_Y );
 	AddVertsForAABB2D( verts, fullScreenAABB2, Rgba8( 255, 255, 255, 255 ) );
-	g_engine->m_renderer->BindTexture( gameOverTexture );
+	g_engine->m_renderer->BindTexture( m_gameOverScreenTexture );
 	g_engine->m_renderer->DrawVertexArray( ( int ) verts.size(), verts.data() );
 	g_engine->m_renderer->BindTexture( nullptr );
 
@@ -744,6 +741,21 @@ void Game::LoadTextures()
 	// Tile SpriteSheet
 	Texture* tileTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/Terrain_8x8.png" );
 	m_tileSpriteSheet = new SpriteSheet( *tileTexture, IntVec2( 8, 8 ) );
+
+	// Textures
+	m_attractModeBackgroundTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/AttractScreen.png" );
+	m_victoryScreenTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/VictoryScreen.jpg" );
+	m_gameOverScreenTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/YouDiedScreen.png" );
+	m_ariesTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/EnemyAries.png" );
+	m_leoTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/EnemyTank4.png" );
+	m_scorpioBaseTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/EnemyTurretBase.png" );
+	m_scorpioTurretTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/EnemyCannon.png" );
+	m_playerTankBaseTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/PlayerTankBase.png" );
+	m_playerTankTurretTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/PlayerTankTop.png" );
+	m_goodBulletTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/FriendlyBullet.png" );
+	m_goodBoltTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/FriendlyBolt.png" );
+	m_evilBulletTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/EnemyBullet.png" );
+	m_evilBoltTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/EnemyBolt.png" );
 }
 
 

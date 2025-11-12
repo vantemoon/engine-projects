@@ -117,8 +117,7 @@ void Leo::Render() const
 	}
 	
 	std::vector<Vertex> verts = m_vertexArray;
-	Texture* leoTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/EnemyTank4.png" );
-	g_engine->m_renderer->BindTexture( leoTexture );
+	g_engine->m_renderer->BindTexture( g_game->m_leoTexture );
 	TransformVertexArrayXY3D( ( int ) verts.size(), verts.data(), 1.f, m_orientationDegrees, m_position );
 	g_engine->m_renderer->DrawVertexArray( verts );
 
