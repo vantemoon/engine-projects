@@ -10,16 +10,20 @@ SpriteSheet::SpriteSheet( Texture& texture, IntVec2 const& simpleGridLayout )
 	int numSpritesWide = simpleGridLayout.x;
 	int numSpritesHigh = simpleGridLayout.y;
 	int totalSprites = numSpritesWide * numSpritesHigh;
+
 	for ( int spriteIndex = 0; spriteIndex < totalSprites; ++spriteIndex )
 	{
 		int spriteX = spriteIndex % numSpritesWide;
 		int spriteY = spriteIndex / numSpritesWide;
-		float uvMinX = static_cast<float>( spriteX ) / static_cast<float>( numSpritesWide );
-		float uvMinY = static_cast<float>( spriteY ) / static_cast<float>( numSpritesHigh );
-		float uvMaxX = static_cast<float>( spriteX + 1 ) / static_cast<float>( numSpritesWide );
-		float uvMaxY = static_cast<float>( spriteY + 1 ) / static_cast<float>( numSpritesHigh );
+
+		float uvMinX = static_cast< float >( spriteX ) / static_cast< float >( numSpritesWide );
+		float uvMinY = static_cast< float >( ( numSpritesHigh - 1 ) - spriteY ) / static_cast< float >( numSpritesHigh );
+		float uvMaxX = static_cast< float >( spriteX + 1 ) / static_cast< float >( numSpritesWide );
+		float uvMaxY = static_cast< float >( ( numSpritesHigh - 1 ) - spriteY + 1 ) / static_cast< float >( numSpritesHigh );
+
 		Vec2 uvAtMins( uvMinX, uvMinY );
 		Vec2 uvAtMaxs( uvMaxX, uvMaxY );
+
 		SpriteDefinition spriteDef( *this, spriteIndex, uvAtMins, uvAtMaxs );
 		m_spriteDefinitions.push_back( spriteDef );
 	}

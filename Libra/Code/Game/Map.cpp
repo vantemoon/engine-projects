@@ -15,6 +15,7 @@
 #include "Engine/Math/MathUtils.hpp"
 #include "Engine/Math/RandomNumberGenerator.hpp"
 #include "Engine/Renderer/Camera.hpp"
+#include "Engine/Renderer/SpriteDefinition.hpp"
 
 
 //-----------------------------------------------------------------------------------------------
@@ -73,101 +74,25 @@ void Map::Render() const
 //-----------------------------------------------------------------------------------------------
 void Map::RenderTiles() const
 {
-	int numTiles = static_cast< int >( m_tiles.size() );
 	std::vector<Vertex> tileVerts;
-	for ( int tileIndex = 0; tileIndex < numTiles; ++ tileIndex )
+
+	g_engine->m_renderer->BindTexture( &g_game->m_tileSpriteSheet->GetTexture() );
+
+	for ( Tile const& tile : m_tiles )
 	{
-		const Tile& tile = m_tiles[tileIndex];
-		AABB2 tileBounds = AABB2( tile.m_tileCoords.x * TILE_SIZE, tile.m_tileCoords.y * TILE_SIZE,
-			( tile.m_tileCoords.x + 1 ) * TILE_SIZE, ( tile.m_tileCoords.y + 1 ) * TILE_SIZE );
-		Rgba8 tileColor;
-		switch ( tile.m_type )
-		{
-			// Grass tiles
-			case TILE_TYPE_GRASS_1:
-			case TILE_TYPE_GRASS_2:
-			case TILE_TYPE_GRASS_3:
-			case TILE_TYPE_GRASS_4:
-			case TILE_TYPE_GRASS_5:
-			case TILE_TYPE_GRASS_6:
-			case TILE_TYPE_GRASS_7:
-			case TILE_TYPE_GRASS_8:
-			case TILE_TYPE_GRASS_9:
-			case TILE_TYPE_GRASS_10:
-			case TILE_TYPE_GRASS_11:
-				tileColor = GRASS_COLOR;
-				break;
+		AABB2 tileBounds( tile.m_tileCoords.x * TILE_SIZE, tile.m_tileCoords.y * TILE_SIZE,
+						( tile.m_tileCoords.x + 1 ) * TILE_SIZE, ( tile.m_tileCoords.y + 1 ) * TILE_SIZE );
 
-			// Stone tiles
-			case TILE_TYPE_STONE_1:
-			case TILE_TYPE_STONE_2:
-			case TILE_TYPE_STONE_3:
-			case TILE_TYPE_STONE_4:
-			case TILE_TYPE_STONE_5:
-			case TILE_TYPE_STONE_6:
-			case TILE_TYPE_STONE_7:
-			case TILE_TYPE_STONE_8:
-			case TILE_TYPE_STONE_9:
-			case TILE_TYPE_STONE_10:
-			case TILE_TYPE_STONE_11:
-			case TILE_TYPE_STONE_BRICK_1:
-			case TILE_TYPE_STONE_BRICK_2:
-			case TILE_TYPE_STONE_BRICK_3:
-			case TILE_TYPE_STONE_BRICK_4:
-			case TILE_TYPE_STONE_BRICK_5:
-			case TILE_TYPE_STONE_BRICK_6:
-			case TILE_TYPE_STONE_BRICK_7:
-			case TILE_TYPE_STONE_BRICK_8:
-			case TILE_TYPE_STONE_BRICK_9:
-			case TILE_TYPE_STONE_BRICK_10:
-			case TILE_TYPE_STONE_BRICK_11:
-				tileColor = STONE_COLOR;
-				break;
+		TileDefinition const& tileDef = tile.GetDefinition();
+		Rgba8 tint = tileDef.m_tint;
+		Vec2 uvMins = tileDef.m_UVs.m_mins;
+		Vec2 uvMaxs = tileDef.m_UVs.m_maxs;
 
-			// Dirt tiles
-			case TILE_TYPE_DIRT_1:
-			case TILE_TYPE_DIRT_2:
-			case TILE_TYPE_DIRT_3:
-			case TILE_TYPE_DIRT_4:
-			case TILE_TYPE_DIRT_5:
-				tileColor = DIRT_COLOR;
-				break;
-
-			// Sand tiles
-			case TILE_TYPE_SAND_1:
-			case TILE_TYPE_SAND_2:
-			case TILE_TYPE_SAND_3:
-			case TILE_TYPE_SAND_4:
-				tileColor = SAND_COLOR;
-				break;
-
-			// Mud tiles
-			case TILE_TYPE_MUD_1:
-			case TILE_TYPE_MUD_2:
-				tileColor = MUD_COLOR;
-				break;
-
-			// Wood tiles
-			case TILE_TYPE_WOOD_FLOOR_VERTICAL:
-			case TILE_TYPE_WOOD_FLOOR_HORIZONTAL:
-				tileColor = WOOD_COLOR;
-				break;
-
-			// Water tiles
-			case TILE_TYPE_WATER_1:
-			case TILE_TYPE_WATER_2:
-				tileColor = WATER_COLOR;
-				break;
-
-			// Default
-			default:
-				tileColor = Rgba8::WHITE;
-				break;
-		}
-		AddVertsForAABB2D( tileVerts, tileBounds, tileColor );
+		AddVertsForAABB2D( tileVerts, tileBounds, tint, uvMins, uvMaxs );
 	}
+
+	g_engine->m_renderer->DrawVertexArray( static_cast<int>( tileVerts.size() ), tileVerts.data() );
 	g_engine->m_renderer->BindTexture( nullptr );
-	g_engine->m_renderer->DrawVertexArray( static_cast< int >( tileVerts.size() ), tileVerts.data() );
 }
 
 
@@ -348,8 +273,12 @@ void Map::PopulateTiles()
 			{
 				if ( isInnerReserved )
 				{
-					if ( ( x == 2 && y == 4 ) || ( x == 3 && y == 4 ) || ( x == 4 && y == 4 ) ||
-						( x == 4 && y == 3 ) || ( x == 4 && y == 2 ) )
+					if ( x == 1 && y == 1 )
+					{
+						type = TILE_TYPE_ENTRANCE;
+					}
+					else if ( ( x == 2 && y == 4 ) || ( x == 3 && y == 4 ) || ( x == 4 && y == 4 ) ||
+							  ( x == 4 && y == 3 ) || ( x == 4 && y == 2 ) )
 					{
 						type = MapDefinition::s_definitions[m_index].m_startbunkerWallTileType;
 					}
@@ -360,13 +289,19 @@ void Map::PopulateTiles()
 				}
 				else if ( isOuterReserved )
 				{
-					if ( ( x == m_dimensions.x - 6 && y == m_dimensions.y - 3 ) ||
-						( x == m_dimensions.x - 6 && y == m_dimensions.y - 4 ) ||
-						( x == m_dimensions.x - 6 && y == m_dimensions.y - 5 ) ||
-						( x == m_dimensions.x - 6 && y == m_dimensions.y - 6 ) ||
-						( x == m_dimensions.x - 5 && y == m_dimensions.y - 6 ) ||
-						( x == m_dimensions.x - 4 && y == m_dimensions.y - 6 ) ||
-						( x == m_dimensions.x - 3 && y == m_dimensions.y - 6 ) )
+					Vec2 exitPosition = MapDefinition::s_definitions[m_index].m_exitPosition;
+					IntVec2 exitTileCoords = GetTileCoordsForWorldPosition( exitPosition );
+					if ( x == exitTileCoords.x && y == exitTileCoords.y )
+					{
+						type = TILE_TYPE_EXIT;
+					}
+					else if ( ( x == m_dimensions.x - 6 && y == m_dimensions.y - 3 ) ||
+							  ( x == m_dimensions.x - 6 && y == m_dimensions.y - 4 ) ||
+							  ( x == m_dimensions.x - 6 && y == m_dimensions.y - 5 ) ||
+							  ( x == m_dimensions.x - 6 && y == m_dimensions.y - 6 ) ||
+							  ( x == m_dimensions.x - 5 && y == m_dimensions.y - 6 ) ||
+							  ( x == m_dimensions.x - 4 && y == m_dimensions.y - 6 ) ||
+							  ( x == m_dimensions.x - 3 && y == m_dimensions.y - 6 ) )
 					{
 						type = MapDefinition::s_definitions[m_index].m_exitbunkerWallTileType;
 					}

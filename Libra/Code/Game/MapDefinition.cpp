@@ -24,7 +24,7 @@ void MapDefinition::InitializeMapDefinitions()
 	s_definitions[0].m_fillTileType = TILE_TYPE_GRASS_1;
 	s_definitions[0].m_borderTileType = TILE_TYPE_STONE_2;
 	s_definitions[0].m_bunkerFloorTileType = TILE_TYPE_STONE_TILE;
-	s_definitions[0].m_startbunkerWallTileType = TILE_TYPE_STONE_BRICK_11;
+	s_definitions[0].m_startbunkerWallTileType = TILE_TYPE_METAL_WALL;
 	s_definitions[0].m_exitbunkerWallTileType = TILE_TYPE_STONE_BRICK_4;
 	s_definitions[0].m_sprinkle1TileType = TILE_TYPE_STONE_2;
 	s_definitions[0].m_sprinkle2TileType = TILE_TYPE_STONE_2; // Not used
@@ -48,7 +48,7 @@ void MapDefinition::InitializeMapDefinitions()
 	s_definitions[1].m_borderTileType = TILE_TYPE_STONE_BRICK_4;
 	s_definitions[1].m_bunkerFloorTileType = TILE_TYPE_STONE_TILE;
 	s_definitions[1].m_startbunkerWallTileType = TILE_TYPE_STONE_BRICK_4;
-	s_definitions[1].m_exitbunkerWallTileType = TILE_TYPE_STONE_BRICK_11;
+	s_definitions[1].m_exitbunkerWallTileType = TILE_TYPE_METAL_WALL;
 	s_definitions[1].m_sprinkle1TileType = TILE_TYPE_STONE_2;
 	s_definitions[1].m_sprinkle2TileType = TILE_TYPE_MUD_2;
 
@@ -68,11 +68,11 @@ void MapDefinition::InitializeMapDefinitions()
 	s_definitions[2].m_numOfAries = 10;
 
 	s_definitions[2].m_fillTileType = TILE_TYPE_MUD_2;
-	s_definitions[2].m_borderTileType = TILE_TYPE_STONE_BRICK_11;
+	s_definitions[2].m_borderTileType = TILE_TYPE_METAL_WALL;
 	s_definitions[2].m_bunkerFloorTileType = TILE_TYPE_STONE_TILE;
-	s_definitions[2].m_startbunkerWallTileType = TILE_TYPE_STONE_BRICK_11;
-	s_definitions[2].m_exitbunkerWallTileType = TILE_TYPE_STONE_BRICK_11;
-	s_definitions[2].m_sprinkle1TileType = TILE_TYPE_STONE_BRICK_11;
+	s_definitions[2].m_startbunkerWallTileType = TILE_TYPE_METAL_WALL;
+	s_definitions[2].m_exitbunkerWallTileType = TILE_TYPE_METAL_WALL;
+	s_definitions[2].m_sprinkle1TileType = TILE_TYPE_METAL_WALL;
 	s_definitions[2].m_sprinkle2TileType = TILE_TYPE_GRASS_4;
 
 	s_definitions[2].m_sprinkle1Probability = 0.1f;

@@ -17,6 +17,8 @@
 #include "Engine/Math/RandomNumberGenerator.hpp"
 #include "Engine/Renderer/Camera.hpp"
 #include "Engine/Renderer/Renderer.hpp"
+#include "Engine/Renderer/SpriteDefinition.hpp"
+#include "Engine/Renderer/SpriteSheet.hpp"
 
 
 //----------------------------------------------------------------------------------------------
@@ -26,6 +28,8 @@ Game* g_game = nullptr;
 //-----------------------------------------------------------------------------------------------
 Game::Game()
 {
+	LoadTextures();
+
 	if ( MapDefinition::s_definitions.size() != NUM_MAPS )
 	{
 		MapDefinition::s_definitions.resize( NUM_MAPS );
@@ -650,4 +654,13 @@ void Game::Reset()
 
 	m_isScreenShaking = false;
 	m_isDebugOn = false;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game::LoadTextures()
+{
+	// Tile SpriteSheet
+	Texture* tileTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/Terrain_8x8.png" );
+	m_tileSpriteSheet = new SpriteSheet( *tileTexture, IntVec2( 8, 8 ) );
 }

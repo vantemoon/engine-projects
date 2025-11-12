@@ -7,9 +7,10 @@
 
 
 //-----------------------------------------------------------------------------------------------
-class  Camera;     // Forward declaration
-class  Entity;     // Forward declaration
-struct Vec3;       // Forward declaration
+class  Camera;      // Forward declaration
+class  Entity;      // Forward declaration
+class  SpriteSheet; // Forward declaration
+struct Vec3;        // Forward declaration
 
 
 //-----------------------------------------------------------------------------------------------
@@ -52,6 +53,8 @@ public:
 	bool				m_isSlowMo = false;
 	bool				m_isFastMo = false;
 
+	SpriteSheet*		m_tileSpriteSheet = nullptr;
+
 public:
 	Game();
 	~Game();
@@ -62,6 +65,7 @@ public:
 	void UpdateFromController();
 	void UpdateMusic();
 	void ScreenShake( float intensity );
+	void LoadTextures();
 	void Render()													  const;
 	void RenderHUD()												  const;
 	void RenderAttractMode()										  const;

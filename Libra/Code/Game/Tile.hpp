@@ -76,7 +76,7 @@ enum TileType
 	TILE_TYPE_WOOD_TILE,
 	TILE_TYPE_STONE_TILE,
 	TILE_TYPE_WATER_1,
-	TILE_TYPE_STONE_BRICK_11,
+	TILE_TYPE_METAL_WALL,
 	TILE_TYPE_WATER_2,
 	TILE_TYPE_STONE_12,
 
@@ -102,13 +102,13 @@ struct TileDefinition;
 class Tile
 {
 public:
-	IntVec2		m_tileCoords;
-	TileType	m_type;
+	IntVec2					m_tileCoords;
+	TileType				m_type;
 
 public:
 	Tile( IntVec2 tileCoords, TileType type );
 	~Tile();
 
-	TileDefinition const& GetDefinition() const;
-	bool IsSolid() const;
+	TileDefinition const&	GetDefinition() const;
+	bool					IsSolid() const;
 };
