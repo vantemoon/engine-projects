@@ -480,10 +480,42 @@ void Map::SpawnEntitiesForMapDefinition()
 	for ( int i = 0; i < mapDef.m_numOfScorpios; ++ i )
 	{
 		Vec2 rawSpawnPos;
-		rawSpawnPos.x = rng.RollRandomFloatInRange( 2.f * TILE_SIZE, ( static_cast<float>( m_dimensions.x ) - 3.f ) * TILE_SIZE );
-		rawSpawnPos.y = rng.RollRandomFloatInRange( 2.f * TILE_SIZE, ( static_cast<float>( m_dimensions.y ) - 3.f ) * TILE_SIZE );
+
+		// Ensure not spawning inside the entrance or exit bunkers
+		bool isRespawnPosValid = false;
+		while ( !isRespawnPosValid )
+		{
+			rawSpawnPos.x = rng.RollRandomFloatInRange( 2.f * TILE_SIZE, ( static_cast<float>( m_dimensions.x ) - 3.f ) * TILE_SIZE );
+			rawSpawnPos.y = rng.RollRandomFloatInRange( 2.f * TILE_SIZE, ( static_cast<float>( m_dimensions.y ) - 3.f ) * TILE_SIZE );
+			IntVec2 spawnTileCoords = GetTileCoordsForWorldPosition( rawSpawnPos );
+			isRespawnPosValid = true;
+
+			// Check inner bunker area
+			if ( spawnTileCoords.x >= 1 && spawnTileCoords.x <= 6 &&
+				 spawnTileCoords.y >= 1 && spawnTileCoords.y <= 6 )
+			{
+				isRespawnPosValid = false;
+				continue;
+			}
+
+			// Check outer bunker area
+			if ( spawnTileCoords.x >= m_dimensions.x - 7 && spawnTileCoords.x <= m_dimensions.x - 2 &&
+				 spawnTileCoords.y >= m_dimensions.y - 7 && spawnTileCoords.y <= m_dimensions.y - 2 )
+			{
+				isRespawnPosValid = false;
+				continue;
+			}
+		}
+
 		IntVec2 spawnTileCoords = GetTileCoordsForWorldPosition( rawSpawnPos );
 		Vec2 spawnPos = GetWorldPositionForTileCoords( spawnTileCoords );
+
+		// Ensure not spawning on solid tile
+		if ( IsPointInSolidTile( spawnPos ) )
+		{
+			AABB2 tileBounds = GetTileBounds( spawnTileCoords );
+			PushDiscOutOfFixedAABB2D( spawnPos, TILE_SIZE, tileBounds );
+		}
 
 		Entity* newEntity = SpawnNewEntity( ENTITY_TYPE_EVIL_SCORPIO, spawnPos, 0.f );
 		if ( newEntity != nullptr )
@@ -496,8 +528,31 @@ void Map::SpawnEntitiesForMapDefinition()
 	for ( int i = 0; i < mapDef.m_numOfLeos; ++ i )
 	{
 		Vec2 rawSpawnPos;
-		rawSpawnPos.x = rng.RollRandomFloatInRange( 2.f * TILE_SIZE, ( static_cast<float>( m_dimensions.x ) - 3.f ) * TILE_SIZE );
-		rawSpawnPos.y = rng.RollRandomFloatInRange( 2.f * TILE_SIZE, ( static_cast<float>( m_dimensions.y ) - 3.f ) * TILE_SIZE );
+
+		// Ensure not spawning inside the entrance or exit bunkers
+		bool isRespawnPosValid = false;
+		while ( !isRespawnPosValid )
+		{
+			rawSpawnPos.x = rng.RollRandomFloatInRange( 2.f * TILE_SIZE, ( static_cast<float>( m_dimensions.x ) - 3.f ) * TILE_SIZE );
+			rawSpawnPos.y = rng.RollRandomFloatInRange( 2.f * TILE_SIZE, ( static_cast<float>( m_dimensions.y ) - 3.f ) * TILE_SIZE );
+			IntVec2 spawnTileCoords = GetTileCoordsForWorldPosition( rawSpawnPos );
+			isRespawnPosValid = true;
+			// Check inner bunker area
+			if ( spawnTileCoords.x >= 1 && spawnTileCoords.x <= 6 &&
+				 spawnTileCoords.y >= 1 && spawnTileCoords.y <= 6 )
+			{
+				isRespawnPosValid = false;
+				continue;
+			}
+			// Check outer bunker area
+			if ( spawnTileCoords.x >= m_dimensions.x - 7 && spawnTileCoords.x <= m_dimensions.x - 2 &&
+				 spawnTileCoords.y >= m_dimensions.y - 7 && spawnTileCoords.y <= m_dimensions.y - 2 )
+			{
+				isRespawnPosValid = false;
+				continue;
+			}
+		}
+
 		IntVec2 spawnTileCoords = GetTileCoordsForWorldPosition( rawSpawnPos );
 		Vec2 spawnPos = GetWorldPositionForTileCoords( spawnTileCoords );
 		
@@ -512,8 +567,31 @@ void Map::SpawnEntitiesForMapDefinition()
 	for ( int i = 0; i < mapDef.m_numOfAries; ++ i )
 	{
 		Vec2 rawSpawnPos;
-		rawSpawnPos.x = rng.RollRandomFloatInRange( 2.f * TILE_SIZE, ( static_cast<float>( m_dimensions.x ) - 3.f ) * TILE_SIZE );
-		rawSpawnPos.y = rng.RollRandomFloatInRange( 2.f * TILE_SIZE, ( static_cast<float>( m_dimensions.y ) - 3.f ) * TILE_SIZE );
+		
+		// Ensure not spawning inside the entrance or exit bunkers
+		bool isRespawnPosValid = false;
+		while ( !isRespawnPosValid )
+		{
+			rawSpawnPos.x = rng.RollRandomFloatInRange( 2.f * TILE_SIZE, ( static_cast<float>( m_dimensions.x ) - 3.f ) * TILE_SIZE );
+			rawSpawnPos.y = rng.RollRandomFloatInRange( 2.f * TILE_SIZE, ( static_cast<float>( m_dimensions.y ) - 3.f ) * TILE_SIZE );
+			IntVec2 spawnTileCoords = GetTileCoordsForWorldPosition( rawSpawnPos );
+			isRespawnPosValid = true;
+			// Check inner bunker area
+			if ( spawnTileCoords.x >= 1 && spawnTileCoords.x <= 6 &&
+				 spawnTileCoords.y >= 1 && spawnTileCoords.y <= 6 )
+			{
+				isRespawnPosValid = false;
+				continue;
+			}
+			// Check outer bunker area
+			if ( spawnTileCoords.x >= m_dimensions.x - 7 && spawnTileCoords.x <= m_dimensions.x - 2 &&
+				 spawnTileCoords.y >= m_dimensions.y - 7 && spawnTileCoords.y <= m_dimensions.y - 2 )
+			{
+				isRespawnPosValid = false;
+				continue;
+			}
+		}
+
 		IntVec2 spawnTileCoords = GetTileCoordsForWorldPosition( rawSpawnPos );
 		Vec2 spawnPos = GetWorldPositionForTileCoords( spawnTileCoords );
 		
