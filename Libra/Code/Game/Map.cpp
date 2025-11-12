@@ -289,9 +289,7 @@ void Map::PopulateTiles()
 				}
 				else if ( isOuterReserved )
 				{
-					Vec2 exitPosition = MapDefinition::s_definitions[m_index].m_exitPosition;
-					IntVec2 exitTileCoords = GetTileCoordsForWorldPosition( exitPosition );
-					if ( x == exitTileCoords.x && y == exitTileCoords.y )
+					if ( x == m_dimensions.x - 2 && y == m_dimensions.y - 2 )
 					{
 						type = TILE_TYPE_EXIT;
 					}

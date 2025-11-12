@@ -10,7 +10,7 @@ std::vector<MapDefinition> MapDefinition::s_definitions;
 void MapDefinition::InitializeMapDefinitions()
 {
 	// Map 1
-	IntVec2 exitTileCoords1 = IntVec2( 31, 63 );
+	IntVec2 exitTileCoords1 = IntVec2( 30, 62 );
 	Vec2 exitPos1 = Vec2( ( exitTileCoords1.x + 0.5f ) * TILE_SIZE, ( exitTileCoords1.y + 0.5f ) * TILE_SIZE );
 
 	s_definitions[0].m_dimensions = IntVec2( 32, 64 );
@@ -33,7 +33,7 @@ void MapDefinition::InitializeMapDefinitions()
 	s_definitions[0].m_sprinkle2Probability = 0.f;
 
 	// Map 2
-	IntVec2 exitTileCoords2 = IntVec2( 49, 19 );
+	IntVec2 exitTileCoords2 = IntVec2( 48, 18 );
 	Vec2 exitPos2 = Vec2( ( exitTileCoords2.x + 0.5f ) * TILE_SIZE, ( exitTileCoords2.y + 0.5f ) * TILE_SIZE );
 
 	s_definitions[1].m_dimensions = IntVec2( 50, 20 );
@@ -44,7 +44,7 @@ void MapDefinition::InitializeMapDefinitions()
 	s_definitions[1].m_numOfScorpios = 5;
 	s_definitions[1].m_numOfAries = 3;
 
-	s_definitions[1].m_fillTileType = TILE_TYPE_GRASS_4;
+	s_definitions[1].m_fillTileType = TILE_TYPE_GRASS_3;
 	s_definitions[1].m_borderTileType = TILE_TYPE_STONE_BRICK_4;
 	s_definitions[1].m_bunkerFloorTileType = TILE_TYPE_STONE_TILE;
 	s_definitions[1].m_startbunkerWallTileType = TILE_TYPE_STONE_BRICK_4;
@@ -56,7 +56,7 @@ void MapDefinition::InitializeMapDefinitions()
 	s_definitions[1].m_sprinkle2Probability = 0.1f;
 
 	// Map 3
-	IntVec2 exitTileCoords3 = IntVec2( 31, 31 );
+	IntVec2 exitTileCoords3 = IntVec2( 30, 30 );
 	Vec2 exitPos3 = Vec2( ( exitTileCoords3.x + 0.5f ) * TILE_SIZE, ( exitTileCoords3.y + 0.5f ) * TILE_SIZE );
 
 	s_definitions[2].m_dimensions = IntVec2( 32, 32 );

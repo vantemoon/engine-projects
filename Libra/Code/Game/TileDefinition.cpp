@@ -22,6 +22,13 @@ void TileDefinition::InitializeTileDefinitions()
 	s_definitions[TILE_TYPE_GRASS_1].m_UVs = AABB2( uvMins, uvMaxs);
 	s_definitions[TILE_TYPE_GRASS_1].m_tint = GRASS_TINT;
 
+	// Grass 3
+	const SpriteDefinition& grass3SpriteDef = g_game->m_tileSpriteSheet->GetSpriteDefinition( TILE_TYPE_GRASS_3 );
+	grass3SpriteDef.GetUVs( uvMins, uvMaxs );
+	s_definitions[TILE_TYPE_GRASS_3].m_isSolid = false;
+	s_definitions[TILE_TYPE_GRASS_3].m_UVs = AABB2( uvMins, uvMaxs );
+	s_definitions[TILE_TYPE_GRASS_3].m_tint = GRASS_TINT;
+
 	// Grass 4
 	const SpriteDefinition& grass4SpriteDef = g_game->m_tileSpriteSheet->GetSpriteDefinition( TILE_TYPE_GRASS_4 );
 	grass4SpriteDef.GetUVs( uvMins, uvMaxs );

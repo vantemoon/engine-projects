@@ -37,14 +37,14 @@ constexpr int   NUM_TILES_VISIBLE_VERTICALLY = 8;
 constexpr int   NUM_TILES_VISIBLE_HORIZONTALLY = 16;
 constexpr float INNER_STONE_TILE_PROBABILITY = 0.1f;
 const     Rgba8 GRASS_TINT = Rgba8( 0, 200, 0 );
-const     Rgba8 LIGHT_STONE_TINT = Rgba8( 250, 250, 250 );
+const     Rgba8 LIGHT_STONE_TINT = Rgba8( 255, 255, 255 );
 const     Rgba8 DARK_STONE_TINT = Rgba8( 100, 100, 100 );
-const     Rgba8 MUD_TINT = Rgba8( 102, 51, 0 );
+const     Rgba8 MUD_TINT = Rgba8( 255, 255, 255 );
 const     Rgba8 SAND_TINT = Rgba8( 194, 178, 128 );
 const	  Rgba8 DIRT_TINT = Rgba8( 139, 69, 19 );
 const     Rgba8 WOOD_TINT = Rgba8( 101, 67, 33 );
 const     Rgba8 WATER_TINT = Rgba8( 0, 0, 255 );
-const     Rgba8 METAL_TINT = Rgba8( 250, 250, 250 );
+const     Rgba8 METAL_TINT = Rgba8( 255, 255, 255 );
 
 constexpr float VISIBLE_RANGE_RADIUS = 10.f * TILE_SIZE;
 

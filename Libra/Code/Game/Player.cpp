@@ -3,6 +3,7 @@
 #include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
 #include "Game/Map.hpp"
+#include "Game/MapDefinition.hpp"
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/Rgba8.hpp"
 #include "Engine/Core/Vertex.hpp"
@@ -65,6 +66,13 @@ void Player::Update( float deltaSeconds )
 	Entity::Update( deltaSeconds );
 
 	m_prevOrientationDegrees = m_orientationDegrees;
+
+	int currentMapIndex = g_game->m_currentMap->m_index;
+	MapDefinition const& mapDef = MapDefinition::s_definitions[currentMapIndex];
+	if ( IsPointInsideDisc2D( mapDef.m_exitPosition, m_position, m_physicsRadius ) )
+	{
+		g_game->LoadNextMap();
+	}
 }
 
 

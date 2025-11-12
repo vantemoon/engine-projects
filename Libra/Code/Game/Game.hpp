@@ -61,6 +61,7 @@ public:
 
 	void Update( float deltaSeconds);
 	void UpdateAttractMode( float deltaSeconds );
+	void UpdateVicoryMode( float deltaSeconds );
 	void UpdateFromKeyboard();
 	void UpdateFromController();
 	void UpdateMusic();
@@ -69,8 +70,10 @@ public:
 	void Render()													  const;
 	void RenderHUD()												  const;
 	void RenderAttractMode()										  const;
+	void RenderVictoryMode()										  const;
 	void RenderPauseScreenOverlay()									  const;
 	void RenderGameOverScreenOverlay()								  const;
 	void Reset();
-	void KillAllEnemies(); // For testing and debugging
+	void KillAllEnemies();
+	void LoadNextMap();
 };

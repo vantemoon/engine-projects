@@ -274,6 +274,14 @@ void Game::UpdateAttractMode( [[maybe_unused]] float deltaSeconds )
 
 
 //-----------------------------------------------------------------------------------------------
+void Game::UpdateVicoryMode( [[maybe_unused]] float deltaSeconds )
+{
+	UpdateFromKeyboard();
+	UpdateFromController();
+}
+
+
+//-----------------------------------------------------------------------------------------------
 void Game::UpdateFromKeyboard()
 {
 	if ( m_currentGameState == GameState::ATTRACT_MODE )
@@ -290,6 +298,16 @@ void Game::UpdateFromKeyboard()
 		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_ESCAPE ) )
 		{
 			g_app->SetIsQuitting();
+		}
+	}
+	else if ( m_currentGameState == GameState::VICTORY )
+	{
+		// Return to attract mode
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_ESCAPE ) || g_engine->m_inputSystem->WasKeyJustPressed( 'P' ) || 
+			g_engine->m_inputSystem->WasKeyJustPressed( 'N' ) )
+		{
+			m_currentGameState = GameState::ATTRACT_MODE;
+			UpdateMusic();
 		}
 	}
 	else if ( m_currentGameState == GameState::GAME_OVER )
@@ -386,6 +404,11 @@ void Game::UpdateFromKeyboard()
 			}
 		}
 
+		// Load next map (for debugging)
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_F9 ) )
+		{
+			LoadNextMap();
+		}
 	}
 }
 
@@ -408,6 +431,16 @@ void Game::UpdateFromController()
 		if ( controller.WasButtonJustPressed( XBOX_BUTTON_BACK ) )
 		{
 			g_app->SetIsQuitting();
+		}
+	}
+	else if ( m_currentGameState == GameState::VICTORY )
+	{
+		// Return to attract mode
+		if ( controller.WasButtonJustPressed( XBOX_BUTTON_BACK ) || controller.WasButtonJustPressed( XBOX_BUTTON_A ) ||
+			controller.WasButtonJustPressed( XBOX_BUTTON_START ) )
+		{
+			m_currentGameState = GameState::ATTRACT_MODE;
+			UpdateMusic();
 		}
 	}
 	else if ( m_currentGameState == GameState::GAME_OVER )
@@ -461,6 +494,12 @@ void Game::Render() const
 		return;
 	}
 
+	if ( m_currentGameState == GameState::VICTORY )
+	{
+		RenderVictoryMode();
+		return;
+	}
+
 	if ( !m_isDebugCameraActive )
 	{
 		m_currentMap->UpdateWorldCameraView();
@@ -495,7 +534,7 @@ void Game::Render() const
 		RenderGameOverScreenOverlay();
 	};
 
-	RenderHUD();
+	// RenderHUD();
 
 	g_engine->m_renderer->EndCamera( *cameraToUse );
 }
@@ -568,6 +607,23 @@ void Game::RenderAttractMode() const
 
 
 //-----------------------------------------------------------------------------------------------
+void Game::RenderVictoryMode() const
+{
+	g_engine->m_renderer->BeginCamera( *m_screenCamera );
+
+	Texture* victoryTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/VictoryScreen.jpg" );
+	std::vector<Vertex> verts;
+	AABB2 fullScreenAABB2( 0.f, 0.f, SCREEN_SIZE_X, SCREEN_SIZE_Y );
+	AddVertsForAABB2D( verts, fullScreenAABB2, Rgba8( 255, 255, 255, 255 ) );
+	g_engine->m_renderer->BindTexture( victoryTexture );
+	g_engine->m_renderer->DrawVertexArray( ( int ) verts.size(), verts.data() );
+	g_engine->m_renderer->BindTexture( nullptr );
+
+	g_engine->m_renderer->EndCamera( *m_screenCamera );
+}
+
+
+//-----------------------------------------------------------------------------------------------
 void Game::RenderHUD() const
 {
 	g_engine->m_renderer->BeginCamera( *m_screenCamera );
@@ -633,6 +689,23 @@ void Game::RenderGameOverScreenOverlay() const
 void Game::KillAllEnemies()
 {
 	// #ToDo: Kill all enemy entities in the game world
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game::LoadNextMap()
+{
+	int currentMapIndex = m_currentMap->m_index;
+	if ( currentMapIndex == NUM_MAPS - 1 )
+	{
+		m_currentGameState = GameState::VICTORY;
+		return;
+	}
+	int nextMapIndex = ( currentMapIndex + 1 ) % static_cast<int>( m_maps.size() );
+	m_currentMap = m_maps[nextMapIndex];
+	IntVec2 playerStartTileCoords = IntVec2( 1, 1 );
+	Vec2 playerStartPos = m_currentMap->GetWorldPositionForTileCoords( playerStartTileCoords );
+	m_player->Respawn( playerStartPos );
 }
 
 
