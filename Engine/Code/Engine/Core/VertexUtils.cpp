@@ -156,3 +156,33 @@ void AddVertsForLineSegment2D( std::vector<Vertex>& verts, Vec2 const& start, Ve
 	verts.push_back( Vertex( Vec3( bottomRight.x, bottomRight.y, 0.f ), color, Vec2( 1.f, 1.f ) ) );
 	verts.push_back( Vertex( Vec3( topRight.x, topRight.y, 0.f ), color, Vec2( 1.f, 0.f ) ) );
 }
+
+
+//-----------------------------------------------------------------------------------------------
+void AddVertsForArrow2D( std::vector<Vertex>& verts, Vec2 const& startTail, Vec2 const& endTip, float thickness, float arrowRadius, Rgba8 const& color )
+{
+	Vec2 lineVector = endTip - startTail;
+	Vec2 lineDirection = lineVector.GetNormalized();
+	Vec2 perpendicular = lineDirection.GetRotatedBy90Degrees();
+	Vec2 halfThicknessOffset = perpendicular * ( thickness * 0.5f );
+	Vec2 shaftEnd = endTip - ( lineDirection * arrowRadius );
+
+	// Add shaft
+	Vec2 topLeft = startTail + halfThicknessOffset;
+	Vec2 topRight = startTail - halfThicknessOffset;
+	Vec2 bottomLeft = shaftEnd + halfThicknessOffset;
+	Vec2 bottomRight = shaftEnd - halfThicknessOffset;
+	verts.push_back( Vertex( Vec3( topLeft.x, topLeft.y, 0.f ), color, Vec2( 0.f, 0.f ) ) );
+	verts.push_back( Vertex( Vec3( bottomLeft.x, bottomLeft.y, 0.f ), color, Vec2( 0.f, 1.f ) ) );
+	verts.push_back( Vertex( Vec3( bottomRight.x, bottomRight.y, 0.f ), color, Vec2( 1.f, 1.f ) ) );
+	verts.push_back( Vertex( Vec3( topLeft.x, topLeft.y, 0.f ), color, Vec2( 0.f, 0.f ) ) );
+	verts.push_back( Vertex( Vec3( bottomRight.x, bottomRight.y, 0.f ), color, Vec2( 1.f, 1.f ) ) );
+	verts.push_back( Vertex( Vec3( topRight.x, topRight.y, 0.f ), color, Vec2( 1.f, 0.f ) ) );
+
+	// Add arrowhead
+	Vec2 leftPoint = shaftEnd + ( perpendicular * arrowRadius );
+	Vec2 rightPoint = shaftEnd - ( perpendicular * arrowRadius );
+	verts.push_back( Vertex( Vec3( endTip.x, endTip.y, 0.f ), color, Vec2( 0.5f, 0.5f ) ) );
+	verts.push_back( Vertex( Vec3( leftPoint.x, leftPoint.y, 0.f ), color, Vec2( 0.f, 0.f ) ) );
+	verts.push_back( Vertex( Vec3( rightPoint.x, rightPoint.y, 0.f ), color, Vec2( 1.f, 0.f ) ) );
+}
