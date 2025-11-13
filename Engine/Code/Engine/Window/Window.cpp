@@ -55,7 +55,7 @@ Vec2 Window::GetNormalizedMouseUV() const
 	GetCursorPos( &cursorCoords );
 	ScreenToClient( windowHandle, &cursorCoords );
 	GetClientRect( windowHandle, &clientRect );
-	float cursorX = static_cast<float>( cursorCoords.x ) / static_cast<float>( clientRect.right);
+	float cursorX = static_cast<float>( cursorCoords.x ) / static_cast<float>( clientRect.right );
 	float cursorY = static_cast<float>( cursorCoords.y ) / static_cast<float>( clientRect.bottom );
 	return Vec2( cursorX, 1.f - cursorY );
 }
@@ -215,6 +215,7 @@ void Window::CreateOSWindow()
 	SetForegroundWindow( hWnd );
 	SetFocus( hWnd );
 
+	m_windowHandle = hWnd;
 	m_displayDeviceContext = GetDC( hWnd );
 
 	HCURSOR cursor = LoadCursor( NULL, IDC_ARROW );

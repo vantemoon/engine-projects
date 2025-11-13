@@ -7,7 +7,7 @@
 struct WindowConfig
 {
 	bool			m_isEnabled = true;
-	float			m_clientAspect = (16.0f / 9.0f);
+	float			m_clientAspect = 2.f;
 	std::string		m_windowTitle = "Math Visual Tests";
 };
 
