@@ -1,5 +1,6 @@
 #pragma once
 #include "Game/Game.hpp"
+#include "Engine/Math/Vec2.hpp"
 
 //-----------------------------------------------------------------------------------------------
 class TestShapeTriangle;
@@ -51,5 +52,6 @@ public:
 private:
 	void GetNearestPoints();
 	void CheckIfPointIsInsideShapes();
-	void RandomizeAllShapes();
+	void GenerateRandomShapes();
+	Vec2 GetMouseWorldPos() const;
 };

@@ -12,7 +12,6 @@
 #include "Engine/Math/AABB2.hpp"
 #include "Engine/Math/MathUtils.hpp"
 #include "Engine/Math/RandomNumberGenerator.hpp"
-#include "Engine/Math/Vec2.hpp"
 #include "Engine/Renderer/Camera.hpp"
 #include "Engine/Renderer/Renderer.hpp"
 #include <vector>
@@ -98,12 +97,7 @@ void GameNearestPoint::UpdateFromKeyboard()
 
 	if ( g_engine->m_inputSystem->IsKeyDown( KEYCODE_LBUTTON ) )
 	{
-		Vec2 mouseUV = g_engine->m_window->GetNormalizedMouseUV();
-		Vec2 cameraBottomLeft = m_worldCamera->GetOrthoBottomLeft();
-		Vec2 cameraTopRight = m_worldCamera->GetOrthoTopRight();
-		AABB2 cameraBounds = AABB2( cameraBottomLeft, cameraTopRight );
-		Vec2 cursorWorldPos = cameraBounds.GetPointAtUV( mouseUV );
-		m_referencePoint->m_center = cursorWorldPos;
+		m_referencePoint->m_center = GetMouseWorldPos();
 	}
 
 	// Hold down T to enable slow motion
@@ -119,7 +113,7 @@ void GameNearestPoint::UpdateFromKeyboard()
 	// Randomize all shape positions with F8
 	if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_F8 ) )
 	{
-		RandomizeAllShapes();
+		GenerateRandomShapes();
 	}
 }
 
@@ -234,7 +228,7 @@ void GameNearestPoint::CheckIfPointIsInsideShapes()
 
 
 //-----------------------------------------------------------------------------------------------
-void GameNearestPoint::RandomizeAllShapes()
+void GameNearestPoint::GenerateRandomShapes()
 {
 	RandomNumberGenerator rng;
 
@@ -305,4 +299,16 @@ void GameNearestPoint::RandomizeAllShapes()
 
 	m_infiniteLine->m_start = infiniteLinePoint - infiniteLinePerp * 200.f;
 	m_infiniteLine->m_end = infiniteLinePoint + infiniteLinePerp * 200.f;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+Vec2 GameNearestPoint::GetMouseWorldPos() const 
+{
+	Vec2 mouseUV = g_engine->m_window->GetNormalizedMouseUV();
+	Vec2 cameraBottomLeft = m_worldCamera->GetOrthoBottomLeft();
+	Vec2 cameraTopRight = m_worldCamera->GetOrthoTopRight();
+	AABB2 cameraBounds = AABB2( cameraBottomLeft, cameraTopRight );
+	Vec2 cursorWorldPos = cameraBounds.GetPointAtUV( mouseUV );
+	return cursorWorldPos;
 }
