@@ -15,24 +15,21 @@ RaycastResult2D RaycastVsDisc2D( Vec2 startPos, Vec2 fwdNormal, float maxDist, V
 	Vec2 toDiscCenter = discCenter - startPos;
 	float projectionLength = DotProduct2D( toDiscCenter, fwdNormal );
 
-	// Case 1: disc entirely behind or too far ahead
-	if ( projectionLength < 0.f || projectionLength > maxDist + discRadius )
+	if ( projectionLength < -discRadius || projectionLength > maxDist + discRadius )
 		return result;
 
 	float distCenterToRaySquared = DotProduct2D( toDiscCenter, toDiscCenter ) - projectionLength * projectionLength;
 
-	// Case 2: ray misses laterally
 	float discRadiusSquared = discRadius * discRadius;
 	if ( distCenterToRaySquared > discRadiusSquared )
 		return result;
 
-	// Case 3: start inside disc
 	if ( IsPointInsideDisc2D( startPos, discCenter, discRadius ) )
 	{
 		result.m_didImpact = true;
 		result.m_impactDist = 0.f;
 		result.m_impactPos = startPos;
-		result.m_impactNormal = ( startPos - discCenter ).GetNormalized();
+		result.m_impactNormal = -fwdNormal;
 		return result;
 	}
 

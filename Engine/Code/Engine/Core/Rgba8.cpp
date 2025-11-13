@@ -7,6 +7,7 @@ const Rgba8 Rgba8::BLACK = Rgba8( 0, 0, 0, 255 );
 const Rgba8 Rgba8::RED = Rgba8( 255, 0, 0, 255 );
 const Rgba8 Rgba8::GREEN = Rgba8( 0, 255, 0, 255 );
 const Rgba8 Rgba8::BLUE = Rgba8( 0, 0, 255, 255 );
+const Rgba8 Rgba8::YELLOW = Rgba8( 255, 255, 0, 255 );
 
 
 //-----------------------------------------------------------------------------------------------

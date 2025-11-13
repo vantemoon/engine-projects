@@ -173,6 +173,13 @@ void AddVertsForLineSegment2D( std::vector<Vertex>& verts, Vec2 const& start, Ve
 //-----------------------------------------------------------------------------------------------
 void AddVertsForArrow2D( std::vector<Vertex>& verts, Vec2 const& startTail, Vec2 const& endTip, float thickness, float arrowRadius, Rgba8 const& color )
 {
+	if ( startTail == endTip ) return;
+	if ( arrowRadius <= 0.f ) return;
+	if ( thickness <= 0.f ) return;
+
+	float lineLength = GetDistance2D( startTail, endTip );
+	if ( lineLength < arrowRadius ) return;
+
 	Vec2 lineVector = endTip - startTail;
 	Vec2 lineDirection = lineVector.GetNormalized();
 	Vec2 perpendicular = lineDirection.GetRotatedBy90Degrees();

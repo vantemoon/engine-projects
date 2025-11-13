@@ -22,4 +22,5 @@ public:
 	static const Rgba8 RED;
 	static const Rgba8 GREEN;
 	static const Rgba8 BLUE;
+	static const Rgba8 YELLOW;
 };
