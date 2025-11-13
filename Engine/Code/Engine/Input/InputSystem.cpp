@@ -24,6 +24,8 @@ unsigned char const KEYCODE_UPARROW = VK_UP;
 unsigned char const KEYCODE_DOWNARROW = VK_DOWN;
 unsigned char const KEYCODE_LEFTARROW = VK_LEFT;
 unsigned char const KEYCODE_RIGHTARROW = VK_RIGHT;
+unsigned char const KEYCODE_LBUTTON = VK_LBUTTON;
+unsigned char const KEYCODE_RBUTTON = VK_RBUTTON;
 
 
 //-----------------------------------------------------------------------------------------------

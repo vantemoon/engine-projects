@@ -47,6 +47,21 @@ void Window::EndFrame()
 
 
 //-----------------------------------------------------------------------------------------------
+Vec2 Window::GetNormalizedMouseUV() const
+{
+	HWND windowHandle = static_cast<HWND>( m_windowHandle );
+	POINT cursorCoords;
+	RECT clientRect;
+	GetCursorPos( &cursorCoords );
+	ScreenToClient( windowHandle, &cursorCoords );
+	GetClientRect( windowHandle, &clientRect );
+	float cursorX = static_cast<float>( cursorCoords.x ) / static_cast<float>( clientRect.right);
+	float cursorY = static_cast<float>( cursorCoords.y ) / static_cast<float>( clientRect.bottom );
+	return Vec2( cursorX, 1.f - cursorY );
+}
+
+
+//-----------------------------------------------------------------------------------------------
 // Handles Windows (Win32) messages/events; i.e. the OS is trying to tell us something happened.
 // This function is called back by Windows whenever we tell it to (by calling DispatchMessage).
 LRESULT CALLBACK WindowsMessageHandlingProcedure( HWND windowHandle, UINT wmMessageCode, WPARAM wParam, LPARAM lParam )
@@ -77,6 +92,42 @@ LRESULT CALLBACK WindowsMessageHandlingProcedure( HWND windowHandle, UINT wmMess
 
 			g_engine->m_inputSystem->HandleKeyReleased( asKey );
 			break;
+		}
+
+		case WM_LBUTTONDOWN:
+		{
+			if ( g_engine->m_inputSystem )
+			{
+				g_engine->m_inputSystem->HandleKeyPressed( KEYCODE_LBUTTON );
+			}
+			return 0;
+		}
+
+		case WM_LBUTTONUP:
+		{
+			if ( g_engine->m_inputSystem )
+			{
+				g_engine->m_inputSystem->HandleKeyReleased( KEYCODE_LBUTTON );
+			}
+			return 0;
+		}
+
+		case WM_RBUTTONDOWN:
+		{
+			if ( g_engine->m_inputSystem )
+			{
+				g_engine->m_inputSystem->HandleKeyPressed( KEYCODE_RBUTTON );
+			}
+			return 0;
+		}
+
+		case WM_RBUTTONUP:
+		{
+			if ( g_engine->m_inputSystem )
+			{
+				g_engine->m_inputSystem->HandleKeyReleased( KEYCODE_RBUTTON );
+			}
+			return 0;
 		}
 	}
 

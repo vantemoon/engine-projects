@@ -1,4 +1,5 @@
 #pragma once
+#include "Engine/Math/Vec2.hpp"
 #include <string>
 
 
@@ -7,7 +8,7 @@ struct WindowConfig
 {
 	bool			m_isEnabled = true;
 	float			m_clientAspect = (16.0f / 9.0f);
-	std::string		m_windowTitle = "Unnamed SD Application";
+	std::string		m_windowTitle = "Math Visual Tests";
 };
 
 
@@ -21,6 +22,7 @@ public:
 	void Shutdown();
 	void BeginFrame();
 	void EndFrame();
+	Vec2 GetNormalizedMouseUV() const;
 
 	WindowConfig	m_config;
 	void*			m_displayDeviceContext = 0;
