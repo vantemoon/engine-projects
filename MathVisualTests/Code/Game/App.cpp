@@ -4,7 +4,9 @@
 #include "Game/GameRaycastVsDiscs.hpp"
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/Rgba8.hpp"
+#include "Engine/Core/SimpleTriangleFont.hpp"
 #include "Engine/Core/Time.hpp"
+#include "Engine/Core/Vertex.hpp"
 #include "Engine/Input/InputSystem.hpp"
 #include "Engine/Math/RandomNumberGenerator.hpp"
 #include "Engine/Math/MathUtils.hpp"
@@ -155,6 +157,43 @@ void App::Render() const
 {
 	g_engine->m_renderer->ClearScreen( Rgba8( 0, 0, 0 ) );
 	m_game->Render();
+	RenderHUD();
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void App::RenderHUD() const
+{
+	g_engine->m_renderer->BeginCamera( *m_game->m_screenCamera );
+
+	std::vector<Vertex> verts;
+	AddVertsForTextTriangles2D( verts, "Mode (F7 for next): ", Vec2( 20.f, 760.f ), 20.f, Rgba8::YELLOW );
+	switch ( m_gameMode )
+	{
+		case GAMEMODE_NEAREST_POINT:
+			AddVertsForTextTriangles2D( verts, "Nearest Point (2D)", Vec2( 280.f, 760.f ), 20.f, Rgba8::YELLOW );
+			break;
+		case GAMEMODE_RAYCAST_VS_DISCS:
+			AddVertsForTextTriangles2D( verts, "Raycast Vs. Disc (2D)", Vec2( 280.f, 760.f ), 20.f, Rgba8::YELLOW );
+			break;
+		default:
+			break;
+	}
+	AddVertsForTextTriangles2D( verts, "F8 to randomize; ", Vec2( 20.f, 730.f ), 20.f, Rgba8::CYAN );
+	switch ( m_gameMode )
+	{
+		case GAMEMODE_NEAREST_POINT:
+			AddVertsForTextTriangles2D( verts, "WASD/Arrow: move reference point, hold T: slow", Vec2( 240.f, 730.f ), 20.f, Rgba8::CYAN );
+			break;
+		case GAMEMODE_RAYCAST_VS_DISCS:
+			AddVertsForTextTriangles2D( verts, "LMB/RMB set ray start/end; WASD move start, IJKL move end, arrows move ray, hold T: slow", Vec2( 240.f, 730.f ), 20.f, Rgba8::CYAN );
+			break;
+		default:
+			break;
+	}
+	g_engine->m_renderer->DrawVertexArray( verts );
+
+	g_engine->m_renderer->EndCamera( *m_game->m_screenCamera );
 }
 
 

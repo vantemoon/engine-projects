@@ -7,6 +7,7 @@
 #include "Game/TestShapeOBB.hpp"
 #include "Game/TestShapeTriangle.hpp"
 #include "Engine/Core/Engine.hpp"
+#include "Engine/Core/SimpleTriangleFont.hpp"
 #include "Engine/Core/Vertex.hpp"
 #include "Engine/Core/VertexUtils.hpp"
 #include "Engine/Math/AABB2.hpp"

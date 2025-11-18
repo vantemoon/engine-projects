@@ -27,6 +27,7 @@ public:
 	void UpdateFromKeyboard();
 	void UpdateFromController();
 	void Render()									const;
+	void RenderHUD()								const;
 
 	void SetIsQuitting();
 	bool IsQuitting()								const;
