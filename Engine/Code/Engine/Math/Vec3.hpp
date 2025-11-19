@@ -28,6 +28,9 @@ public:
 	Vec3 const  GetClampedToMaxLength( float maxLength )			const;
 	Vec3 const  GetNormalized() const;
 
+	// Mutators (non-const methods)
+	void 		SetFromText( char const* text );
+
 	// Operators (const)
 	bool		operator==( Vec3 const& compare )					const;		// vec3 == vec3
 	bool		operator!=( Vec3 const& compare )					const;		// vec3 != vec3

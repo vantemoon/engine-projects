@@ -17,6 +17,8 @@ public:
 	explicit Rgba8( unsigned char redByte, unsigned char greenByte,            // explicit constructor (from r, g, b, a)
 					unsigned char blueByte, unsigned char alphaByte = 255 );
 
+	void SetFromText( const char* text );
+
 	static const Rgba8 WHITE;
 	static const Rgba8 BLACK;
 	static const Rgba8 RED;

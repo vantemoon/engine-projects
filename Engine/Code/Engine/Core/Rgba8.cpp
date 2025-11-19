@@ -1,4 +1,5 @@
 #include "Engine/Core/Rgba8.hpp"
+#include "Engine/Core/StringUtils.hpp"
 
 
 //-----------------------------------------------------------------------------------------------
@@ -18,4 +19,25 @@ Rgba8::Rgba8( unsigned char redByte, unsigned char greenByte, unsigned char blue
 	, b( blueByte )
 	, a( alphaByte )
 {
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Rgba8::SetFromText( const char* text )
+{
+	Strings splitStrings = SplitStringOnDelimiter( text, ',' );
+	if ( splitStrings.size() >= 3 )
+	{
+		r = static_cast<unsigned char>( atoi( splitStrings[0].c_str() ) );
+		g = static_cast<unsigned char>( atoi( splitStrings[1].c_str() ) );
+		b = static_cast<unsigned char>( atoi( splitStrings[2].c_str() ) );
+		if ( splitStrings.size() >= 4 )
+		{
+			a = static_cast<unsigned char>( atoi( splitStrings[3].c_str() ) );
+		}
+		else
+		{
+			a = 255; // default alpha to 255 if not provided
+		}
+	}
 }

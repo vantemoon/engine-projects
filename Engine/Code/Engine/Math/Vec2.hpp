@@ -41,6 +41,7 @@ public:
 	void		SetOrientationRadians( float newOrientationRadians );
 	void        SetPolarDegrees( float newOrientationDegrees, float newLength );
 	void		SetPolarRadians( float newOrientationRadians, float newLength );
+	void        SetFromText( char const* text );
 	void        Rotate90Degrees();
 	void        RotateMinus90Degrees();
 	void		RotateDegrees( float rotationDegrees );

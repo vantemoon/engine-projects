@@ -27,6 +27,7 @@ public:
 	IntVec2 const GetRotatedByMinus90Degrees()	  const;
 
 	// Mutators (non-const methods)
+	void SetFromText( const char* text );
 	void Rotate90Degrees();
 	void RotateMinus90Degrees();
 

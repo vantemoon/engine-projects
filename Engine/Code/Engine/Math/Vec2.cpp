@@ -1,6 +1,7 @@
 #include "Engine/Math/Vec2.hpp"
 #include "Engine/Math/IntVec2.hpp"
 #include "Engine/Math/MathUtils.hpp"
+#include "Engine/Core/StringUtils.hpp"
 #include <math.h>
 
 
@@ -195,6 +196,19 @@ void Vec2::SetPolarRadians( float newOrientationRadians, float newLength )
 	float newOrientationDegrees = ConvertRadiansToDegrees( newOrientationRadians );
 	SetPolarDegrees( newOrientationDegrees, newLength );
 }
+
+
+//-----------------------------------------------------------------------------------------------
+void Vec2::SetFromText( char const* text )
+{
+	Strings splitText = SplitStringOnDelimiter( text, ',' );
+	if ( splitText.size() == 2 )
+	{
+		x = static_cast<float>( atof( splitText[0].c_str() ) );
+		y = static_cast<float>( atof( splitText[1].c_str() ) );
+	}
+}
+
 
 //-----------------------------------------------------------------------------------------------
 void Vec2::Rotate90Degrees()

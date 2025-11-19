@@ -1,5 +1,6 @@
 #include "Engine/Math/Vec3.hpp"
 #include "Engine/Math/MathUtils.hpp"
+#include "Engine/Core/StringUtils.hpp"
 #include <math.h>
 
 
@@ -129,6 +130,19 @@ Vec3 const Vec3::GetNormalized() const
 	else
 	{
 		return Vec3( 0.f, 0.f, 0.f );
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Vec3::SetFromText( char const* text )
+{
+	Strings splitStrings = SplitStringOnDelimiter( text, ',' );
+	if ( splitStrings.size() >= 3 )
+	{
+		x = static_cast<float>( atof( splitStrings[0].c_str() ) );
+		y = static_cast<float>( atof( splitStrings[1].c_str() ) );
+		z = static_cast<float>( atof( splitStrings[2].c_str() ) );
 	}
 }
 

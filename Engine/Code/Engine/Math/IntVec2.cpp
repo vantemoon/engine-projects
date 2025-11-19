@@ -1,5 +1,6 @@
 #include "Engine/Math/IntVec2.hpp"
 #include "Engine/Math/MathUtils.hpp"
+#include "Engine/Core/StringUtils.hpp"
 #include <math.h>
 
 
@@ -71,6 +72,18 @@ IntVec2 const IntVec2::GetRotatedBy90Degrees() const
 IntVec2 const IntVec2::GetRotatedByMinus90Degrees() const
 {
 	return IntVec2( y, -x );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void IntVec2::SetFromText( const char* text )
+{
+	Strings splitStrings = SplitStringOnDelimiter( text, ',' );
+	if ( splitStrings.size() == 2 )
+	{
+		x = atoi( splitStrings[0].c_str() );
+		y = atoi( splitStrings[1].c_str() );
+	}
 }
 
 
