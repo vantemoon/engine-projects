@@ -4,6 +4,7 @@
 #include "Game/MapDefinition.hpp"
 #include "Engine/Audio/AudioSystem.hpp"
 #include "Engine/Core/Engine.hpp"
+#include "Engine/Core/EngineCommon.hpp"
 #include "Engine/Core/ErrorWarningAssert.hpp"
 #include "Engine/Core/Rgba8.hpp"
 #include "Engine/Core/SimpleTriangleFont.hpp"
@@ -31,9 +32,9 @@ Game::Game()
 	LoadTextures();
 	LoadSounds();
 
-	if ( MapDefinition::s_definitions.size() != NUM_MAPS )
+	if ( MapDefinition::s_definitions.size() != g_gameConfigBlackboard.GetValue( "numOfMaps", 3 ) )
 	{
-		MapDefinition::s_definitions.resize( NUM_MAPS );
+		MapDefinition::s_definitions.resize( g_gameConfigBlackboard.GetValue( "numOfMaps", 3 ) );
 		MapDefinition::InitializeMapDefinitions();
 	}
 
@@ -56,11 +57,17 @@ Game::Game()
 	m_screenCamera = new Camera();
 	m_debugCamera = new Camera();
 
-	m_numTilesInViewVertically = NUM_TILES_VISIBLE_VERTICALLY;
-	m_numTilesInViewHorizontally = NUM_TILES_VISIBLE_HORIZONTALLY;
+	m_numTilesInViewVertically = g_gameConfigBlackboard.GetValue( "numTilesVisibleVertically", 8 );
+	m_numTilesInViewHorizontally = g_gameConfigBlackboard.GetValue( "numTilesVisibleHorizontally", 16 );
 
-	m_worldCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( WORLD_SIZE_X, WORLD_SIZE_Y ) );
-	m_screenCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) );
+	float worldWidth = g_gameConfigBlackboard.GetValue( "worldWidth", 200.f );
+	float worldHeight = g_gameConfigBlackboard.GetValue( "worldHeight", 100.f );
+
+	float screenWidth = g_gameConfigBlackboard.GetValue( "windowWidth", 1600.f );
+	float screenHeight = g_gameConfigBlackboard.GetValue( "windowHeight", 800.f );
+
+	m_worldCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( worldWidth, worldHeight ) );
+	m_screenCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( screenWidth, screenHeight ) );
 
 	m_isAttractMusicPlaying = false;
 	m_isGameplayMusicPlaying = false;
@@ -127,6 +134,7 @@ void Game::Update( float deltaSeconds )
 	static float s_timeSincePlayerDeath = 0.f;
 	static bool s_playerDeathHandled = false;
 
+
 	if ( m_player && m_player->m_isDead ) 
 	{
 		if ( !s_playerDeathHandled ) 
@@ -137,7 +145,7 @@ void Game::Update( float deltaSeconds )
 		else 
 		{
 			s_timeSincePlayerDeath += deltaSeconds;
-			if ( s_timeSincePlayerDeath >= PLAYER_TANK_DEATH_DELAY_SECONDS ) 
+			if ( s_timeSincePlayerDeath >= g_gameConfigBlackboard.GetValue( "deathDelay", 3.0f ) )
 			{
 				g_engine->m_audioSystem->StartSound( m_gameOverSoundID );
 				m_currentGameState = GameState::GAME_OVER;
@@ -170,9 +178,17 @@ void Game::Update( float deltaSeconds )
 			m_numTilesInViewHorizontally = static_cast<int>( ( float ) m_numTilesInViewVertically * aspect );
 		}
 
-		m_debugCamera->SetOrthoView(Vec2( 0.f, 0.f ), Vec2( ( float ) m_numTilesInViewHorizontally * TILE_SIZE, ( float ) m_numTilesInViewVertically * TILE_SIZE ) );
+		float tileSize = g_gameConfigBlackboard.GetValue( "tileSize", 12.5f );
+		m_debugCamera->SetOrthoView(Vec2( 0.f, 0.f ), Vec2( ( float ) m_numTilesInViewHorizontally * tileSize, ( float ) m_numTilesInViewVertically * tileSize ) );
 	}
-	m_screenCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) );
+
+	float worldWidth = g_gameConfigBlackboard.GetValue( "worldWidth", 200.f );
+	float worldHeight = g_gameConfigBlackboard.GetValue( "worldHeight", 100.f );
+
+	float screenWidth = g_gameConfigBlackboard.GetValue( "windowWidth", 1600.f );
+	float screenHeight = g_gameConfigBlackboard.GetValue( "windowHeight", 800.f );
+
+	m_screenCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( screenWidth, screenHeight ) );
 
 	if ( m_isScreenShaking )
 	{
@@ -189,7 +205,7 @@ void Game::Update( float deltaSeconds )
 			m_screenShakeIntensity = 0.f;
 			m_screenShakeDuration = 0.f;
 			m_screenShakeStartTime = 0.f;
-			m_worldCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( WORLD_SIZE_X, WORLD_SIZE_Y ) );
+			m_worldCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( worldWidth, worldHeight ) );
 		}
 	}
 
@@ -423,8 +439,8 @@ void Game::UpdateFromKeyboard()
 
 			if ( !m_isDebugCameraActive )
 			{
-				m_numTilesInViewVertically = NUM_TILES_VISIBLE_VERTICALLY;
-				m_numTilesInViewHorizontally = NUM_TILES_VISIBLE_HORIZONTALLY;
+				m_numTilesInViewVertically = g_gameConfigBlackboard.GetValue( "numTilesVisibleVertically", 8 );
+				m_numTilesInViewHorizontally = g_gameConfigBlackboard.GetValue( "numTilesVisibleHorizontally", 16 );
 			}
 		}
 
@@ -580,8 +596,11 @@ void Game::RenderAttractMode() const
 {
 	g_engine->m_renderer->BeginCamera( *m_screenCamera );
 
+	float screenWidth = g_gameConfigBlackboard.GetValue( "windowWidth", 1600.f );
+	float screenHeight = g_gameConfigBlackboard.GetValue( "windowHeight", 800.f );
+
 	// Texture
-	AABB2 fullScreenAABB2( 0.f, 0.f, SCREEN_SIZE_X, SCREEN_SIZE_Y );
+	AABB2 fullScreenAABB2( 0.f, 0.f, screenWidth, screenHeight );
 	std::vector<Vertex> backgroundVerts;
 	AddVertsForAABB2D( backgroundVerts, fullScreenAABB2, Rgba8::WHITE );
 
@@ -598,7 +617,7 @@ void Game::RenderAttractMode() const
 	float currentThickness = baseThickness + pulseThicknessRange * pulse;
 
 	std::vector<Vertex> ringVerts;
-	AddVertsForRing2D( ringVerts, Vec2( SCREEN_CENTER_X, SCREEN_CENTER_Y ), currentRadius, currentThickness, Rgba8( 255, 165, 0 ), 64 );
+	AddVertsForRing2D( ringVerts, Vec2( screenWidth / 2, screenHeight / 2 ), currentRadius, currentThickness, Rgba8( 255, 165, 0 ), 64 );
 
 	// Render 
 	g_engine->m_renderer->BindTexture( m_attractModeBackgroundTexture );
@@ -617,24 +636,25 @@ void Game::RenderHUD() const
 {
 	g_engine->m_renderer->BeginCamera( *m_screenCamera );
 
-	// #ToDo: Render HUD elements (health, score, etc.)
+	// float screenWidth = g_gameConfigBlackboard.GetValue( "windowWidth", 1600.f );
+	float screenHeight = g_gameConfigBlackboard.GetValue( "windowHeight", 800.f );
 
 	if ( m_currentGameState == GameState::PLAYING )
 	{
 		std::vector<Vertex> verts;
-		AddVertsForTextTriangles2D( verts, "GAME MODE", Vec2( 10.f, SCREEN_SIZE_Y - 30.f ), 24.f, Rgba8( 255, 255, 255 ) );
+		AddVertsForTextTriangles2D( verts, "GAME MODE", Vec2( 10.f, screenHeight - 30.f ), 24.f, Rgba8( 255, 255, 255 ) );
 		g_engine->m_renderer->DrawVertexArray( ( int ) verts.size(), verts.data() );
 	}
 	else if ( m_currentGameState == GameState::PAUSED )
 	{
 		std::vector<Vertex> verts;
-		AddVertsForTextTriangles2D( verts, "PAUSED", Vec2( 10.f, SCREEN_SIZE_Y - 30.f ), 24.f, Rgba8( 255, 255, 255 ) );
+		AddVertsForTextTriangles2D( verts, "PAUSED", Vec2( 10.f, screenHeight - 30.f ), 24.f, Rgba8( 255, 255, 255 ) );
 		g_engine->m_renderer->DrawVertexArray( ( int ) verts.size(), verts.data() );
 	}
 	else if ( m_currentGameState == GameState::GAME_OVER )
 	{
 		std::vector<Vertex> verts;
-		AddVertsForTextTriangles2D( verts, "GAME OVER", Vec2( 10.f, SCREEN_SIZE_Y - 30.f ), 24.f, Rgba8( 255, 0, 0 ) );
+		AddVertsForTextTriangles2D( verts, "GAME OVER", Vec2( 10.f, screenHeight - 30.f ), 24.f, Rgba8( 255, 0, 0 ) );
 		g_engine->m_renderer->DrawVertexArray( ( int ) verts.size(), verts.data() );
 	}
 
@@ -647,8 +667,11 @@ void Game::RenderPausedMode() const
 {
 	g_engine->m_renderer->BeginCamera( *m_screenCamera );
 
+	float screenWidth = g_gameConfigBlackboard.GetValue( "windowWidth", 1600.f );
+	float screenHeight = g_gameConfigBlackboard.GetValue( "windowHeight", 800.f );
+
 	std::vector<Vertex> quadVerts;
-	AABB2 fullScreenAABB2( 0.f, 0.f, SCREEN_SIZE_X, SCREEN_SIZE_Y );
+	AABB2 fullScreenAABB2( 0.f, 0.f, screenWidth, screenHeight );
 	AddVertsForAABB2D( quadVerts, fullScreenAABB2, Rgba8( 0, 0, 0, 100 ) );
 	g_engine->m_renderer->DrawVertexArray( quadVerts );
 
@@ -661,8 +684,11 @@ void Game::RenderVictoryMode() const
 {
 	g_engine->m_renderer->BeginCamera( *m_screenCamera );
 
+	float screenWidth = g_gameConfigBlackboard.GetValue( "windowWidth", 1600.f );
+	float screenHeight = g_gameConfigBlackboard.GetValue( "windowHeight", 800.f );
+
 	std::vector<Vertex> verts;
-	AABB2 fullScreenAABB2( 0.f, 0.f, SCREEN_SIZE_X, SCREEN_SIZE_Y );
+	AABB2 fullScreenAABB2( 0.f, 0.f, screenWidth, screenHeight );
 	AddVertsForAABB2D( verts, fullScreenAABB2, Rgba8( 255, 255, 255, 255 ) );
 	g_engine->m_renderer->BindTexture( m_victoryScreenTexture );
 	g_engine->m_renderer->DrawVertexArray( ( int ) verts.size(), verts.data() );
@@ -676,9 +702,12 @@ void Game::RenderVictoryMode() const
 void Game::RenderGameOverMode() const
 {
 	g_engine->m_renderer->BeginCamera( *m_screenCamera );
+
+	float screenWidth = g_gameConfigBlackboard.GetValue( "windowWidth", 1600.f );
+	float screenHeight = g_gameConfigBlackboard.GetValue( "windowHeight", 800.f );
 	
 	std::vector<Vertex> verts;
-	AABB2 fullScreenAABB2( 0.f, 0.f, SCREEN_SIZE_X, SCREEN_SIZE_Y );
+	AABB2 fullScreenAABB2( 0.f, 0.f, screenWidth, screenHeight );
 	AddVertsForAABB2D( verts, fullScreenAABB2, Rgba8( 255, 255, 255, 255 ) );
 	g_engine->m_renderer->BindTexture( m_gameOverScreenTexture );
 	g_engine->m_renderer->DrawVertexArray( ( int ) verts.size(), verts.data() );
@@ -699,7 +728,7 @@ void Game::KillAllEnemies()
 void Game::LoadNextMap()
 {
 	int currentMapIndex = m_currentMap->m_index;
-	if ( currentMapIndex == NUM_MAPS - 1 )
+	if ( currentMapIndex == g_gameConfigBlackboard.GetValue( "numOfMaps", 3 ) - 1 )
 	{
 		g_engine->m_audioSystem->StartSound( m_victorySoundID, false );
 		m_currentGameState = GameState::VICTORY;

@@ -3,6 +3,7 @@
 #include "Game/GameCommon.hpp"
 #include "Engine/Audio/AudioSystem.hpp"
 #include "Engine/Core/Engine.hpp"
+#include "Engine/Core/EngineCommon.hpp"
 #include "Engine/Math/MathUtils.hpp"
 #include "Engine/Math/Vec2.hpp"
 
@@ -74,9 +75,9 @@ void Entity::Die()
 bool Entity::IsOffScreen() const
 {
 	float screenLeft = 0.f;
-	float screenRight = WORLD_SIZE_X;
+	float screenRight = g_gameConfigBlackboard.GetValue( "worldWidth", 200.f );
 	float screenBottom = 0.f;
-	float screenTop = WORLD_SIZE_Y;
+	float screenTop = g_gameConfigBlackboard.GetValue( "worldHeight", 100.f );
 
 	if ( m_position.x + m_cosmeticRadius < screenLeft || m_position.x - m_cosmeticRadius > screenRight ||
 		m_position.y + m_cosmeticRadius < screenBottom || m_position.y - m_cosmeticRadius > screenTop )

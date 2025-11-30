@@ -2,6 +2,7 @@
 #include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
 #include "Engine/Core/Engine.hpp"
+#include "Engine/Core/EngineCommon.hpp"
 #include "Engine/Core/VertexUtils.hpp"
 #include "Engine/Math/AABB2.hpp"
 #include "Engine/Math/MathUtils.hpp"
@@ -13,18 +14,19 @@
 Aries::Aries( Vec2 startingPosition, float orientationDegrees )
 	: Entity( startingPosition, orientationDegrees )
 {
-	m_angularVelocityDegreesPerSecond = ARIES_TURN_SPEED_DEGREES_PER_SECOND;
-	m_velocity = ARIES_MOVE_SPEED_TILES_PER_SECOND * GetForwardNormal();
+	m_angularVelocityDegreesPerSecond = g_gameConfigBlackboard.GetValue( "ariesTurnSpeed", 60.f );
+	m_velocity = g_gameConfigBlackboard.GetValue( "ariesMoveSpeed", 6.f ) * GetForwardNormal();
+
+	m_physicsRadius = g_gameConfigBlackboard.GetValue( "ariesPhysicsRadius", 4.f );
+	m_cosmeticRadius = g_gameConfigBlackboard.GetValue( "ariesCosmeticRadius", 6.f );
+	m_health = g_gameConfigBlackboard.GetValue( "ariesMaxHealth", 10 );
+
+	m_isPushedByWalls = g_gameConfigBlackboard.GetValue( "ariesIsPushedByWalls", true );
+	m_isPushedByEntities = g_gameConfigBlackboard.GetValue( "ariesIsPushedByEntities", true );
+	m_doesPushEntities = g_gameConfigBlackboard.GetValue( "ariesDoesPushEntities", true );
+	m_isHitByBullets = g_gameConfigBlackboard.GetValue( "ariesIsHitByBullets", true );
 
 	m_faction = ENTITY_FACTION_EVIL;
-	m_physicsRadius = ARIES_PHYSICS_RADIUS;
-	m_cosmeticRadius = ARIES_COSMETIC_RADIUS;
-	m_health = ARIES_HEALTH;
-
-	m_isPushedByWalls = true;
-	m_isPushedByEntities = true;
-	m_doesPushEntities = true;
-	m_isHitByBullets = true;
 
 	InitializeVertexArray();
 }
@@ -41,7 +43,8 @@ void Aries::Update( float deltaSeconds )
 	float distanceToPlayer = ( g_game->m_player->m_position - m_position ).GetLength();
 	bool hasLineOfSightToPlayer = g_game->m_currentMap->HasLineOfSight( m_position, g_game->m_player->m_position, 0.1f );
 
-	if ( playerIsAlive && distanceToPlayer <= VISIBLE_RANGE_RADIUS && hasLineOfSightToPlayer )
+	float sightRadius = g_gameConfigBlackboard.GetValue( "ariesSightRadius", 125.f );
+	if ( playerIsAlive && distanceToPlayer <= sightRadius && hasLineOfSightToPlayer )
 	{
 		m_targetPosition = g_game->m_player->m_position;
 	}
@@ -74,7 +77,7 @@ void Aries::Update( float deltaSeconds )
 			needNewTarget = true;
 		}
 
-		if ( m_timeSinceLastTurn >= ARIES_TURN_COOLDOWN_SECONDS || needNewTarget )
+		if ( m_timeSinceLastTurn >= g_gameConfigBlackboard.GetValue( "ariesTurnCooldown", 1.5f ) || needNewTarget )
 		{
 			// Try to find a reachable random target
 			for ( int attempts = 0; attempts < 5; ++attempts )
@@ -146,7 +149,7 @@ void Aries::MoveTowardTargetPosition( float deltaSeconds )
 	float angleDiff = GetShortestAngularDispDegrees( m_orientationDegrees, targetOrientationDegrees );
 	if ( fabsf( angleDiff ) <= 45.f )
 	{
-		m_velocity = ARIES_MOVE_SPEED_TILES_PER_SECOND * GetForwardNormal();
+		m_velocity = g_gameConfigBlackboard.GetValue( "ariesMoveSpeed", 6.f ) * GetForwardNormal();
 	}
 	else
 	{

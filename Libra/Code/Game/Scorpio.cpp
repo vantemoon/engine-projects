@@ -2,6 +2,7 @@
 #include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
 #include "Engine/Core/Engine.hpp"
+#include "Engine/Core/EngineCommon.hpp"
 #include "Engine/Core/VertexUtils.hpp"
 #include "Engine/Math/AABB2.hpp"
 #include "Engine/Math/MathUtils.hpp"
@@ -12,18 +13,17 @@
 Scorpio::Scorpio( Vec2 startingPosition, float orientationDegrees )
 	: Entity( startingPosition, orientationDegrees )
 {
-	m_angularVelocityDegreesPerSecond = SCORPIO_TURN_SPEED_DEGREES_PER_SECOND;
+	m_physicsRadius = g_gameConfigBlackboard.GetValue( "scorpioPhysicsRadius", 4.f );
+	m_cosmeticRadius = g_gameConfigBlackboard.GetValue( "scorpioCosmeticRadius", 6.f );
+	m_health = g_gameConfigBlackboard.GetValue( "scorpioMaxHealth", 10 );
+	m_angularVelocityDegreesPerSecond = g_gameConfigBlackboard.GetValue( "scorpioTurnSpeed", 60.f );
 
-	m_isPushedByWalls = true;
-	m_isPushedByEntities = false;
-	m_doesPushEntities = true;
-	m_isHitByBullets = true;
+	m_isPushedByWalls = g_gameConfigBlackboard.GetValue( "scorpioIsPushedByWalls", true );
+	m_isPushedByEntities = g_gameConfigBlackboard.GetValue( "scorpioIsPushedByEntities", false );
+	m_doesPushEntities = g_gameConfigBlackboard.GetValue( "scorpioDoesPushEntities", true );
+	m_isHitByBullets = g_gameConfigBlackboard.GetValue( "scorpioIsHitByBullets", true );
 
 	m_faction = ENTITY_FACTION_EVIL;
-
-	m_physicsRadius = SCORPIO_PHYSICS_RADIUS;
-	m_cosmeticRadius = SCORPIO_COSMETIC_RADIUS;
-	m_health = SCORPIO_HEALTH;
 
 	InitializeVertexArray();
 }
@@ -43,7 +43,9 @@ void Scorpio::Update( float deltaSeconds )
 
 	float distanceToPlayer = ( g_game->m_player->m_position - m_position ).GetLength();
 	bool hasLineOfSightToPlayer = g_game->m_currentMap->HasLineOfSight( m_position, g_game->m_player->m_position, 0.1f );
-	if ( g_game->m_player->IsAlive() && distanceToPlayer <= VISIBLE_RANGE_RADIUS && hasLineOfSightToPlayer )
+
+	float sightRadius = g_gameConfigBlackboard.GetValue( "scorpioSightRadius", 125.f );
+	if ( g_game->m_player->IsAlive() && distanceToPlayer <= sightRadius && hasLineOfSightToPlayer )
 	{
 		Vec2 toPlayer = g_game->m_player->m_position - m_position;
 		m_targetOrientationDegrees = toPlayer.GetOrientationDegrees();
@@ -52,7 +54,7 @@ void Scorpio::Update( float deltaSeconds )
 		if ( fabsf( angleDiff ) < 5.f )
 		{
 			m_timeSinceLastFire += deltaSeconds;
-			if ( m_timeSinceLastFire >= SCORPIO_FIRE_COOLDOWN_SECONDS )
+			if ( m_timeSinceLastFire >= g_gameConfigBlackboard.GetValue( "scorpioFireCooldown", 0.3f ) )
 			{
 				FireProjectile();
 				m_timeSinceLastFire = 0.f;
@@ -61,7 +63,7 @@ void Scorpio::Update( float deltaSeconds )
 	}
 	else
 	{
-		m_angularVelocityDegreesPerSecond = SCORPIO_TURN_SPEED_DEGREES_PER_SECOND;
+		m_angularVelocityDegreesPerSecond = g_gameConfigBlackboard.GetValue( "scorpioTurnSpeed", 60.f );
 		m_targetOrientationDegrees += m_angularVelocityDegreesPerSecond * deltaSeconds;
 	}
 
@@ -90,9 +92,10 @@ void Scorpio::Render() const
 	g_engine->m_renderer->DrawVertexArray( topVerts );
 
 	// Laser line
+	float scorpioMaxRange = g_gameConfigBlackboard.GetValue( "scorpioMaxRange", 125.f );
 	Vec2 laserStart = m_position + Vec2::MakeFromPolarDegrees( m_orientationDegrees, 5.5f );
 	Vec2 forwardDirection = Vec2::MakeFromPolarDegrees( m_orientationDegrees, 1.f );
-	RaycastResult2D raycastResult = g_game->m_currentMap->RaycastVsTiles( m_position, forwardDirection, SCORPIO_MAX_RANGE, 0.1f );
+	RaycastResult2D raycastResult = g_game->m_currentMap->RaycastVsTiles( m_position, forwardDirection, scorpioMaxRange, 0.1f );
 	Vec2 impactPos;
 	if ( raycastResult.m_didImpact )
 	{
@@ -100,10 +103,10 @@ void Scorpio::Render() const
 	}
 	else
 	{
-		impactPos = laserStart + forwardDirection * SCORPIO_MAX_RANGE;
+		impactPos = laserStart + forwardDirection * scorpioMaxRange;
 	}
 	float distanceToImpact = ( impactPos - laserStart ).GetLength();
-	float laserAlpha = 1.f - ( distanceToImpact / SCORPIO_MAX_RANGE );
+	float laserAlpha = 1.f - ( distanceToImpact / scorpioMaxRange );
 	Rgba8 laserColor = Rgba8( 255, 0, 0, ( unsigned char ) ( laserAlpha * 255.f ) );
 	float laserThickness = 0.5f;
 	g_engine->m_renderer->BindTexture( nullptr );

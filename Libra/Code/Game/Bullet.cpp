@@ -3,6 +3,7 @@
 #include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
 #include "Engine/Core/Engine.hpp"
+#include "Engine/Core/EngineCommon.hpp"
 #include "Engine/Core/VertexUtils.hpp"
 #include "Engine/Math/AABB2.hpp"
 #include "Engine/Math/MathUtils.hpp"
@@ -19,40 +20,40 @@ Bullet::Bullet( Vec2 startingPosition, float orientationDegrees, EntityType type
 	{
 		case ENTITY_TYPE_GOOD_BULLET:
 			m_faction = ENTITY_FACTION_GOOD;
-			m_health = GOOD_BULLET_HEALTH;
-			m_velocity = GOOD_BULLET_SPEED_TILES_PER_SECOND * GetForwardNormal();
-			m_physicsRadius = BULLET_PHYSICS_RADIUS;
-			m_cosmeticRadius = BULLET_COSMETIC_RADIUS;
+			m_health = g_gameConfigBlackboard.GetValue( "goodBulletMaxHealth", 3 );
+			m_velocity = g_gameConfigBlackboard.GetValue( "goodBulletSpeed", 80.f ) * GetForwardNormal();
+			m_physicsRadius = g_gameConfigBlackboard.GetValue( "bulletPhysicsRadius", 0.5f );
+			m_cosmeticRadius = g_gameConfigBlackboard.GetValue( "bulletCosmeticRadius", 1.f );
 			m_isBullet = true;
 			m_isBolt = false;
 			break;
 
 		case ENTITY_TYPE_GOOD_BOLT:
 			m_faction = ENTITY_FACTION_GOOD;
-			m_health = GOOD_BOLT_HEALTH;
-			m_velocity = GOOD_BOLT_SPEED_TILES_PER_SECOND * GetForwardNormal();
-			m_physicsRadius = BOLT_PHYSICS_RADIUS;
-			m_cosmeticRadius = BOLT_COSMETIC_RADIUS;
+			m_health = g_gameConfigBlackboard.GetValue( "goodBoltMaxHealth", 3 );
+			m_velocity = g_gameConfigBlackboard.GetValue( "goodBoltSpeed", 80.f ) * GetForwardNormal();
+			m_physicsRadius = g_gameConfigBlackboard.GetValue( "boltPhysicsRadius", 0.5f );
+			m_cosmeticRadius = g_gameConfigBlackboard.GetValue( "boltCosmeticRadius", 1.f );
 			m_isBullet = false;
 			m_isBolt = true;
 			break;
 
 		case ENTITY_TYPE_EVIL_BULLET:
 			m_faction = ENTITY_FACTION_EVIL;
-			m_health = EVIL_BULLET_HEALTH;
-			m_velocity = EVIL_BULLET_SPEED_TILES_PER_SECOND * GetForwardNormal();
-			m_physicsRadius = BULLET_PHYSICS_RADIUS;
-			m_cosmeticRadius = BULLET_COSMETIC_RADIUS;
+			m_health = g_gameConfigBlackboard.GetValue( "evilBulletMaxHealth", 1 );
+			m_velocity = g_gameConfigBlackboard.GetValue( "evilBulletSpeed", 60.f ) * GetForwardNormal();
+			m_physicsRadius = g_gameConfigBlackboard.GetValue( "bulletPhysicsRadius", 0.5f );
+			m_cosmeticRadius = g_gameConfigBlackboard.GetValue( "bulletCosmeticRadius", 1.f );
 			m_isBullet = true;
 			m_isBolt = false;
 			break;
 
 		case ENTITY_TYPE_EVIL_BOLT:
 			m_faction = ENTITY_FACTION_EVIL;
-			m_health = EVIL_BOLT_HEALTH;
-			m_velocity = EVIL_BOLT_SPEED_TILES_PER_SECOND * GetForwardNormal();
-			m_physicsRadius = BOLT_PHYSICS_RADIUS;
-			m_cosmeticRadius = BOLT_COSMETIC_RADIUS;
+			m_health = g_gameConfigBlackboard.GetValue( "evilBoltMaxHealth", 1 );
+			m_velocity = g_gameConfigBlackboard.GetValue( "evilBoltSpeed", 60.f ) * GetForwardNormal();
+			m_physicsRadius = g_gameConfigBlackboard.GetValue( "boltPhysicsRadius", 0.5f );
+			m_cosmeticRadius = g_gameConfigBlackboard.GetValue( "boltCosmeticRadius", 1.f );
 			m_isBullet = false;
 			m_isBolt = true;
 			break;
@@ -190,15 +191,15 @@ void Bullet::InitializeVertexArray()
 {
 	if ( m_isBolt )
 	{
-		float halfWidth = BOLT_LENGTH * 0.5f;
-		float halfHeight = BOLT_WIDTH * 0.5f;
+		float halfWidth = g_gameConfigBlackboard.GetValue( "boltLength", 3.f ) * 0.5f;
+		float halfHeight = g_gameConfigBlackboard.GetValue( "boltWidth", 1.5f ) * 0.5f;
 		AABB2 bulletAABB2 = AABB2( -halfWidth, -halfHeight, halfWidth, halfHeight );
 		AddVertsForAABB2D( m_vertexArray, bulletAABB2, Rgba8::WHITE );
 	}
 	else if ( m_isBullet )
 	{
-		float halfWidth = BULLET_LENGTH * 0.5f;
-		float halfHeight = BULLET_WIDTH * 0.5f;
+		float halfWidth = g_gameConfigBlackboard.GetValue( "bulletLength", 2.f ) * 0.5f;
+		float halfHeight = g_gameConfigBlackboard.GetValue( "bulletWidth", 1.f ) * 0.5f;
 		AABB2 bulletAABB2 = AABB2( -halfWidth, -halfHeight, halfWidth, halfHeight );
 		AddVertsForAABB2D( m_vertexArray, bulletAABB2, Rgba8::WHITE );
 	}

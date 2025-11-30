@@ -40,8 +40,8 @@ void App::Startup()
 	LoadGameConfigFromFile( "Data/GameConfig.xml" );
 
 	EngineConfig engineConfig;
-	engineConfig.m_windowConfig.m_clientAspect = 2.0f;
-	engineConfig.m_windowConfig.m_windowTitle = "Libra";
+	engineConfig.m_windowConfig.m_clientAspect = g_gameConfigBlackboard.GetValue( "windowAspect", 2.0f );
+	engineConfig.m_windowConfig.m_windowTitle = g_gameConfigBlackboard.GetValue( "windowTitle", "Libra" );
 
 	g_engine = new Engine( engineConfig );
 	g_engine->Startup();

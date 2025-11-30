@@ -9,6 +9,7 @@
 #include "Game/Scorpio.hpp"
 #include "Game/TileDefinition.hpp"
 #include "Engine/Core/Engine.hpp"
+#include "Engine/Core/EngineCommon.hpp"
 #include "Engine/Core/Vertex.hpp"
 #include "Engine/Core/VertexUtils.hpp"
 #include "Engine/Math/AABB2.hpp"
@@ -81,8 +82,9 @@ void Map::RenderTiles() const
 
 	for ( Tile const& tile : m_tiles )
 	{
-		AABB2 tileBounds( tile.m_tileCoords.x * TILE_SIZE, tile.m_tileCoords.y * TILE_SIZE,
-						( tile.m_tileCoords.x + 1 ) * TILE_SIZE, ( tile.m_tileCoords.y + 1 ) * TILE_SIZE );
+		float tileSize = g_gameConfigBlackboard.GetValue( "tileSize", 12.5f );
+		AABB2 tileBounds( tile.m_tileCoords.x * tileSize, tile.m_tileCoords.y * tileSize,
+						( tile.m_tileCoords.x + 1 ) * tileSize, ( tile.m_tileCoords.y + 1 ) * tileSize );
 
 		TileDefinition const& tileDef = tile.GetDefinition();
 		Rgba8 tint = tileDef.m_tint;
@@ -207,10 +209,13 @@ Tile* Map::GetTile( IntVec2 tileCoords ) const
 //-----------------------------------------------------------------------------------------------
 AABB2 Map::GetTileBounds( IntVec2 tileCoords ) const
 {
-	float minX = static_cast<float>( tileCoords.x ) * TILE_SIZE;
-	float minY = static_cast<float>( tileCoords.y ) * TILE_SIZE;
-	float maxX = static_cast<float>( tileCoords.x + 1 ) * TILE_SIZE;
-	float maxY = static_cast<float>( tileCoords.y + 1 ) * TILE_SIZE;
+	float tileSize = g_gameConfigBlackboard.GetValue( "tileSize", 12.5f );
+
+	float minX = static_cast<float>( tileCoords.x ) * tileSize;
+	float minY = static_cast<float>( tileCoords.y ) * tileSize;
+	float maxX = static_cast<float>( tileCoords.x + 1 ) * tileSize;
+	float maxY = static_cast<float>( tileCoords.y + 1 ) * tileSize;
+
 	return AABB2( minX, minY, maxX, maxY );
 }
 
@@ -230,8 +235,11 @@ bool Map::IsTileCoordsInBounds( IntVec2 tileCoords ) const
 //-----------------------------------------------------------------------------------------------
 IntVec2 Map::GetTileCoordsForWorldPosition( Vec2 worldPos ) const
 {
-	int tileX = static_cast<int>( worldPos.x / TILE_SIZE );
-	int tileY = static_cast<int>( worldPos.y / TILE_SIZE );
+	float tileSize = g_gameConfigBlackboard.GetValue( "tileSize", 12.5f );
+
+	int tileX = static_cast<int>( worldPos.x / tileSize );
+	int tileY = static_cast<int>( worldPos.y / tileSize );
+
 	return IntVec2( tileX, tileY );
 }
 
@@ -239,8 +247,11 @@ IntVec2 Map::GetTileCoordsForWorldPosition( Vec2 worldPos ) const
 //-----------------------------------------------------------------------------------------------
 Vec2 Map::GetWorldPositionForTileCoords( IntVec2 tileCoords ) const
 {
-	float worldX = ( static_cast<float>( tileCoords.x ) + 0.5f ) * TILE_SIZE;
-	float worldY = ( static_cast<float>( tileCoords.y ) + 0.5f ) * TILE_SIZE;
+	float tileSize = g_gameConfigBlackboard.GetValue( "tileSize", 12.5f );
+
+	float worldX = ( static_cast<float>( tileCoords.x ) + 0.5f ) * tileSize;
+	float worldY = ( static_cast<float>( tileCoords.y ) + 0.5f ) * tileSize;
+
 	return Vec2( worldX, worldY );
 }
 
@@ -360,11 +371,11 @@ void Map::UpdateWorldCameraView() const
 {
 	float tilesInViewY = static_cast< float >( g_game->m_numTilesInViewVertically );
 	float aspect = g_engine->m_window->m_config.m_clientAspect;
-	float viewHeight = tilesInViewY * TILE_SIZE;
+	float viewHeight = tilesInViewY * g_gameConfigBlackboard.GetValue( "tileSize", 12.5f );
 	float viewWidth = viewHeight * aspect;
 
-	float mapWidth = static_cast< float >( m_dimensions.x ) * TILE_SIZE;
-	float mapHeight = static_cast< float >( m_dimensions.y ) * TILE_SIZE;
+	float mapWidth = static_cast< float >( m_dimensions.x ) * g_gameConfigBlackboard.GetValue( "tileSize", 12.5f );
+	float mapHeight = static_cast< float >( m_dimensions.y ) * g_gameConfigBlackboard.GetValue( "tileSize", 12.5f );
 
 	Vec2 cameraCenter = Vec2( mapWidth * 0.5f, mapHeight * 0.5f );
 	if ( g_game->m_player ) {
@@ -476,6 +487,8 @@ void Map::SpawnEntitiesForMapDefinition()
 
 	RandomNumberGenerator rng;
 
+	float tileSize = g_gameConfigBlackboard.GetValue( "tileSize", 12.5f );
+
 	// Spawn Scorpios
 	for ( int i = 0; i < mapDef.m_numOfScorpios; ++ i )
 	{
@@ -483,10 +496,11 @@ void Map::SpawnEntitiesForMapDefinition()
 
 		// Ensure not spawning inside the entrance or exit bunkers
 		bool isRespawnPosValid = false;
+		
 		while ( !isRespawnPosValid )
 		{
-			rawSpawnPos.x = rng.RollRandomFloatInRange( 2.f * TILE_SIZE, ( static_cast<float>( m_dimensions.x ) - 3.f ) * TILE_SIZE );
-			rawSpawnPos.y = rng.RollRandomFloatInRange( 2.f * TILE_SIZE, ( static_cast<float>( m_dimensions.y ) - 3.f ) * TILE_SIZE );
+			rawSpawnPos.x = rng.RollRandomFloatInRange( 2.f * tileSize, ( static_cast<float>( m_dimensions.x ) - 3.f ) * tileSize );
+			rawSpawnPos.y = rng.RollRandomFloatInRange( 2.f * tileSize, ( static_cast<float>( m_dimensions.y ) - 3.f ) * tileSize );
 			IntVec2 spawnTileCoords = GetTileCoordsForWorldPosition( rawSpawnPos );
 			isRespawnPosValid = true;
 
@@ -513,8 +527,8 @@ void Map::SpawnEntitiesForMapDefinition()
 		// Ensure not spawning on solid tile
 		while ( IsTileSolid( *GetTile( spawnTileCoords ) ) )
 		{
-			rawSpawnPos.x = rng.RollRandomFloatInRange( 2.f * TILE_SIZE, ( static_cast<float>( m_dimensions.x ) - 3.f ) * TILE_SIZE );
-			rawSpawnPos.y = rng.RollRandomFloatInRange( 2.f * TILE_SIZE, ( static_cast<float>( m_dimensions.y ) - 3.f ) * TILE_SIZE );
+			rawSpawnPos.x = rng.RollRandomFloatInRange( 2.f * tileSize, ( static_cast<float>( m_dimensions.x ) - 3.f ) * tileSize );
+			rawSpawnPos.y = rng.RollRandomFloatInRange( 2.f * tileSize, ( static_cast<float>( m_dimensions.y ) - 3.f ) * tileSize );
 			spawnTileCoords = GetTileCoordsForWorldPosition( rawSpawnPos );
 			spawnPos = GetWorldPositionForTileCoords( spawnTileCoords );
 		}
@@ -535,8 +549,8 @@ void Map::SpawnEntitiesForMapDefinition()
 		bool isRespawnPosValid = false;
 		while ( !isRespawnPosValid )
 		{
-			rawSpawnPos.x = rng.RollRandomFloatInRange( 2.f * TILE_SIZE, ( static_cast<float>( m_dimensions.x ) - 3.f ) * TILE_SIZE );
-			rawSpawnPos.y = rng.RollRandomFloatInRange( 2.f * TILE_SIZE, ( static_cast<float>( m_dimensions.y ) - 3.f ) * TILE_SIZE );
+			rawSpawnPos.x = rng.RollRandomFloatInRange( 2.f * tileSize, ( static_cast<float>( m_dimensions.x ) - 3.f ) * tileSize );
+			rawSpawnPos.y = rng.RollRandomFloatInRange( 2.f * tileSize, ( static_cast<float>( m_dimensions.y ) - 3.f ) * tileSize );
 			IntVec2 spawnTileCoords = GetTileCoordsForWorldPosition( rawSpawnPos );
 			isRespawnPosValid = true;
 			// Check inner bunker area
@@ -574,8 +588,8 @@ void Map::SpawnEntitiesForMapDefinition()
 		bool isRespawnPosValid = false;
 		while ( !isRespawnPosValid )
 		{
-			rawSpawnPos.x = rng.RollRandomFloatInRange( 2.f * TILE_SIZE, ( static_cast<float>( m_dimensions.x ) - 3.f ) * TILE_SIZE );
-			rawSpawnPos.y = rng.RollRandomFloatInRange( 2.f * TILE_SIZE, ( static_cast<float>( m_dimensions.y ) - 3.f ) * TILE_SIZE );
+			rawSpawnPos.x = rng.RollRandomFloatInRange( 2.f * tileSize, ( static_cast<float>( m_dimensions.x ) - 3.f ) * tileSize );
+			rawSpawnPos.y = rng.RollRandomFloatInRange( 2.f * tileSize, ( static_cast<float>( m_dimensions.y ) - 3.f ) * tileSize );
 			IntVec2 spawnTileCoords = GetTileCoordsForWorldPosition( rawSpawnPos );
 			isRespawnPosValid = true;
 			// Check inner bunker area

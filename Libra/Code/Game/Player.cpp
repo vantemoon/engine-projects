@@ -5,6 +5,7 @@
 #include "Game/Map.hpp"
 #include "Game/MapDefinition.hpp"
 #include "Engine/Core/Engine.hpp"
+#include "Engine/Core/EngineCommon.hpp"
 #include "Engine/Core/Rgba8.hpp"
 #include "Engine/Core/Vertex.hpp"
 #include "Engine/Core/VertexUtils.hpp"
@@ -17,8 +18,14 @@
 Player::Player( Vec2 startingPosition, float orientationDegrees )
 	: Entity( startingPosition, orientationDegrees )
 {
-	m_physicsRadius = PLAYER_TANK_PHYSICS_RADIUS;
-	m_cosmeticRadius = PLAYER_TANK_COSMETIC_RADIUS;
+	m_physicsRadius = g_gameConfigBlackboard.GetValue( "playerTankPhysicsRadius", 4.f );
+	m_cosmeticRadius = g_gameConfigBlackboard.GetValue( "playerTankCosmeticRadius", 6.f );
+	m_health = g_gameConfigBlackboard.GetValue( "playerTankMaxHealth", 10 );
+
+	m_isPushedByWalls = g_gameConfigBlackboard.GetValue( "playerTankIsPushedByWalls", true );
+	m_isPushedByEntities = g_gameConfigBlackboard.GetValue( "playerTankIsPushedByEntities", true );
+	m_doesPushEntities = g_gameConfigBlackboard.GetValue( "playerTankDoesPushEntities", true );
+	m_isHitByBullets = g_gameConfigBlackboard.GetValue( "playerTankIsHitByBullets", true );
 
 	m_targetMovementDirection = m_orientationDegrees;
 	m_prevOrientationDegrees = m_orientationDegrees;
@@ -28,13 +35,6 @@ Player::Player( Vec2 startingPosition, float orientationDegrees )
 	m_turretRelativeOrientationDegrees = 0.f;
 
 	m_faction = ENTITY_FACTION_GOOD;
-
-	m_isPushedByWalls = true;
-	m_isPushedByEntities = true;
-	m_doesPushEntities = true;
-	m_isHitByBullets = true;
-
-	m_health = PLAYER_TANK_HEALTH;
 
 	InitializeVertexArray();
 }
@@ -64,7 +64,7 @@ void Player::Update( float deltaSeconds )
 
 	TurnTurretTowardAimDirection( deltaSeconds );
 
-	m_velocity = m_thrustFraction * PLAYER_TANK_MOVE_SPEED_TILES_PER_SECOND * GetForwardNormal();
+	m_velocity = m_thrustFraction * g_gameConfigBlackboard.GetValue( "playerTankMoveSpeed", 10.f ) * GetForwardNormal();
 	Entity::Update( deltaSeconds );
 
 	m_prevOrientationDegrees = m_orientationDegrees;
@@ -188,7 +188,7 @@ void Player::UpdateFromKeyboard( [[maybe_unused]] float deltaSeconds )
 	// Fire
 	if ( g_engine->m_inputSystem->IsKeyDown( KEYCODE_SPACE ) )
 	{
-		if ( m_timeSinceLastFire >= PLAYER_TANK_FIRE_COOLDOWN_SECONDS )
+		if ( m_timeSinceLastFire >= g_gameConfigBlackboard.GetValue( "playerTankFireCooldown", 0.1f ) )
 		{
 			FireProjectile();
 			m_timeSinceLastFire = 0.f;
@@ -227,7 +227,7 @@ void Player::UpdateFromController( [[maybe_unused]] float deltaSeconds )
 	float rightTrigger = controller.GetRightTrigger();
 	if ( rightTrigger > 0.f )
 	{
-		if ( m_timeSinceLastFire >= PLAYER_TANK_FIRE_COOLDOWN_SECONDS )
+		if ( m_timeSinceLastFire >= g_gameConfigBlackboard.GetValue( "playerTankFireCooldown", 0.1f ) )
 		{
 			FireProjectile();
 			m_timeSinceLastFire = 0.f;
@@ -289,7 +289,7 @@ void Player::Die()
 void Player::Respawn( Vec2 spawnPosition )
 {
 	m_position = spawnPosition;
-	m_health = PLAYER_TANK_HEALTH;
+	m_health = g_gameConfigBlackboard.GetValue( "playerTankMaxHealth", 10 );
 	m_isDead = false;
 }
 
@@ -320,7 +320,7 @@ void Player::TurnTowardMovementDirection( float deltaSeconds )
 	float deltaOrientationDegrees = m_targetMovementDirection - currentOrientationDegrees;
 	deltaOrientationDegrees = GetShortestAngularDispDegrees( currentOrientationDegrees, m_targetMovementDirection );
 	
-	float maxDeltaThisFrame = PLAYER_TANK_TURN_SPEED_DEGREES_PER_SECOND * deltaSeconds;
+	float maxDeltaThisFrame = g_gameConfigBlackboard.GetValue( "playerTankBodyTurnSpeed", 180.f ) * deltaSeconds;
 	if ( fabsf( deltaOrientationDegrees ) <= maxDeltaThisFrame )
 	{
 		m_orientationDegrees = m_targetMovementDirection;
@@ -355,7 +355,7 @@ void Player::TurnTurretTowardAimDirection( float deltaSeconds )
     float currentTurretDegrees = m_turretOrientationDegrees;
     float deltaTurretDegrees = GetShortestAngularDispDegrees( currentTurretDegrees, m_turretTargetOrientationDegrees );
 
-    float maxDeltaThisFrame = PLAYER_TANK_TURRET_TURN_SPEED_DEGREES_PER_SECOND * deltaSeconds;
+	float maxDeltaThisFrame = g_gameConfigBlackboard.GetValue( "playerTankTurretTurnSpeed", 360.f ) * deltaSeconds;
     if ( fabsf( deltaTurretDegrees ) <= maxDeltaThisFrame )
     {
         m_turretOrientationDegrees = m_turretTargetOrientationDegrees;
