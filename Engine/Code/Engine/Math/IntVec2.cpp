@@ -125,3 +125,10 @@ IntVec2 IntVec2::operator-( const IntVec2& vecToSubtract ) const
 {
 	return IntVec2( x - vecToSubtract.x, y - vecToSubtract.y );
 }
+
+
+//-----------------------------------------------------------------------------------------------
+bool IntVec2::operator==( const IntVec2& compare ) const
+{
+	return ( x == compare.x && y == compare.y );
+}

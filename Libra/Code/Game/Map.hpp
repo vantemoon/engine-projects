@@ -2,6 +2,7 @@
 #include "Game/Entity.hpp"
 #include "Game/Tile.hpp"
 #include "Engine/Math/IntVec2.hpp"
+#include "Engine/Core/TileHeatMap.hpp"
 #include <vector>
 
 
@@ -60,6 +61,8 @@ public:
 
 	bool				 IsPointInSolidTile( Vec2 const& point )				const;
 	bool				 IsTileSolid( Tile tile )								const;
+	bool                 IsTileBlockedForDijkstra( IntVec2 const& coords, bool treatWaterAsSolid, 
+												   std::vector<bool> const& scorpioBlocked ) const;
 
 	RaycastResult2D		 RaycastVsTiles( Vec2 const& startPos, Vec2 const& fwdNormal, float maxDist, float stepSize ) const;
 	bool				 HasLineOfSight( Vec2 const& startPos, Vec2 const& endPos, float stepSize ) const;
@@ -70,6 +73,10 @@ public:
 	void				 RemoveEntityFromMap( Entity& entity, EntityType type, EntityFaction faction );
 
 	MapDefinition const& GetDefinition()										const;
+
+	void                 BuildScorpioBlockedMask( std::vector<bool>& out_mask ) const;
+	void				 PopulateDijkstraMap( TileHeatMap& out_dijkstraMap, IntVec2 startCoords, float maxCost, bool treatWaterAsSolid = true ) const;
+	void                 PopulateEnemyReachabilityMap( TileHeatMap& out_reachabilityMap, IntVec2 startCoords, float maxCost, bool treatWaterAsSolid = true ) const;
 
 private:
 	void				 PopulateTiles();

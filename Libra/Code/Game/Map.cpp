@@ -69,6 +69,12 @@ void Map::Render() const
 	UpdateWorldCameraView();
 
 	RenderTiles();
+
+	if (g_game->m_isDebugOn) 
+	{
+		DebugRender();
+	}
+
 	RenderEntities();
 }
 
@@ -118,6 +124,123 @@ void Map::DebugRender() const
 {
 	if (!g_game->m_isDebugOn) {
 		return;
+	}
+
+	switch ( g_game->m_mapRenderMode )
+	{
+		case 0:
+			break;
+
+		case 1:
+		{
+			if ( m_entityListsByType[ENTITY_TYPE_EVIL_LEO].size() == 0 ) return;
+
+			Leo* leo = dynamic_cast< Leo* >( m_entityListsByType[ENTITY_TYPE_EVIL_LEO][0] );
+			if ( leo == nullptr ) return;
+
+			TileHeatMap dijkstraMap( m_dimensions );
+			PopulateDijkstraMap(
+				dijkstraMap,
+				GetTileCoordsForWorldPosition( leo->m_targetPosition ),
+				999999.f,
+				true
+			);
+
+			std::vector<Vertex> debugVerts;
+			dijkstraMap.AddVertsForDebugDraw(
+				debugVerts,
+				AABB2(
+					Vec2::ZERO,
+					Vec2(
+						static_cast< float >( m_dimensions.x ) * g_gameConfigBlackboard.GetValue( "tileSize", 12.5f ),
+						static_cast< float >( m_dimensions.y ) * g_gameConfigBlackboard.GetValue( "tileSize", 12.5f )
+					)
+				),
+				FloatRange( 0.f, 100.f ),
+				Rgba8::BLACK,
+				Rgba8::WHITE,
+				999999.f,
+				Rgba8::MAGENTA
+			);
+
+			g_engine->m_renderer->DrawVertexArray( static_cast<int>( debugVerts.size() ), debugVerts.data() );
+		}
+		break;
+
+		case 2:
+		{
+			if ( m_entityListsByType[ENTITY_TYPE_EVIL_LEO].size() == 0 ) return;
+
+			Leo* leo = dynamic_cast< Leo* >( m_entityListsByType[ENTITY_TYPE_EVIL_LEO][0] );
+			if ( leo == nullptr ) return;
+
+			TileHeatMap reachabilityMap( m_dimensions );
+			PopulateEnemyReachabilityMap( 
+				reachabilityMap, 
+				GetTileCoordsForWorldPosition( leo->m_position ),
+				999999.f,
+				true
+			);
+
+			std::vector<Vertex> debugVerts;
+			reachabilityMap.AddVertsForDebugDraw(
+				debugVerts,
+				AABB2(
+					Vec2::ZERO,
+					Vec2(
+						static_cast< float >( m_dimensions.x ) * g_gameConfigBlackboard.GetValue( "tileSize", 12.5f ),
+						static_cast< float >( m_dimensions.y ) * g_gameConfigBlackboard.GetValue( "tileSize", 12.5f )
+					)
+				),
+				FloatRange( 0.f, 1.f ),
+				Rgba8::WHITE,
+				Rgba8::BLACK,
+				999999.f,
+				Rgba8::MAGENTA
+			);
+
+			g_engine->m_renderer->DrawVertexArray( static_cast<int>( debugVerts.size() ), debugVerts.data() );
+		}
+		break;
+
+		case 3:
+		{
+			if ( m_entityListsByType[ENTITY_TYPE_EVIL_LEO].size() == 0 ) return;
+
+			Leo* leo = dynamic_cast< Leo* >( m_entityListsByType[ENTITY_TYPE_EVIL_LEO][0] );
+			if ( leo == nullptr ) return;
+
+			TileHeatMap distanceToGoalMap( m_dimensions );
+			PopulateDijkstraMap(
+				distanceToGoalMap,
+				GetTileCoordsForWorldPosition( leo->m_targetPosition ),
+				1000.f,
+				false
+			);
+
+			std::vector<Vertex> debugVerts;
+			distanceToGoalMap.AddVertsForDebugDraw(
+				debugVerts,
+				AABB2(
+					Vec2::ZERO,
+					Vec2(
+						static_cast< float >( m_dimensions.x ) * g_gameConfigBlackboard.GetValue( "tileSize", 12.5f ),
+						static_cast< float >( m_dimensions.y ) * g_gameConfigBlackboard.GetValue( "tileSize", 12.5f )
+					)
+				),
+				FloatRange( 0.f, 100.f ),
+				Rgba8::BLACK,
+				Rgba8::WHITE,
+				999999.f,
+				Rgba8::MAGENTA
+			);
+
+			g_engine->m_renderer->DrawVertexArray( static_cast<int>( debugVerts.size() ), debugVerts.data() );
+		}
+		break;
+
+		default:
+			break;
 	}
 
 	const float ringThickness = 0.3f;
@@ -426,6 +549,40 @@ bool Map::IsPointInSolidTile( Vec2 const& point ) const
 bool Map::IsTileSolid( Tile tile ) const
 {
 	return tile.IsSolid();
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool Map::IsTileBlockedForDijkstra( IntVec2 const& coords, bool treatWaterAsSolid,
+									std::vector<bool> const& scorpioBlocked ) const
+{
+	if ( !IsTileCoordsInBounds( coords ) )
+	{
+		return true;
+	}
+
+	int index = coords.x + coords.y * m_dimensions.x;
+
+	if ( scorpioBlocked[index] )
+	{
+		return true;
+	}
+
+	Tile const* tile = GetTile( coords );
+	if ( tile == nullptr )
+	{
+		return true;
+	}
+	if ( IsTileSolid( *tile ) )
+	{
+		return true;
+	}
+	if ( treatWaterAsSolid && tile->GetDefinition().m_isWater )
+	{
+		return true;
+	}
+
+	return false;
 }
 
 
@@ -864,6 +1021,126 @@ void Map::ResolveEntityVsTileCollision()
 				{
 					entity->m_position = entity->m_position;
 				}
+			}
+		}
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Map::BuildScorpioBlockedMask( std::vector<bool>& out_mask ) const
+{
+	int tileCount = m_dimensions.x * m_dimensions.y;
+	out_mask.clear();
+	out_mask.resize( tileCount );
+
+	for ( int i = 0; i < tileCount; ++i )
+	{
+		out_mask[i] = false;
+	}
+
+	int scorpioCount = static_cast< int >( m_entityListsByType[ENTITY_TYPE_EVIL_SCORPIO].size() );
+	for ( int i = 0; i < scorpioCount; ++i )
+	{
+		Entity* scorpio = m_entityListsByType[ENTITY_TYPE_EVIL_SCORPIO][i];
+		if ( scorpio == nullptr )
+		{
+			continue;
+		}
+
+		IntVec2 coords = GetTileCoordsForWorldPosition( scorpio->m_position );
+		if ( IsTileCoordsInBounds( coords ) )
+		{
+			int index = coords.x + coords.y * m_dimensions.x;
+			out_mask[index] = true; 
+		}
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Map::PopulateDijkstraMap( TileHeatMap& out_dijkstraMap, IntVec2 startCoords, float maxCost, bool treatWaterAsSolid /*= true*/ ) const
+{
+	std::vector<bool> scorpioBlocked;
+	BuildScorpioBlockedMask( scorpioBlocked );
+
+	out_dijkstraMap.SetAllValues( maxCost );
+
+	if ( !IsTileCoordsInBounds( startCoords ) ) return;
+
+	Tile* startTile = GetTile( startCoords );
+	if ( startTile == nullptr ) return;
+	if ( IsTileSolid( *startTile ) ) return;
+	if ( treatWaterAsSolid && startTile->GetDefinition().m_isWater ) return;
+
+	out_dijkstraMap.SetValueAtTileCoords( startCoords, 0.0f );
+
+	IntVec2 neighborOffsets[4] =
+	{
+		IntVec2( -1,  0 ),
+		IntVec2( 1,  0 ),
+		IntVec2( 0, -1 ),
+		IntVec2( 0,  1 )
+	};
+
+	bool didUpdate = true;
+	while ( didUpdate )
+	{
+		didUpdate = false;
+
+		for ( int y = 0; y < m_dimensions.y; ++y )
+		{
+			for ( int x = 0; x < m_dimensions.x; ++x )
+			{
+				IntVec2 currentCoords( x, y );
+				Tile* currentTile = GetTile( currentCoords );
+				if ( currentTile == nullptr ) continue;
+				if ( IsTileSolid( *currentTile ) ) continue;
+				if ( treatWaterAsSolid && currentTile->GetDefinition().m_isWater ) continue;
+
+				float currentCost = out_dijkstraMap.GetValueAtTileCoords( currentCoords );
+				if ( currentCost >= maxCost ) continue;
+
+				for ( int i = 0; i < 4; ++i )
+				{
+					IntVec2 neighborCoords = currentCoords + neighborOffsets[i];
+					if ( IsTileBlockedForDijkstra( neighborCoords, treatWaterAsSolid, scorpioBlocked ) ) continue;
+					
+					float neighborCost = out_dijkstraMap.GetValueAtTileCoords( neighborCoords );
+					float newCost = currentCost + 1.0f;
+
+					if ( newCost < neighborCost )
+					{
+						out_dijkstraMap.SetValueAtTileCoords( neighborCoords, newCost );
+						didUpdate = true;
+					}
+				}
+			}
+		}
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Map::PopulateEnemyReachabilityMap( TileHeatMap& out_reachabilityMap, IntVec2 startCoords, float maxCost, bool treatWaterAsSolid /*= true*/ ) const
+{
+	TileHeatMap* dijkstraMap = new TileHeatMap( out_reachabilityMap.m_dimensions );
+	PopulateDijkstraMap( *dijkstraMap, startCoords, maxCost, treatWaterAsSolid );
+
+	for ( int y = 0; y < m_dimensions.y; ++y )
+	{
+		for ( int x = 0; x < m_dimensions.x; ++x )
+		{
+			IntVec2 currentCoords( x, y );
+			float cost = dijkstraMap->GetValueAtTileCoords( currentCoords );
+
+			if ( cost < maxCost )
+			{
+				out_reachabilityMap.SetValueAtTileCoords( currentCoords, 1.f );
+			}
+			else
+			{
+				out_reachabilityMap.SetValueAtTileCoords( currentCoords, 0.f );
 			}
 		}
 	}

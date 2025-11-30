@@ -397,6 +397,12 @@ void Game::UpdateFromKeyboard()
 			m_isDebugOn = !m_isDebugOn;
 		}
 
+		// Toggle map render mode
+		if ( m_isDebugOn && g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_F6 ) )
+		{
+			m_mapRenderMode = ( m_mapRenderMode + 1 ) % 4;
+		}
+
 		// Toggle slow motion
 		if ( g_engine->m_inputSystem->IsKeyDown( 'T' ) && !g_engine->m_inputSystem->IsKeyDown( 'Y' ) )
 		{
@@ -566,11 +572,6 @@ void Game::Render() const
 
 	m_currentMap->Render();
 
-	if ( m_isDebugOn )
-	{
-		m_currentMap->DebugRender();
-	}
-
 	if ( m_currentGameState == GameState::PAUSED )
 	{
 		RenderPausedMode();
@@ -586,7 +587,7 @@ void Game::Render() const
 		RenderGameOverMode();
 	};
 
-	RenderHUD();
+	// RenderHUD();
 
 	g_engine->m_renderer->EndCamera( *cameraToUse );
 }
