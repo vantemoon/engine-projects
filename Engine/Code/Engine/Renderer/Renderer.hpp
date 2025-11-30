@@ -7,6 +7,7 @@
 struct IntVec2;
 struct Rgba8;
 struct Vertex;
+class BitmapFont;
 class Camera;
 class Texture;
 
@@ -35,15 +36,21 @@ public:
 	void EndCamera( Camera const& camera );
 	void DrawVertexArray( std::vector<Vertex> const& verts );
 	void DrawVertexArray( int numVertexes, Vertex const* vertexes );
+	void BindTexture( Texture* texture );
 
 	Texture* CreateOrGetTextureFromFile( char const* imageFilePath );
+	BitmapFont* CreateOrGetBitmapFontFromFile( char const* fontFilePathNameWithNoExtension );
+	
+private:
 	Texture* CreateTextureFromFile( char const* imageFilePath );
 	Texture* CreateTextureFromData( char const* name, IntVec2 dimensions, int bytesPerTexel, uint8_t* texelData );
 	Texture* GetTextureForFileName( char const* imageFilePath );
-	void BindTexture( Texture* texture );
 
+	BitmapFont* CreateBitmapFontFromFile( char const* fontFilePathNameWithNoExtension, Texture& fontTexture );
+	BitmapFont* GetBitmapFontForFileName( char const* fontFilePathNameWithNoExtension );
 
 public:
 	RenderConfig m_config;
 	std::vector<Texture*> m_loadedTextures;
+	std::vector<BitmapFont*> m_loadedFonts;
 };

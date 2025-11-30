@@ -16,6 +16,7 @@
 #include "Engine/Math/AABB2.hpp"
 #include "Engine/Math/MathUtils.hpp"
 #include "Engine/Math/RandomNumberGenerator.hpp"
+#include "Engine/Renderer/BitmapFont.hpp"
 #include "Engine/Renderer/Camera.hpp"
 #include "Engine/Renderer/Renderer.hpp"
 #include "Engine/Renderer/SpriteDefinition.hpp"
@@ -585,7 +586,7 @@ void Game::Render() const
 		RenderGameOverMode();
 	};
 
-	// RenderHUD();
+	RenderHUD();
 
 	g_engine->m_renderer->EndCamera( *cameraToUse );
 }

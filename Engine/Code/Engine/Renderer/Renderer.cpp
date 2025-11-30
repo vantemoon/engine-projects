@@ -7,6 +7,7 @@
 #include "Engine/Math/IntVec2.hpp"
 #include "Engine/Math/Vec2.hpp"
 #include "Engine/Math/Vec3.hpp"
+#include "Engine/Renderer/BitmapFont.hpp"
 #include "Engine/Renderer/Camera.hpp"
 #include "Engine/Renderer/Texture.hpp"
 #include "ThirdParty/stb/stb_image.h"
@@ -265,6 +266,47 @@ Texture* Renderer::GetTextureForFileName( char const* imageFilePath )
 		if ( texture->m_name == imageFilePath )
 		{
 			return texture;
+		}
+	}
+	return nullptr;
+}
+
+
+//------------------------------------------------------------------------------------------------
+BitmapFont* Renderer::CreateBitmapFontFromFile( char const* fontFilePathNameWithNoExtension, Texture& fontTexture )
+{
+	BitmapFont* newFont = new BitmapFont( fontFilePathNameWithNoExtension, fontTexture );
+	m_loadedFonts.push_back( newFont );
+	return newFont;
+}
+
+
+//------------------------------------------------------------------------------------------------
+BitmapFont* Renderer::CreateOrGetBitmapFontFromFile( char const* fontFilePathNameWithNoExtension )
+{
+	// See if we already have this font previously loaded
+	BitmapFont* existingFont = GetBitmapFontForFileName( fontFilePathNameWithNoExtension );
+	if ( existingFont )
+	{
+		return existingFont;
+	}
+
+	// Never seen this font before!  Let's load it.
+	BitmapFont* newFont = CreateBitmapFontFromFile( fontFilePathNameWithNoExtension,
+						 *CreateOrGetTextureFromFile( Stringf( "%s.png", fontFilePathNameWithNoExtension ).c_str() ) );
+	return newFont;
+}
+
+
+//------------------------------------------------------------------------------------------------
+BitmapFont* Renderer::GetBitmapFontForFileName( char const* fontFilePathNameWithNoExtension )
+{
+	for ( int fontIndex = 0; fontIndex < ( int ) m_loadedFonts.size(); ++fontIndex )
+	{
+		BitmapFont* font = m_loadedFonts[fontIndex];
+		if ( font->m_fontFilePathNameWithNoExtension == fontFilePathNameWithNoExtension )
+		{
+			return font;
 		}
 	}
 	return nullptr;
