@@ -8,6 +8,8 @@
 #include "Engine/Math/MathUtils.hpp"
 #include "Engine/Renderer/Camera.hpp"
 #include "Engine/Renderer/Renderer.hpp"
+#include "Engine/Core/EngineCommon.hpp"
+#include "Engine/Core/ErrorWarningAssert.hpp"
 
 
 //-----------------------------------------------------------------------------------------------
@@ -17,6 +19,26 @@ App* g_app = nullptr;
 //-----------------------------------------------------------------------------------------------
 App::App()
 {
+	// Do nothing
+}
+
+
+//-----------------------------------------------------------------------------------------------
+App::~App()
+{
+	delete m_game;
+	m_game = nullptr;
+
+	delete g_engine;
+	g_engine = nullptr;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void App::Startup()
+{
+	LoadGameConfigFromFile( "Data/GameConfig.xml" );
+
 	EngineConfig engineConfig;
 	engineConfig.m_windowConfig.m_clientAspect = 2.0f;
 	engineConfig.m_windowConfig.m_windowTitle = "Libra";
@@ -31,13 +53,25 @@ App::App()
 
 
 //-----------------------------------------------------------------------------------------------
-App::~App()
+void App::LoadGameConfigFromFile( char const* filepath )
 {
-	delete m_game;
-	m_game = nullptr;
+	tinyxml2::XMLDocument xmlDocument;
+	XmlResult loadResult = xmlDocument.LoadFile( filepath );
 
-	delete g_engine;
-	g_engine = nullptr;
+	if ( loadResult != tinyxml2::XML_SUCCESS )
+	{
+		GUARANTEE_OR_DIE( false, Stringf( "Failed to load game config XML file '%s'", filepath ) );
+		return;
+	}
+
+	XmlElement* rootElement = xmlDocument.RootElement();
+	if ( rootElement == nullptr )
+	{
+		GUARANTEE_OR_DIE( false, Stringf( "Failed to find root element in game config XML file '%s'", filepath ) );
+		return;
+	}
+
+	g_gameConfigBlackboard.PopulateFromXmlElementAttributes( *rootElement );
 }
 
 

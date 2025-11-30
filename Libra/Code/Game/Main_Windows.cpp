@@ -12,6 +12,7 @@ int WINAPI WinMain( HINSTANCE applicationInstanceHandle, HINSTANCE, LPSTR comman
 	UNUSED( commandLineString );
 
 	g_app = new App();
+	g_app->Startup();
 	g_app->RunMainLoop();
 
 	delete g_app;

@@ -97,4 +97,9 @@
       <Filter>Gameplay</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <Xml Include="..\..\Run\Data\GameConfig.xml">
+      <Filter>Framework</Filter>
+    </Xml>
+  </ItemGroup>
 </Project>

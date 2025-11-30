@@ -20,6 +20,8 @@ public:
 	App();
 	~App();
 
+	void Startup();
+	void LoadGameConfigFromFile( char const* filepath );
 	void RunMainLoop();
 	void RunFrame();
 	void Update( float deltaSeconds );
