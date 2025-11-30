@@ -81,3 +81,8 @@ Vec2 GetNearestPointOnInfiniteLine2D( Vec2 const& referencePos, Vec2 const& poin
 Vec2 GetNearestPointOnLineSegment2D( Vec2 const& referencePos, Vec2 const& start, Vec2 const& end );
 Vec2 GetNearestPointOnCapsule2D( Vec2 const& referencePos, Vec2 const& boneStart, Vec2 const& boneEnd, float radius );
 Vec2 GetNearestPointOnTriangle2D( Vec2 const& referencePos, Vec2 const& ccw0, Vec2 const& ccw1, Vec2 const& ccw2 );
+
+//-----------------------------------------------------------------------------------------------
+// Normalized byte conversions
+float NormalizeByte( unsigned char byteValue );
+unsigned char DenormalizeByte( float normalizedValue );

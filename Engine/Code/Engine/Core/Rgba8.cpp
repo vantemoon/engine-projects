@@ -1,5 +1,6 @@
 #include "Engine/Core/Rgba8.hpp"
 #include "Engine/Core/StringUtils.hpp"
+#include "Engine/Math/MathUtils.hpp"
 
 
 //-----------------------------------------------------------------------------------------------
@@ -40,4 +41,15 @@ void Rgba8::SetFromText( const char* text )
 			a = 255; // default alpha to 255 if not provided
 		}
 	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+Rgba8 Rgba8::Interpolate( Rgba8 const& start, Rgba8 const& end, float fractionOfEnd ) const
+{
+	float newR = ::Interpolate( NormalizeByte( start.r ), NormalizeByte( end.r ), fractionOfEnd );
+	float newG = ::Interpolate( NormalizeByte( start.g ), NormalizeByte( end.g ), fractionOfEnd );
+	float newB = ::Interpolate( NormalizeByte( start.b ), NormalizeByte( end.b ), fractionOfEnd );
+	float newA = ::Interpolate( NormalizeByte( start.a ), NormalizeByte( end.a ), fractionOfEnd );
+	return Rgba8( DenormalizeByte( newR ), DenormalizeByte( newG ), DenormalizeByte( newB ), DenormalizeByte( newA ) );
 }

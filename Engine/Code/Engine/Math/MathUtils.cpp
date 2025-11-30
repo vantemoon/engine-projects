@@ -739,3 +739,20 @@ Vec2 GetNearestPointOnTriangle2D( Vec2 const& referencePos, Vec2 const& ccw0, Ve
 	}
 	return referencePos; // Inside triangle region
 }
+
+
+//-----------------------------------------------------------------------------------------------
+float NormalizeByte( unsigned char byteValue )
+{
+	float normalizedValue = static_cast<float>( byteValue ) / 255.f;
+	return normalizedValue;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+unsigned char DenormalizeByte( float normalizedValue )
+{
+	normalizedValue = GetClampedZeroToOne( normalizedValue );
+	unsigned char byteValue = static_cast<unsigned char>( normalizedValue * 255.f );
+	return byteValue;
+}
