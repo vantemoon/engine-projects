@@ -1,6 +1,7 @@
 #pragma once
 #include "Game/Entity.hpp"
 #include "Engine/Core/TileHeatMap.hpp"
+#include "Engine/Math/RandomNumberGenerator.hpp"
 
 
 //-----------------------------------------------------------------------------------------------
@@ -18,6 +19,8 @@ public:
 	Vec2         m_waypointPosition = Vec2::ZERO;
 	Vec2		 m_wanderGoalPosition = Vec2::ZERO;
 	IntVec2		 m_wanderGoalTile = IntVec2( -1, -1 );
+
+	RandomNumberGenerator m_rng;
 
 public:
 	Leo( Vec2 startingPosition, float orientationDegrees );

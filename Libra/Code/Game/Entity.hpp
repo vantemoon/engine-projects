@@ -56,6 +56,7 @@ public:
 	bool                 m_isPushedByEntities;
 	bool                 m_doesPushEntities;
 	bool                 m_isHitByBullets;
+	bool                 m_canSwim;
 
 	EntityFaction		 m_faction = ENTITY_FACTION_INVALID;
 

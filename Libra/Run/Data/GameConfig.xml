@@ -21,6 +21,7 @@
 	playerTankIsPushedByEntities="true"
 	playerTankDoesPushEntities="true"
 	playerTankIsHitBuBullets="true"
+	playerTankCanSwim="false"
 	
 	scorpioPhysicsRadius="4.0"
 	scorpioCosmeticRadius="6.0"
@@ -32,6 +33,7 @@
 	scorpioIsPushedByEntities="false"
 	scorpioDoesPushEntities="true"
 	scorpioIsHitByBullets="true"
+	scorpioCanSwim="false"
 	
 	leoPhysicsRadius="4.0"
 	leoCosmeticRadius="6.0"
@@ -45,6 +47,7 @@
 	leoIsPushedByEntities="true"
 	leoDoesPushEntities="true"
 	leoIsHitByBullets="true"
+	leoCanSwim="true"
 	
 	ariesPhysicsRadius="4.0"
 	ariesCosmeticRadius="6.0"
@@ -57,6 +60,7 @@
 	ariesIsPushedByEntities="true"
 	ariesDoesPushEntities="true"
 	ariesIsHitByBullets="true"
+	ariesCanSwim="true"
 	
 	bulletWidth="1.0"
 	bulletLength="2.0"
@@ -74,6 +78,12 @@
 	goodBoltMaxHealth="3"
 	evilBulletMaxHealth="1"
 	evilBoltMaxHealth="1"
+	
+	bulletsArePushedByWalls="false"
+	bulletsArePushedByEntities="false"
+	bulletsDoPushEntities="false"
+	bulletsAreHitByBullets="false"
+	bulletsCanSwim="true"
 	
 	grassTint="0,200,0,255"
     lightStoneTint="255,255,255,255"

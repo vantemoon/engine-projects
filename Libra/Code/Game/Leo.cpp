@@ -4,9 +4,9 @@
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/EngineCommon.hpp"
 #include "Engine/Core/VertexUtils.hpp"
+#include "Engine/Core/Time.hpp"
 #include "Engine/Math/AABB2.hpp"
 #include "Engine/Math/MathUtils.hpp"
-#include "Engine/Math/RandomNumberGenerator.hpp"
 #include "Engine/Renderer/Renderer.hpp"
 
 
@@ -25,6 +25,10 @@ Leo::Leo( Vec2 startingPosition, float orientationDegrees )
 	m_isPushedByEntities = g_gameConfigBlackboard.GetValue( "leoIsPushedByEntities", true );
 	m_doesPushEntities = g_gameConfigBlackboard.GetValue( "leoDoesPushEntities", true );
 	m_isHitByBullets = g_gameConfigBlackboard.GetValue( "leoIsHitByBullets", true );
+	m_canSwim = g_gameConfigBlackboard.GetValue( "leoCanSwim", false );
+
+	int randomSeed = m_rng.RollRandomIntInRange( 0, 10000 ) + static_cast< int >( GetCurrentTimeSeconds() ) * 12345;
+	m_rng.SetSeed( randomSeed );
 
 	m_faction = ENTITY_FACTION_EVIL;
 
@@ -131,7 +135,6 @@ void Leo::Update( float deltaSeconds )
 
 	if ( movementTarget == Vec2::ZERO )
 	{
-		RandomNumberGenerator rng;
 		m_timeSinceLastTurn += deltaSeconds;
 		bool needNewTarget = false;
 
@@ -144,13 +147,13 @@ void Leo::Update( float deltaSeconds )
 		{
 			for ( int attempts = 0; attempts < 10; ++attempts )
 			{
-				float ang = rng.RollRandomFloatInRange( 0.f, 360.f );
+				float ang = m_rng.RollRandomFloatInRange( 0.f, 360.f );
 				Vec2  cand = m_position + Vec2::MakeFromPolarDegrees( ang, 20.f );
 
 				IntVec2 candTile = g_game->m_currentMap->GetTileCoordsForWorldPosition( cand );
 				Tile* candTilePtr = g_game->m_currentMap->GetTile( candTile );
 
-				if ( candTilePtr != nullptr && !g_game->m_currentMap->IsTileSolid( *candTilePtr ) )
+				if ( candTilePtr != nullptr && !g_game->m_currentMap->IsTileSolid( *candTilePtr, !m_canSwim ) )
 				{
 					m_movementTargetPosition = cand;
 					break;
@@ -303,7 +306,7 @@ void Leo::UpdateDijkstraMap()
 
 		IntVec2 dims = map->m_dimensions;
 		m_dijkstraMap = new TileHeatMap( dims );
-		map->PopulateDijkstraMap( *m_dijkstraMap, originTile, 999999.f, true );
+		map->PopulateDijkstraMap( *m_dijkstraMap, originTile, 999999.f, !m_canSwim );
 		m_dijkstraOriginTile = originTile;
 
 		m_waypointPosition = Vec2::ZERO;
@@ -468,15 +471,14 @@ void Leo::PickNewWanderGoal()
 	}
 
 	IntVec2 dims = map->m_dimensions;
-	RandomNumberGenerator rng;
 
 	const int maxAttempts = 100;
 
 	for ( int attempt = 0; attempt < maxAttempts; ++attempt )
 	{
 		IntVec2 goalTile;
-		goalTile.x = rng.RollRandomIntInRange( 1, dims.x - 2 );
-		goalTile.y = rng.RollRandomIntInRange( 1, dims.y - 2 );
+		goalTile.x = m_rng.RollRandomIntInRange( 1, dims.x - 2 );
+		goalTile.y = m_rng.RollRandomIntInRange( 1, dims.y - 2 );
 
 		if ( !IsTileTraversableForWander( goalTile ) )
 		{
@@ -488,7 +490,7 @@ void Leo::PickNewWanderGoal()
 			m_dijkstraMap = new TileHeatMap( dims );
 		}
 
-		map->PopulateDijkstraMap( *m_dijkstraMap, goalTile, 999999.f, true );
+		map->PopulateDijkstraMap( *m_dijkstraMap, goalTile, 999999.f, !m_canSwim );
 
 		IntVec2 leoTile = map->GetTileCoordsForWorldPosition( m_position );
 		float   leoCost = m_dijkstraMap->GetValueAtTileCoords( leoTile );
@@ -556,7 +558,7 @@ bool Leo::IsTileTraversableForWander( const IntVec2& tileCoords ) const
 		return false;
 	}
 
-	if ( map->IsTileSolid( *tile ) )
+	if ( map->IsTileSolid( *tile, !m_canSwim ) )
 	{
 		return false;
 	}

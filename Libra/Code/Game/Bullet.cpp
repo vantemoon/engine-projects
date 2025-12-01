@@ -63,10 +63,11 @@ Bullet::Bullet( Vec2 startingPosition, float orientationDegrees, EntityType type
 			break;
 	}
 
-	m_isPushedByWalls = false;
-	m_isPushedByEntities = false;
-	m_doesPushEntities = false;
-	m_isHitByBullets = false;
+	m_isPushedByWalls = g_gameConfigBlackboard.GetValue( "bulletsArePushedByWalls", false );
+	m_isPushedByEntities = g_gameConfigBlackboard.GetValue( "bulletsArePushedByEntities", false );
+	m_doesPushEntities = g_gameConfigBlackboard.GetValue( "bulletsDoPushEntities", false );
+	m_isHitByBullets = g_gameConfigBlackboard.GetValue( "bulletsAreHitByBullets", false );
+	m_canSwim = g_gameConfigBlackboard.GetValue( "bulletsCanSwim", true );
 
 	InitializeVertexArray();
 }

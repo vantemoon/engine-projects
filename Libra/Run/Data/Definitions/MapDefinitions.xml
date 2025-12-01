@@ -5,9 +5,9 @@
 		dimensions="48,24"
 		aspectRatio="0.5"
 		
-		numOfLeos="8"
-		numOfScorpios="5"
-		numOfAries="3"
+		numOfScorpios="15"
+		numOfLeos="5"
+		numOfAries="2"
 		
 		fillTileType="Grass3"
 		borderTileType="Stone2"
@@ -28,9 +28,9 @@
 		dimensions="24,24"
 		aspectRatio="1"
 		
-		numOfLeos="5"
-		numOfScorpios="3"
-		numOfAries="3"
+		numOfScorpios="10"
+		numOfLeos="3"
+		numOfAries="2"
 		
 		fillTileType="Grass3"
 		borderTileType="StoneBrick4"
@@ -51,8 +51,8 @@
 		dimensions="50,8"
 		aspectRatio="0.16"
 		
-		numOfLeos="3"
-		numOfScorpios="3"
+		numOfScorpios="10"
+		numOfLeos="2"
 		numOfAries="2"
 		
 		fillTileType="Mud2"
@@ -74,9 +74,9 @@
 		dimensions="48,24"
 		aspectRatio="0.5"
 		
-		numOfLeos="6"
-		numOfScorpios="4"
-		numOfAries="2"
+		numOfScorpios="15"
+		numOfLeos="3"
+		numOfAries="5"
 		
 		fillTileType="Sand2"
 		borderTileType="Stone1"
@@ -84,7 +84,7 @@
 		startBunkerWallTileType="Stone1"
 		exitBunkerWallTileType="StoneBrick4"
 		
-		worm1TileType="Sand3"
+		worm1TileType="Water1"
 		numOfWorms1="25"
 		wormLength1="10"
 		worm2TileType="StoneBrick4"
@@ -97,9 +97,9 @@
 		dimensions="40,20"
 		aspectRatio="0.5"
 		
-		numOfLeos="7"
-		numOfScorpios="5"
-		numOfAries="3"
+		numOfScorpios="15"
+		numOfLeos="3"
+		numOfAries="2"
 		
 		fillTileType="Dirt5"
 		borderTileType="StoneBrick4"

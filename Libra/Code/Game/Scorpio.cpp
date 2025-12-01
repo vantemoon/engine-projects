@@ -22,6 +22,7 @@ Scorpio::Scorpio( Vec2 startingPosition, float orientationDegrees )
 	m_isPushedByEntities = g_gameConfigBlackboard.GetValue( "scorpioIsPushedByEntities", false );
 	m_doesPushEntities = g_gameConfigBlackboard.GetValue( "scorpioDoesPushEntities", true );
 	m_isHitByBullets = g_gameConfigBlackboard.GetValue( "scorpioIsHitByBullets", true );
+	m_canSwim = g_gameConfigBlackboard.GetValue( "scorpioCanSwim", false );
 
 	m_faction = ENTITY_FACTION_EVIL;
 

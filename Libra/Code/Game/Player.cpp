@@ -26,6 +26,7 @@ Player::Player( Vec2 startingPosition, float orientationDegrees )
 	m_isPushedByEntities = g_gameConfigBlackboard.GetValue( "playerTankIsPushedByEntities", true );
 	m_doesPushEntities = g_gameConfigBlackboard.GetValue( "playerTankDoesPushEntities", true );
 	m_isHitByBullets = g_gameConfigBlackboard.GetValue( "playerTankIsHitByBullets", true );
+	m_canSwim = g_gameConfigBlackboard.GetValue( "playerTankCanSwim", false );
 
 	m_targetMovementDirection = m_orientationDegrees;
 	m_prevOrientationDegrees = m_orientationDegrees;

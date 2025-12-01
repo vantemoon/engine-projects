@@ -61,7 +61,8 @@ public:
 	Vec2				 GetWorldPositionForTileCoords( IntVec2 tileCoords )	const;
 
 	bool				 IsPointInSolidTile( Vec2 const& point )				const;
-	bool				 IsTileSolid( Tile tile )								const;
+	bool				 IsTileSolid( Tile tile, bool treatWaterAsSolid ) const;
+	bool                 IsTileOpaque( Tile tile )								const;
 	bool                 IsTileBlockedForDijkstra( IntVec2 const& coords, bool treatWaterAsSolid, 
 												   std::vector<bool> const& scorpioBlocked ) const;
 
@@ -87,4 +88,5 @@ private:
 	void				 DeleteGarbageEntities();
 	void				 ResolveEntityVsEntityCollision();
 	void				 ResolveEntityVsTileCollision();
+	bool                 IsAnyEntityAtTile( IntVec2 tileCoords ) const;
 };

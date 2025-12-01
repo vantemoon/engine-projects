@@ -2,14 +2,15 @@
 #include "Game/Entity.hpp"
 #include "Game/Bullet.hpp"
 #include "Engine/Core/TileHeatMap.hpp"
+#include "Engine/Math/RandomNumberGenerator.hpp"
 
 
 //-----------------------------------------------------------------------------------------------
 class Aries : public Entity
 {
 public:
-	Vec2    m_goalPosition = Vec2::ZERO;
-	Vec2    m_movementTargetPosition = Vec2::ZERO;
+	Vec2		m_goalPosition = Vec2::ZERO;
+	Vec2		m_movementTargetPosition = Vec2::ZERO;
 
 	TileHeatMap* m_dijkstraMap = nullptr;
 	IntVec2      m_dijkstraOriginTile = IntVec2( -1, -1 );
@@ -18,7 +19,9 @@ public:
 	Vec2         m_wanderGoalPosition = Vec2::ZERO;
 	IntVec2      m_wanderGoalTile = IntVec2( -1, -1 );
 
-	float   m_timeSinceLastTurn = 0.f;
+	float		m_timeSinceLastTurn = 0.f;
+
+	RandomNumberGenerator m_rng;
 
 public:
 	Aries( Vec2 startingPosition, float orientationDegrees );

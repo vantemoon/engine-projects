@@ -650,7 +650,7 @@ void Map::FillUnreachableTiles()
 		dijkstraMap,
 		GetTileCoordsForWorldPosition( GetWorldPositionForTileCoords( IntVec2( 1, 1 ) ) ),
 		999999.f,
-		true
+		false
 	);
 	for ( int y = 0; y < m_dimensions.y; ++y )
 	{
@@ -665,7 +665,7 @@ void Map::FillUnreachableTiles()
 			}
 			IntVec2 tileCoords = IntVec2( x, y );
 			float cost = dijkstraMap.GetValueAtTileCoords( tileCoords );
-			if ( cost >= 999999.f && !IsTileSolid( *GetTile( tileCoords ) ) )
+			if ( cost >= 999999.f && !IsTileSolid( *GetTile( tileCoords ), false ) )
 			{
 				int tileIndex = tileCoords.y * m_dimensions.x + tileCoords.x;
 				m_tiles[tileIndex] = Tile( tileCoords, m_definition->m_worm2TileType );
@@ -743,14 +743,29 @@ bool Map::IsPointInSolidTile( Vec2 const& point ) const
 		return true;
 	}
 	Tile* tile = GetTile( tileCoords );
-	return IsTileSolid( *tile );
+	return IsTileSolid( *tile, false );
 }
 
 
 //-----------------------------------------------------------------------------------------------
-bool Map::IsTileSolid( Tile tile ) const
+bool Map::IsTileSolid( Tile tile, bool treatWaterAsSolid ) const
 {
-	return tile.IsSolid();
+	if ( tile.GetDefinition().m_isSolid )
+	{
+		return true;
+	}
+	if ( treatWaterAsSolid && tile.GetDefinition().m_isWater )
+	{
+		return true;
+	}
+	return false;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool Map::IsTileOpaque( Tile tile ) const
+{
+	return IsTileSolid( tile, false );
 }
 
 
@@ -775,7 +790,7 @@ bool Map::IsTileBlockedForDijkstra( IntVec2 const& coords, bool treatWaterAsSoli
 	{
 		return true;
 	}
-	if ( IsTileSolid( *tile ) )
+	if ( IsTileSolid( *tile, treatWaterAsSolid ) )
 	{
 		return true;
 	}
@@ -806,7 +821,7 @@ RaycastResult2D Map::RaycastVsTiles( Vec2 const& startPos, Vec2 const& fwdNormal
 		{
 			break;
 		}
-		if ( tile != nullptr && IsTileSolid( *tile ) )
+		if ( tile != nullptr && IsTileOpaque( *tile ) )
 		{
 			result.m_didImpact = true;
 			result.m_impactDist = traveledDist;
@@ -839,11 +854,13 @@ bool Map::HasLineOfSight( Vec2 const& startPos, Vec2 const& endPos, float stepSi
 
 
 //-----------------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------------------------
 void Map::SpawnEntitiesForMapDefinition()
 {
 	MapDefinition const& mapDef = *m_definition;
 
 	RandomNumberGenerator rng;
+	rng.SetSeed( static_cast< unsigned int >( GetCurrentTimeSeconds() * 100000.0 ) + static_cast< unsigned int >( m_index ) * 977u );
 
 	float tileSize = g_gameConfigBlackboard.GetValue( "tileSize", 12.5f );
 
@@ -880,7 +897,15 @@ void Map::SpawnEntitiesForMapDefinition()
 
 			// Solid tiles
 			Tile* spawnTile = GetTile( spawnTileCoords );
-			if ( spawnTile == nullptr || IsTileSolid( *spawnTile ) )
+			bool scorpionCanSwim = g_gameConfigBlackboard.GetValue( "scorpionCanSwim", false );
+			if ( spawnTile == nullptr || IsTileSolid( *spawnTile, !scorpionCanSwim ) )
+			{
+				isRespawnPosValid = false;
+				continue;
+			}
+
+			// Occupied tiles
+			if ( IsAnyEntityAtTile( spawnTileCoords ) )
 			{
 				isRespawnPosValid = false;
 				continue;
@@ -889,7 +914,8 @@ void Map::SpawnEntitiesForMapDefinition()
 
 		Vec2 spawnPos = GetWorldPositionForTileCoords( spawnTileCoords );
 
-		Entity* newEntity = SpawnNewEntity( ENTITY_TYPE_EVIL_SCORPIO, spawnPos, 0.f );
+		float orientation = rng.RollRandomFloatInRange( 0.f, 360.f );
+		Entity* newEntity = SpawnNewEntity( ENTITY_TYPE_EVIL_SCORPIO, spawnPos, orientation );
 		if ( newEntity != nullptr )
 		{
 			AddEntityToMap( *newEntity, ENTITY_TYPE_EVIL_SCORPIO, ENTITY_FACTION_EVIL );
@@ -929,7 +955,15 @@ void Map::SpawnEntitiesForMapDefinition()
 
 			// Solid tiles
 			Tile* spawnTile = GetTile( spawnTileCoords );
-			if ( spawnTile == nullptr || IsTileSolid( *spawnTile ) )
+			bool leoCanSwim = g_gameConfigBlackboard.GetValue( "leoCanSwim", true );
+			if ( spawnTile == nullptr || IsTileSolid( *spawnTile, !leoCanSwim ) )
+			{
+				isRespawnPosValid = false;
+				continue;
+			}
+
+			// Occupied tiles
+			if ( IsAnyEntityAtTile( spawnTileCoords ) )
 			{
 				isRespawnPosValid = false;
 				continue;
@@ -938,7 +972,8 @@ void Map::SpawnEntitiesForMapDefinition()
 
 		Vec2 spawnPos = GetWorldPositionForTileCoords( spawnTileCoords );
 
-		Entity* newEntity = SpawnNewEntity( ENTITY_TYPE_EVIL_LEO, spawnPos, 0.f );
+		float orientation = rng.RollRandomFloatInRange( 0.f, 360.f );
+		Entity* newEntity = SpawnNewEntity( ENTITY_TYPE_EVIL_LEO, spawnPos, orientation );
 		if ( newEntity != nullptr )
 		{
 			AddEntityToMap( *newEntity, ENTITY_TYPE_EVIL_LEO, ENTITY_FACTION_EVIL );
@@ -978,7 +1013,15 @@ void Map::SpawnEntitiesForMapDefinition()
 
 			// Solid tiles
 			Tile* spawnTile = GetTile( spawnTileCoords );
-			if ( spawnTile == nullptr || IsTileSolid( *spawnTile ) )
+			bool ariesCanSwim = g_gameConfigBlackboard.GetValue( "ariesCanSwim", true );
+			if ( spawnTile == nullptr || IsTileSolid( *spawnTile, !ariesCanSwim ) )
+			{
+				isRespawnPosValid = false;
+				continue;
+			}
+
+			// Occupied tiles
+			if ( IsAnyEntityAtTile( spawnTileCoords ) )
 			{
 				isRespawnPosValid = false;
 				continue;
@@ -987,14 +1030,14 @@ void Map::SpawnEntitiesForMapDefinition()
 
 		Vec2 spawnPos = GetWorldPositionForTileCoords( spawnTileCoords );
 
-		Entity* newEntity = SpawnNewEntity( ENTITY_TYPE_EVIL_ARIES, spawnPos, 0.f );
+		float orientation = rng.RollRandomFloatInRange( 0.f, 360.f );
+		Entity* newEntity = SpawnNewEntity( ENTITY_TYPE_EVIL_ARIES, spawnPos, orientation );
 		if ( newEntity != nullptr )
 		{
 			AddEntityToMap( *newEntity, ENTITY_TYPE_EVIL_ARIES, ENTITY_FACTION_EVIL );
 		}
 	}
 }
-
 
 
 //-----------------------------------------------------------------------------------------------
@@ -1202,6 +1245,7 @@ void Map::ResolveEntityVsTileCollision()
 	for ( int entityIndex = 0; entityIndex < static_cast<int>( m_allEntities.size() ); ++ entityIndex )
 	{
 		Entity* entity = m_allEntities[entityIndex];
+		bool canEntitySwim = entity->m_canSwim;
 		if ( entity == nullptr ) continue;
 		if ( !entity->m_isPushedByWalls ) continue;
 		if ( entity == g_game->m_player )
@@ -1221,7 +1265,7 @@ void Map::ResolveEntityVsTileCollision()
 		{
 			IntVec2 neighborCoords = entityTileCoords + neighboringOffsets[offsetIndex];
 			Tile* tile = GetTile( neighborCoords );
-			if ( tile != nullptr && IsTileSolid( *tile ) )
+			if ( tile != nullptr && IsTileSolid( *tile, !canEntitySwim ) )
 			{
 				if ( PushDiscOutOfFixedAABB2D( entity->m_position, entity->m_physicsRadius, GetTileBounds( neighborCoords ) ) )
 				{
@@ -1235,7 +1279,7 @@ void Map::ResolveEntityVsTileCollision()
 		{
 			IntVec2 neighborCoords = entityTileCoords + neighboringOffsets[offsetIndex];
 			Tile* tile = GetTile( neighborCoords );
-			if ( tile != nullptr && IsTileSolid( *tile ) )
+			if ( tile != nullptr && IsTileSolid( *tile, !canEntitySwim ) )
 			{
 				if ( PushDiscOutOfFixedAABB2D( entity->m_position, entity->m_physicsRadius, GetTileBounds( neighborCoords ) ) )
 				{
@@ -1290,7 +1334,7 @@ void Map::PopulateDijkstraMap( TileHeatMap& out_dijkstraMap, IntVec2 startCoords
 
 	Tile* startTile = GetTile( startCoords );
 	if ( startTile == nullptr ) return;
-	if ( IsTileSolid( *startTile ) ) return;
+	if ( IsTileSolid( *startTile, treatWaterAsSolid ) ) return;
 	if ( treatWaterAsSolid && startTile->GetDefinition().m_isWater ) return;
 
 	out_dijkstraMap.SetValueAtTileCoords( startCoords, 0.0f );
@@ -1315,7 +1359,7 @@ void Map::PopulateDijkstraMap( TileHeatMap& out_dijkstraMap, IntVec2 startCoords
 				IntVec2 currentCoords( x, y );
 				Tile* currentTile = GetTile( currentCoords );
 				if ( currentTile == nullptr ) continue;
-				if ( IsTileSolid( *currentTile ) ) continue;
+				if ( IsTileSolid( *currentTile, treatWaterAsSolid ) ) continue;
 				if ( treatWaterAsSolid && currentTile->GetDefinition().m_isWater ) continue;
 
 				float currentCost = out_dijkstraMap.GetValueAtTileCoords( currentCoords );
@@ -1364,4 +1408,22 @@ void Map::PopulateEnemyReachabilityMap( TileHeatMap& out_reachabilityMap, IntVec
 			}
 		}
 	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool Map::IsAnyEntityAtTile( IntVec2 tileCoords ) const
+{
+	for ( int i = 0; i < static_cast< int >( m_allEntities.size() ); ++ i )
+	{
+		Entity* e = m_allEntities[i];
+		if ( e == nullptr ) continue;
+
+		IntVec2 eTile = GetTileCoordsForWorldPosition( e->m_position );
+		if ( eTile == tileCoords )
+		{
+			return true;
+		}
+	}
+	return false;
 }
