@@ -41,58 +41,127 @@ void Aries::Update( float deltaSeconds )
 {
 	bool playerIsAlive = g_game->m_player->IsAlive();
 	float distanceToPlayer = ( g_game->m_player->m_position - m_position ).GetLength();
-	bool hasLineOfSightToPlayer = g_game->m_currentMap->HasLineOfSight( m_position, g_game->m_player->m_position, 0.1f );
-
+	bool hasLOS = g_game->m_currentMap->HasLineOfSight( m_position, g_game->m_player->m_position, 0.1f );
 	float sightRadius = g_gameConfigBlackboard.GetValue( "ariesSightRadius", 125.f );
-	if ( playerIsAlive && distanceToPlayer <= sightRadius && hasLineOfSightToPlayer )
+	bool playerVisible = ( playerIsAlive && distanceToPlayer <= sightRadius && hasLOS );
+
+	if ( playerVisible )
 	{
-		m_targetPosition = g_game->m_player->m_position;
+		m_lastSeenPlayerPosition = g_game->m_player->m_position;
+		m_goalPosition = m_lastSeenPlayerPosition;
 	}
 	else if ( !playerIsAlive )
 	{
-		m_targetPosition = Vec2::ZERO;
+		m_lastSeenPlayerPosition = Vec2::ZERO;
+		m_waypointPosition = Vec2::ZERO;
+		m_wanderGoalPosition = Vec2::ZERO;
+		m_wanderGoalTile = IntVec2( -1, -1 );
+		m_goalPosition = Vec2::ZERO;
+
+		if ( m_dijkstraMap != nullptr )
+		{
+			delete m_dijkstraMap;
+			m_dijkstraMap = nullptr;
+		}
 	}
 
-	float distanceToTarget = ( m_targetPosition - m_position ).GetLength();
-	if ( distanceToTarget <= m_physicsRadius )
+	Vec2 movementTarget = Vec2::ZERO;
+
+	if ( playerVisible )
 	{
-		m_targetPosition = Vec2::ZERO;
+		if ( IsPlayerInAdjacentTile() )
+		{
+			movementTarget = g_game->m_player->m_position;
+		}
+		else
+		{
+			UpdateDijkstraMap();
+			UpdateWaypointChase();
+			if ( m_waypointPosition != Vec2::ZERO )
+			{
+				movementTarget = m_waypointPosition;
+			}
+		}
+	}
+	else if ( m_lastSeenPlayerPosition != Vec2::ZERO )
+	{
+		UpdateDijkstraMap();
+		m_goalPosition = m_lastSeenPlayerPosition;
+		UpdateWaypointChase();
+		if ( m_waypointPosition != Vec2::ZERO )
+		{
+			movementTarget = m_waypointPosition;
+		}
 	}
 
-	if ( m_targetPosition != Vec2::ZERO )
+	if ( movementTarget == Vec2::ZERO && m_lastSeenPlayerPosition == Vec2::ZERO )
 	{
-		MoveTowardTargetPosition( deltaSeconds );
+		if ( m_wanderGoalPosition == Vec2::ZERO )
+		{
+			PickNewWanderGoal();
+		}
+
+		if ( m_wanderGoalPosition != Vec2::ZERO )
+		{
+			UpdateDijkstraMap();
+			UpdateWaypointWander();
+
+			if ( m_waypointPosition != Vec2::ZERO )
+			{
+				movementTarget = m_waypointPosition;
+			}
+			else
+			{
+				movementTarget = m_wanderGoalPosition;
+			}
+		}
 	}
-	else
+
+	if ( movementTarget == Vec2::ZERO )
 	{
 		RandomNumberGenerator rng;
 		m_timeSinceLastTurn += deltaSeconds;
 		bool needNewTarget = false;
 
-		// Check if current random target is unreachable or reached
-		if ( m_targetPosition == Vec2::ZERO ||
-			!g_game->m_currentMap->HasLineOfSight( m_position, m_targetPosition, 0.1f ) ||
-			( m_targetPosition - m_position ).GetLength() <= m_physicsRadius )
+		if ( m_movementTargetPosition == Vec2::ZERO || ( m_movementTargetPosition - m_position ).GetLength() <= m_physicsRadius )
 		{
 			needNewTarget = true;
 		}
 
 		if ( m_timeSinceLastTurn >= g_gameConfigBlackboard.GetValue( "ariesTurnCooldown", 1.5f ) || needNewTarget )
 		{
-			// Try to find a reachable random target
-			for ( int attempts = 0; attempts < 5; ++attempts )
+			for ( int attempts = 0; attempts < 10; ++attempts )
 			{
-				float randomAngle = rng.RollRandomFloatInRange( 0.f, 360.f );
-				Vec2 candidate = m_position + Vec2::MakeFromPolarDegrees( randomAngle, 20.f );
-				if ( g_game->m_currentMap->HasLineOfSight( m_position, candidate, 0.1f ) )
+				float ang = rng.RollRandomFloatInRange( 0.f, 360.f );
+				Vec2  cand = m_position + Vec2::MakeFromPolarDegrees( ang, 20.f );
+
+				IntVec2 candTile = g_game->m_currentMap->GetTileCoordsForWorldPosition( cand );
+				Tile* candTilePtr = g_game->m_currentMap->GetTile( candTile );
+
+				if ( candTilePtr != nullptr && !g_game->m_currentMap->IsTileSolid( *candTilePtr ) )
 				{
-					m_targetPosition = candidate;
+					m_movementTargetPosition = cand;
 					break;
 				}
 			}
 			m_timeSinceLastTurn = 0.f;
 		}
+
+		movementTarget = m_movementTargetPosition;
+	}
+	else
+	{
+		m_movementTargetPosition = movementTarget;
+	}
+
+	if ( m_movementTargetPosition != Vec2::ZERO )
+	{
 		MoveTowardTargetPosition( deltaSeconds );
+	}
+
+	if ( ( m_movementTargetPosition - m_position ).GetLength() <= m_physicsRadius )
+	{
+		m_movementTargetPosition = Vec2::ZERO;
 	}
 }
 
@@ -144,8 +213,8 @@ void Aries::InitializeVertexArray()
 //-----------------------------------------------------------------------------------------------
 void Aries::MoveTowardTargetPosition( float deltaSeconds )
 {
-	// Turn toward target position
-	float targetOrientationDegrees = ( m_targetPosition - m_position ).GetOrientationDegrees();
+	// Turn toward movement target
+	float targetOrientationDegrees = ( m_movementTargetPosition - m_position ).GetOrientationDegrees();
 	float angleDiff = GetShortestAngularDispDegrees( m_orientationDegrees, targetOrientationDegrees );
 	if ( fabsf( angleDiff ) <= 45.f )
 	{
@@ -193,4 +262,308 @@ void Aries::ReflectBullet( Bullet& bullet )
 
 		bullet.m_orientationDegrees = bullet.m_velocity.GetOrientationDegrees();
 	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Aries::UpdateDijkstraMap()
+{
+	Map* map = g_game->m_currentMap;
+	if ( map == nullptr )
+	{
+		return;
+	}
+
+	IntVec2 originTile( -1, -1 );
+
+	if ( m_lastSeenPlayerPosition != Vec2::ZERO )
+	{
+		originTile = map->GetTileCoordsForWorldPosition( m_lastSeenPlayerPosition );
+	}
+	else if ( m_wanderGoalPosition != Vec2::ZERO && m_wanderGoalTile.x >= 0 && m_wanderGoalTile.y >= 0 )
+	{
+		originTile = m_wanderGoalTile;
+	}
+	else
+	{
+		return;
+	}
+
+	if ( m_dijkstraMap == nullptr || !( originTile == m_dijkstraOriginTile ) )
+	{
+		if ( m_dijkstraMap != nullptr )
+		{
+			delete m_dijkstraMap;
+			m_dijkstraMap = nullptr;
+		}
+
+		IntVec2 dims = map->m_dimensions;
+		m_dijkstraMap = new TileHeatMap( dims );
+		map->PopulateDijkstraMap( *m_dijkstraMap, originTile, 999999.f, true );
+		m_dijkstraOriginTile = originTile;
+
+		m_waypointPosition = Vec2::ZERO;
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Aries::UpdateWaypointChase()
+{
+	if ( m_dijkstraMap == nullptr || m_lastSeenPlayerPosition == Vec2::ZERO )
+	{
+		return;
+	}
+
+	Map* map = g_game->m_currentMap;
+	if ( map == nullptr )
+	{
+		return;
+	}
+
+	IntVec2 fromTile = map->GetTileCoordsForWorldPosition( m_position );
+
+	if ( fromTile == m_dijkstraOriginTile )
+	{
+		m_lastSeenPlayerPosition = Vec2::ZERO;
+		m_waypointPosition = Vec2::ZERO;
+		m_goalPosition = Vec2::ZERO;
+		return;
+	}
+
+	float   bestCost = m_dijkstraMap->GetValueAtTileCoords( fromTile );
+	IntVec2 bestTile = fromTile;
+
+	for ( int dy = -1; dy <= 1; ++dy )
+	{
+		for ( int dx = -1; dx <= 1; ++dx )
+		{
+			if ( dx == 0 && dy == 0 )
+			{
+				continue;
+			}
+
+			IntVec2 n( fromTile.x + dx, fromTile.y + dy );
+
+			if ( n.x < 0 || n.y < 0 ||
+				n.x >= m_dijkstraMap->m_dimensions.x ||
+				n.y >= m_dijkstraMap->m_dimensions.y )
+			{
+				continue;
+			}
+
+			float cost = m_dijkstraMap->GetValueAtTileCoords( n );
+			if ( cost < bestCost && cost < 999999.f )
+			{
+				bestCost = cost;
+				bestTile = n;
+			}
+		}
+	}
+
+	if ( !( bestTile == fromTile ) )
+	{
+		m_waypointPosition = map->GetWorldPositionForTileCoords( bestTile );
+	}
+	else
+	{
+		m_lastSeenPlayerPosition = Vec2::ZERO;
+		m_waypointPosition = Vec2::ZERO;
+		m_goalPosition = Vec2::ZERO;
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Aries::UpdateWaypointWander()
+{
+	if ( m_dijkstraMap == nullptr || m_wanderGoalPosition == Vec2::ZERO )
+	{
+		return;
+	}
+
+	Map* map = g_game->m_currentMap;
+	if ( map == nullptr )
+	{
+		return;
+	}
+
+	IntVec2 fromTile = map->GetTileCoordsForWorldPosition( m_position );
+
+	if ( fromTile == m_wanderGoalTile )
+	{
+		PickNewWanderGoal();
+		m_goalPosition = m_wanderGoalPosition;
+		return;
+	}
+
+	float   bestCost = m_dijkstraMap->GetValueAtTileCoords( fromTile );
+	IntVec2 bestTile = fromTile;
+
+	for ( int dy = -1; dy <= 1; ++dy )
+	{
+		for ( int dx = -1; dx <= 1; ++dx )
+		{
+			if ( dx == 0 && dy == 0 )
+			{
+				continue;
+			}
+
+			IntVec2 n( fromTile.x + dx, fromTile.y + dy );
+
+			if ( n.x < 0 || n.y < 0 ||
+				n.x >= m_dijkstraMap->m_dimensions.x ||
+				n.y >= m_dijkstraMap->m_dimensions.y )
+			{
+				continue;
+			}
+
+			float cost = m_dijkstraMap->GetValueAtTileCoords( n );
+			if ( cost < bestCost && cost < 999999.f )
+			{
+				bestCost = cost;
+				bestTile = n;
+			}
+		}
+	}
+
+	if ( !( bestTile == fromTile ) )
+	{
+		m_waypointPosition = map->GetWorldPositionForTileCoords( bestTile );
+	}
+	else
+	{
+		PickNewWanderGoal();
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool Aries::IsPlayerInAdjacentTile() const
+{
+	Map* map = g_game->m_currentMap;
+	if ( map == nullptr )
+	{
+		return false;
+	}
+
+	IntVec2 ariesTile = map->GetTileCoordsForWorldPosition( m_position );
+	IntVec2 playerTile = map->GetTileCoordsForWorldPosition( g_game->m_player->m_position );
+
+	int dx = abs( playerTile.x - ariesTile.x );
+	int dy = abs( playerTile.y - ariesTile.y );
+	return ( dx <= 1 && dy <= 1 );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Aries::PickNewWanderGoal()
+{
+	Map* map = g_game->m_currentMap;
+	if ( map == nullptr )
+	{
+		return;
+	}
+
+	IntVec2 dims = map->m_dimensions;
+	RandomNumberGenerator rng;
+
+	const int maxAttempts = 100;
+
+	for ( int attempt = 0; attempt < maxAttempts; ++attempt )
+	{
+		IntVec2 goalTile;
+		goalTile.x = rng.RollRandomIntInRange( 1, dims.x - 2 );
+		goalTile.y = rng.RollRandomIntInRange( 1, dims.y - 2 );
+
+		if ( !IsTileTraversableForWander( goalTile ) )
+		{
+			continue;
+		}
+
+		if ( m_dijkstraMap == nullptr )
+		{
+			m_dijkstraMap = new TileHeatMap( dims );
+		}
+
+		map->PopulateDijkstraMap( *m_dijkstraMap, goalTile, 999999.f, true );
+
+		IntVec2 ariesTile = map->GetTileCoordsForWorldPosition( m_position );
+		float   ariesCost = m_dijkstraMap->GetValueAtTileCoords( ariesTile );
+		if ( ariesCost >= 999999.f )
+		{
+			// Unreachable
+			continue;
+		}
+
+		// Accept this wander goal
+		m_wanderGoalTile = goalTile;
+		m_wanderGoalPosition = map->GetWorldPositionForTileCoords( goalTile );
+		m_goalPosition = m_wanderGoalPosition;
+		m_dijkstraOriginTile = goalTile;
+		m_waypointPosition = Vec2::ZERO;
+		return;
+	}
+
+	// Could not find any good wander goal
+	m_wanderGoalTile = IntVec2( -1, -1 );
+	m_wanderGoalPosition = Vec2::ZERO;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool Aries::IsTileOccupiedByScorpio( const IntVec2& tileCoords ) const
+{
+	Map* map = g_game->m_currentMap;
+	if ( map == nullptr )
+	{
+		return false;
+	}
+
+	int scorpioCount = static_cast< int >( map->m_entityListsByType[ENTITY_TYPE_EVIL_SCORPIO].size() );
+	for ( int i = 0; i < scorpioCount; ++i )
+	{
+		Entity* scorpio = map->m_entityListsByType[ENTITY_TYPE_EVIL_SCORPIO][i];
+		if ( scorpio == nullptr )
+		{
+			continue;
+		}
+
+		IntVec2 scorpioCoords = map->GetTileCoordsForWorldPosition( scorpio->m_position );
+		if ( scorpioCoords == tileCoords )
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool Aries::IsTileTraversableForWander( const IntVec2& tileCoords ) const
+{
+	Map* map = g_game->m_currentMap;
+	if ( map == nullptr )
+	{
+		return false;
+	}
+
+	Tile* tile = map->GetTile( tileCoords );
+	if ( tile == nullptr )
+	{
+		return false;
+	}
+
+	if ( map->IsTileSolid( *tile ) )
+	{
+		return false;
+	}
+
+	if ( IsTileOccupiedByScorpio( tileCoords ) )
+	{
+		return false;
+	}
+
+	return true;
 }

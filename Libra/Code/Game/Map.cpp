@@ -229,7 +229,7 @@ void Map::DebugRender() const
 			TileHeatMap dijkstraMap( m_dimensions );
 			PopulateDijkstraMap(
 				dijkstraMap,
-				GetTileCoordsForWorldPosition( leo->m_targetPosition ),
+				GetTileCoordsForWorldPosition( leo->m_goalPosition ),
 				999999.f,
 				true
 			);
