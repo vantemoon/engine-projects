@@ -5,21 +5,21 @@
 		dimensions="48,24"
 		aspectRatio="0.5"
 		
-		numOfLeos="5"
+		numOfLeos="8"
 		numOfScorpios="5"
-		numOfAries="5"
+		numOfAries="3"
 		
-		fillTileType="Grass1"
+		fillTileType="Grass3"
 		borderTileType="Stone2"
 		bunkerFloorTileType="StoneTile"
 		startBunkerWallTileType="MetalWall"
 		exitBunkerWallTileType="StoneBrick4"
 		
-		worm1TileType="Stone2"
-		numOfWorms1="3"
-		wormLength1="5"
+		worm1TileType="Grass4"
+		numOfWorms1="25"
+		wormLength1="10"
 		worm2TileType="Stone2"
-		numOfWorms2="2"
+		numOfWorms2="40"
 		wormLength2="8"
 		/>
 
@@ -29,7 +29,7 @@
 		aspectRatio="1"
 		
 		numOfLeos="5"
-		numOfScorpios="5"
+		numOfScorpios="3"
 		numOfAries="3"
 		
 		fillTileType="Grass3"
@@ -38,11 +38,11 @@
 		startBunkerWallTileType="StoneBrick4"
 		exitBunkerWallTileType="MetalWall"
 		
-		worm1TileType="Stone2"
-		numOfWorms1="4"
-		wormLength1="6"
+		worm1TileType="Grass4"
+		numOfWorms1="20"
+		wormLength1="5"
 		worm2TileType="Stone2"
-		numOfWorms2="3"
+		numOfWorms2="20"
 		wormLength2="10"
 		/>
 
@@ -51,9 +51,9 @@
 		dimensions="50,8"
 		aspectRatio="0.16"
 		
-		numOfLeos="7"
-		numOfScorpios="4"
-		numOfAries="6"
+		numOfLeos="3"
+		numOfScorpios="3"
+		numOfAries="2"
 		
 		fillTileType="Mud2"
 		borderTileType="MetalWall"
@@ -61,12 +61,58 @@
 		startBunkerWallTileType="MetalWall"
 		exitBunkerWallTileType="MetalWall"
 		
-		worm1TileType="MetalWall"
-		numOfWorms1="5"
-		wormLength1="7"
-		worm2TileType="Grass4"
-		numOfWorms2="2"
-		wormLength2="12"
+		worm1TileType="Dirt5"
+		numOfWorms1="15"
+		wormLength1="8"
+		worm2TileType="StoneBrick7"
+		numOfWorms2="15"
+		wormLength2="8"
+		/>
+	
+	<MapDefinition
+		name="Level4"
+		dimensions="48,24"
+		aspectRatio="0.5"
+		
+		numOfLeos="6"
+		numOfScorpios="4"
+		numOfAries="2"
+		
+		fillTileType="Sand2"
+		borderTileType="Stone1"
+		bunkerFloorTileType="StoneTile"
+		startBunkerWallTileType="Stone1"
+		exitBunkerWallTileType="StoneBrick4"
+		
+		worm1TileType="Sand3"
+		numOfWorms1="25"
+		wormLength1="10"
+		worm2TileType="StoneBrick4"
+		numOfWorms2="40"
+		wormLength2="10"
+		/>
+	
+	<MapDefinition
+		name="Level5"
+		dimensions="40,20"
+		aspectRatio="0.5"
+		
+		numOfLeos="7"
+		numOfScorpios="5"
+		numOfAries="3"
+		
+		fillTileType="Dirt5"
+		borderTileType="StoneBrick4"
+		bunkerFloorTileType="StoneTile"
+		startBunkerWallTileType="StoneBrick4"
+		exitBunkerWallTileType="MetalWall"
+		
+		worm1TileType="Mud1"
+		numOfWorms1="25"
+		wormLength1="10"
+		worm2TileType="StoneBrick4"
+		numOfWorms2="35"
+		wormLength2="10"
 		/>
 
 </MapDefinitions>

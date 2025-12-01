@@ -136,18 +136,31 @@ void Map::DebugRender() const
 
 		case 1:
 		{
-			if ( m_entityListsByType[ENTITY_TYPE_EVIL_LEO].size() == 0 ) return;
-
-			Leo* leo = dynamic_cast< Leo* >( m_entityListsByType[ENTITY_TYPE_EVIL_LEO][0] );
-			if ( leo == nullptr ) return;
-
 			TileHeatMap dijkstraMap( m_dimensions );
 			PopulateDijkstraMap(
 				dijkstraMap,
-				GetTileCoordsForWorldPosition( leo->m_targetPosition ),
+				IntVec2( 1, 1 ),
 				999999.f,
 				true
 			);
+
+			float maxCost = 0.f;
+			for ( int y = 0; y < m_dimensions.y; ++y )
+			{
+				for ( int x = 0; x < m_dimensions.x; ++x )
+				{
+					float v = dijkstraMap.GetValueAtTileCoords( IntVec2( x, y ) );
+					if ( v < 999999.f && v > maxCost )
+					{
+						maxCost = v;
+					}
+				}
+			}
+
+			if ( maxCost <= 0.f )
+			{
+				maxCost = 1.f;
+			}
 
 			std::vector<Vertex> debugVerts;
 			dijkstraMap.AddVertsForDebugDraw(
@@ -159,7 +172,7 @@ void Map::DebugRender() const
 						static_cast< float >( m_dimensions.y ) * g_gameConfigBlackboard.GetValue( "tileSize", 12.5f )
 					)
 				),
-				FloatRange( 0.f, 100.f ),
+				FloatRange( 0.f, maxCost ),
 				Rgba8::BLACK,
 				Rgba8::WHITE,
 				999999.f,
@@ -213,16 +226,34 @@ void Map::DebugRender() const
 			Leo* leo = dynamic_cast< Leo* >( m_entityListsByType[ENTITY_TYPE_EVIL_LEO][0] );
 			if ( leo == nullptr ) return;
 
-			TileHeatMap distanceToGoalMap( m_dimensions );
+			TileHeatMap dijkstraMap( m_dimensions );
 			PopulateDijkstraMap(
-				distanceToGoalMap,
+				dijkstraMap,
 				GetTileCoordsForWorldPosition( leo->m_targetPosition ),
 				999999.f,
-				false
+				true
 			);
 
+			float maxCost = 0.f;
+			for ( int y = 0; y < m_dimensions.y; ++y )
+			{
+				for ( int x = 0; x < m_dimensions.x; ++x )
+				{
+					float v = dijkstraMap.GetValueAtTileCoords( IntVec2( x, y ) );
+					if ( v < 999999.f && v > maxCost )
+					{
+						maxCost = v;
+					}
+				}
+			}
+
+			if ( maxCost <= 0.f )
+			{
+				maxCost = 1.f;
+			}
+
 			std::vector<Vertex> debugVerts;
-			distanceToGoalMap.AddVertsForDebugDraw(
+			dijkstraMap.AddVertsForDebugDraw(
 				debugVerts,
 				AABB2(
 					Vec2::ZERO,
@@ -231,14 +262,14 @@ void Map::DebugRender() const
 						static_cast< float >( m_dimensions.y ) * g_gameConfigBlackboard.GetValue( "tileSize", 12.5f )
 					)
 				),
-				FloatRange( 0.f, 100.f ),
+				FloatRange( 0.f, maxCost ),
 				Rgba8::BLACK,
 				Rgba8::WHITE,
 				999999.f,
 				Rgba8::BLUE
 			);
 
-			g_engine->m_renderer->DrawVertexArray( static_cast<int>( debugVerts.size() ), debugVerts.data() );
+			g_engine->m_renderer->DrawVertexArray( static_cast< int >( debugVerts.size() ), debugVerts.data() );
 		}
 		break;
 
@@ -625,12 +656,19 @@ void Map::FillUnreachableTiles()
 	{
 		for ( int x = 0; x < m_dimensions.x; ++x )
 		{
+			bool isOnEdge = ( x == 0 || y == 0 || x == m_dimensions.x - 1 || y == m_dimensions.y - 1 );
+			bool isInnerReserved = ( x >= 1 && x <= 5 && y >= 1 && y <= 5 );
+			bool isOuterReserved = ( x >= m_dimensions.x - 7 && x <= m_dimensions.x - 2 && y >= m_dimensions.y - 7 && y <= m_dimensions.y - 2 );
+			if ( isOnEdge || isInnerReserved || isOuterReserved )
+			{
+				continue;
+			}
 			IntVec2 tileCoords = IntVec2( x, y );
 			float cost = dijkstraMap.GetValueAtTileCoords( tileCoords );
-			if ( cost >= 999999.f )
+			if ( cost >= 999999.f && !IsTileSolid( *GetTile( tileCoords ) ) )
 			{
 				int tileIndex = tileCoords.y * m_dimensions.x + tileCoords.x;
-				m_tiles[tileIndex] = Tile( tileCoords, m_definition->m_borderTileType );
+				m_tiles[tileIndex] = Tile( tileCoords, m_definition->m_worm2TileType );
 			}
 		}
 	}
@@ -810,48 +848,46 @@ void Map::SpawnEntitiesForMapDefinition()
 	float tileSize = g_gameConfigBlackboard.GetValue( "tileSize", 12.5f );
 
 	// Spawn Scorpios
-	for ( int i = 0; i < mapDef.m_numOfScorpios; ++ i )
+	for ( int i = 0; i < mapDef.m_numOfScorpios; ++i )
 	{
-		Vec2 rawSpawnPos;
+		Vec2   rawSpawnPos;
+		IntVec2 spawnTileCoords;
+		bool   isRespawnPosValid = false;
 
-		// Ensure not spawning inside the entrance or exit bunkers
-		bool isRespawnPosValid = false;
-		
 		while ( !isRespawnPosValid )
 		{
-			rawSpawnPos.x = rng.RollRandomFloatInRange( 2.f * tileSize, ( static_cast<float>( m_dimensions.x ) - 3.f ) * tileSize );
-			rawSpawnPos.y = rng.RollRandomFloatInRange( 2.f * tileSize, ( static_cast<float>( m_dimensions.y ) - 3.f ) * tileSize );
-			IntVec2 spawnTileCoords = GetTileCoordsForWorldPosition( rawSpawnPos );
+			rawSpawnPos.x = rng.RollRandomFloatInRange( 2.f * tileSize, ( static_cast< float >( m_dimensions.x ) - 3.f ) * tileSize );
+			rawSpawnPos.y = rng.RollRandomFloatInRange( 2.f * tileSize, ( static_cast< float >( m_dimensions.y ) - 3.f ) * tileSize );
+
+			spawnTileCoords = GetTileCoordsForWorldPosition( rawSpawnPos );
 			isRespawnPosValid = true;
 
-			// Check inner bunker area
+			// Inner bunker area
 			if ( spawnTileCoords.x >= 1 && spawnTileCoords.x <= 6 &&
-				 spawnTileCoords.y >= 1 && spawnTileCoords.y <= 6 )
+				spawnTileCoords.y >= 1 && spawnTileCoords.y <= 6 )
 			{
 				isRespawnPosValid = false;
 				continue;
 			}
 
-			// Check outer bunker area
+			// Outer bunker area
 			if ( spawnTileCoords.x >= m_dimensions.x - 7 && spawnTileCoords.x <= m_dimensions.x - 2 &&
-				 spawnTileCoords.y >= m_dimensions.y - 7 && spawnTileCoords.y <= m_dimensions.y - 2 )
+				spawnTileCoords.y >= m_dimensions.y - 7 && spawnTileCoords.y <= m_dimensions.y - 2 )
+			{
+				isRespawnPosValid = false;
+				continue;
+			}
+
+			// Solid tiles
+			Tile* spawnTile = GetTile( spawnTileCoords );
+			if ( spawnTile == nullptr || IsTileSolid( *spawnTile ) )
 			{
 				isRespawnPosValid = false;
 				continue;
 			}
 		}
 
-		IntVec2 spawnTileCoords = GetTileCoordsForWorldPosition( rawSpawnPos );
 		Vec2 spawnPos = GetWorldPositionForTileCoords( spawnTileCoords );
-
-		// Ensure not spawning on solid tile
-		while ( IsTileSolid( *GetTile( spawnTileCoords ) ) )
-		{
-			rawSpawnPos.x = rng.RollRandomFloatInRange( 2.f * tileSize, ( static_cast<float>( m_dimensions.x ) - 3.f ) * tileSize );
-			rawSpawnPos.y = rng.RollRandomFloatInRange( 2.f * tileSize, ( static_cast<float>( m_dimensions.y ) - 3.f ) * tileSize );
-			spawnTileCoords = GetTileCoordsForWorldPosition( rawSpawnPos );
-			spawnPos = GetWorldPositionForTileCoords( spawnTileCoords );
-		}
 
 		Entity* newEntity = SpawnNewEntity( ENTITY_TYPE_EVIL_SCORPIO, spawnPos, 0.f );
 		if ( newEntity != nullptr )
@@ -861,37 +897,47 @@ void Map::SpawnEntitiesForMapDefinition()
 	}
 
 	// Spawn Leos
-	for ( int i = 0; i < mapDef.m_numOfLeos; ++ i )
+	for ( int i = 0; i < mapDef.m_numOfLeos; ++i )
 	{
-		Vec2 rawSpawnPos;
+		Vec2   rawSpawnPos;
+		IntVec2 spawnTileCoords;
+		bool   isRespawnPosValid = false;
 
-		// Ensure not spawning inside the entrance or exit bunkers
-		bool isRespawnPosValid = false;
 		while ( !isRespawnPosValid )
 		{
-			rawSpawnPos.x = rng.RollRandomFloatInRange( 2.f * tileSize, ( static_cast<float>( m_dimensions.x ) - 3.f ) * tileSize );
-			rawSpawnPos.y = rng.RollRandomFloatInRange( 2.f * tileSize, ( static_cast<float>( m_dimensions.y ) - 3.f ) * tileSize );
-			IntVec2 spawnTileCoords = GetTileCoordsForWorldPosition( rawSpawnPos );
+			rawSpawnPos.x = rng.RollRandomFloatInRange( 2.f * tileSize, ( static_cast< float >( m_dimensions.x ) - 3.f ) * tileSize );
+			rawSpawnPos.y = rng.RollRandomFloatInRange( 2.f * tileSize, ( static_cast< float >( m_dimensions.y ) - 3.f ) * tileSize );
+
+			spawnTileCoords = GetTileCoordsForWorldPosition( rawSpawnPos );
 			isRespawnPosValid = true;
-			// Check inner bunker area
+
+			// Inner bunker area
 			if ( spawnTileCoords.x >= 1 && spawnTileCoords.x <= 6 &&
-				 spawnTileCoords.y >= 1 && spawnTileCoords.y <= 6 )
+				spawnTileCoords.y >= 1 && spawnTileCoords.y <= 6 )
 			{
 				isRespawnPosValid = false;
 				continue;
 			}
-			// Check outer bunker area
+
+			// Outer bunker area
 			if ( spawnTileCoords.x >= m_dimensions.x - 7 && spawnTileCoords.x <= m_dimensions.x - 2 &&
-				 spawnTileCoords.y >= m_dimensions.y - 7 && spawnTileCoords.y <= m_dimensions.y - 2 )
+				spawnTileCoords.y >= m_dimensions.y - 7 && spawnTileCoords.y <= m_dimensions.y - 2 )
+			{
+				isRespawnPosValid = false;
+				continue;
+			}
+
+			// Solid tiles
+			Tile* spawnTile = GetTile( spawnTileCoords );
+			if ( spawnTile == nullptr || IsTileSolid( *spawnTile ) )
 			{
 				isRespawnPosValid = false;
 				continue;
 			}
 		}
 
-		IntVec2 spawnTileCoords = GetTileCoordsForWorldPosition( rawSpawnPos );
 		Vec2 spawnPos = GetWorldPositionForTileCoords( spawnTileCoords );
-		
+
 		Entity* newEntity = SpawnNewEntity( ENTITY_TYPE_EVIL_LEO, spawnPos, 0.f );
 		if ( newEntity != nullptr )
 		{
@@ -900,37 +946,47 @@ void Map::SpawnEntitiesForMapDefinition()
 	}
 
 	// Spawn Aries
-	for ( int i = 0; i < mapDef.m_numOfAries; ++ i )
+	for ( int i = 0; i < mapDef.m_numOfAries; ++i )
 	{
-		Vec2 rawSpawnPos;
-		
-		// Ensure not spawning inside the entrance or exit bunkers
-		bool isRespawnPosValid = false;
+		Vec2   rawSpawnPos;
+		IntVec2 spawnTileCoords;
+		bool   isRespawnPosValid = false;
+
 		while ( !isRespawnPosValid )
 		{
-			rawSpawnPos.x = rng.RollRandomFloatInRange( 2.f * tileSize, ( static_cast<float>( m_dimensions.x ) - 3.f ) * tileSize );
-			rawSpawnPos.y = rng.RollRandomFloatInRange( 2.f * tileSize, ( static_cast<float>( m_dimensions.y ) - 3.f ) * tileSize );
-			IntVec2 spawnTileCoords = GetTileCoordsForWorldPosition( rawSpawnPos );
+			rawSpawnPos.x = rng.RollRandomFloatInRange( 2.f * tileSize, ( static_cast< float >( m_dimensions.x ) - 3.f ) * tileSize );
+			rawSpawnPos.y = rng.RollRandomFloatInRange( 2.f * tileSize, ( static_cast< float >( m_dimensions.y ) - 3.f ) * tileSize );
+
+			spawnTileCoords = GetTileCoordsForWorldPosition( rawSpawnPos );
 			isRespawnPosValid = true;
-			// Check inner bunker area
+
+			// Inner bunker area
 			if ( spawnTileCoords.x >= 1 && spawnTileCoords.x <= 6 &&
-				 spawnTileCoords.y >= 1 && spawnTileCoords.y <= 6 )
+				spawnTileCoords.y >= 1 && spawnTileCoords.y <= 6 )
 			{
 				isRespawnPosValid = false;
 				continue;
 			}
-			// Check outer bunker area
+
+			// Outer bunker area
 			if ( spawnTileCoords.x >= m_dimensions.x - 7 && spawnTileCoords.x <= m_dimensions.x - 2 &&
-				 spawnTileCoords.y >= m_dimensions.y - 7 && spawnTileCoords.y <= m_dimensions.y - 2 )
+				spawnTileCoords.y >= m_dimensions.y - 7 && spawnTileCoords.y <= m_dimensions.y - 2 )
+			{
+				isRespawnPosValid = false;
+				continue;
+			}
+
+			// Solid tiles
+			Tile* spawnTile = GetTile( spawnTileCoords );
+			if ( spawnTile == nullptr || IsTileSolid( *spawnTile ) )
 			{
 				isRespawnPosValid = false;
 				continue;
 			}
 		}
 
-		IntVec2 spawnTileCoords = GetTileCoordsForWorldPosition( rawSpawnPos );
 		Vec2 spawnPos = GetWorldPositionForTileCoords( spawnTileCoords );
-		
+
 		Entity* newEntity = SpawnNewEntity( ENTITY_TYPE_EVIL_ARIES, spawnPos, 0.f );
 		if ( newEntity != nullptr )
 		{
@@ -938,6 +994,7 @@ void Map::SpawnEntitiesForMapDefinition()
 		}
 	}
 }
+
 
 
 //-----------------------------------------------------------------------------------------------

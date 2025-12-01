@@ -35,12 +35,6 @@ Game::Game()
 
 	g_game = this;
 
-	/*if ( MapDefinition::s_definitions.size() != g_gameConfigBlackboard.GetValue( "numOfMaps", 3 ) )
-	{
-		MapDefinition::s_definitions.resize( g_gameConfigBlackboard.GetValue( "numOfMaps", 3 ) );
-		MapDefinition::InitializeMapDefinitions();
-	}*/
-
 	static bool isInitialized = false;
 	if ( !isInitialized )
 	{
@@ -51,10 +45,14 @@ Game::Game()
 	Map* map1 = new Map( MapDefinition::s_definitions["Level1"], 0 );
 	Map* map2 = new Map( MapDefinition::s_definitions["Level2"], 1 );
 	Map* map3 = new Map( MapDefinition::s_definitions["Level3"], 2 );
+	Map* map4 = new Map( MapDefinition::s_definitions["Level4"], 3 );
+	Map* map5 = new Map( MapDefinition::s_definitions["Level5"], 4 );
 	m_currentMap = map1;
 	m_maps.push_back( map1 );
 	m_maps.push_back( map2 );
 	m_maps.push_back( map3 );
+	m_maps.push_back( map4 );
+	m_maps.push_back( map5 );
 
 	IntVec2 playerStartTileCoords = IntVec2( 1, 1 );
 	Vec2 playerStartPos = m_currentMap->GetWorldPositionForTileCoords( playerStartTileCoords );
@@ -763,10 +761,14 @@ void Game::Reset()
 	Map* map1 = new Map( MapDefinition::s_definitions["Level1"], 0 );
 	Map* map2 = new Map( MapDefinition::s_definitions["Level2"], 1 );
 	Map* map3 = new Map( MapDefinition::s_definitions["Level3"], 2 );
+	Map* map4 = new Map( MapDefinition::s_definitions["Level4"], 3 );
+	Map* map5 = new Map( MapDefinition::s_definitions["Level5"], 4 );
 	m_currentMap = map1;
 	m_maps.push_back( map1 );
 	m_maps.push_back( map2 );
 	m_maps.push_back( map3 );
+	m_maps.push_back( map4 );
+	m_maps.push_back( map5 );
 
 	m_isScreenShaking = false;
 	m_isDebugOn = false;

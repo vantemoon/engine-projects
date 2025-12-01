@@ -16,9 +16,6 @@ void MapDefinition::InitializeMapDefinitions()
 		TileDefinition::InitializeTileDefinitions();
 	}
 
-	/*int numOfMaps = g_gameConfigBlackboard.GetValue( "numOfMaps", 3 );
-	s_definitions.resize( numOfMaps );*/
-
 	float tileSize = g_gameConfigBlackboard.GetValue( "tileSize", 12.5f );
 
 	XmlDocument mapDefDoc;
