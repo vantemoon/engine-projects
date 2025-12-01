@@ -33,13 +33,13 @@ Game::Game()
 	LoadTextures();
 	LoadSounds();
 
+	g_game = this;
+
 	if ( MapDefinition::s_definitions.size() != g_gameConfigBlackboard.GetValue( "numOfMaps", 3 ) )
 	{
 		MapDefinition::s_definitions.resize( g_gameConfigBlackboard.GetValue( "numOfMaps", 3 ) );
 		MapDefinition::InitializeMapDefinitions();
 	}
-
-	g_game = this;
 
 	Map* map1 = new Map( MapDefinition::s_definitions[0].m_dimensions, 0 );
 	Map* map2 = new Map( MapDefinition::s_definitions[1].m_dimensions, 1 );

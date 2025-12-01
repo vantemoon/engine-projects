@@ -79,7 +79,10 @@ public:
 	void                 PopulateEnemyReachabilityMap( TileHeatMap& out_reachabilityMap, IntVec2 startCoords, float maxCost, bool treatWaterAsSolid = true ) const;
 
 private:
-	void				 PopulateTiles();
+	void				 PopulateMap();
+	void                 GenerateTiles();
+	bool                 IsMapValid() const;
+	void                 FillUnreachableTiles();
 	void				 DeleteGarbageEntities();
 	void				 ResolveEntityVsEntityCollision();
 	void				 ResolveEntityVsTileCollision();

@@ -10,13 +10,21 @@ std::vector<MapDefinition> MapDefinition::s_definitions;
 //-----------------------------------------------------------------------------------------------
 void MapDefinition::InitializeMapDefinitions()
 {
+	if ( TileDefinition::s_definitions.empty() )
+	{
+		TileDefinition::InitializeTileDefinitions();
+	}
+
+	int numOfMaps = g_gameConfigBlackboard.GetValue( "numOfMaps", 3 );
+	s_definitions.resize( numOfMaps );
+
 	float tileSize = g_gameConfigBlackboard.GetValue( "tileSize", 12.5f );
 
 	// Map 1
-	IntVec2 exitTileCoords1 = IntVec2( 30, 62 );
+	IntVec2 exitTileCoords1 = IntVec2( 46, 22 );
 	Vec2 exitPos1 = Vec2( ( exitTileCoords1.x + 0.5f ) * tileSize, ( exitTileCoords1.y + 0.5f ) * tileSize );
 
-	s_definitions[0].m_dimensions = IntVec2( 32, 64 );
+	s_definitions[0].m_dimensions = IntVec2( 48, 24 );
 	s_definitions[0].m_aspectRatio = 0.5f;
 	s_definitions[0].m_exitPosition = exitPos1;
 
@@ -24,16 +32,17 @@ void MapDefinition::InitializeMapDefinitions()
 	s_definitions[0].m_numOfScorpios = 5;
 	s_definitions[0].m_numOfAries = 5;
 
-	s_definitions[0].m_fillTileType = TILE_TYPE_GRASS_1;
-	s_definitions[0].m_borderTileType = TILE_TYPE_STONE_2;
-	s_definitions[0].m_bunkerFloorTileType = TILE_TYPE_STONE_TILE;
-	s_definitions[0].m_startbunkerWallTileType = TILE_TYPE_METAL_WALL;
-	s_definitions[0].m_exitbunkerWallTileType = TILE_TYPE_STONE_BRICK_4;
-	s_definitions[0].m_sprinkle1TileType = TILE_TYPE_STONE_2;
-	s_definitions[0].m_sprinkle2TileType = TILE_TYPE_STONE_2; // Not used
-
-	s_definitions[0].m_sprinkle1Probability = 0.1f;
-	s_definitions[0].m_sprinkle2Probability = 0.f;
+	s_definitions[0].m_fillTileType = TileDefinition::s_definitions["Grass1"];
+	s_definitions[0].m_borderTileType = TileDefinition::s_definitions["Stone2"];
+	s_definitions[0].m_bunkerFloorTileType = TileDefinition::s_definitions["StoneTile"];
+	s_definitions[0].m_startbunkerWallTileType = TileDefinition::s_definitions["MetalWall"];
+	s_definitions[0].m_exitbunkerWallTileType = TileDefinition::s_definitions["StoneBrick4"];
+	s_definitions[0].m_worm1TileType = TileDefinition::s_definitions["Stone2"];
+	s_definitions[0].m_numOfWorms1 = 0;
+	s_definitions[0].m_wormLength1 = 5;
+	s_definitions[0].m_worm2TileType = TileDefinition::s_definitions["Stone2"];
+	s_definitions[0].m_numOfWorms2 = 0;
+	s_definitions[0].m_wormLength2 = 0;
 
 	// Map 2
 	IntVec2 exitTileCoords2 = IntVec2( 48, 18 );
@@ -47,16 +56,17 @@ void MapDefinition::InitializeMapDefinitions()
 	s_definitions[1].m_numOfScorpios = 5;
 	s_definitions[1].m_numOfAries = 3;
 
-	s_definitions[1].m_fillTileType = TILE_TYPE_GRASS_3;
-	s_definitions[1].m_borderTileType = TILE_TYPE_STONE_BRICK_4;
-	s_definitions[1].m_bunkerFloorTileType = TILE_TYPE_STONE_TILE;
-	s_definitions[1].m_startbunkerWallTileType = TILE_TYPE_STONE_BRICK_4;
-	s_definitions[1].m_exitbunkerWallTileType = TILE_TYPE_METAL_WALL;
-	s_definitions[1].m_sprinkle1TileType = TILE_TYPE_STONE_2;
-	s_definitions[1].m_sprinkle2TileType = TILE_TYPE_MUD_2;
-
-	s_definitions[1].m_sprinkle1Probability = 0.1f;
-	s_definitions[1].m_sprinkle2Probability = 0.1f;
+	s_definitions[1].m_fillTileType = TileDefinition::s_definitions["Grass3"];
+	s_definitions[1].m_borderTileType = TileDefinition::s_definitions["StoneBrick4"];
+	s_definitions[1].m_bunkerFloorTileType = TileDefinition::s_definitions["StoneTile"];
+	s_definitions[1].m_startbunkerWallTileType = TileDefinition::s_definitions["StoneBrick4"];
+	s_definitions[1].m_exitbunkerWallTileType = TileDefinition::s_definitions["MetalWall"];
+	s_definitions[1].m_worm1TileType = TileDefinition::s_definitions["Stone2"];
+	s_definitions[1].m_numOfWorms1 = 0;
+	s_definitions[1].m_wormLength1 = 15;
+	s_definitions[1].m_worm2TileType = TileDefinition::s_definitions["Stone2"];
+	s_definitions[1].m_numOfWorms2 = 0;
+	s_definitions[1].m_wormLength2 = 10;
 
 	// Map 3
 	IntVec2 exitTileCoords3 = IntVec2( 30, 30 );
@@ -70,14 +80,15 @@ void MapDefinition::InitializeMapDefinitions()
 	s_definitions[2].m_numOfScorpios = 5;
 	s_definitions[2].m_numOfAries = 10;
 
-	s_definitions[2].m_fillTileType = TILE_TYPE_MUD_2;
-	s_definitions[2].m_borderTileType = TILE_TYPE_METAL_WALL;
-	s_definitions[2].m_bunkerFloorTileType = TILE_TYPE_STONE_TILE;
-	s_definitions[2].m_startbunkerWallTileType = TILE_TYPE_METAL_WALL;
-	s_definitions[2].m_exitbunkerWallTileType = TILE_TYPE_METAL_WALL;
-	s_definitions[2].m_sprinkle1TileType = TILE_TYPE_METAL_WALL;
-	s_definitions[2].m_sprinkle2TileType = TILE_TYPE_GRASS_4;
-
-	s_definitions[2].m_sprinkle1Probability = 0.1f;
-	s_definitions[2].m_sprinkle2Probability = 0.2f;
+	s_definitions[2].m_fillTileType = TileDefinition::s_definitions["Mud2"];
+	s_definitions[2].m_borderTileType = TileDefinition::s_definitions["MetalWall"];
+	s_definitions[2].m_bunkerFloorTileType = TileDefinition::s_definitions["StoneTile"];
+	s_definitions[2].m_startbunkerWallTileType = TileDefinition::s_definitions["MetalWall"];
+	s_definitions[2].m_exitbunkerWallTileType = TileDefinition::s_definitions["MetalWall"];
+	s_definitions[2].m_worm1TileType = TileDefinition::s_definitions["MetalWall"];
+	s_definitions[2].m_numOfWorms1 = 0;
+	s_definitions[2].m_wormLength1 = 8;
+	s_definitions[2].m_worm2TileType = TileDefinition::s_definitions["Grass4"];
+	s_definitions[2].m_numOfWorms2 = 0;
+	s_definitions[2].m_wormLength2 = 8;
 }

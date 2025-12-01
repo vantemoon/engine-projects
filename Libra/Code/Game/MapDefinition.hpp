@@ -1,5 +1,6 @@
 #pragma once
 #include "Game/Tile.hpp"
+#include "Game/TileDefinition.hpp"
 #include "Engine/Math/IntVec2.hpp"
 
 
@@ -15,16 +16,19 @@ public:
 	int m_numOfScorpios = 0;
 	int m_numOfAries = 0;
 
-	TileType m_fillTileType = TILE_TYPE_GRASS_1;
-	TileType m_borderTileType = TILE_TYPE_STONE_2;
-	TileType m_bunkerFloorTileType = TILE_TYPE_STONE_2;
-	TileType m_startbunkerWallTileType = TILE_TYPE_STONE_2;
-	TileType m_exitbunkerWallTileType = TILE_TYPE_STONE_2;
-	TileType m_sprinkle1TileType = TILE_TYPE_STONE_2;
-	TileType m_sprinkle2TileType = TILE_TYPE_STONE_2;
+	TileDefinition const* m_fillTileType = nullptr;
+	TileDefinition const* m_borderTileType = nullptr;
+	TileDefinition const* m_bunkerFloorTileType = nullptr;
+	TileDefinition const* m_startbunkerWallTileType = nullptr;
+	TileDefinition const* m_exitbunkerWallTileType = nullptr;
 
-	float m_sprinkle1Probability = 0.f;
-	float m_sprinkle2Probability = 0.f;
+	TileDefinition const* m_worm1TileType = nullptr;
+	TileDefinition const* m_worm2TileType = nullptr;
+
+	int m_numOfWorms1 = 0;
+	int m_numOfWorms2 = 0;
+	int m_wormLength1 = 0;
+	int m_wormLength2 = 0;
 
 	static std::vector<MapDefinition> s_definitions;
 

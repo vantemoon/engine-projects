@@ -10,6 +10,8 @@
 #include "Game/TileDefinition.hpp"
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/EngineCommon.hpp"
+#include "Engine/Core/ErrorWarningAssert.hpp"
+#include "Engine/Core/Time.hpp"
 #include "Engine/Core/Vertex.hpp"
 #include "Engine/Core/VertexUtils.hpp"
 #include "Engine/Math/AABB2.hpp"
@@ -24,7 +26,7 @@ Map::Map( IntVec2 dimensions, int index )
 	: m_dimensions( dimensions )
 	, m_index( index )
 {
-	PopulateTiles();
+	PopulateMap();
 	SpawnEntitiesForMapDefinition();
 
 	// Add player to the map
@@ -160,7 +162,7 @@ void Map::DebugRender() const
 				Rgba8::BLACK,
 				Rgba8::WHITE,
 				999999.f,
-				Rgba8::MAGENTA
+				Rgba8::BLUE
 			);
 
 			g_engine->m_renderer->DrawVertexArray( static_cast<int>( debugVerts.size() ), debugVerts.data() );
@@ -196,7 +198,7 @@ void Map::DebugRender() const
 				Rgba8::WHITE,
 				Rgba8::BLACK,
 				999999.f,
-				Rgba8::MAGENTA
+				Rgba8::BLUE
 			);
 
 			g_engine->m_renderer->DrawVertexArray( static_cast<int>( debugVerts.size() ), debugVerts.data() );
@@ -214,7 +216,7 @@ void Map::DebugRender() const
 			PopulateDijkstraMap(
 				distanceToGoalMap,
 				GetTileCoordsForWorldPosition( leo->m_targetPosition ),
-				1000.f,
+				999999.f,
 				false
 			);
 
@@ -232,7 +234,7 @@ void Map::DebugRender() const
 				Rgba8::BLACK,
 				Rgba8::WHITE,
 				999999.f,
-				Rgba8::MAGENTA
+				Rgba8::BLUE
 			);
 
 			g_engine->m_renderer->DrawVertexArray( static_cast<int>( debugVerts.size() ), debugVerts.data() );
@@ -380,22 +382,27 @@ Vec2 Map::GetWorldPositionForTileCoords( IntVec2 tileCoords ) const
 
 
 //-----------------------------------------------------------------------------------------------
-void Map::PopulateTiles()
+void Map::GenerateTiles()
 {
-	if ( TileDefinition::s_definitions.size() != NUM_TILE_TYPES )
+	static bool s_initialized = false;
+	if ( !s_initialized )
 	{
-		TileDefinition::s_definitions.resize( NUM_TILE_TYPES );
 		TileDefinition::InitializeTileDefinitions();
+		s_initialized = true;
 	}
 
 	m_tiles.clear();
+
+	RandomNumberGenerator rng;
+	rng.SetSeed( static_cast<unsigned int>( GetCurrentTimeSeconds() * 100000.0 ) );
+
 
 	for ( int y = 0; y < m_dimensions.y; ++y )
 	{
 		for ( int x = 0; x < m_dimensions.x; ++x )
 		{
 			IntVec2 tileCoords = IntVec2( x, y );
-			TileType type;
+			TileDefinition const* type = nullptr;
 
 			bool isOnEdge = ( x == 0 || y == 0 || x == m_dimensions.x - 1 || y == m_dimensions.y - 1 );
 			bool isInnerReserved = ( x >= 1 && x <= 5 && y >= 1 && y <= 5 );
@@ -410,10 +417,10 @@ void Map::PopulateTiles()
 				{
 					if ( x == 1 && y == 1 )
 					{
-						type = TILE_TYPE_ENTRANCE;
+						type = TileDefinition::s_definitions["Entrance"];
 					}
 					else if ( ( x == 2 && y == 4 ) || ( x == 3 && y == 4 ) || ( x == 4 && y == 4 ) ||
-							  ( x == 4 && y == 3 ) || ( x == 4 && y == 2 ) )
+						( x == 4 && y == 3 ) || ( x == 4 && y == 2 ) )
 					{
 						type = MapDefinition::s_definitions[m_index].m_startbunkerWallTileType;
 					}
@@ -426,15 +433,15 @@ void Map::PopulateTiles()
 				{
 					if ( x == m_dimensions.x - 2 && y == m_dimensions.y - 2 )
 					{
-						type = TILE_TYPE_EXIT;
+						type = TileDefinition::s_definitions["Exit"];
 					}
 					else if ( ( x == m_dimensions.x - 6 && y == m_dimensions.y - 3 ) ||
-							  ( x == m_dimensions.x - 6 && y == m_dimensions.y - 4 ) ||
-							  ( x == m_dimensions.x - 6 && y == m_dimensions.y - 5 ) ||
-							  ( x == m_dimensions.x - 6 && y == m_dimensions.y - 6 ) ||
-							  ( x == m_dimensions.x - 5 && y == m_dimensions.y - 6 ) ||
-							  ( x == m_dimensions.x - 4 && y == m_dimensions.y - 6 ) ||
-							  ( x == m_dimensions.x - 3 && y == m_dimensions.y - 6 ) )
+						( x == m_dimensions.x - 6 && y == m_dimensions.y - 4 ) ||
+						( x == m_dimensions.x - 6 && y == m_dimensions.y - 5 ) ||
+						( x == m_dimensions.x - 6 && y == m_dimensions.y - 6 ) ||
+						( x == m_dimensions.x - 5 && y == m_dimensions.y - 6 ) ||
+						( x == m_dimensions.x - 4 && y == m_dimensions.y - 6 ) ||
+						( x == m_dimensions.x - 3 && y == m_dimensions.y - 6 ) )
 					{
 						type = MapDefinition::s_definitions[m_index].m_exitbunkerWallTileType;
 					}
@@ -445,29 +452,185 @@ void Map::PopulateTiles()
 				}
 				else
 				{
-					RandomNumberGenerator rng;
-
-					float roll = rng.RollRandomFloatZeroToOne();
-					if ( roll < MapDefinition::s_definitions[m_index].m_sprinkle1Probability )
-					{
-						type = MapDefinition::s_definitions[m_index].m_sprinkle1TileType;
-					}
-					else
-					{
-						roll = rng.RollRandomFloatZeroToOne();
-						if ( roll < MapDefinition::s_definitions[m_index].m_sprinkle2Probability )
-						{
-							type = MapDefinition::s_definitions[m_index].m_sprinkle2TileType;
-						}
-						else
-						{
-							type = MapDefinition::s_definitions[m_index].m_fillTileType;
-						}
-					}
+					type = MapDefinition::s_definitions[m_index].m_fillTileType;
 				}
 			}
+			ASSERT_OR_DIE( type != nullptr, "TileDefinition pointer is null!" );
+
 			Tile newTile = Tile( tileCoords, type );
 			m_tiles.push_back( newTile );
+		}
+	}
+
+	// Worm 1
+	for ( int wormIndex = 0; wormIndex < MapDefinition::s_definitions[m_index].m_numOfWorms1; ++ wormIndex )
+	{
+
+
+		IntVec2 wormStart;
+		while ( true )
+		{
+			int x = rng.RollRandomIntInRange( 1, m_dimensions.x - 2 );
+			int y = rng.RollRandomIntInRange( 1, m_dimensions.y - 2 );
+			wormStart = IntVec2( x, y );
+			bool isInReservedArea = ( ( x >= 1 && x <= 5 && y >= 1 && y <= 5 ) ||
+				( x >= m_dimensions.x - 7 && x <= m_dimensions.x - 2 &&
+					y >= m_dimensions.y - 7 && y <= m_dimensions.y - 2 ) );
+			if ( !isInReservedArea )
+			{
+				break;
+			}
+		}
+
+		IntVec2 currentPos = wormStart;
+		TileDefinition const* wormTileType = MapDefinition::s_definitions[m_index].m_worm1TileType;
+
+		int tileIndex = currentPos.y * m_dimensions.x + currentPos.x;
+		m_tiles[tileIndex] = Tile( currentPos, wormTileType );
+
+		for ( int segmentIndex = 1; segmentIndex < MapDefinition::s_definitions[m_index].m_wormLength1; ++ segmentIndex )
+		{
+			std::vector<IntVec2> possibleDirections;
+			possibleDirections.push_back( IntVec2( 1, 0 ) );
+			possibleDirections.push_back( IntVec2( -1, 0 ) );
+			possibleDirections.push_back( IntVec2( 0, 1 ) );
+			possibleDirections.push_back( IntVec2( 0, -1 ) );
+
+			int randomDirIndex = rng.RollRandomIntInRange( 0, static_cast< int >( possibleDirections.size() ) - 1 );
+			IntVec2 chosenDirection = possibleDirections[randomDirIndex];
+			currentPos = currentPos + chosenDirection;
+			if ( !IsTileCoordsInBounds( currentPos ) )
+			{
+				break;
+			}
+			int x = currentPos.x;
+			int y = currentPos.y;
+
+			bool isOnEdge = ( x == 0 || y == 0 || x == m_dimensions.x - 1 || y == m_dimensions.y - 1 );
+			bool isInnerReserved = ( x >= 1 && x <= 5 && y >= 1 && y <= 5 );
+			bool isOuterReserved = ( x >= m_dimensions.x - 7 && x <= m_dimensions.x - 2 && y >= m_dimensions.y - 7 && y <= m_dimensions.y - 2 );
+			if ( isOnEdge || isInnerReserved || isOuterReserved )
+			{
+				break;
+			}
+			int index = currentPos.y * m_dimensions.x + currentPos.x;
+			m_tiles[index] = Tile( currentPos, wormTileType );
+		}
+	}
+
+	// Worm 2
+	for ( int wormIndex = 0; wormIndex < MapDefinition::s_definitions[m_index].m_numOfWorms2; ++ wormIndex )
+	{
+		IntVec2 wormStart;
+
+		while ( true )
+		{
+			int x = rng.RollRandomIntInRange( 1, m_dimensions.x - 2 );
+			int y = rng.RollRandomIntInRange( 1, m_dimensions.y - 2 );
+			wormStart = IntVec2( x, y );
+			bool isInReservedArea = ( ( x >= 1 && x <= 5 && y >= 1 && y <= 5 ) ||
+				( x >= m_dimensions.x - 7 && x <= m_dimensions.x - 2 &&
+					y >= m_dimensions.y - 7 && y <= m_dimensions.y - 2 ) );
+			if ( !isInReservedArea )
+			{
+				break;
+			}
+		}
+
+		IntVec2 currentPos = wormStart;
+		TileDefinition const* wormTileType = MapDefinition::s_definitions[m_index].m_worm2TileType;
+
+		int tileIndex = currentPos.y * m_dimensions.x + currentPos.x;
+		m_tiles[tileIndex] = Tile( currentPos, wormTileType );
+
+		for ( int segmentIndex = 1; segmentIndex < MapDefinition::s_definitions[m_index].m_wormLength2; ++ segmentIndex )
+		{
+			std::vector<IntVec2> possibleDirections;
+			possibleDirections.push_back( IntVec2( 1, 0 ) );
+			possibleDirections.push_back( IntVec2( -1, 0 ) );
+			possibleDirections.push_back( IntVec2( 0, 1 ) );
+			possibleDirections.push_back( IntVec2( 0, -1 ) );
+			int randomDirIndex = rng.RollRandomIntInRange( 0, static_cast< int >( possibleDirections.size() ) - 1 );
+			IntVec2 chosenDirection = possibleDirections[randomDirIndex];
+			currentPos = currentPos + chosenDirection;
+			if ( !IsTileCoordsInBounds( currentPos ) )
+			{
+				break;
+			}
+			int x = currentPos.x;
+			int y = currentPos.y;
+			bool isOnEdge = ( x == 0 || y == 0 || x == m_dimensions.x - 1 || y == m_dimensions.y - 1 );
+			bool isInnerReserved = ( x >= 1 && x <= 5 && y >= 1 && y <= 5 );
+			bool isOuterReserved = ( x >= m_dimensions.x - 7 && x <= m_dimensions.x - 2 && y >= m_dimensions.y - 7 && y <= m_dimensions.y - 2 );
+			if ( isOnEdge || isInnerReserved || isOuterReserved )
+			{
+				break;
+			}
+			int index = currentPos.y * m_dimensions.x + currentPos.x;
+			m_tiles[index] = Tile( currentPos, wormTileType );
+		}
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Map::PopulateMap()
+{
+	for ( int attempt = 0; attempt < g_gameConfigBlackboard.GetValue( "maxGenerationAttemps", 1000 ); ++attempt )
+	{
+		m_tiles.clear();
+		GenerateTiles();
+		if ( IsMapValid() )
+		{
+			FillUnreachableTiles();
+			return;
+		}
+	}
+	ERROR_AND_DIE( "Map generation failed: could not generate a valid map in the given number of attempts." );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool Map::IsMapValid() const
+{
+	TileHeatMap dijkstraMap( m_dimensions );
+	PopulateDijkstraMap(
+		dijkstraMap,
+		GetTileCoordsForWorldPosition( GetWorldPositionForTileCoords( IntVec2( 1, 1 ) ) ),
+		999999.f,
+		true
+	);
+	IntVec2 exitCoords = IntVec2( m_dimensions.x - 2, m_dimensions.y - 2 );
+	float exitCost = dijkstraMap.GetValueAtTileCoords( exitCoords );
+	if ( exitCost >= 999999.f )
+	{
+		return false;
+	}
+	return true;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Map::FillUnreachableTiles()
+{
+	TileHeatMap dijkstraMap( m_dimensions );
+	PopulateDijkstraMap(
+		dijkstraMap,
+		GetTileCoordsForWorldPosition( GetWorldPositionForTileCoords( IntVec2( 1, 1 ) ) ),
+		999999.f,
+		true
+	);
+	for ( int y = 0; y < m_dimensions.y; ++y )
+	{
+		for ( int x = 0; x < m_dimensions.x; ++x )
+		{
+			IntVec2 tileCoords = IntVec2( x, y );
+			float cost = dijkstraMap.GetValueAtTileCoords( tileCoords );
+			if ( cost >= 999999.f )
+			{
+				int tileIndex = tileCoords.y * m_dimensions.x + tileCoords.x;
+				m_tiles[tileIndex] = Tile( tileCoords, MapDefinition::s_definitions[m_index].m_borderTileType );
+			}
 		}
 	}
 }

@@ -1,0 +1,515 @@
+<TileDefinitions>
+	
+	<TileDefinition
+		name="Grass1"
+		isSolid="false"
+		isWater="false"
+		spriteCoords="0,0"
+		tint="0,200,0,255"
+		/>
+
+	<TileDefinition
+		name="Grass2"
+		isSolid="false"
+		isWater="false"
+		spriteCoords="0,1"
+		tint="0,200,0,255"
+		/>
+
+	<TileDefinition
+		name="Grass3"
+		isSolid="false"
+		isWater="false"
+		spriteCoords="0,2"
+		tint="0,200,0,255"
+		/>
+
+	<TileDefinition
+		name="Grass4"
+		isSolid="false"
+		isWater="false"
+		spriteCoords="0,3"
+		tint="0,200,0,255"
+		/>
+
+	<TileDefinition
+		name="Grass5"
+		isSolid="false"
+		isWater="false"
+		spriteCoords="0,4"
+		tint="0,200,0,255"
+		/>
+
+	<TileDefinition
+		name="Grass6"
+		isSolid="false"
+		isWater="false"
+		spriteCoords="0,5"
+		tint="0,200,0,255"
+		/>
+
+	<TileDefinition
+		name="Grass7"
+		isSolid="false"
+		isWater="false"
+		spriteCoords="0,6"
+		tint="0,200,0,255"
+		/>
+
+	<TileDefinition
+		name="Grass8"
+		isSolid="false"
+		isWater="false"
+		spriteCoords="0,7"
+		tint="0,200,0,255"
+		/>
+	
+	<TileDefinition
+		name="Grass9"
+		isSolid="false"
+		isWater="false"
+		spriteCoords="1,0"
+		tint="0,200,0,255"
+		/>
+
+	<TileDefinition
+		name="Grass10"
+		isSolid="false"
+		isWater="false"
+		spriteCoords="1,1"
+		tint="0,200,0,255"
+		/>
+
+	<TileDefinition
+		name="Grass11"
+		isSolid="false"
+		isWater="false"
+		spriteCoords="1,2"
+		tint="0,200,0,255"
+		/>
+
+	<TileDefinition
+		name="Dirt1"
+		isSolid="false"
+		isWater="false"
+		spriteCoords="1,3"
+		tint="139,69,19,255"
+		/>
+
+	<TileDefinition
+		name="Dirt2"
+		isSolid="false"
+		isWater="false"
+		spriteCoords="1,4"
+		tint="139,69,19,255"
+		/>
+
+	<TileDefinition
+		name="Dirt3"
+		isSolid="false"
+		isWater="false"
+		spriteCoords="1,5"
+		tint="139,69,19,255"
+		/>
+
+	<TileDefinition
+		name="Dirt4"
+		isSolid="false"
+		isWater="false"
+		spriteCoords="1,6"
+		tint="139,69,19,255"
+		/>
+
+	<TileDefinition
+		name="Sand1"
+		isSolid="false"
+		isWater="false"
+		spriteCoords="1,7"
+		tint="194,178,128,255"
+		/>
+
+	<TileDefinition
+		name="Stone1"
+		isSolid="true"
+		isWater="false"
+		spriteCoords="2,0"
+		tint="255,255,255,255"
+		/>
+
+	<TileDefinition
+		name="Stone2"
+		isSolid="true"
+		isWater="false"
+		spriteCoords="2,1"
+		tint="255,255,255,255"
+		/>
+
+	<TileDefinition
+		name="Sand2"
+		isSolid="false"
+		isWater="false"
+		spriteCoords="2,2"
+		tint="194,178,128,255"
+		/>
+
+	<TileDefinition
+		name="Sand3"
+		isSolid="false"
+		isWater="false"
+		spriteCoords="2,3"
+		tint="194,178,128,255"
+		/>
+
+	<TileDefinition
+		name="Mud1"
+		isSolid="false"
+		isWater="false"
+		spriteCoords="2,4"
+		tint="255,255,255,255"
+		/>
+
+	<TileDefinition
+		name="Mud2"
+		isSolid="false"
+		isWater="false"
+		spriteCoords="2,5"
+		tint="255,255,255,255"
+		/>
+
+	<TileDefinition
+		name="Dirt5"
+		isSolid="false"
+		isWater="false"
+		spriteCoords="2,6"
+		tint="139,69,19,255"
+		/>
+
+	<TileDefinition
+		name="Sand4"
+		isSolid="false"
+		isWater="false"
+		spriteCoords="2,7"
+		tint="194,178,128,255"
+		/>
+	
+	<TileDefinition
+		name="Stone3"
+		isSolid="true"
+		isWater="false"
+		spriteCoords="3,0"
+		tint="255,255,255,255"
+		/>
+
+	<TileDefinition
+		name="Stone4"
+		isSolid="true"
+		isWater="false"
+		spriteCoords="3,1"
+		tint="100,100,100,255"
+		/>
+
+	<TileDefinition
+		name="Stone5"
+		isSolid="true"
+		isWater="false"
+		spriteCoords="3,2"
+		tint="255,255,255,255"
+		/>
+
+	<TileDefinition
+		name="Stone6"
+		isSolid="true"
+		isWater="false"
+		spriteCoords="3,3"
+		tint="100,100,100,255"
+		/>
+
+	<TileDefinition
+		name="Stone7"
+		isSolid="true"
+		isWater="false"
+		spriteCoords="3,4"
+		tint="255,255,255,255"
+		/>
+
+	<TileDefinition
+		name="Stone8"
+		isSolid="true"
+		isWater="false"
+		spriteCoords="3,5"
+		tint="100,100,100,255"
+		/>
+
+	<TileDefinition
+		name="Stone9"
+		isSolid="true"
+		isWater="false"
+		spriteCoords="3,6"
+		tint="255,255,255,255"
+		/>
+
+	<TileDefinition
+		name="StoneBrick1"
+		isSolid="true"
+		isWater="false"
+		spriteCoords="3,7"
+		tint="255,255,255,255"
+		/>
+	
+	<TileDefinition
+		name="StoneBrick2"
+		isSolid="true"
+		isWater="false"
+		spriteCoords="4,0"
+		tint="255,255,255,255"
+		/>
+	
+	<TileDefinition
+		name="StoneBrick3"
+		isSolid="true"
+		isWater="false"
+		spriteCoords="4,1"
+		tint="255,255,255,255"
+		/>
+
+	<TileDefinition
+		name="StoneBrick4"
+		isSolid="true"
+		isWater="false"
+		spriteCoords="4,2"
+		tint="255,255,255,255"
+		/>
+
+	<TileDefinition
+		name="StoneBrick5"
+		isSolid="true"
+		isWater="false"
+		spriteCoords="4,3"
+		tint="255,255,255,255"
+		/>
+
+	<TileDefinition
+		name="StoneBrick6"
+		isSolid="true"
+		isWater="false"
+		spriteCoords="4,4"
+		tint="255,255,255,255"
+		/>
+
+	<TileDefinition
+		name="StoneBrick7"
+		isSolid="true"
+		isWater="false"
+		spriteCoords="4,5"
+		tint="255,255,255,255"
+		/>
+
+	<TileDefinition
+		name="StoneBrick8"
+		isSolid="true"
+		isWater="false"
+		spriteCoords="4,6"
+		tint="255,255,255,255"
+		/>
+
+	<TileDefinition
+		name="StoneBrick9"
+		isSolid="true"
+		isWater="false"
+		spriteCoords="4,7"
+		tint="255,255,255,255"
+		/>
+
+	<TileDefinition
+		name="RedBrick1"
+		isSolid="true"
+		isWater="false"
+		spriteCoords="5,0"
+		tint="255,255,255,255"
+		/>
+
+	<TileDefinition
+		name="RedBrick2"
+		isSolid="true"
+		isWater="false"
+		spriteCoords="5,1"
+		tint="255,255,255,255"
+		/>
+
+	<TileDefinition
+		name="BlueBrick"
+		isSolid="true"
+		isWater="false"
+		spriteCoords="5,2"
+		tint="255,255,255,255"
+		/>
+
+	<TileDefinition
+		name="RedBrick3"
+		isSolid="true"
+		isWater="false"
+		spriteCoords="5,3"
+		tint="255,255,255,255"
+		/>
+
+	<TileDefinition
+		name="RedBrick4"
+		isSolid="true"
+		isWater="false"
+		spriteCoords="5,4"
+		tint="255,255,255,255"
+		/>
+
+	<TileDefinition
+		name="StoneBrick10"
+		isSolid="true"
+		isWater="false"
+		spriteCoords="5,5"
+		tint="255,255,255,255"
+		/>
+
+	<TileDefinition
+		name="Stone10"
+		isSolid="true"
+		isWater="false"
+		spriteCoords="5,6"
+		tint="255,255,255,255"
+		/>
+
+	<TileDefinition
+		name="Stone11"
+		isSolid="true"
+		isWater="false"
+		spriteCoords="5,7"
+		tint="255,255,255,255"
+		/>
+	
+	<TileDefinition
+		name="WoodFloorVertical"
+		isSolid="false"
+		isWater="false"
+		spriteCoords="6,0"
+		tint="210,180,140,255"
+		/>
+
+	<TileDefinition
+		name="WoodFloorHorizontal"
+		isSolid="false"
+		isWater="false"
+		spriteCoords="6,1"
+		tint="210,180,140,255"
+		/>
+
+	<TileDefinition
+		name="WoodTile"
+		isSolid="false"
+		isWater="false"
+		spriteCoords="6,2"
+		tint="210,180,140,255"
+		/>
+
+	<TileDefinition
+		name="StoneTile"
+		isSolid="false"
+		isWater="false"
+		spriteCoords="6,3"
+		tint="100,100,100,255"
+		/>
+
+	<TileDefinition
+		name="Water1"
+		isSolid="false"
+		isWater="true"
+		spriteCoords="6,4"
+		tint="0,0,255,200"
+		/>
+
+	<TileDefinition
+		name="MetalWall"
+		isSolid="true"
+		isWater="false"
+		spriteCoords="6,5"
+		tint="255,255,255,255"
+		/>
+
+	<TileDefinition
+		name="Water2"
+		isSolid="false"
+		isWater="true"
+		spriteCoords="6,6"
+		tint="0,0,255,200"
+		/>
+
+	<TileDefinition
+		name="Stone12"
+		isSolid="true"
+		isWater="false"
+		spriteCoords="6,7"
+		tint="255,255,255,255"
+		/>
+	
+	<TileDefinition
+		name="Entrance"
+		isSolid="false"
+		isWater="false"
+		spriteCoords="7,0"
+		tint="255,255,255,255"
+		/>
+
+	<TileDefinition
+		name="Exit"
+		isSolid="false"
+		isWater="false"
+		spriteCoords="7,1"
+		tint="255,255,255,255"
+		/>
+	
+	<TileDefinition
+		name="GoldTile"
+		isSolid="false"
+		isWater="false"
+		spriteCoords="7,2"
+		tint="255,215,0,255"
+		/>
+
+	<TileDefinition
+		name="Vine1"
+		isSolid="false"
+		isWater="false"
+		spriteCoords="7,3"
+		tint="0,200,0,255"
+		/>
+
+	<TileDefinition
+		name="Vine2"
+		isSolid="false"
+		isWater="false"
+		spriteCoords="7,4"
+		tint="0,200,0,255"
+		/>
+
+	<TileDefinition
+		name="Sky"
+		isSolid="false"
+		isWater="false"
+		spriteCoords="7,5"
+		tint="135,206,235,255"
+		/>
+	
+	<TileDefinition
+		name="Lava1"
+		isSolid="false"
+		isWater="false"
+		spriteCoords="7,6"
+		tint="255,69,0,255"
+		/>
+
+	<TileDefinition
+		name="Lava2"
+		isSolid="false"
+		isWater="false"
+		spriteCoords="7,7"
+		tint="255,69,0,255"
+		/>
+	
+</TileDefinitions>

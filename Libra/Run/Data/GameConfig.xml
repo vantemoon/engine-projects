@@ -6,6 +6,7 @@
     worldWidth="200"
     worldHeight="100"
     numOfMaps="3"
+	maxGenerationAttemps="1000"
     tileSize="12.5"
 	deathDelay="3.0"
 	

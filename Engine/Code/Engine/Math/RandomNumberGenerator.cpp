@@ -1,6 +1,25 @@
 #include "Engine/Math/RandomNumberGenerator.hpp"
 #include <stdlib.h>
+#include <time.h>
 
+
+//-----------------------------------------------------------------------------------------------
+RandomNumberGenerator::RandomNumberGenerator( int seed )
+{
+	if ( seed == 0 )
+		seed = ( unsigned int ) time( nullptr );
+
+	m_seed = seed;
+	srand( seed );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void RandomNumberGenerator::SetSeed( int seed )
+{
+	m_seed = seed;
+	srand( seed );
+}
 
 //-----------------------------------------------------------------------------------------------
 int RandomNumberGenerator::RollRandomIntLessThan( int maxNotInclusive )

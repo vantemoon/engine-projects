@@ -1,12 +1,13 @@
 #include "Game/Tile.hpp"
 #include "Game/TileDefinition.hpp"
 #include "Game/GameCommon.hpp"
+#include "Engine/Core/ErrorWarningAssert.hpp"
 
 
 //-----------------------------------------------------------------------------------------------
-Tile::Tile( IntVec2 tileCoords, TileType type )
+Tile::Tile( IntVec2 tileCoords, TileDefinition const* definition )
 	: m_tileCoords( tileCoords )
-	, m_type( type )
+	, m_definition( definition )
 {
 }
 
@@ -21,8 +22,7 @@ Tile::~Tile()
 //-----------------------------------------------------------------------------------------------
 TileDefinition const& Tile::GetDefinition() const
 {
-	int typeIndex = static_cast<int>( m_type );
-	return TileDefinition::s_definitions[typeIndex];
+	return *m_definition;
 }
 
 

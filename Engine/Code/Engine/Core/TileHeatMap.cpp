@@ -1,6 +1,8 @@
 #include "Engine/Core/TileHeatMap.hpp"
 #include "Engine/Core/VertexUtils.hpp"
 #include "Engine/Math/MathUtils.hpp"
+#include "Engine/Core/StringUtils.hpp"
+#include <string>
 
 
 //-----------------------------------------------------------------------------------------------
