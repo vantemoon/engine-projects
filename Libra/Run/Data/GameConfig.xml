@@ -47,7 +47,7 @@
 	leoIsPushedByEntities="true"
 	leoDoesPushEntities="true"
 	leoIsHitByBullets="true"
-	leoCanSwim="true"
+	leoCanSwim="false"
 	
 	ariesPhysicsRadius="4.0"
 	ariesCosmeticRadius="6.0"
