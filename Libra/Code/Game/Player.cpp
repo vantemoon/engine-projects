@@ -69,9 +69,8 @@ void Player::Update( float deltaSeconds )
 
 	m_prevOrientationDegrees = m_orientationDegrees;
 
-	int currentMapIndex = g_game->m_currentMap->m_index;
-	MapDefinition const& mapDef = MapDefinition::s_definitions[currentMapIndex];
-	if ( IsPointInsideDisc2D( mapDef.m_exitPosition, m_position, m_physicsRadius ) )
+	const MapDefinition* mapDef = g_game->m_currentMap->m_definition;
+	if ( IsPointInsideDisc2D( mapDef->m_exitPosition, m_position, m_physicsRadius ) )
 	{
 		g_game->LoadNextMap();
 	}

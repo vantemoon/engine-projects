@@ -22,8 +22,9 @@
 
 
 //-----------------------------------------------------------------------------------------------
-Map::Map( IntVec2 dimensions, int index )
-	: m_dimensions( dimensions )
+Map::Map( MapDefinition const* definition, int index )
+	: m_definition( definition )
+	, m_dimensions( definition->m_dimensions )
 	, m_index( index )
 {
 	PopulateMap();
@@ -409,7 +410,7 @@ void Map::GenerateTiles()
 			bool isOuterReserved = ( x >= m_dimensions.x - 7 && x <= m_dimensions.x - 2 && y >= m_dimensions.y - 7 && y <= m_dimensions.y - 2 );
 			if ( isOnEdge )
 			{
-				type = MapDefinition::s_definitions[m_index].m_borderTileType;
+				type = m_definition->m_borderTileType;
 			}
 			else
 			{
@@ -422,11 +423,11 @@ void Map::GenerateTiles()
 					else if ( ( x == 2 && y == 4 ) || ( x == 3 && y == 4 ) || ( x == 4 && y == 4 ) ||
 						( x == 4 && y == 3 ) || ( x == 4 && y == 2 ) )
 					{
-						type = MapDefinition::s_definitions[m_index].m_startbunkerWallTileType;
+						type = m_definition->m_startbunkerWallTileType;
 					}
 					else
 					{
-						type = MapDefinition::s_definitions[m_index].m_bunkerFloorTileType;
+						type = m_definition->m_bunkerFloorTileType;
 					}
 				}
 				else if ( isOuterReserved )
@@ -443,16 +444,16 @@ void Map::GenerateTiles()
 						( x == m_dimensions.x - 4 && y == m_dimensions.y - 6 ) ||
 						( x == m_dimensions.x - 3 && y == m_dimensions.y - 6 ) )
 					{
-						type = MapDefinition::s_definitions[m_index].m_exitbunkerWallTileType;
+						type = m_definition->m_exitbunkerWallTileType;
 					}
 					else
 					{
-						type = MapDefinition::s_definitions[m_index].m_bunkerFloorTileType;
+						type = m_definition->m_bunkerFloorTileType;
 					}
 				}
 				else
 				{
-					type = MapDefinition::s_definitions[m_index].m_fillTileType;
+					type = m_definition->m_fillTileType;
 				}
 			}
 			ASSERT_OR_DIE( type != nullptr, "TileDefinition pointer is null!" );
@@ -463,7 +464,7 @@ void Map::GenerateTiles()
 	}
 
 	// Worm 1
-	for ( int wormIndex = 0; wormIndex < MapDefinition::s_definitions[m_index].m_numOfWorms1; ++ wormIndex )
+	for ( int wormIndex = 0; wormIndex < m_definition->m_numOfWorms1; ++ wormIndex )
 	{
 
 
@@ -483,12 +484,12 @@ void Map::GenerateTiles()
 		}
 
 		IntVec2 currentPos = wormStart;
-		TileDefinition const* wormTileType = MapDefinition::s_definitions[m_index].m_worm1TileType;
+		TileDefinition const* wormTileType = m_definition->m_worm1TileType;
 
 		int tileIndex = currentPos.y * m_dimensions.x + currentPos.x;
 		m_tiles[tileIndex] = Tile( currentPos, wormTileType );
 
-		for ( int segmentIndex = 1; segmentIndex < MapDefinition::s_definitions[m_index].m_wormLength1; ++ segmentIndex )
+		for ( int segmentIndex = 1; segmentIndex < m_definition->m_wormLength1; ++ segmentIndex )
 		{
 			std::vector<IntVec2> possibleDirections;
 			possibleDirections.push_back( IntVec2( 1, 0 ) );
@@ -519,7 +520,7 @@ void Map::GenerateTiles()
 	}
 
 	// Worm 2
-	for ( int wormIndex = 0; wormIndex < MapDefinition::s_definitions[m_index].m_numOfWorms2; ++ wormIndex )
+	for ( int wormIndex = 0; wormIndex < m_definition->m_numOfWorms2; ++ wormIndex )
 	{
 		IntVec2 wormStart;
 
@@ -538,12 +539,12 @@ void Map::GenerateTiles()
 		}
 
 		IntVec2 currentPos = wormStart;
-		TileDefinition const* wormTileType = MapDefinition::s_definitions[m_index].m_worm2TileType;
+		TileDefinition const* wormTileType = m_definition->m_worm2TileType;
 
 		int tileIndex = currentPos.y * m_dimensions.x + currentPos.x;
 		m_tiles[tileIndex] = Tile( currentPos, wormTileType );
 
-		for ( int segmentIndex = 1; segmentIndex < MapDefinition::s_definitions[m_index].m_wormLength2; ++ segmentIndex )
+		for ( int segmentIndex = 1; segmentIndex < m_definition->m_wormLength2; ++ segmentIndex )
 		{
 			std::vector<IntVec2> possibleDirections;
 			possibleDirections.push_back( IntVec2( 1, 0 ) );
@@ -629,7 +630,7 @@ void Map::FillUnreachableTiles()
 			if ( cost >= 999999.f )
 			{
 				int tileIndex = tileCoords.y * m_dimensions.x + tileCoords.x;
-				m_tiles[tileIndex] = Tile( tileCoords, MapDefinition::s_definitions[m_index].m_borderTileType );
+				m_tiles[tileIndex] = Tile( tileCoords, m_definition->m_borderTileType );
 			}
 		}
 	}
@@ -802,8 +803,7 @@ bool Map::HasLineOfSight( Vec2 const& startPos, Vec2 const& endPos, float stepSi
 //-----------------------------------------------------------------------------------------------
 void Map::SpawnEntitiesForMapDefinition()
 {
-	int mapIndex = m_index;
-	MapDefinition const& mapDef = MapDefinition::s_definitions[mapIndex];
+	MapDefinition const& mapDef = *m_definition;
 
 	RandomNumberGenerator rng;
 

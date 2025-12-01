@@ -2,12 +2,14 @@
 #include "Game/Tile.hpp"
 #include "Game/TileDefinition.hpp"
 #include "Engine/Math/IntVec2.hpp"
+#include <string>
 
 
 //-----------------------------------------------------------------------------------------------
 struct MapDefinition
 {
 public:
+	std::string	m_name = "";
 	IntVec2	m_dimensions;
 	float	m_aspectRatio = 1.f;
 	Vec2	m_exitPosition = Vec2::ZERO;
@@ -30,7 +32,7 @@ public:
 	int m_wormLength1 = 0;
 	int m_wormLength2 = 0;
 
-	static std::vector<MapDefinition> s_definitions;
+	static std::map<std::string, MapDefinition*> s_definitions;
 
 public:
 	static void InitializeMapDefinitions();

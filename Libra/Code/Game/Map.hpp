@@ -39,10 +39,11 @@ public:
 	EntityList				m_entityListsByType[NUM_ENTITY_TYPES];
 	EntityList              m_entityListsByFaction[NUM_ENTITY_FACTIONS];
 	IntVec2					m_dimensions = IntVec2::ZERO;
-	int                     m_index = 0;
+	MapDefinition const*	m_definition = nullptr;
+	int                     m_index = -1;
 
 public:
-	Map( IntVec2 dimensions, int index );
+	Map( MapDefinition const* definition, int index );
 	~Map();
 
 	void				 Update( float deltaSeconds );

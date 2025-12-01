@@ -8,6 +8,9 @@
     <Filter Include="Gameplay">
       <UniqueIdentifier>{7b6b75cb-8cd0-43ff-8c38-ebc826d155b4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Config">
+      <UniqueIdentifier>{c634281c-b5d2-4528-834b-3b902f89663c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main_Windows.cpp">
@@ -98,11 +101,14 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Xml Include="..\..\Run\Data\GameConfig.xml">
-      <Filter>Framework</Filter>
-    </Xml>
     <Xml Include="..\..\Run\Data\Definitions\TileDefinitions.xml">
-      <Filter>Framework</Filter>
+      <Filter>Config</Filter>
+    </Xml>
+    <Xml Include="..\..\Run\Data\GameConfig.xml">
+      <Filter>Config</Filter>
+    </Xml>
+    <Xml Include="..\..\Run\Data\Definitions\MapDefinitions.xml">
+      <Filter>Config</Filter>
     </Xml>
   </ItemGroup>
 </Project>

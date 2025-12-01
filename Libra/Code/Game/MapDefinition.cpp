@@ -1,10 +1,11 @@
 #include "Game/MapDefinition.hpp"
 #include "Game/GameCommon.hpp"
 #include "Engine/Core/EngineCommon.hpp"
+#include "Engine/Core/XmlUtils.hpp"
 
 
 //-----------------------------------------------------------------------------------------------
-std::vector<MapDefinition> MapDefinition::s_definitions;
+std::map<std::string, MapDefinition*> MapDefinition::s_definitions;
 
 
 //-----------------------------------------------------------------------------------------------
@@ -15,80 +16,109 @@ void MapDefinition::InitializeMapDefinitions()
 		TileDefinition::InitializeTileDefinitions();
 	}
 
-	int numOfMaps = g_gameConfigBlackboard.GetValue( "numOfMaps", 3 );
-	s_definitions.resize( numOfMaps );
+	/*int numOfMaps = g_gameConfigBlackboard.GetValue( "numOfMaps", 3 );
+	s_definitions.resize( numOfMaps );*/
 
 	float tileSize = g_gameConfigBlackboard.GetValue( "tileSize", 12.5f );
 
-	// Map 1
-	IntVec2 exitTileCoords1 = IntVec2( 46, 22 );
-	Vec2 exitPos1 = Vec2( ( exitTileCoords1.x + 0.5f ) * tileSize, ( exitTileCoords1.y + 0.5f ) * tileSize );
+	XmlDocument mapDefDoc;
+	mapDefDoc.LoadFile( "Data/Definitions/MapDefinitions.xml" );
 
-	s_definitions[0].m_dimensions = IntVec2( 48, 24 );
-	s_definitions[0].m_aspectRatio = 0.5f;
-	s_definitions[0].m_exitPosition = exitPos1;
+	tinyxml2::XMLElement* rootElement = mapDefDoc.RootElement();
+	tinyxml2::XMLElement* mapDefElement = rootElement->FirstChildElement( "MapDefinition" );
 
-	s_definitions[0].m_numOfLeos = 5;
-	s_definitions[0].m_numOfScorpios = 5;
-	s_definitions[0].m_numOfAries = 5;
+	while ( mapDefElement != nullptr )
+	{
+		MapDefinition newMapDef;
+		const char* nameText = mapDefElement->Attribute( "name" );
+		if ( nameText != nullptr )
+		{
+			newMapDef.m_name = nameText;
+		}
+		const char* dimensionsText = mapDefElement->Attribute( "dimensions" );
+		if ( dimensionsText != nullptr )
+		{
+			newMapDef.m_dimensions = ParseXmlAttribute( *mapDefElement, "dimensions", IntVec2(10, 10) );
+			newMapDef.m_exitPosition = Vec2( ( newMapDef.m_dimensions.x - 2 ) * tileSize + tileSize * 0.5f,
+											 ( newMapDef.m_dimensions.y - 2 ) * tileSize + tileSize * 0.5f );
+		}
+		const char* aspectRatioText = mapDefElement->Attribute( "aspectRatio" );
+		if ( aspectRatioText != nullptr )
+		{
+			newMapDef.m_aspectRatio = ParseXmlAttribute( *mapDefElement, "aspectRatio", 1.f );
+		}
+		const char* numOfLeosText = mapDefElement->Attribute( "numOfLeos" );
+		if ( numOfLeosText != nullptr )
+		{
+			newMapDef.m_numOfLeos = ParseXmlAttribute( *mapDefElement, "numOfLeos", 0 );
+		}
+		const char* numOfScorpiosText = mapDefElement->Attribute( "numOfScorpios" );
+		if ( numOfScorpiosText != nullptr )
+		{
+			newMapDef.m_numOfScorpios = ParseXmlAttribute( *mapDefElement, "numOfScorpios", 0 );
+		}
+		const char* numOfAriesText = mapDefElement->Attribute( "numOfAries" );
+		if ( numOfAriesText != nullptr )
+		{
+			newMapDef.m_numOfAries = ParseXmlAttribute( *mapDefElement, "numOfAries", 0 );
+		}
+		const char* fillTileTypeText = mapDefElement->Attribute( "fillTileType" );
+		if ( fillTileTypeText != nullptr )
+		{
+			newMapDef.m_fillTileType = TileDefinition::s_definitions[fillTileTypeText];
+		}
+		const char* borderTileTypeText = mapDefElement->Attribute( "borderTileType" );
+		if ( borderTileTypeText != nullptr )
+		{
+			newMapDef.m_borderTileType = TileDefinition::s_definitions[borderTileTypeText];
+		}
+		const char* bunkerFloorTileTypeText = mapDefElement->Attribute( "bunkerFloorTileType" );
+		if ( bunkerFloorTileTypeText != nullptr )
+		{
+			newMapDef.m_bunkerFloorTileType = TileDefinition::s_definitions[bunkerFloorTileTypeText];
+		}
+		const char* startbunkerWallTileTypeText = mapDefElement->Attribute( "startBunkerWallTileType" );
+		if ( startbunkerWallTileTypeText != nullptr )
+		{
+			newMapDef.m_startbunkerWallTileType = TileDefinition::s_definitions[startbunkerWallTileTypeText];
+		}
+		const char* exitbunkerWallTileTypeText = mapDefElement->Attribute( "exitBunkerWallTileType" );
+		if ( exitbunkerWallTileTypeText != nullptr )
+		{
+			newMapDef.m_exitbunkerWallTileType = TileDefinition::s_definitions[exitbunkerWallTileTypeText];
+		}
+		const char* worm1TileTypeText = mapDefElement->Attribute( "worm1TileType" );
+		if ( worm1TileTypeText != nullptr )
+		{
+			newMapDef.m_worm1TileType = TileDefinition::s_definitions[worm1TileTypeText];
+		}
+		const char* worm2TileTypeText = mapDefElement->Attribute( "worm2TileType" );
+		if ( worm2TileTypeText != nullptr )
+		{
+			newMapDef.m_worm2TileType = TileDefinition::s_definitions[worm2TileTypeText];
+		}
+		const char* numOfWorms1Text = mapDefElement->Attribute( "numOfWorms1" );
+		if ( numOfWorms1Text != nullptr )
+		{
+			newMapDef.m_numOfWorms1 = ParseXmlAttribute( *mapDefElement, "numOfWorms1", 0 );
+		}
+		const char* numOfWorms2Text = mapDefElement->Attribute( "numOfWorms2" );
+		if ( numOfWorms2Text != nullptr )
+		{
+			newMapDef.m_numOfWorms2 = ParseXmlAttribute( *mapDefElement, "numOfWorms2", 0 );
+		}
+		const char* wormLength1Text = mapDefElement->Attribute( "wormLength1" );
+		if ( wormLength1Text != nullptr )
+		{
+			newMapDef.m_wormLength1 = ParseXmlAttribute( *mapDefElement, "wormLength1", 0 );
+		}
+		const char* wormLength2Text = mapDefElement->Attribute( "wormLength2" );
+		if ( wormLength2Text != nullptr )
+		{
+			newMapDef.m_wormLength2 = ParseXmlAttribute( *mapDefElement, "wormLength2", 0 );
+		}
 
-	s_definitions[0].m_fillTileType = TileDefinition::s_definitions["Grass1"];
-	s_definitions[0].m_borderTileType = TileDefinition::s_definitions["Stone2"];
-	s_definitions[0].m_bunkerFloorTileType = TileDefinition::s_definitions["StoneTile"];
-	s_definitions[0].m_startbunkerWallTileType = TileDefinition::s_definitions["MetalWall"];
-	s_definitions[0].m_exitbunkerWallTileType = TileDefinition::s_definitions["StoneBrick4"];
-	s_definitions[0].m_worm1TileType = TileDefinition::s_definitions["Stone2"];
-	s_definitions[0].m_numOfWorms1 = 0;
-	s_definitions[0].m_wormLength1 = 5;
-	s_definitions[0].m_worm2TileType = TileDefinition::s_definitions["Stone2"];
-	s_definitions[0].m_numOfWorms2 = 0;
-	s_definitions[0].m_wormLength2 = 0;
-
-	// Map 2
-	IntVec2 exitTileCoords2 = IntVec2( 48, 18 );
-	Vec2 exitPos2 = Vec2( ( exitTileCoords2.x + 0.5f ) * tileSize, ( exitTileCoords2.y + 0.5f ) * tileSize );
-
-	s_definitions[1].m_dimensions = IntVec2( 50, 20 );
-	s_definitions[1].m_aspectRatio = 2.5f;
-	s_definitions[1].m_exitPosition = exitPos2;
-
-	s_definitions[1].m_numOfLeos = 5;
-	s_definitions[1].m_numOfScorpios = 5;
-	s_definitions[1].m_numOfAries = 3;
-
-	s_definitions[1].m_fillTileType = TileDefinition::s_definitions["Grass3"];
-	s_definitions[1].m_borderTileType = TileDefinition::s_definitions["StoneBrick4"];
-	s_definitions[1].m_bunkerFloorTileType = TileDefinition::s_definitions["StoneTile"];
-	s_definitions[1].m_startbunkerWallTileType = TileDefinition::s_definitions["StoneBrick4"];
-	s_definitions[1].m_exitbunkerWallTileType = TileDefinition::s_definitions["MetalWall"];
-	s_definitions[1].m_worm1TileType = TileDefinition::s_definitions["Stone2"];
-	s_definitions[1].m_numOfWorms1 = 0;
-	s_definitions[1].m_wormLength1 = 15;
-	s_definitions[1].m_worm2TileType = TileDefinition::s_definitions["Stone2"];
-	s_definitions[1].m_numOfWorms2 = 0;
-	s_definitions[1].m_wormLength2 = 10;
-
-	// Map 3
-	IntVec2 exitTileCoords3 = IntVec2( 30, 30 );
-	Vec2 exitPos3 = Vec2( ( exitTileCoords3.x + 0.5f ) * tileSize, ( exitTileCoords3.y + 0.5f ) * tileSize );
-
-	s_definitions[2].m_dimensions = IntVec2( 32, 32 );
-	s_definitions[2].m_aspectRatio = 1.f;
-	s_definitions[2].m_exitPosition = exitPos3;
-
-	s_definitions[2].m_numOfLeos = 5;
-	s_definitions[2].m_numOfScorpios = 5;
-	s_definitions[2].m_numOfAries = 10;
-
-	s_definitions[2].m_fillTileType = TileDefinition::s_definitions["Mud2"];
-	s_definitions[2].m_borderTileType = TileDefinition::s_definitions["MetalWall"];
-	s_definitions[2].m_bunkerFloorTileType = TileDefinition::s_definitions["StoneTile"];
-	s_definitions[2].m_startbunkerWallTileType = TileDefinition::s_definitions["MetalWall"];
-	s_definitions[2].m_exitbunkerWallTileType = TileDefinition::s_definitions["MetalWall"];
-	s_definitions[2].m_worm1TileType = TileDefinition::s_definitions["MetalWall"];
-	s_definitions[2].m_numOfWorms1 = 0;
-	s_definitions[2].m_wormLength1 = 8;
-	s_definitions[2].m_worm2TileType = TileDefinition::s_definitions["Grass4"];
-	s_definitions[2].m_numOfWorms2 = 0;
-	s_definitions[2].m_wormLength2 = 8;
+		s_definitions[newMapDef.m_name] = new MapDefinition( newMapDef );
+		mapDefElement = mapDefElement->NextSiblingElement( "MapDefinition" );
+	}
 }
