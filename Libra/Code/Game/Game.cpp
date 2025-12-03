@@ -592,7 +592,7 @@ void Game::Render() const
 		RenderGameOverMode();
 	};
 
-	RenderHUD();
+	// RenderHUD();
 
 	g_engine->m_renderer->EndCamera( *cameraToUse );
 }
@@ -664,19 +664,6 @@ void Game::RenderHUD() const
 		AddVertsForTextTriangles2D( verts, "GAME OVER", Vec2( 10.f, screenHeight - 30.f ), 24.f, Rgba8( 255, 0, 0 ) );
 		g_engine->m_renderer->DrawVertexArray( ( int ) verts.size(), verts.data() );
 	}
-
-	AABB2 textBox = AABB2( Vec2( 10.f, screenHeight - 100.f ), Vec2( 310.f, screenHeight - 40.f ) );
-	BitmapFont* font = g_engine->m_renderer->CreateOrGetBitmapFontFromFile( "Data/Fonts/SquirrelFixedFont" );
-	std::vector<Vertex> boxVerts;
-	std::vector<Vertex> testVerts;
-	AddVertsForAABB2D( boxVerts, textBox, Rgba8::MAGENTA, Vec2::ZERO, Vec2::ONE );
-	g_engine->m_renderer->BindTexture( nullptr );
-	g_engine->m_renderer->DrawVertexArray( ( int ) boxVerts.size(), boxVerts.data() );
-	font->AddVertsForTextInBox2D( testVerts, "This whole thing is\nso\ncool", textBox, 60.f, 
-								  Rgba8::WHITE, 1.f, Vec2( 0.5f, 0.5f), SHRINK_TO_FIT, 999999 );
-	g_engine->m_renderer->BindTexture( &font->GetTexture() );
-	g_engine->m_renderer->DrawVertexArray( ( int ) testVerts.size(), testVerts.data() );
-
 
 	g_engine->m_renderer->EndCamera( *m_screenCamera );
 }

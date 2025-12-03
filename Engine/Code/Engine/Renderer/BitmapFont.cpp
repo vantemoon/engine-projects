@@ -75,6 +75,8 @@ void BitmapFont::AddVertsForTextInBox2D( std::vector<Vertex>& verts, std::string
 	int maxNumOfGlyphsOnOneLine = 0;
 	int numOfLines = 1;
 
+	std::vector<int> glyphsPerLine;
+
 	for ( char const& glyphChar : text )
 	{	
 		if ( glyphChar == '\n' )
@@ -83,18 +85,28 @@ void BitmapFont::AddVertsForTextInBox2D( std::vector<Vertex>& verts, std::string
 			{
 				maxNumOfGlyphsOnOneLine = numOfGlyphsOnCurrentLine;
 			}
+			glyphsPerLine.push_back( numOfGlyphsOnCurrentLine );
 			numOfGlyphsOnCurrentLine = 0;
 			numOfLines++;
 			continue;
 		}
 		numOfGlyphsOnCurrentLine++;
 	}
+	glyphsPerLine.push_back( numOfGlyphsOnCurrentLine );
+	if ( numOfGlyphsOnCurrentLine > maxNumOfGlyphsOnOneLine )
+	{
+		maxNumOfGlyphsOnOneLine = numOfGlyphsOnCurrentLine;
+	}
 
+	Vec2 textMins;
 	float scale = 1.f;
+	float adjustedCellHeight = cellHeight;
+	float adjustedTextHeight = 0.f;
+	float adjustedTextWidth = 0.f;
 	if ( mode == SHRINK_TO_FIT )
 	{
-		float widthScale;
-		float heightScale;
+		float widthScale = 1.f;
+		float heightScale = 1.f;
 
 		float totalTextWidth = GetTextWidth( cellHeight, std::string( maxNumOfGlyphsOnOneLine, 'A' ), cellAspectScale );
 		if ( totalTextWidth > box.GetDimensions().x )
@@ -106,17 +118,28 @@ void BitmapFont::AddVertsForTextInBox2D( std::vector<Vertex>& verts, std::string
 		{
 			heightScale = box.GetDimensions().y / totalTextHeight;
 		}
-		scale = std::min( widthScale, heightScale );
-	}
-	float adjustedCellHeight = cellHeight * scale;
-	float adjustedTextHeight = adjustedCellHeight * static_cast< float >( numOfLines );
-	float adjustedTextWidth = GetTextWidth( cellHeight, std::string( maxNumOfGlyphsOnOneLine, 'A' ), cellAspectScale ) * scale;
+		if ( widthScale != 1.f || heightScale != 1.f ) scale = std::min( widthScale, heightScale );
 
-	Vec2 textMins;
-	textMins.x = box.m_mins.x + ( box.GetDimensions().x - adjustedTextWidth ) * alignment.x;
-	textMins.y = box.m_mins.y + ( box.GetDimensions().y - adjustedTextHeight ) * alignment.y + adjustedCellHeight * ( numOfLines - 1 );
+		adjustedCellHeight = cellHeight * scale;
+		adjustedTextHeight = adjustedCellHeight * static_cast< float >( numOfLines );
+		adjustedTextWidth = GetTextWidth( cellHeight, std::string( maxNumOfGlyphsOnOneLine, 'A' ), cellAspectScale ) * scale;
+
+		textMins.x = box.m_mins.x + ( box.GetDimensions().x - adjustedTextWidth ) * alignment.x;
+		textMins.y = box.m_mins.y + ( box.GetDimensions().y - adjustedTextHeight ) * alignment.y + adjustedCellHeight * ( numOfLines - 1 );
+	}
+	else // OVERRUN
+	{
+		adjustedCellHeight = cellHeight;
+		adjustedTextHeight = adjustedCellHeight * static_cast< float >( numOfLines );
+		adjustedTextWidth = GetTextWidth( cellHeight, std::string( maxNumOfGlyphsOnOneLine, 'A' ), cellAspectScale );
+		textMins.x = box.m_mins.x - ( adjustedTextWidth - box.GetDimensions().x ) * alignment.x;
+		textMins.y = box.m_mins.y - ( adjustedTextHeight - box.GetDimensions().y ) * alignment.y + adjustedCellHeight * ( numOfLines - 1 );
+	}
+
 	Vec2 penPosition = textMins;
 	int glyphsDrawn = 0;
+	int currentLineIndex = 0;
+	bool isAtLineStart = true;
 	for ( char const& glyphChar : text )
 	{
 		if ( glyphsDrawn >= maxGlyphsToDraw )
@@ -129,11 +152,20 @@ void BitmapFont::AddVertsForTextInBox2D( std::vector<Vertex>& verts, std::string
 		{
 			penPosition.x = textMins.x;
 			penPosition.y -= adjustedCellHeight;
+			currentLineIndex++;
+			isAtLineStart = true;
 			continue;
 		}
 
 		float glyphAspect = GetGlyphAspect( glyphUnicode );
 		float glyphWidth = adjustedCellHeight * glyphAspect * cellAspectScale;
+		if ( isAtLineStart )
+		{
+			float spaceOnTheLeft = ( maxNumOfGlyphsOnOneLine - glyphsPerLine[currentLineIndex] ) * glyphWidth * alignment.x;
+			penPosition.x += spaceOnTheLeft;
+			isAtLineStart = false;
+		}
+
 		SpriteDefinition const& glyphSpriteDef = m_fontGlyphsSpriteSheet.GetSpriteDefinition( glyphUnicode );
 		AABB2 glyphUVs = glyphSpriteDef.GetUVs();
 		Vec2 glyphMins = penPosition;
