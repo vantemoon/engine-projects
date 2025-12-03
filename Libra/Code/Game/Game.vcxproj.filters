@@ -55,6 +55,9 @@
     <ClCompile Include="MapDefinition.cpp">
       <Filter>Gameplay</Filter>
     </ClCompile>
+    <ClCompile Include="Explosion.cpp">
+      <Filter>Gameplay</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.hpp">
@@ -97,6 +100,9 @@
       <Filter>Gameplay</Filter>
     </ClInclude>
     <ClInclude Include="MapDefinition.hpp">
+      <Filter>Gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="Explosion.hpp">
       <Filter>Gameplay</Filter>
     </ClInclude>
   </ItemGroup>

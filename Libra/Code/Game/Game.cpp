@@ -796,6 +796,7 @@ void Game::LoadTextures()
 	m_goodBoltTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/FriendlyBolt.png" );
 	m_evilBulletTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/EnemyBullet.png" );
 	m_evilBoltTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/EnemyBolt.png" );
+	m_explosionTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/Explosion_5x5.png" );
 }
 
 

@@ -18,15 +18,15 @@
 Player::Player( Vec2 startingPosition, float orientationDegrees )
 	: Entity( startingPosition, orientationDegrees )
 {
-	m_physicsRadius = g_gameConfigBlackboard.GetValue( "playerTankPhysicsRadius", 4.f );
-	m_cosmeticRadius = g_gameConfigBlackboard.GetValue( "playerTankCosmeticRadius", 6.f );
-	m_health = g_gameConfigBlackboard.GetValue( "playerTankMaxHealth", 10 );
+	m_physicsRadius		 = g_gameConfigBlackboard.GetValue( "playerTankPhysicsRadius", 4.f );
+	m_cosmeticRadius	 = g_gameConfigBlackboard.GetValue( "playerTankCosmeticRadius", 6.f );
+	m_health			 = g_gameConfigBlackboard.GetValue( "playerTankMaxHealth", 10 );
 
-	m_isPushedByWalls = g_gameConfigBlackboard.GetValue( "playerTankIsPushedByWalls", true );
+	m_isPushedByWalls	 = g_gameConfigBlackboard.GetValue( "playerTankIsPushedByWalls", true );
 	m_isPushedByEntities = g_gameConfigBlackboard.GetValue( "playerTankIsPushedByEntities", true );
-	m_doesPushEntities = g_gameConfigBlackboard.GetValue( "playerTankDoesPushEntities", true );
-	m_isHitByBullets = g_gameConfigBlackboard.GetValue( "playerTankIsHitByBullets", true );
-	m_canSwim = g_gameConfigBlackboard.GetValue( "playerTankCanSwim", false );
+	m_doesPushEntities	 = g_gameConfigBlackboard.GetValue( "playerTankDoesPushEntities", true );
+	m_isHitByBullets	 = g_gameConfigBlackboard.GetValue( "playerTankIsHitByBullets", true );
+	m_canSwim			 = g_gameConfigBlackboard.GetValue( "playerTankCanSwim", false );
 
 	m_targetMovementDirection = m_orientationDegrees;
 	m_prevOrientationDegrees = m_orientationDegrees;

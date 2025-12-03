@@ -65,7 +65,7 @@ public:
 	Texture*			m_goodBoltTexture = nullptr;
 	Texture*			m_evilBulletTexture = nullptr;
 	Texture*			m_evilBoltTexture = nullptr;
-
+	Texture*			m_explosionTexture = nullptr;
 
 	bool				m_isScreenShaking = false;
 	float				m_screenShakeIntensity = 0.f;
