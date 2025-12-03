@@ -20,6 +20,14 @@ struct RenderConfig
 
 
 //-----------------------------------------------------------------------------------------------
+enum BlendMode
+{
+	ALPHA,
+	ADDITIVE,
+};
+
+
+//-----------------------------------------------------------------------------------------------
 class Renderer
 {
 public:
@@ -37,6 +45,7 @@ public:
 	void DrawVertexArray( std::vector<Vertex> const& verts );
 	void DrawVertexArray( int numVertexes, Vertex const* vertexes );
 	void BindTexture( Texture* texture );
+	void SetBlendMode( BlendMode mode );
 
 	Texture* CreateOrGetTextureFromFile( char const* imageFilePath );
 	BitmapFont* CreateOrGetBitmapFontFromFile( char const* fontFilePathNameWithNoExtension );
