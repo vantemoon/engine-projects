@@ -11,6 +11,10 @@ SpriteSheet::SpriteSheet( Texture& texture, IntVec2 const& simpleGridLayout )
 	int numSpritesHigh = simpleGridLayout.y;
 	int totalSprites = numSpritesWide * numSpritesHigh;
 
+	IntVec2 textureDims = m_texture.GetDimensions();
+	float uNudge = 1.0f / ( 128.0f * static_cast<float>( textureDims.x ) );
+	float vNudge = 1.0f / ( 128.0f * static_cast<float>( textureDims.y ) );
+
 	for ( int spriteIndex = 0; spriteIndex < totalSprites; ++spriteIndex )
 	{
 		int spriteX = spriteIndex % numSpritesWide;
@@ -20,6 +24,11 @@ SpriteSheet::SpriteSheet( Texture& texture, IntVec2 const& simpleGridLayout )
 		float uvMinY = static_cast< float >( ( numSpritesHigh - 1 ) - spriteY ) / static_cast< float >( numSpritesHigh );
 		float uvMaxX = static_cast< float >( spriteX + 1 ) / static_cast< float >( numSpritesWide );
 		float uvMaxY = static_cast< float >( ( numSpritesHigh - 1 ) - spriteY + 1 ) / static_cast< float >( numSpritesHigh );
+
+		uvMinX += uNudge;
+		uvMaxX -= uNudge;
+		uvMinY += vNudge;
+		uvMaxY -= vNudge;
 
 		Vec2 uvAtMins( uvMinX, uvMinY );
 		Vec2 uvAtMaxs( uvMaxX, uvMaxY );

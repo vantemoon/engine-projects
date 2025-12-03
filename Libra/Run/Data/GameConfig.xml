@@ -21,7 +21,7 @@
 	playerTankIsPushedByEntities="true"
 	playerTankDoesPushEntities="true"
 	playerTankIsHitBuBullets="true"
-	playerTankCanSwim="false"
+	playerTankCanSwim="true"
 	
 	scorpioPhysicsRadius="4.0"
 	scorpioCosmeticRadius="6.0"
