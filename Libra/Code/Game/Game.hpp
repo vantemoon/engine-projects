@@ -104,9 +104,9 @@ public:
 	void Render()													  const;
 	void RenderHUD()												  const;
 	void RenderAttractMode()										  const;
-	void RenderPausedMode()									  const;
+	void RenderPausedMode()									          const;
 	void RenderVictoryMode()										  const;
-	void RenderGameOverMode()								  const;
+	void RenderGameOverMode()								          const;
 	void Reset();
 	void KillAllEnemies();
 	void LoadNextMap();
