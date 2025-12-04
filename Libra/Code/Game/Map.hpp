@@ -70,7 +70,8 @@ public:
 	bool				 HasLineOfSight( Vec2 const& startPos, Vec2 const& endPos, float stepSize ) const;
 
 	void                 SpawnEntitiesForMapDefinition();
-	Entity*				 SpawnNewEntity( EntityType type, Vec2 const& position, float orientationDegrees );
+	void                 SpawnExplosionAtPosition( Vec2 const& position, float scale = 1.f );
+	Entity*				 SpawnNewEntity( EntityType type, Vec2 const& position, float orientationDegrees, float scale = 1.f );
 	void				 AddEntityToMap( Entity& entity, EntityType type, EntityFaction faction );
 	void				 RemoveEntityFromMap( Entity& entity, EntityType type, EntityFaction faction );
 

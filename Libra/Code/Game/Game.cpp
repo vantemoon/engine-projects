@@ -770,6 +770,9 @@ void Game::Reset()
 	m_maps.push_back( map4 );
 	m_maps.push_back( map5 );
 
+	// Reset player
+	m_player->Reset();
+
 	m_isScreenShaking = false;
 	m_isDebugOn = false;
 }

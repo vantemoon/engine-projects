@@ -16,7 +16,7 @@ public:
 	SpriteAnimDefinition*  m_explosionAnimDef = nullptr;
 
 public:
-	Explosion( Vec2 const& position, float orientationDegrees, float lifetime, float scale );
+	Explosion( Vec2 const& position, float orientationDegrees, float lifetime, float size );
 	~Explosion();
 	void Update( float deltaSeconds )								  override;
 	void Render()												const override;

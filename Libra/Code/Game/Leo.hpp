@@ -10,7 +10,7 @@ class Leo : public Entity
 public:
 	Vec2    m_goalPosition = Vec2::ZERO;
 	Vec2	m_movementTargetPosition = Vec2::ZERO;
-	float	m_timeSinceLastFire = 0.f;
+	float	m_timeSinceLastFire = 9999.f;
 	float   m_timeSinceLastTurn = 0.f;
 
 	TileHeatMap* m_dijkstraMap = nullptr;

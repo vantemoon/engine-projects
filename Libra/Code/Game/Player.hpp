@@ -35,6 +35,7 @@ public:
 	void TakeDamage( int damage )								override;
 	void Die()													override;
 	void Respawn( Vec2 spawnPosition );
+	void Reset();
 
 protected:
 	void InitializeVertexArray()								override;

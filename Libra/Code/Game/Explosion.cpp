@@ -24,7 +24,7 @@ Explosion::Explosion( Vec2 const& position, float orientationDegrees, float dura
 		*m_explosionSpriteSheet,
 		0,
 		m_explosionSpriteSheet->GetNumSprites() - 1,
-		g_gameConfigBlackboard.GetValue( "explosionFramesPerSecond", 30.f ),
+		30.f,
 		ONCE
 	);
 
@@ -57,15 +57,26 @@ void Explosion::Update( float deltaSeconds )
 //-----------------------------------------------------------------------------------------------
 void Explosion::Render() const
 {
-	// Determine current sprite based on age
 	SpriteDefinition currentSpriteDef = m_explosionAnimDef->GetSpriteDefAtTime( m_age );
-	// Get UVs from sprite
+
 	Vec2 uvMins;
 	Vec2 uvMaxs;
 	currentSpriteDef.GetUVs( uvMins, uvMaxs );
-	// Render quad with those UVs
+
+	std::vector<Vertex> verts;
+	AABB2 localBounds( -m_size, -m_size, m_size, m_size );
+	AddVertsForAABB2D( verts, localBounds, Rgba8::WHITE, uvMins, uvMaxs );
+
+	TransformVertexArrayXY3D(
+		( int ) verts.size(),
+		verts.data(),
+		1.0f,
+		m_orientationDegrees,
+		m_position );
+
 	g_engine->m_renderer->BindTexture( &m_explosionSpriteSheet->GetTexture() );
-	g_engine->m_renderer->DrawVertexArray( static_cast<int>( m_vertexArray.size() ), m_vertexArray.data() );
+	g_engine->m_renderer->DrawVertexArray( ( int ) verts.size(), verts.data() );
+	g_engine->m_renderer->BindTexture( nullptr );
 }
 
 

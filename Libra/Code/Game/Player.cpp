@@ -1,5 +1,6 @@
 #include "Game/Player.hpp"
 #include "Game/Bullet.hpp"
+#include "Game/Explosion.hpp"
 #include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
 #include "Game/Map.hpp"
@@ -280,6 +281,7 @@ void Player::TakeDamage( int damage )
 void Player::Die()
 {
 	g_engine->m_audioSystem->StartSound( g_game->m_playerDeathSoundID );
+	g_game->m_currentMap->SpawnExplosionAtPosition( m_position, 10.f );
 
 	m_isDead = true;
 }
@@ -291,6 +293,14 @@ void Player::Respawn( Vec2 spawnPosition )
 	m_position = spawnPosition;
 	m_health = g_gameConfigBlackboard.GetValue( "playerTankMaxHealth", 10 );
 	m_isDead = false;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Player::Reset()
+{
+	Respawn( g_game->m_currentMap->GetWorldPositionForTileCoords( IntVec2( 1, 1 ) ) );
+	m_orientationDegrees = 45.f;
 }
 
 

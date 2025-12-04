@@ -1,6 +1,7 @@
 #include "Game/Map.hpp"
 #include "Game/Aries.hpp"
 #include "Game/Bullet.hpp"
+#include "Game/Explosion.hpp"
 #include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
 #include "Game/Leo.hpp"
@@ -114,6 +115,21 @@ void Map::RenderEntities() const
 	for ( int entityIndex = 0; entityIndex < static_cast<int>( m_allEntities.size() ); ++ entityIndex )
 	{
 		Entity* entity = m_allEntities[entityIndex];
+		Explosion* explosion = dynamic_cast<Explosion*>( entity );
+		if ( explosion != nullptr )
+		{
+			// Explosions are rendered last, after other entities
+			continue;
+		}
+		if ( entity != nullptr )
+		{
+			entity->Render();
+		}
+	}
+
+	for ( int entityIndex = 0; entityIndex < static_cast<int>( m_entityListsByType[ENTITY_TYPE_EXPLOSION].size() ); ++ entityIndex )
+	{
+		Entity* entity = m_entityListsByType[ENTITY_TYPE_EXPLOSION][entityIndex];
 		if ( entity != nullptr )
 		{
 			entity->Render();
@@ -678,14 +694,17 @@ void Map::FillUnreachableTiles()
 //-----------------------------------------------------------------------------------------------
 void Map::DeleteGarbageEntities()
 {
-	for ( int entityIndex = static_cast<int>( m_allEntities.size() ) - 1; entityIndex >= 0; -- entityIndex )
+	for ( int typeIndex = 0; typeIndex < NUM_ENTITY_TYPES; ++ typeIndex )
 	{
-		Entity* entity = m_allEntities[entityIndex];
-		if ( entity != nullptr && entity->m_isGarbage )
+		std::vector<Entity*>& entityList = m_entityListsByType[typeIndex];
+		EntityType entityType = static_cast<EntityType>( typeIndex );
+		for ( int entityIndex = static_cast<int>( entityList.size() ) - 1; entityIndex >= 0; -- entityIndex )
 		{
-			delete entity;
-			entity = nullptr;
-			m_allEntities.erase( m_allEntities.begin() + entityIndex );
+			Entity* entity = entityList[entityIndex];
+			if ( entity != nullptr && entity->m_isGarbage )
+			{
+				RemoveEntityFromMap( *entity, entityType, entity->m_faction );
+			}
 		}
 	}
 }
@@ -1041,7 +1060,18 @@ void Map::SpawnEntitiesForMapDefinition()
 
 
 //-----------------------------------------------------------------------------------------------
-Entity* Map::SpawnNewEntity( EntityType type, Vec2 const& position, float orientationDegrees )
+void Map::SpawnExplosionAtPosition( Vec2 const& position, float scale/*= 1.f */ )
+{
+	Entity* newEntity = SpawnNewEntity( ENTITY_TYPE_EXPLOSION, position, 0.f, scale );
+	if ( newEntity != nullptr )
+	{
+		AddEntityToMap( *newEntity, ENTITY_TYPE_EXPLOSION, ENTITY_FACTION_NEUTRAL );
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+Entity* Map::SpawnNewEntity( EntityType type, Vec2 const& position, float orientationDegrees, float scale/*= 1.f */ )
 {
 	Entity* newEntity = nullptr;
 	if ( type == ENTITY_TYPE_GOOD_PLAYER )
@@ -1075,6 +1105,10 @@ Entity* Map::SpawnNewEntity( EntityType type, Vec2 const& position, float orient
 	else if ( type == ENTITY_TYPE_EVIL_BOLT )
 	{
 		newEntity = new Bullet( position, orientationDegrees, ENTITY_TYPE_EVIL_BOLT );
+	}
+	else if ( type == ENTITY_TYPE_EXPLOSION )
+	{
+		newEntity = new Explosion( position, orientationDegrees, 0.5f, scale);
 	}
 	else
 	{

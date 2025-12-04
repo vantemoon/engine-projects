@@ -39,7 +39,7 @@
 	leoCosmeticRadius="6.0"
 	leoMoveSpeed="6.0"
 	leoTurnSpeed="60.0"
-	leoFireCooldown="10"
+	leoFireCooldown="1.0"
 	leoTurnCooldown="1.5"
 	leoMaxHealth="10"
 	leoSightRadius="125.0"
