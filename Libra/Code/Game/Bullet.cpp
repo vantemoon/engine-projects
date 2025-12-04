@@ -80,6 +80,11 @@ Bullet::~Bullet() = default;
 //-----------------------------------------------------------------------------------------------
 void Bullet::Update( float deltaSeconds )
 {
+	if ( m_isDead || m_isGarbage )
+	{
+		return;
+	}
+
 	UpdatePhysics( deltaSeconds );
 	ResolveCollision();
 }
@@ -210,15 +215,20 @@ void Bullet::InitializeVertexArray()
 //-----------------------------------------------------------------------------------------------
 void Bullet::ResolveCollision()
 {
+	if ( m_isDead || m_isGarbage )
+	{
+		return;
+	}
+
 	// If overlapping with an entity of different faction, deal damage and die
 	EntityFaction oppositeFaction = GetOppositeFaction();
 	for ( Entity* otherEntity : g_game->m_currentMap->m_entityListsByFaction[oppositeFaction] )
 	{
-		if ( otherEntity->m_isDead || !otherEntity->m_isHitByBullets )
+		if ( otherEntity == nullptr || otherEntity->m_isDead || !otherEntity->m_isHitByBullets )
 		{
 			continue;
 		}
-		
+
 		float distanceSquared = ( otherEntity->m_position - m_position ).GetLengthSquared();
 		float combinedRadii = otherEntity->m_physicsRadius + m_physicsRadius;
 		if ( distanceSquared <= ( combinedRadii * combinedRadii ) )
@@ -226,14 +236,14 @@ void Bullet::ResolveCollision()
 			Aries* aries = dynamic_cast<Aries*>( otherEntity );
 			if ( aries != nullptr )
 			{
-      				Vec2 oldVelocity = m_velocity;
+				Vec2 oldVelocity = m_velocity;
 				aries->ReflectBullet( *this );
 
 				// Bullet was reflected
 				if ( m_velocity != oldVelocity )
 				{
 					TakeDamage( 1 );
-					return; 
+					return;
 				}
 			}
 

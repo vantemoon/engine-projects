@@ -47,7 +47,7 @@ void Leo::Update( float deltaSeconds )
 	float distanceToPlayer = ( g_game->m_player->m_position - m_position ).GetLength();
 	bool hasLOS = g_game->m_currentMap->HasLineOfSight( m_position, g_game->m_player->m_position, 0.1f );
 	float sightRadius = g_gameConfigBlackboard.GetValue( "leoSightRadius", 125.f );
-	bool playerVisible = ( playerIsAlive && distanceToPlayer <= sightRadius && hasLOS );
+	bool playerVisible =  ( playerIsAlive && distanceToPlayer <= sightRadius && hasLOS );
 
 	if ( playerVisible )
 	{
@@ -64,20 +64,6 @@ void Leo::Update( float deltaSeconds )
 				FireProjectile();
 				m_timeSinceLastFire = 0.f;
 			}
-		}
-	}
-	else if ( !playerIsAlive )
-	{
-		m_lastSeenPlayerPosition = Vec2::ZERO;
-		m_waypointPosition = Vec2::ZERO;
-		m_wanderGoalPosition = Vec2::ZERO;
-		m_wanderGoalTile = IntVec2( -1, -1 );
-		m_goalPosition = Vec2::ZERO;
-
-		if ( m_dijkstraMap != nullptr )
-		{
-			delete m_dijkstraMap;
-			m_dijkstraMap = nullptr;
 		}
 	}
 

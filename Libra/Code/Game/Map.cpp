@@ -32,7 +32,10 @@ Map::Map( MapDefinition const* definition, int index )
 	SpawnEntitiesForMapDefinition();
 
 	// Add player to the map
-	AddEntityToMap( *g_game->m_player, ENTITY_TYPE_GOOD_PLAYER, ENTITY_FACTION_GOOD );
+	if ( g_game->m_player != nullptr )
+	{
+		AddEntityToMap( *g_game->m_player, ENTITY_TYPE_GOOD_PLAYER, ENTITY_FACTION_GOOD );
+	}
 }
 
 
@@ -1176,10 +1179,9 @@ void Map::RemoveEntityFromMap( Entity& entity, EntityType type, EntityFaction fa
 	// Remove from all entities list
 	for ( int i = 0; i < static_cast<int>( m_allEntities.size() ); ++ i )
 	{
-		Entity* existingEntity = m_allEntities[i];
-		if ( existingEntity == &entity )
+		if ( m_allEntities[i] == &entity )
 		{
-			existingEntity = nullptr;
+			m_allEntities[i] = nullptr;
 			break;
 		}
 	}
@@ -1188,10 +1190,9 @@ void Map::RemoveEntityFromMap( Entity& entity, EntityType type, EntityFaction fa
 	EntityList& typeList = m_entityListsByType[type];
 	for ( int i = 0; i < static_cast<int>( typeList.size() ); ++ i )
 	{
-		Entity* existingEntity = typeList[i];
-		if ( existingEntity == &entity )
+		if ( typeList[i] == &entity )
 		{
-			existingEntity = nullptr;
+			typeList[i] = nullptr;
 			break;
 		}
 	}
@@ -1200,10 +1201,9 @@ void Map::RemoveEntityFromMap( Entity& entity, EntityType type, EntityFaction fa
 	EntityList& factionList = m_entityListsByFaction[faction];
 	for ( int i = 0; i < static_cast<int>( factionList.size() ); ++ i )
 	{
-		Entity* existingEntity = factionList[i];
-		if ( existingEntity == &entity )
+		if ( factionList[i] == &entity )
 		{
-			existingEntity = nullptr;
+			factionList[i] = nullptr;
 			break;
 		}
 	}
@@ -1279,8 +1279,10 @@ void Map::ResolveEntityVsTileCollision()
 	for ( int entityIndex = 0; entityIndex < static_cast<int>( m_allEntities.size() ); ++ entityIndex )
 	{
 		Entity* entity = m_allEntities[entityIndex];
-		bool canEntitySwim = entity->m_canSwim;
 		if ( entity == nullptr ) continue;
+
+		bool canEntitySwim = entity->m_canSwim;
+
 		if ( !entity->m_isPushedByWalls ) continue;
 		if ( entity == g_game->m_player )
 		{
@@ -1288,10 +1290,10 @@ void Map::ResolveEntityVsTileCollision()
 			if ( player->m_noClip ) continue;
 		}
 		IntVec2 entityTileCoords = GetTileCoordsForWorldPosition( entity->m_position );
-		
+
 		IntVec2 neighboringOffsets[] = {
-			IntVec2( -1,  0 ), IntVec2(  1, 0 ), IntVec2( 0, -1 ), IntVec2( 0, 1 ), // Cardinal neighbors
-			IntVec2( -1, -1 ), IntVec2( -1, 1 ), IntVec2( 1, -1 ), IntVec2( 1, 1 )  // Diagonal neighbors
+			IntVec2( -1,  0 ), IntVec2(  1, 0 ), IntVec2( 0, -1 ), IntVec2( 0, 1 ),
+			IntVec2( -1, -1 ), IntVec2( -1, 1 ), IntVec2( 1, -1 ), IntVec2( 1, 1 )
 		};
 
 		// Resolve cardinal neighbors first
@@ -1301,10 +1303,7 @@ void Map::ResolveEntityVsTileCollision()
 			Tile* tile = GetTile( neighborCoords );
 			if ( tile != nullptr && IsTileSolid( *tile, !canEntitySwim ) )
 			{
-				if ( PushDiscOutOfFixedAABB2D( entity->m_position, entity->m_physicsRadius, GetTileBounds( neighborCoords ) ) )
-				{
-					entity->m_position = entity->m_position;
-				}
+				PushDiscOutOfFixedAABB2D( entity->m_position, entity->m_physicsRadius, GetTileBounds( neighborCoords ) );
 			}
 		}
 
@@ -1315,10 +1314,7 @@ void Map::ResolveEntityVsTileCollision()
 			Tile* tile = GetTile( neighborCoords );
 			if ( tile != nullptr && IsTileSolid( *tile, !canEntitySwim ) )
 			{
-				if ( PushDiscOutOfFixedAABB2D( entity->m_position, entity->m_physicsRadius, GetTileBounds( neighborCoords ) ) )
-				{
-					entity->m_position = entity->m_position;
-				}
+				PushDiscOutOfFixedAABB2D( entity->m_position, entity->m_physicsRadius, GetTileBounds( neighborCoords ) );
 			}
 		}
 	}

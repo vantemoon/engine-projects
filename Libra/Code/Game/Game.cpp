@@ -745,8 +745,7 @@ void Game::LoadNextMap()
 	int nextMapIndex = ( currentMapIndex + 1 ) % static_cast<int>( m_maps.size() );
 	m_currentMap = m_maps[nextMapIndex];
 	IntVec2 playerStartTileCoords = IntVec2( 1, 1 );
-	Vec2 playerStartPos = m_currentMap->GetWorldPositionForTileCoords( playerStartTileCoords );
-	m_player->Respawn( playerStartPos );
+	m_player->Reset();
 }
 
 

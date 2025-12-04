@@ -54,20 +54,6 @@ void Aries::Update( float deltaSeconds )
 		m_lastSeenPlayerPosition = g_game->m_player->m_position;
 		m_goalPosition = m_lastSeenPlayerPosition;
 	}
-	else if ( !playerIsAlive )
-	{
-		m_lastSeenPlayerPosition = Vec2::ZERO;
-		m_waypointPosition = Vec2::ZERO;
-		m_wanderGoalPosition = Vec2::ZERO;
-		m_wanderGoalTile = IntVec2( -1, -1 );
-		m_goalPosition = Vec2::ZERO;
-
-		if ( m_dijkstraMap != nullptr )
-		{
-			delete m_dijkstraMap;
-			m_dijkstraMap = nullptr;
-		}
-	}
 
 	Vec2 movementTarget = Vec2::ZERO;
 
