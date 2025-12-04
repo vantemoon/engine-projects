@@ -382,11 +382,12 @@ void Player::TurnTurretTowardAimDirection( float deltaSeconds )
 //-----------------------------------------------------------------------------------------------
 void Player::FireProjectile()
 {
-	Vec2 muzzleOffset = Vec2::MakeFromPolarDegrees( m_turretOrientationDegrees, m_physicsRadius + 0.3f );
+	Vec2 muzzleOffset = Vec2::MakeFromPolarDegrees( m_turretOrientationDegrees, m_physicsRadius + 0.5f );
 	Vec2 projectileSpawnPosition = m_position + muzzleOffset;
 	Entity* newBullet = g_game->m_currentMap->SpawnNewEntity( ENTITY_TYPE_GOOD_BOLT, projectileSpawnPosition, m_turretOrientationDegrees );
 	if ( newBullet != nullptr )
 		g_game->m_currentMap->AddEntityToMap( *newBullet, ENTITY_TYPE_GOOD_BOLT, ENTITY_FACTION_GOOD );
 
 	g_engine->m_audioSystem->StartSound( g_game->m_playerShootSoundID );
+	g_game->m_currentMap->SpawnExplosionAtPosition( projectileSpawnPosition, 0.2f, 2.f, false, m_turretOrientationDegrees );
 }

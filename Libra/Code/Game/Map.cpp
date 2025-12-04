@@ -1063,9 +1063,14 @@ void Map::SpawnEntitiesForMapDefinition()
 
 
 //-----------------------------------------------------------------------------------------------
-void Map::SpawnExplosionAtPosition( Vec2 const& position, float duration /*= 0.5f*/, float scale /*= 1.f */ )
+void Map::SpawnExplosionAtPosition( Vec2 const& position, float duration /*= 0.5f*/, float scale /*= 1.f */, bool orientRandomly /*= true */, float orientationDegrees /*= 0.f */ )
 {
-	Entity* newEntity = SpawnNewEntity( ENTITY_TYPE_EXPLOSION, position, 0.f, duration, scale );
+	RandomNumberGenerator rng;
+	float orientation = 0.f;
+	if ( orientRandomly ) orientation = rng.RollRandomFloatInRange( 0.f, 360.f );
+	else orientation = orientationDegrees;
+
+	Entity* newEntity = SpawnNewEntity( ENTITY_TYPE_EXPLOSION, position, orientation, duration, scale );
 	if ( newEntity != nullptr )
 	{
 		AddEntityToMap( *newEntity, ENTITY_TYPE_EXPLOSION, ENTITY_FACTION_NEUTRAL );

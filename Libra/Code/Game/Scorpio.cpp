@@ -170,11 +170,12 @@ void Scorpio::TurnTowardTargetOrientation( float deltaSeconds )
 //-----------------------------------------------------------------------------------------------
 void Scorpio::FireProjectile()
 {
-	Vec2 muzzleOffset = Vec2::MakeFromPolarDegrees( m_orientationDegrees, m_physicsRadius + 0.3f );
+	Vec2 muzzleOffset = Vec2::MakeFromPolarDegrees( m_orientationDegrees, m_physicsRadius + 0.5f );
 	Vec2 projectileSpawnPosition = m_position + muzzleOffset;
 	Entity* newBullet = g_game->m_currentMap->SpawnNewEntity( ENTITY_TYPE_EVIL_BOLT, projectileSpawnPosition, m_orientationDegrees );
 	if ( newBullet != nullptr )
 		g_game->m_currentMap->AddEntityToMap( *newBullet, ENTITY_TYPE_EVIL_BOLT, ENTITY_FACTION_EVIL );
 
 	g_engine->m_audioSystem->StartSound( g_game->m_enemyShootSoundID );
+	// g_game->m_currentMap->SpawnExplosionAtPosition( projectileSpawnPosition, 0.2f, 2.f );
 }
