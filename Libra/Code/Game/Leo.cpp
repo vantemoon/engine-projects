@@ -197,6 +197,7 @@ void Leo::TakeDamage( int damage )
 void Leo::Die()
 {
 	g_engine->m_audioSystem->StartSound( g_game->m_enemyDeathSoundID );
+	g_game->m_currentMap->SpawnExplosionAtPosition( m_position, 1.f, 8.f );
 
 	Entity::Die();
 }
@@ -248,7 +249,7 @@ void Leo::MoveTowardTargetPosition( float deltaSeconds )
 //-----------------------------------------------------------------------------------------------
 void Leo::FireProjectile()
 {
-	Vec2 muzzleOffset = Vec2::MakeFromPolarDegrees( m_orientationDegrees, m_physicsRadius + 0.5f );
+	Vec2 muzzleOffset = Vec2::MakeFromPolarDegrees( m_orientationDegrees, m_physicsRadius + 0.3f );
 	Vec2 projectileSpawnPosition = m_position + muzzleOffset;
 	Entity* newBullet = g_game->m_currentMap->SpawnNewEntity( ENTITY_TYPE_EVIL_BULLET, projectileSpawnPosition, m_orientationDegrees );
 	if ( newBullet != nullptr )

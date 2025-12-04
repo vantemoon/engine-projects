@@ -74,9 +74,11 @@ void Explosion::Render() const
 		m_orientationDegrees,
 		m_position );
 
+	g_engine->m_renderer->SetBlendMode( BlendMode::ADDITIVE );
 	g_engine->m_renderer->BindTexture( &m_explosionSpriteSheet->GetTexture() );
 	g_engine->m_renderer->DrawVertexArray( ( int ) verts.size(), verts.data() );
 	g_engine->m_renderer->BindTexture( nullptr );
+	g_engine->m_renderer->SetBlendMode( BlendMode::ALPHA );
 }
 
 

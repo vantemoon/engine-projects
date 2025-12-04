@@ -1063,9 +1063,9 @@ void Map::SpawnEntitiesForMapDefinition()
 
 
 //-----------------------------------------------------------------------------------------------
-void Map::SpawnExplosionAtPosition( Vec2 const& position, float scale/*= 1.f */ )
+void Map::SpawnExplosionAtPosition( Vec2 const& position, float duration /*= 0.5f*/, float scale /*= 1.f */ )
 {
-	Entity* newEntity = SpawnNewEntity( ENTITY_TYPE_EXPLOSION, position, 0.f, scale );
+	Entity* newEntity = SpawnNewEntity( ENTITY_TYPE_EXPLOSION, position, 0.f, duration, scale );
 	if ( newEntity != nullptr )
 	{
 		AddEntityToMap( *newEntity, ENTITY_TYPE_EXPLOSION, ENTITY_FACTION_NEUTRAL );
@@ -1074,7 +1074,7 @@ void Map::SpawnExplosionAtPosition( Vec2 const& position, float scale/*= 1.f */ 
 
 
 //-----------------------------------------------------------------------------------------------
-Entity* Map::SpawnNewEntity( EntityType type, Vec2 const& position, float orientationDegrees, float scale/*= 1.f */ )
+Entity* Map::SpawnNewEntity( EntityType type, Vec2 const& position, float orientationDegrees, float duration /*= 0.5f*/, float scale /*= 1.f */ )
 {
 	Entity* newEntity = nullptr;
 	if ( type == ENTITY_TYPE_GOOD_PLAYER )
@@ -1111,7 +1111,7 @@ Entity* Map::SpawnNewEntity( EntityType type, Vec2 const& position, float orient
 	}
 	else if ( type == ENTITY_TYPE_EXPLOSION )
 	{
-		newEntity = new Explosion( position, orientationDegrees, 0.5f, scale);
+		newEntity = new Explosion( position, orientationDegrees, duration, scale);
 	}
 	else
 	{

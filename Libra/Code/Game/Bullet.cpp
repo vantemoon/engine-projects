@@ -85,6 +85,8 @@ void Bullet::Update( float deltaSeconds )
 		return;
 	}
 
+	m_age += deltaSeconds;
+
 	UpdatePhysics( deltaSeconds );
 	ResolveCollision();
 }
@@ -130,6 +132,7 @@ void Bullet::UpdatePhysics( float deltaSeconds )
 		IntVec2 currentTileCoords = g_game->m_currentMap->GetTileCoordsForWorldPosition( m_position );
 		IntVec2 nextTileCoords = g_game->m_currentMap->GetTileCoordsForWorldPosition( nextPosition );
 		Vec2 normal = Vec2::MakeFromIntVec2( currentTileCoords - nextTileCoords );
+		normal.Normalize();
 		m_velocity.Reflect( normal );
 		m_orientationDegrees = m_velocity.GetOrientationDegrees();
 	}
@@ -188,6 +191,7 @@ void Bullet::TakeDamage( int damage )
 //-----------------------------------------------------------------------------------------------
 void Bullet::Die()
 {
+	g_game->m_currentMap->SpawnExplosionAtPosition( m_position, 0.3f, 2.f );
 	Entity::Die();
 }
 
@@ -215,10 +219,9 @@ void Bullet::InitializeVertexArray()
 //-----------------------------------------------------------------------------------------------
 void Bullet::ResolveCollision()
 {
-	if ( m_isDead || m_isGarbage )
-	{
-		return;
-	}
+	if ( m_isDead || m_isGarbage ) return;
+
+	if ( m_age < 0.01f ) return;
 
 	// If overlapping with an entity of different faction, deal damage and die
 	EntityFaction oppositeFaction = GetOppositeFaction();

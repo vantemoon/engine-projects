@@ -9,6 +9,7 @@ public:
 	EntityType	m_type;
 	bool		m_isBullet = true;
 	bool		m_isBolt = false;
+	float       m_age = 0.f;
 
 public:
 	Bullet( Vec2 startingPosition, float orientationDegrees, EntityType type );

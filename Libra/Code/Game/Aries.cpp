@@ -185,6 +185,7 @@ void Aries::TakeDamage( int damage )
 void Aries::Die()
 {
 	g_engine->m_audioSystem->StartSound( g_game->m_enemyDeathSoundID );
+	g_game->m_currentMap->SpawnExplosionAtPosition( m_position, 1.f, 8.f );
 
 	Entity::Die();
 }
