@@ -42,6 +42,9 @@ public:
 	MapDefinition const*	m_definition = nullptr;
 	int                     m_index = -1;
 
+	float 				    m_discoverySoundCooldown = 0.f;
+	float					m_timeSinceLastDiscoverySound = 9999.f;
+
 public:
 	Map( MapDefinition const* definition, int index );
 	~Map();
@@ -80,6 +83,8 @@ public:
 	void                 BuildScorpioBlockedMask( std::vector<bool>& out_mask ) const;
 	void				 PopulateDijkstraMap( TileHeatMap& out_dijkstraMap, IntVec2 startCoords, float maxCost, bool treatWaterAsSolid = true ) const;
 	void                 PopulateEnemyReachabilityMap( TileHeatMap& out_reachabilityMap, IntVec2 startCoords, float maxCost, bool treatWaterAsSolid = true ) const;
+
+	void                 PlayDiscoverySoundIfReady();
 
 private:
 	void				 PopulateMap();

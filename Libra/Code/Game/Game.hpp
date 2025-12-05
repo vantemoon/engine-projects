@@ -51,6 +51,7 @@ public:
 	SoundID             m_nextLevelSoundID;
 	SoundID             m_gameOverSoundID;
 	SoundID             m_victorySoundID;
+	SoundID             m_discoverySoundID;
 
 	Texture*			m_attractModeBackgroundTexture = nullptr;
 	Texture*			m_victoryScreenTexture = nullptr;

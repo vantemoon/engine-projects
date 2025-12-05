@@ -20,6 +20,7 @@ public:
 	IntVec2      m_wanderGoalTile = IntVec2( -1, -1 );
 
 	float		m_timeSinceLastTurn = 0.f;
+	bool        m_wasInPersuitLastFrame = false;
 
 	RandomNumberGenerator m_rng;
 
@@ -29,6 +30,7 @@ public:
 
 	void Update( float deltaSeconds )                          override;
 	void Render()                                        const override;
+	void RenderHealthBar()                               const;
 	void TakeDamage( int damage )                              override;
 	void Die()                                                 override;
 	void ReflectBullet( Bullet& bullet );

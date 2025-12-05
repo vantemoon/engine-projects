@@ -9,6 +9,7 @@ class Scorpio : public Entity
 public:
 	float 				 m_targetOrientationDegrees = 0.f;
 	float 				 m_timeSinceLastFire = 0.f;
+	bool                 m_wasInPersuitLastFrame = false;
 
 	std::vector<Vertex>  m_scorpioBaseVertexArray;
 	std::vector<Vertex>  m_scorpioTopVertexArray;
@@ -19,6 +20,7 @@ public:
 
 	void Update( float deltaSeconds )                          override;
 	void Render()                                        const override;
+	void RenderHealthBar()                               const;
 	void TakeDamage( int damage )                              override;
 	void Die()                                                 override;
 

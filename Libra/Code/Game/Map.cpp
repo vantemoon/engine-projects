@@ -36,6 +36,8 @@ Map::Map( MapDefinition const* definition, int index )
 	{
 		AddEntityToMap( *g_game->m_player, ENTITY_TYPE_GOOD_PLAYER, ENTITY_FACTION_GOOD );
 	}
+
+	m_discoverySoundCooldown = g_gameConfigBlackboard.GetValue( "discoverySoundCooldown", 0.1f );
 }
 
 
@@ -49,6 +51,8 @@ Map::~Map()
 //-----------------------------------------------------------------------------------------------
 void Map::Update( float deltaSeconds )
 {
+	m_timeSinceLastDiscoverySound += deltaSeconds;
+
 	UpdateEntities( deltaSeconds );
 	DeleteGarbageEntities();
 }
@@ -1461,4 +1465,15 @@ bool Map::IsAnyEntityAtTile( IntVec2 tileCoords ) const
 		}
 	}
 	return false;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Map::PlayDiscoverySoundIfReady()
+{
+	if ( m_timeSinceLastDiscoverySound >= m_discoverySoundCooldown )
+	{
+		g_engine->m_audioSystem->StartSound( g_game->m_discoverySoundID );
+		m_timeSinceLastDiscoverySound = 0.f;
+	}
 }

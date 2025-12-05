@@ -9,6 +9,9 @@
 	maxGenerationAttemps="1000"
     tileSize="12.5"
 	deathDelay="3.0"
+	healthBarHeight="1.5"
+	healthBarWidth="15.0"
+	discoverySoundCooldown="0.1"
 	
     playerTankPhysicsRadius="4.0"
 	playerTankCosmeticRadius="6.0"

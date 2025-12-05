@@ -28,6 +28,7 @@ public:
 
 	void Update( float deltaSeconds )                          override;
 	void Render()                                        const override;
+	void RenderHealthBar()                               const;
 	void TakeDamage( int damage )                              override;
 	void Die()                                                 override;
 

@@ -32,6 +32,7 @@ public:
 	void UpdateFromKeyboard( float deltaSeconds );
 	void UpdateFromController( float deltaSeconds );
 	void Render()									      const override;
+	void RenderHealthBar()								  const;
 	void TakeDamage( int damage )								override;
 	void Die()													override;
 	void Respawn( Vec2 spawnPosition );

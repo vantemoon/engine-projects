@@ -262,6 +262,30 @@ void Player::Render() const
 	{
 		DebugDrawRing( m_position, m_physicsRadius + 0.1f, 0.5f, Rgba8::WHITE );
 	}
+
+	RenderHealthBar();
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Player::RenderHealthBar() const
+{
+	float healthBarWidth = g_gameConfigBlackboard.GetValue( "healthBarWidth", 20.f );
+	float healthBarHeight = g_gameConfigBlackboard.GetValue( "healthBarHeight", 2.f );
+
+	std::vector<Vertex> healthBarBackgroundVerts;
+	std::vector<Vertex> healthBarForegroundVerts;
+	AABB2 healthBarBackgroundAABB2 = AABB2( -healthBarWidth / 2.f, -healthBarHeight / 2.f, healthBarWidth / 2.f, healthBarHeight / 2.f );
+	AddVertsForAABB2D( healthBarBackgroundVerts, healthBarBackgroundAABB2, Rgba8::RED );
+	float healthFraction = ( float ) m_health / ( float ) g_gameConfigBlackboard.GetValue( "playerTankMaxHealth", 10 );
+	AABB2 healthBarForegroundAABB2 = AABB2( -healthBarWidth / 2.f, -healthBarHeight / 2.f,
+		( -healthBarWidth / 2.f ) + ( healthBarWidth * healthFraction ), healthBarHeight / 2.f );
+	AddVertsForAABB2D( healthBarForegroundVerts, healthBarForegroundAABB2, Rgba8::GREEN );
+	Vec2 healthBarPosition = m_position + Vec2( 0.f, m_cosmeticRadius + 1.f );
+	TransformVertexArrayXY3D( ( int ) healthBarBackgroundVerts.size(), healthBarBackgroundVerts.data(), 1.f, 0.f, healthBarPosition );
+	g_engine->m_renderer->DrawVertexArray( healthBarBackgroundVerts );
+	TransformVertexArrayXY3D( ( int ) healthBarForegroundVerts.size(), healthBarForegroundVerts.data(), 1.f, 0.f, healthBarPosition );
+	g_engine->m_renderer->DrawVertexArray( healthBarForegroundVerts );
 }
 
 

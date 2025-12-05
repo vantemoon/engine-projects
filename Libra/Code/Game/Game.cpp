@@ -822,4 +822,5 @@ void Game::LoadSounds()
 	m_nextLevelSoundID = g_engine->m_audioSystem->CreateOrGetSound( "Data/Audio/ExitMap.wav" );
 	m_gameOverSoundID = g_engine->m_audioSystem->CreateOrGetSound( "Data/Audio/GameOver.mp3" );
 	m_victorySoundID = g_engine->m_audioSystem->CreateOrGetSound( "Data/Audio/Victory.mp3" );
+	m_discoverySoundID = g_engine->m_audioSystem->CreateOrGetSound( "Data/Audio/Discovery.wav" );
 }
