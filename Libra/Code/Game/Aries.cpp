@@ -59,6 +59,12 @@ void Aries::Update( float deltaSeconds )
 
 	if ( playerVisible )
 	{
+		if ( !m_wasInPersuitLastFrame )
+		{
+			g_game->m_currentMap->PlayDiscoverySoundIfReady();
+		}
+		m_wasInPersuitLastFrame = true;
+
 		if ( IsPlayerInAdjacentTile() )
 		{
 			movementTarget = g_game->m_player->m_position;
@@ -75,6 +81,8 @@ void Aries::Update( float deltaSeconds )
 	}
 	else if ( m_lastSeenPlayerPosition != Vec2::ZERO )
 	{
+		m_wasInPersuitLastFrame = true;
+
 		UpdateDijkstraMap();
 		m_goalPosition = m_lastSeenPlayerPosition;
 		UpdateWaypointChase();
@@ -82,6 +90,10 @@ void Aries::Update( float deltaSeconds )
 		{
 			movementTarget = m_waypointPosition;
 		}
+	}
+	else
+	{
+		m_wasInPersuitLastFrame = false;
 	}
 
 	if ( movementTarget == Vec2::ZERO && m_lastSeenPlayerPosition == Vec2::ZERO )

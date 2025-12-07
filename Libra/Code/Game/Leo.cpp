@@ -51,9 +51,6 @@ void Leo::Update( float deltaSeconds )
 
 	if ( playerVisible )
 	{
-		/*if ( m_lastSeenPlayerPosition != g_game->m_player->m_position )
-			g_game->m_currentMap->PlayDiscoverySoundIfReady();*/
-
 		m_lastSeenPlayerPosition = g_game->m_player->m_position;
 		m_goalPosition = m_lastSeenPlayerPosition;
 
@@ -74,6 +71,12 @@ void Leo::Update( float deltaSeconds )
 
 	if ( playerVisible )
 	{
+		if ( !m_wasInPersuitLastFrame )
+		{
+			g_game->m_currentMap->PlayDiscoverySoundIfReady();
+		}
+		m_wasInPersuitLastFrame = true;
+
 		if ( IsPlayerInAdjacentTile() )
 		{
 			movementTarget = g_game->m_player->m_position;
@@ -90,6 +93,8 @@ void Leo::Update( float deltaSeconds )
 	}
 	else if ( m_lastSeenPlayerPosition != Vec2::ZERO )
 	{
+		m_wasInPersuitLastFrame = true;
+
 		UpdateDijkstraMap();
 		m_goalPosition = m_lastSeenPlayerPosition;
 		UpdateWaypointChase();
@@ -97,6 +102,10 @@ void Leo::Update( float deltaSeconds )
 		{
 			movementTarget = m_waypointPosition;
 		}
+	}
+	else
+	{
+		m_wasInPersuitLastFrame = false;
 	}
 
 	if ( movementTarget == Vec2::ZERO && m_lastSeenPlayerPosition == Vec2::ZERO )

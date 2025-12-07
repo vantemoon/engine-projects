@@ -12,6 +12,7 @@ public:
 	Vec2	m_movementTargetPosition = Vec2::ZERO;
 	float	m_timeSinceLastFire = 9999.f;
 	float   m_timeSinceLastTurn = 0.f;
+	bool    m_wasInPersuitLastFrame = false;
 
 	TileHeatMap* m_dijkstraMap = nullptr;
 	IntVec2      m_dijkstraOriginTile = IntVec2( -1, -1 );
