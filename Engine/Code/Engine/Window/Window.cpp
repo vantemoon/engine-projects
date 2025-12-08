@@ -72,7 +72,8 @@ LRESULT CALLBACK WindowsMessageHandlingProcedure( HWND windowHandle, UINT wmMess
 		case WM_CLOSE:
 		{
 			// g_app->SetIsQuitting();
-			ERROR_AND_DIE( "X-out of the app is not currently supported!" );
+			// ERROR_AND_DIE( "X-out of the app is not currently supported!" );
+			g_engine->m_eventSystem->FireEvent( "Quit" );
 			// return 0; // "Consumes" this message (tells Windows "okay, we handled it")
 		}
 
@@ -242,4 +243,3 @@ void Window::RunMessagePump()
 		DispatchMessage( &queuedMessage ); // This tells Windows to call our "WindowsMessageHandlingProcedure" (a.k.a. "WinProc") function
 	}
 }
-

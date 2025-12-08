@@ -205,7 +205,7 @@ bool DevConsole::Command_Test( EventArgs& args )
 		int b = args.GetValue( "b", 0 );
 		int result = g_engine->m_devConsole->AddTwoInts( a, b );
 		g_engine->m_devConsole->AddLine( INFO_MINOR, Stringf( "Test command received: %d + %d = %d", a, b, result ) );
-		// g_engine->m_devConsole->AddLine( INFO_MINOR, "Test command received" );
+		return true; // Consumes event; do not call other subscribers’ callback functions
 	}
 	return false; // Does not consume event; continue to call other subscribers’ callback functions
 }

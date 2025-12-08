@@ -93,15 +93,5 @@
 	explosionsDoPushEntities="false"
 	explosionsAreHitByBullets="false"
 	
-	grassTint="0,200,0,255"
-    lightStoneTint="255,255,255,255"
-    darkStoneTint="100,100,100,255"
-    mudTint="255,255,255,255"
-    sandTint="194,178,128,255"
-    dirtTint="139,69,19,255"
-    woodTint="101,67,33,255"
-    waterTint="0,0,255,255"
-    metalTint="255,255,255,255"
-	
 	testCommand="Test a=10 b=20"
 />

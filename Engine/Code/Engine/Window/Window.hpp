@@ -23,6 +23,8 @@ public:
 	void BeginFrame();
 	void EndFrame();
 	Vec2 GetNormalizedMouseUV() const;
+	bool SetQuitting();
+	void Quit();
 
 	WindowConfig	m_config;
 	void*			m_displayDeviceContext = 0;

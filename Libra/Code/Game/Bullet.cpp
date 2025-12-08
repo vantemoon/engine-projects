@@ -38,6 +38,16 @@ Bullet::Bullet( Vec2 startingPosition, float orientationDegrees, EntityType type
 			m_isBolt = true;
 			break;
 
+		case ENTITY_TYPE_GOOD_FLAME_BULLET:
+			m_faction = ENTITY_FACTION_GOOD;
+			m_health = g_gameConfigBlackboard.GetValue( "goodBulletMaxHealth", 3 );
+			m_velocity = g_gameConfigBlackboard.GetValue( "goodBulletSpeed", 80.f ) * GetForwardNormal();
+			m_physicsRadius = g_gameConfigBlackboard.GetValue( "bulletPhysicsRadius", 0.5f );
+			m_cosmeticRadius = g_gameConfigBlackboard.GetValue( "bulletCosmeticRadius", 1.f );
+			m_isBullet = true;
+			m_isBolt = false;
+			break;
+
 		case ENTITY_TYPE_EVIL_BULLET:
 			m_faction = ENTITY_FACTION_EVIL;
 			m_health = g_gameConfigBlackboard.GetValue( "evilBulletMaxHealth", 1 );
