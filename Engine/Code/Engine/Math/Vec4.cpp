@@ -19,3 +19,17 @@ Vec4::Vec4( float initialX, float initialY, float initialZ, float initialW )
 	z = initialZ;
 	w = initialW;
 }
+
+
+//-----------------------------------------------------------------------------------------------
+Vec4 const Vec4::operator+( Vec4 const& vecToAdd ) const
+{
+	return Vec4( x + vecToAdd.x, y + vecToAdd.y, z + vecToAdd.z, w + vecToAdd.w );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool Vec4::operator==( Vec4 const& vecToCompare ) const
+{
+	return ( x == vecToCompare.x ) && ( y == vecToCompare.y ) && ( z == vecToCompare.z ) && ( w == vecToCompare.w );
+}
