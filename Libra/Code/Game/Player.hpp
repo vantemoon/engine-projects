@@ -23,6 +23,7 @@ public:
 	std::vector<Vertex>  m_turretVertexArray;
 
 	float 				 m_timeSinceLastFire = 0.f;
+	float				 m_timeSinceLastFlameThrowerAttack = 0.f;
 
 public:
 	Player( Vec2 startingPosition, float orientationDegrees );
@@ -43,4 +44,5 @@ protected:
 	void TurnTowardMovementDirection( float deltaSeconds );
 	void TurnTurretTowardAimDirection( float deltaSeconds );
 	void FireProjectile();
+	void FlameThrowerAttack();
 };

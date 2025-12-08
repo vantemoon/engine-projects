@@ -8,10 +8,12 @@
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/EngineCommon.hpp"
 #include "Engine/Core/Rgba8.hpp"
+#include "Engine/Core/Time.hpp"
 #include "Engine/Core/Vertex.hpp"
 #include "Engine/Core/VertexUtils.hpp"
 #include "Engine/Math/AABB2.hpp"
 #include "Engine/Math/MathUtils.hpp"
+#include "Engine/Math/RandomNumberGenerator.hpp"
 #include "Engine/Renderer/Renderer.hpp"
 
 
@@ -52,6 +54,7 @@ void Player::Update( float deltaSeconds )
 	if ( !IsAlive() ) return;
 
 	m_timeSinceLastFire += deltaSeconds;
+	m_timeSinceLastFlameThrowerAttack += deltaSeconds;
 
 	UpdateFromKeyboard( deltaSeconds );
 	UpdateFromController( deltaSeconds );
@@ -195,6 +198,14 @@ void Player::UpdateFromKeyboard( [[maybe_unused]] float deltaSeconds )
 			m_timeSinceLastFire = 0.f;
 		}
 	}
+	if ( g_engine->m_inputSystem->IsKeyDown( 'E') )
+	{
+		if ( m_timeSinceLastFlameThrowerAttack >= g_gameConfigBlackboard.GetValue( "playerTankFlameThrowerCooldown", 0.05f ) )
+		{
+			FlameThrowerAttack();
+			m_timeSinceLastFlameThrowerAttack = 0.f;
+		}
+	}
 }
 
 
@@ -232,6 +243,15 @@ void Player::UpdateFromController( [[maybe_unused]] float deltaSeconds )
 		{
 			FireProjectile();
 			m_timeSinceLastFire = 0.f;
+		}
+	}
+	float leftTrigger = controller.GetLeftTrigger();
+	if ( leftTrigger > 0.f )
+	{
+		if ( m_timeSinceLastFlameThrowerAttack >= g_gameConfigBlackboard.GetValue( "playerTankFlameThrowerCooldown", 0.05f ) )
+		{
+			FlameThrowerAttack();
+			m_timeSinceLastFlameThrowerAttack = 0.f;
 		}
 	}
 }
@@ -414,4 +434,28 @@ void Player::FireProjectile()
 
 	g_engine->m_audioSystem->StartSound( g_game->m_playerShootSoundID );
 	g_game->m_currentMap->SpawnExplosionAtPosition( projectileSpawnPosition, 0.2f, 2.f, false, m_turretOrientationDegrees );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Player::FlameThrowerAttack()
+{
+	static RandomNumberGenerator rng;
+
+	const float varianceDeg = g_gameConfigBlackboard.GetValue( "flameSprayAngleVarianceDegrees", 15.f );
+	const float randomVariance = rng.RollRandomFloatInRange( -varianceDeg, varianceDeg );
+
+	Vec2 muzzleOffset = Vec2::MakeFromPolarDegrees( m_turretOrientationDegrees, m_physicsRadius + 0.5f );
+	Vec2 projectileSpawnPosition = m_position + muzzleOffset;
+
+	const float flameOrientation = m_turretOrientationDegrees + randomVariance;
+
+	Entity* newFlame = g_game->m_currentMap->SpawnNewEntity( ENTITY_TYPE_GOOD_FLAME_BULLET, projectileSpawnPosition, flameOrientation );
+	if ( newFlame != nullptr )
+	{
+		g_game->m_currentMap->AddEntityToMap( *newFlame, ENTITY_TYPE_GOOD_FLAME_BULLET, ENTITY_FACTION_GOOD );
+		g_game->m_currentMap->SpawnExplosionAtPosition( projectileSpawnPosition, 0.15f, 1.5f, false, flameOrientation );
+	}
+
+	m_timeSinceLastFlameThrowerAttack = 0.f;
 }

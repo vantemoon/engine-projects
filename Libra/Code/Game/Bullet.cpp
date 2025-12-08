@@ -7,7 +7,9 @@
 #include "Engine/Core/VertexUtils.hpp"
 #include "Engine/Math/AABB2.hpp"
 #include "Engine/Math/MathUtils.hpp"
+#include "Engine/Math/RandomNumberGenerator.hpp"
 #include "Engine/Renderer/Texture.hpp"
+#include "Engine/Renderer/SpriteSheet.hpp"
 
 
 //-----------------------------------------------------------------------------------------------
@@ -26,6 +28,7 @@ Bullet::Bullet( Vec2 startingPosition, float orientationDegrees, EntityType type
 			m_cosmeticRadius = g_gameConfigBlackboard.GetValue( "bulletCosmeticRadius", 1.f );
 			m_isBullet = true;
 			m_isBolt = false;
+			m_isFlameBullet = false;
 			break;
 
 		case ENTITY_TYPE_GOOD_BOLT:
@@ -36,16 +39,28 @@ Bullet::Bullet( Vec2 startingPosition, float orientationDegrees, EntityType type
 			m_cosmeticRadius = g_gameConfigBlackboard.GetValue( "boltCosmeticRadius", 1.f );
 			m_isBullet = false;
 			m_isBolt = true;
+			m_isFlameBullet = false;
 			break;
 
 		case ENTITY_TYPE_GOOD_FLAME_BULLET:
 			m_faction = ENTITY_FACTION_GOOD;
-			m_health = g_gameConfigBlackboard.GetValue( "goodBulletMaxHealth", 3 );
-			m_velocity = g_gameConfigBlackboard.GetValue( "goodBulletSpeed", 80.f ) * GetForwardNormal();
-			m_physicsRadius = g_gameConfigBlackboard.GetValue( "bulletPhysicsRadius", 0.5f );
-			m_cosmeticRadius = g_gameConfigBlackboard.GetValue( "bulletCosmeticRadius", 1.f );
+			m_health = g_gameConfigBlackboard.GetValue( "flameBulletMaxHealth", 1 );
+			m_velocity = g_gameConfigBlackboard.GetValue( "flameBulletSpeed", 40.f ) * GetForwardNormal();
+			m_physicsRadius = g_gameConfigBlackboard.GetValue( "flameBulletPhysicsRadius", 1.5f );
+			m_cosmeticRadius = g_gameConfigBlackboard.GetValue( "flameBulletCosmeticRadius", 2.f );
+			m_lifespan = g_gameConfigBlackboard.GetValue( "flameBulletLifespan", 1.f );
 			m_isBullet = true;
 			m_isBolt = false;
+			m_isFlameBullet = true;
+			{
+				RandomNumberGenerator rng;
+				float minSpin = g_gameConfigBlackboard.GetValue( "flameBulletMinSpinDegreesPerSecond", 100.f );
+				float maxSpin = g_gameConfigBlackboard.GetValue( "flameBulletMaxSpinDegreesPerSecond", 500.f );
+				float magnitude = rng.RollRandomFloatInRange( minSpin, maxSpin );
+				bool negate = rng.RollRandomIntLessThan( 2 ) == 0;
+				if ( negate ) magnitude = -magnitude;
+				m_spinDegreesPerSecond = magnitude;
+			}
 			break;
 
 		case ENTITY_TYPE_EVIL_BULLET:
@@ -56,6 +71,7 @@ Bullet::Bullet( Vec2 startingPosition, float orientationDegrees, EntityType type
 			m_cosmeticRadius = g_gameConfigBlackboard.GetValue( "bulletCosmeticRadius", 1.f );
 			m_isBullet = true;
 			m_isBolt = false;
+			m_isFlameBullet = false;
 			break;
 
 		case ENTITY_TYPE_EVIL_BOLT:
@@ -66,6 +82,7 @@ Bullet::Bullet( Vec2 startingPosition, float orientationDegrees, EntityType type
 			m_cosmeticRadius = g_gameConfigBlackboard.GetValue( "boltCosmeticRadius", 1.f );
 			m_isBullet = false;
 			m_isBolt = true;
+			m_isFlameBullet = false;
 			break;
 
 		default:
@@ -96,6 +113,16 @@ void Bullet::Update( float deltaSeconds )
 	}
 
 	m_age += deltaSeconds;
+	if ( m_age >= m_lifespan )
+	{
+		Die();
+		return;
+	}
+
+	if ( m_isFlameBullet )
+	{
+		m_orientationDegrees += m_spinDegreesPerSecond * deltaSeconds;
+	}
 
 	UpdatePhysics( deltaSeconds );
 	ResolveCollision();
@@ -173,7 +200,7 @@ void Bullet::UpdatePhysics( float deltaSeconds )
 }
 
 
-//-----------------------------------------------------------------------------------------------
+	//-----------------------------------------------------------------------------------------------
 void Bullet::Render() const
 {
 	if ( m_isDead )
@@ -181,6 +208,54 @@ void Bullet::Render() const
 		return;
 	}
 
+	if ( m_isFlameBullet )
+	{
+		// Cache once per process, not per object, to avoid mutating 'this' in a const method
+		static SpriteSheet* flameSpriteSheet = nullptr;
+		static SpriteAnimDefinition* flameAnimDef = nullptr;
+
+		if ( flameSpriteSheet == nullptr && g_game->m_explosionTexture != nullptr )
+		{
+			flameSpriteSheet = new SpriteSheet( *g_game->m_explosionTexture, IntVec2( 5, 5 ) );
+			flameAnimDef = new SpriteAnimDefinition(
+				*flameSpriteSheet,
+				0,
+				flameSpriteSheet->GetNumSprites() - 1,
+				30.f,
+				ONCE );
+		}
+
+		if ( flameSpriteSheet == nullptr || flameAnimDef == nullptr )
+		{
+			return;
+		}
+
+		SpriteDefinition currentSpriteDef = flameAnimDef->GetSpriteDefAtTime( m_age );
+		Vec2 uvMins;
+		Vec2 uvMaxs;
+		currentSpriteDef.GetUVs( uvMins, uvMaxs );
+
+		const float size = m_cosmeticRadius;
+		std::vector<Vertex> verts;
+		AABB2 localBounds( -size, -size, size, size );
+		AddVertsForAABB2D( verts, localBounds, Rgba8::WHITE, uvMins, uvMaxs );
+
+		TransformVertexArrayXY3D(
+			( int ) verts.size(),
+			verts.data(),
+			1.0f,
+			m_orientationDegrees,
+			m_position );
+
+		g_engine->m_renderer->SetBlendMode( BlendMode::ADDITIVE );
+		g_engine->m_renderer->BindTexture( &flameSpriteSheet->GetTexture() );
+		g_engine->m_renderer->DrawVertexArray( ( int ) verts.size(), verts.data() );
+		g_engine->m_renderer->BindTexture( nullptr );
+		g_engine->m_renderer->SetBlendMode( BlendMode::ALPHA );
+		return;
+	}
+
+	// Default bullet rendering
 	std::vector<Vertex> verts = m_vertexArray;
 
 	Texture* bulletTexture = nullptr;
@@ -223,7 +298,8 @@ void Bullet::TakeDamage( int damage )
 //-----------------------------------------------------------------------------------------------
 void Bullet::Die()
 {
-	g_game->m_currentMap->SpawnExplosionAtPosition( m_position, 0.3f, 2.f );
+	if ( !m_isFlameBullet )
+		g_game->m_currentMap->SpawnExplosionAtPosition( m_position, 0.3f, 2.f );
 	Entity::Die();
 }
 
@@ -240,8 +316,19 @@ void Bullet::InitializeVertexArray()
 	}
 	else if ( m_isBullet )
 	{
-		float halfWidth = g_gameConfigBlackboard.GetValue( "bulletLength", 2.f ) * 0.5f;
-		float halfHeight = g_gameConfigBlackboard.GetValue( "bulletWidth", 1.f ) * 0.5f;
+		// For flame bullets, draw larger cosmetic size than physics radius
+		float length = g_gameConfigBlackboard.GetValue( "bulletLength", 2.f );
+		float width  = g_gameConfigBlackboard.GetValue( "bulletWidth", 1.f );
+
+		if ( m_isFlameBullet )
+		{
+			// Override dimensions to be larger cosmetically
+			length = g_gameConfigBlackboard.GetValue( "flameBulletCosmeticLength", 4.f );
+			width  = g_gameConfigBlackboard.GetValue( "flameBulletCosmeticWidth", 4.f );
+		}
+
+		float halfWidth = length * 0.5f;
+		float halfHeight = width * 0.5f;
 		AABB2 bulletAABB2 = AABB2( -halfWidth, -halfHeight, halfWidth, halfHeight );
 		AddVertsForAABB2D( m_vertexArray, bulletAABB2, Rgba8::WHITE );
 	}
@@ -291,7 +378,7 @@ void Bullet::ResolveCollision()
 }
 
 
-//-----------------------------------------------------------------------------------------------
+	//-----------------------------------------------------------------------------------------------
 EntityFaction Bullet::GetOppositeFaction() const
 {
 	if ( m_faction == ENTITY_FACTION_GOOD )

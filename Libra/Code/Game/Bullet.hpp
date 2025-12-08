@@ -1,5 +1,7 @@
 #pragma once
 #include "Entity.hpp"
+#include "Engine/Renderer/SpriteAnimDefinition.hpp"
+#include "Engine/Renderer/SpriteDefinition.hpp"
 
 
 //-----------------------------------------------------------------------------------------------
@@ -9,7 +11,10 @@ public:
 	EntityType	m_type;
 	bool		m_isBullet = true;
 	bool		m_isBolt = false;
+	bool        m_isFlameBullet = false;
 	float       m_age = 0.f;
+	float       m_lifespan = 9999.f;
+	float       m_spinDegreesPerSecond = 0.f;
 
 public:
 	Bullet( Vec2 startingPosition, float orientationDegrees, EntityType type );

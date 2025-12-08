@@ -1110,6 +1110,10 @@ Entity* Map::SpawnNewEntity( EntityType type, Vec2 const& position, float orient
 	{
 		newEntity = new Bullet( position, orientationDegrees, ENTITY_TYPE_GOOD_BOLT );
 	}
+	else if ( type == ENTITY_TYPE_GOOD_FLAME_BULLET )
+	{
+		newEntity = new Bullet( position, orientationDegrees, ENTITY_TYPE_GOOD_FLAME_BULLET );
+	}
 	else if ( type == ENTITY_TYPE_EVIL_BULLET )
 	{
 		newEntity = new Bullet( position, orientationDegrees, ENTITY_TYPE_EVIL_BULLET );

@@ -10,7 +10,6 @@ RandomNumberGenerator::RandomNumberGenerator( int seed )
 		seed = ( unsigned int ) time( nullptr );
 
 	m_seed = seed;
-	srand( seed );
 }
 
 
@@ -18,7 +17,6 @@ RandomNumberGenerator::RandomNumberGenerator( int seed )
 void RandomNumberGenerator::SetSeed( int seed )
 {
 	m_seed = seed;
-	srand( seed );
 }
 
 //-----------------------------------------------------------------------------------------------
