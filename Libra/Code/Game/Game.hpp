@@ -104,6 +104,7 @@ public:
 	void LoadSounds();
 	void Render()													  const;
 	void RenderHUD()												  const;
+	void RenderDevConsole()											  const;
 	void RenderAttractMode()										  const;
 	void RenderPausedMode()									          const;
 	void RenderVictoryMode()										  const;

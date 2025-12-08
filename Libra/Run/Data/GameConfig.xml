@@ -102,4 +102,6 @@
     woodTint="101,67,33,255"
     waterTint="0,0,255,255"
     metalTint="255,255,255,255"
+	
+	testCommand="Test a=10 b=20"
 />

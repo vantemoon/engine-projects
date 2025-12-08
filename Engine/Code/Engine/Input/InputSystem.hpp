@@ -24,6 +24,7 @@ extern unsigned char const KEYCODE_UPARROW;
 extern unsigned char const KEYCODE_DOWNARROW;
 extern unsigned char const KEYCODE_LBUTTON;
 extern unsigned char const KEYCODE_RBUTTON;
+extern unsigned char const KEYCODE_TILDE;
 
 
 //----------------------------------------------------------------

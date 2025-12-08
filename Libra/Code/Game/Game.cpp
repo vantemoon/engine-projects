@@ -462,6 +462,22 @@ void Game::UpdateFromKeyboard()
 			LoadNextMap();
 		}
 	}
+
+	// Toggle developer console
+	if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_TILDE ) )
+	{
+		g_engine->m_devConsole->ToggleMode( DevConsoleMode::OPEN_FULL );
+	}
+
+	// If the console is open, press enter to print a new line
+	if ( g_engine->m_devConsole->GetMode() == DevConsoleMode::OPEN_FULL )
+	{
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_ENTER ) )
+		{
+			// g_engine->m_devConsole->AddLine( g_engine->m_devConsole->INFO_MINOR, "" );
+			g_engine->m_devConsole->Execute( g_gameConfigBlackboard.GetValue( "testCommand", "" ) );
+		}
+	}
 }
 
 
@@ -549,12 +565,14 @@ void Game::Render() const
 	if ( m_currentGameState == GameState::ATTRACT_MODE )
 	{
 		RenderAttractMode();
+		RenderDevConsole();
 		return;
 	}
 
 	if ( m_currentGameState == GameState::VICTORY )
 	{
 		RenderVictoryMode();
+		RenderDevConsole();
 		return;
 	}
 
@@ -582,17 +600,14 @@ void Game::Render() const
 		RenderPausedMode();
 	};
 
-	if ( m_currentGameState == GameState::VICTORY )
-	{
-		RenderVictoryMode();
-	};
-
 	if ( m_currentGameState == GameState::GAME_OVER )
 	{
 		RenderGameOverMode();
 	};
 
 	// RenderHUD();
+
+	RenderDevConsole();
 
 	g_engine->m_renderer->EndCamera( *cameraToUse );
 }
@@ -664,6 +679,20 @@ void Game::RenderHUD() const
 		AddVertsForTextTriangles2D( verts, "GAME OVER", Vec2( 10.f, screenHeight - 30.f ), 24.f, Rgba8( 255, 0, 0 ) );
 		g_engine->m_renderer->DrawVertexArray( ( int ) verts.size(), verts.data() );
 	}
+
+	g_engine->m_renderer->EndCamera( *m_screenCamera );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game::RenderDevConsole() const
+{
+	g_engine->m_renderer->BeginCamera( *m_screenCamera );
+
+	float screenWidth = g_gameConfigBlackboard.GetValue( "windowWidth", 1600.f );
+	float screenHeight = g_gameConfigBlackboard.GetValue( "windowHeight", 800.f );
+	AABB2 devConsoleBounds = AABB2( 0.f, 0.f, screenWidth, screenHeight );
+	g_engine->m_devConsole->Render( devConsoleBounds );
 
 	g_engine->m_renderer->EndCamera( *m_screenCamera );
 }

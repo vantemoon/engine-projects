@@ -4,6 +4,7 @@
 #include "Engine/Input/InputSystem.hpp"
 #include "Engine/Audio/AudioSystem.hpp"
 #include "Engine/Core/EventSystem.hpp"
+#include "Engine/Core/DevConsole.hpp"
 
 
 //-----------------------------------------------------------------------------------------------
@@ -17,6 +18,7 @@ class Renderer;    // Forward declaration
 class InputSystem; // Forward declaration
 class AudioSystem; // Forward declaration
 class EventSystem; // Forward declaration
+class DevConsole;  // Forward declaration
 
 //-----------------------------------------------------------------------------------------------
 extern Engine* g_engine; // Advertisement that this global exists, so external people can use it
@@ -30,6 +32,7 @@ struct EngineConfig
 	InputConfig			m_inputConfig;
 	AudioConfig			m_audioConfig;
 	EventSystemConfig	m_eventSystemConfig;
+	DevConsoleConfig	m_devConsoleConfig;
 };
 
 
@@ -50,6 +53,7 @@ public:
 	InputSystem* m_inputSystem = nullptr;
 	AudioSystem* m_audioSystem = nullptr;
 	EventSystem* m_eventSystem = nullptr;
+	DevConsole*	 m_devConsole = nullptr;
 
 	EngineConfig m_config;
 };

@@ -55,7 +55,7 @@ void EventSystem::UnsubscribeEventCallbackFunction( std::string const& eventName
 
 
 //-----------------------------------------------------------------------------------------------
-void EventSystem::FireEvent( std::string const& eventName, EventArg& args )
+void EventSystem::FireEvent( std::string const& eventName, EventArgs& args )
 {
 	EventCallbackFunctionList& callbackList = m_subscriptionListsByEventName[eventName];
 	for ( EventCallbackFunction callbackFunction : callbackList )
@@ -71,6 +71,6 @@ void EventSystem::FireEvent( std::string const& eventName, EventArg& args )
 //-----------------------------------------------------------------------------------------------
 void EventSystem::FireEvent( std::string const& eventName )
 {
-	EventArg args;
+	EventArgs args;
 	FireEvent( eventName, args );
 }

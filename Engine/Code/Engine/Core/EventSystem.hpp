@@ -12,8 +12,8 @@ struct EventSystemConfig
 
 
 //-----------------------------------------------------------------------------------------------
-typedef NamedStrings EventArg;
-typedef bool ( *EventCallbackFunction )( EventArg& );
+typedef NamedStrings EventArgs;
+typedef bool ( *EventCallbackFunction )( EventArgs& );
 typedef std::vector<EventCallbackFunction> EventCallbackFunctionList;
 
 
@@ -31,7 +31,7 @@ public:
 
 	void SubscribeEventCallbackFunction( std::string const& eventName, EventCallbackFunction funtionPtr );
 	void UnsubscribeEventCallbackFunction( std::string const& eventName, EventCallbackFunction funtionPtr );
-	void FireEvent( std::string const& eventName, EventArg& args );
+	void FireEvent( std::string const& eventName, EventArgs& args );
 	void FireEvent( std::string const& eventName );
 
 protected:
