@@ -63,7 +63,7 @@
 	ariesIsPushedByEntities="true"
 	ariesDoesPushEntities="true"
 	ariesIsHitByBullets="true"
-	ariesCanSwim="true"
+	ariesCanSwim="false"
 	
 	bulletWidth="1.0"
 	bulletLength="2.0"

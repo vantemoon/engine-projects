@@ -84,7 +84,7 @@
 		startBunkerWallTileType="Stone1"
 		exitBunkerWallTileType="StoneBrick4"
 		
-		worm1TileType="Water1"
+		worm1TileType="Water3"
 		numOfWorms1="25"
 		wormLength1="10"
 		worm2TileType="StoneBrick4"

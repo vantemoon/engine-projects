@@ -93,6 +93,7 @@ void Bullet::Update( float deltaSeconds )
 
 
 //-----------------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------------------------
 void Bullet::UpdatePhysics( float deltaSeconds )
 {
 	// If current position is in solid tile, push out and reflect
@@ -101,7 +102,8 @@ void Bullet::UpdatePhysics( float deltaSeconds )
 		// Push out
 		Vec2 bulletCenter = m_position;
 		float bulletRadius = m_physicsRadius;
-		AABB2 tileBounds = g_game->m_currentMap->GetTileBounds( g_game->m_currentMap->GetTileCoordsForWorldPosition( m_position ) );
+		IntVec2 impactedTileCoords = g_game->m_currentMap->GetTileCoordsForWorldPosition( m_position );
+		AABB2 tileBounds = g_game->m_currentMap->GetTileBounds( impactedTileCoords );
 		if ( PushDiscOutOfFixedAABB2D( bulletCenter, bulletRadius, tileBounds ) ) {
 			Vec2 tileCenter = tileBounds.GetCenter();
 			Vec2 toTileCenter = bulletCenter - tileCenter;
@@ -119,6 +121,15 @@ void Bullet::UpdatePhysics( float deltaSeconds )
 				else normal = Vec2( 0.f, -1.f );
 			}
 
+			if ( m_faction == ENTITY_FACTION_GOOD )
+			{
+				Tile* impactedTile = g_game->m_currentMap->GetTile( impactedTileCoords );
+				if ( impactedTile != nullptr && impactedTile->IsDestructible() )
+				{
+					impactedTile->TakeDamage( 1 );
+				}
+			}
+
 			m_velocity.Reflect( normal );
 			m_orientationDegrees = m_velocity.GetOrientationDegrees();
 			m_position = bulletCenter;
@@ -128,7 +139,18 @@ void Bullet::UpdatePhysics( float deltaSeconds )
 	Vec2 nextPosition = m_position + m_velocity * deltaSeconds;
 	if ( g_game->m_currentMap->IsPointInSolidTile( nextPosition ) )
 	{
+		if ( m_faction == ENTITY_FACTION_GOOD )
+		{
+			IntVec2 nextTileCoords = g_game->m_currentMap->GetTileCoordsForWorldPosition( nextPosition );
+			Tile* impactedTile = g_game->m_currentMap->GetTile( nextTileCoords );
+			if ( impactedTile != nullptr && impactedTile->IsDestructible() )
+			{
+				impactedTile->TakeDamage( 1 );
+			}
+		}
+
 		TakeDamage( 1 );
+
 		IntVec2 currentTileCoords = g_game->m_currentMap->GetTileCoordsForWorldPosition( m_position );
 		IntVec2 nextTileCoords = g_game->m_currentMap->GetTileCoordsForWorldPosition( nextPosition );
 		Vec2 normal = Vec2::MakeFromIntVec2( currentTileCoords - nextTileCoords );

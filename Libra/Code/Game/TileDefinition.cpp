@@ -37,6 +37,16 @@ void TileDefinition::InitializeTileDefinitions()
 		{
 			newTileDef.m_isWater = ParseXmlAttribute( *tileDefElement, "isWater", false );
 		}
+		const char* isDestructibleText = tileDefElement->Attribute( "isDestructible" );
+		if ( isDestructibleText != nullptr )
+		{
+			newTileDef.m_isDestructible = ParseXmlAttribute( *tileDefElement, "isDestructible", false );
+		}
+		const char* altTileTypeText = tileDefElement->Attribute( "altTileType" );
+		if ( altTileTypeText != nullptr )
+		{
+			newTileDef.m_altTileType = altTileTypeText;
+		}
 		const char* spriteCoordText = tileDefElement->Attribute( "spriteCoords" );
 		if ( spriteCoordText != nullptr )
 		{
@@ -49,6 +59,11 @@ void TileDefinition::InitializeTileDefinitions()
 		if ( tintText != nullptr )
 		{
 			newTileDef.m_tint.SetFromText( tintText );
+		}
+		const char* healthText = tileDefElement->Attribute( "maxHealth" );
+		if ( healthText != nullptr )
+		{
+			newTileDef.m_maxHealth = ParseXmlAttribute( *tileDefElement, "maxHealth", 0 );
 		}
 		s_definitions[newTileDef.m_name] = new TileDefinition( newTileDef );
 		tileDefElement = tileDefElement->NextSiblingElement( "TileDefinition" );
