@@ -19,15 +19,6 @@ extern Game*	g_game;
 
 
 //-----------------------------------------------------------------------------------------------
-enum class TransitionState
-{
-	NONE,
-	OUTRO,
-	INTRO
-};
-
-
-//-----------------------------------------------------------------------------------------------
 class Game
 {
 public:
@@ -97,13 +88,6 @@ public:
 
 	SpriteSheet*		m_tileSpriteSheet = nullptr;
 
-private:
-	TransitionState m_transitionState = TransitionState::NONE;
-	float m_transitionTimer = 0.f;
-	float m_transitionDuration = 1.f;
-	int m_pendingNextMapIndex = -1;
-
-	float m_fadeAlpha = 0.f; // 0 = no fade, 1 = full black
 
 public:
 	Game();
@@ -129,11 +113,5 @@ public:
 	void RenderGameOverMode()								          const;
 	void Reset();
 	void KillAllEnemies();
-	void LoadNextMap(); // will now trigger transitions instead of immediate swap
-
-private:
-	void BeginOutroTransition( int nextMapIndex );
-	void BeginIntroTransition();
-	void UpdateTransition( float deltaSeconds );
-	void RenderTransitionOverlay() const;
+	void LoadNextMap();
 };
