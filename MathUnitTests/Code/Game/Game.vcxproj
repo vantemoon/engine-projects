@@ -26,6 +26,7 @@
     <ClInclude Include="UnitTests_MP1A02.hpp" />
     <ClInclude Include="UnitTests_MP1A03.hpp" />
     <ClInclude Include="UnitTests_MP1A04.hpp" />
+    <ClInclude Include="UnitTests_MP1A07.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
@@ -34,6 +35,7 @@
     <ClCompile Include="UnitTests_MP1A02.cpp" />
     <ClCompile Include="UnitTests_MP1A03.cpp" />
     <ClCompile Include="UnitTests_MP1A04.cpp" />
+    <ClCompile Include="UnitTests_MP1A07.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\Engine\Code\Engine\Engine.vcxproj">
