@@ -47,12 +47,14 @@ Game::Game()
 	Map* map3 = new Map( MapDefinition::s_definitions["Level3"], 2 );
 	Map* map4 = new Map( MapDefinition::s_definitions["Level4"], 3 );
 	Map* map5 = new Map( MapDefinition::s_definitions["Level5"], 4 );
+	Map* map6 = new Map( MapDefinition::s_definitions["Level6"], 5 );
 	m_currentMap = map1;
 	m_maps.push_back( map1 );
 	m_maps.push_back( map2 );
 	m_maps.push_back( map3 );
 	m_maps.push_back( map4 );
 	m_maps.push_back( map5 );
+	m_maps.push_back( map6 );
 
 	IntVec2 playerStartTileCoords = IntVec2( 1, 1 );
 	Vec2 playerStartPos = m_currentMap->GetWorldPositionForTileCoords( playerStartTileCoords );
@@ -764,7 +766,7 @@ void Game::KillAllEnemies()
 void Game::LoadNextMap()
 {
 	int currentMapIndex = m_currentMap->m_index;
-	if ( currentMapIndex == g_gameConfigBlackboard.GetValue( "numOfMaps", 3 ) - 1 )
+	if ( currentMapIndex == g_gameConfigBlackboard.GetValue( "numOfMaps", 6 ) - 1 )
 	{
 		g_engine->m_audioSystem->StartSound( m_victorySoundID, false );
 		m_currentGameState = GameState::VICTORY;
@@ -791,12 +793,14 @@ void Game::Reset()
 	Map* map3 = new Map( MapDefinition::s_definitions["Level3"], 2 );
 	Map* map4 = new Map( MapDefinition::s_definitions["Level4"], 3 );
 	Map* map5 = new Map( MapDefinition::s_definitions["Level5"], 4 );
+	Map* map6 = new Map( MapDefinition::s_definitions["Level6"], 5 );
 	m_currentMap = map1;
 	m_maps.push_back( map1 );
 	m_maps.push_back( map2 );
 	m_maps.push_back( map3 );
 	m_maps.push_back( map4 );
 	m_maps.push_back( map5 );
+	m_maps.push_back( map6 );
 
 	// Reset player
 	m_player->Reset();

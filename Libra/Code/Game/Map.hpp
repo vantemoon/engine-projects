@@ -89,6 +89,7 @@ public:
 private:
 	void				 PopulateMap();
 	void                 GenerateTiles();
+	void                 GenerateTilesFromImage();
 	bool                 IsMapValid() const;
 	void                 FillUnreachableTiles();
 	void				 DeleteGarbageEntities();

@@ -64,6 +64,11 @@ void MapDefinition::InitializeMapDefinitions()
 		{
 			newMapDef.m_fillTileType = TileDefinition::s_definitions[fillTileTypeText];
 		}
+		const char* mapImageNameText = mapDefElement->Attribute( "mapImageName" );
+		if ( mapImageNameText != nullptr )
+		{
+			newMapDef.m_mapImageName = mapImageNameText;
+		}
 		const char* borderTileTypeText = mapDefElement->Attribute( "borderTileType" );
 		if ( borderTileTypeText != nullptr )
 		{

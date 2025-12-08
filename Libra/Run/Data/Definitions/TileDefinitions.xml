@@ -7,6 +7,7 @@
 		isDestructible="false"
 		spriteCoords="0,0"
 		tint="0,200,0,255"
+		mapImageColor="0,0,0,0"
 		maxHealth="5"
 		/>
 
@@ -17,6 +18,7 @@
 		isDestructible="false"
 		spriteCoords="0,1"
 		tint="0,200,0,255"
+		mapImageColor="0,0,0,0"
 		maxHealth="5"
 		/>
 
@@ -27,6 +29,7 @@
 		isDestructible="false"
 		spriteCoords="0,2"
 		tint="0,200,0,255"
+		mapImageColor="0,0,0,0"
 		maxHealth="5"
 		/>
 
@@ -37,6 +40,7 @@
 		isDestructible="false"
 		spriteCoords="0,3"
 		tint="0,200,0,255"
+		mapImageColor="0,0,0,0"
 		maxHealth="5"
 		/>
 
@@ -47,6 +51,7 @@
 		isDestructible="false"
 		spriteCoords="0,4"
 		tint="0,200,0,255"
+		mapImageColor="0,0,0,0"
 		maxHealth="5"
 		/>
 
@@ -57,6 +62,7 @@
 		isDestructible="false"
 		spriteCoords="0,5"
 		tint="0,200,0,255"
+		mapImageColor="0,0,0,0"
 		maxHealth="5"
 		/>
 
@@ -67,6 +73,7 @@
 		isDestructible="false"
 		spriteCoords="0,6"
 		tint="0,200,0,255"
+		mapImageColor="0,0,0,0"
 		maxHealth="5"
 		/>
 
@@ -77,6 +84,7 @@
 		isDestructible="false"
 		spriteCoords="0,7"
 		tint="0,200,0,255"
+		mapImageColor="0,0,0,0"
 		maxHealth="5"
 		/>
 	
@@ -87,6 +95,7 @@
 		isDestructible="false"
 		spriteCoords="1,0"
 		tint="0,200,0,255"
+		mapImageColor="0,0,0,0"
 		maxHealth="5"
 		/>
 
@@ -97,6 +106,7 @@
 		isDestructible="false"
 		spriteCoords="1,1"
 		tint="0,200,0,255"
+		mapImageColor="0,0,0,0"
 		maxHealth="5"
 		/>
 
@@ -107,6 +117,7 @@
 		isDestructible="false"
 		spriteCoords="1,2"
 		tint="0,200,0,255"
+		mapImageColor="0,0,0,0"
 		maxHealth="5"
 		/>
 
@@ -117,6 +128,7 @@
 		isDestructible="false"
 		spriteCoords="1,3"
 		tint="139,69,19,255"
+		mapImageColor="0,0,0,0"
 		maxHealth="5"
 		/>
 
@@ -127,6 +139,7 @@
 		isDestructible="false"
 		spriteCoords="1,4"
 		tint="139,69,19,255"
+		mapImageColor="0,0,0,0"
 		maxHealth="5"
 		/>
 
@@ -137,6 +150,7 @@
 		isDestructible="false"
 		spriteCoords="1,5"
 		tint="139,69,19,255"
+		mapImageColor="0,0,0,0"
 		maxHealth="5"
 		/>
 
@@ -147,6 +161,7 @@
 		isDestructible="false"
 		spriteCoords="1,6"
 		tint="139,69,19,255"
+		mapImageColor="0,0,0,0"
 		maxHealth="5"
 		/>
 
@@ -157,6 +172,7 @@
 		isDestructible="false"
 		spriteCoords="1,7"
 		tint="194,178,128,255"
+		mapImageColor="0,0,0,0"
 		maxHealth="5"
 		/>
 
@@ -167,6 +183,7 @@
 		isDestructible="false"
 		spriteCoords="2,0"
 		tint="255,255,255,255"
+		mapImageColor="0,0,0,0"
 		maxHealth="5"
 		/>
 
@@ -177,6 +194,7 @@
 		isDestructible="false"
 		spriteCoords="2,1"
 		tint="255,255,255,255"
+		mapImageColor="0,0,0,0"
 		maxHealth="5"
 		/>
 
@@ -187,6 +205,7 @@
 		isDestructible="false"
 		spriteCoords="2,2"
 		tint="194,178,128,255"
+		mapImageColor="0,0,0,0"
 		maxHealth="5"
 		/>
 
@@ -197,6 +216,7 @@
 		isDestructible="false"
 		spriteCoords="2,3"
 		tint="194,178,128,255"
+		mapImageColor="0,0,0,0"
 		maxHealth="5"
 		/>
 
@@ -207,6 +227,7 @@
 		isDestructible="false"
 		spriteCoords="2,4"
 		tint="255,255,255,255"
+		mapImageColor="150,120,90,255"
 		maxHealth="5"
 		/>
 
@@ -217,6 +238,7 @@
 		isDestructible="false"
 		spriteCoords="2,5"
 		tint="255,255,255,255"
+		mapImageColor="0,0,0,0"
 		maxHealth="5"
 		/>
 
@@ -227,6 +249,7 @@
 		isDestructible="false"
 		spriteCoords="2,6"
 		tint="139,69,19,255"
+		mapImageColor="100,50,10,255"
 		maxHealth="5"
 		/>
 
@@ -237,6 +260,7 @@
 		isDestructible="false"
 		spriteCoords="2,7"
 		tint="194,178,128,255"
+		mapImageColor="0,0,0,0"
 		maxHealth="5"
 		/>
 	
@@ -247,6 +271,7 @@
 		isDestructible="false"
 		spriteCoords="3,0"
 		tint="255,255,255,255"
+		mapImageColor="0,0,0,0"
 		maxHealth="5"
 		/>
 
@@ -257,6 +282,7 @@
 		isDestructible="false"
 		spriteCoords="3,1"
 		tint="100,100,100,255"
+		mapImageColor="0,0,0,0"
 		maxHealth="5"
 		/>
 
@@ -267,6 +293,7 @@
 		isDestructible="false"
 		spriteCoords="3,2"
 		tint="255,255,255,255"
+		mapImageColor="0,0,0,0"
 		maxHealth="5"
 		/>
 
@@ -277,6 +304,7 @@
 		isDestructible="false"
 		spriteCoords="3,3"
 		tint="100,100,100,255"
+		mapImageColor="0,0,0,0"
 		maxHealth="5"
 		/>
 
@@ -287,6 +315,7 @@
 		isDestructible="false"
 		spriteCoords="3,4"
 		tint="255,255,255,255"
+		mapImageColor="0,0,0,0"
 		maxHealth="5"
 		/>
 
@@ -297,6 +326,7 @@
 		isDestructible="false"
 		spriteCoords="3,5"
 		tint="100,100,100,255"
+		mapImageColor="0,0,0,0"
 		maxHealth="5"
 		/>
 
@@ -307,6 +337,7 @@
 		isDestructible="false"
 		spriteCoords="3,6"
 		tint="255,255,255,255"
+		mapImageColor="0,0,0,0"
 		maxHealth="5"
 		/>
 
@@ -318,6 +349,7 @@
 		altTileType="Sand1"
 		spriteCoords="3,7"
 		tint="255,255,255,255"
+		mapImageColor="0,0,0,0"
 		maxHealth="5"
 		/>
 	
@@ -329,6 +361,7 @@
 		altTileType="Sand1"
 		spriteCoords="4,0"
 		tint="255,255,255,255"
+		mapImageColor="0,0,0,0"
 		maxHealth="5"
 		/>
 	
@@ -340,6 +373,7 @@
 		altTileType="Sand1"
 		spriteCoords="4,1"
 		tint="255,255,255,255"
+		mapImageColor="0,0,0,0"
 		maxHealth="5"
 		/>
 
@@ -351,6 +385,7 @@
 		altTileType="Sand1"
 		spriteCoords="4,2"
 		tint="255,255,255,255"
+		mapImageColor="145,145,145,255"
 		maxHealth="5"
 		/>
 
@@ -362,6 +397,7 @@
 		altTileType="Sand1"
 		spriteCoords="4,3"
 		tint="255,255,255,255"
+		mapImageColor="0,0,0,0"
 		maxHealth="5"
 		/>
 
@@ -373,6 +409,7 @@
 		altTileType="Sand1"
 		spriteCoords="4,4"
 		tint="255,255,255,255"
+		mapImageColor="0,0,0,0"
 		maxHealth="5"
 		/>
 
@@ -384,6 +421,7 @@
 		altTileType="Sand1"
 		spriteCoords="4,5"
 		tint="255,255,255,255"
+		mapImageColor="0,0,0,0"
 		maxHealth="5"
 		/>
 
@@ -395,6 +433,7 @@
 		altTileType="Sand1"
 		spriteCoords="4,6"
 		tint="255,255,255,255"
+		mapImageColor="0,0,0,0"
 		maxHealth="5"
 		/>
 
@@ -406,6 +445,7 @@
 		altTileType="Sand1"
 		spriteCoords="4,7"
 		tint="255,255,255,255"
+		mapImageColor="0,0,0,0"
 		maxHealth="5"
 		/>
 
@@ -417,6 +457,7 @@
 		altTileType="Sand1"
 		spriteCoords="5,0"
 		tint="255,255,255,255"
+		mapImageColor="0,0,0,0"
 		maxHealth="5"
 		/>
 
@@ -428,6 +469,7 @@
 		altTileType="Sand1"
 		spriteCoords="5,1"
 		tint="255,255,255,255"
+		mapImageColor="0,0,0,0"
 		maxHealth="5"
 		/>
 
@@ -439,6 +481,7 @@
 		altTileType="Sand1"
 		spriteCoords="5,2"
 		tint="255,255,255,255"
+		mapImageColor="0,0,0,0"
 		maxHealth="5"
 		/>
 
@@ -450,6 +493,7 @@
 		altTileType="Sand1"
 		spriteCoords="5,3"
 		tint="255,255,255,255"
+		mapImageColor="0,0,0,0"
 		maxHealth="5"
 		/>
 
@@ -461,6 +505,7 @@
 		altTileType="Sand1"
 		spriteCoords="5,4"
 		tint="255,255,255,255"
+		mapImageColor="0,0,0,0"
 		maxHealth="5"
 		/>
 
@@ -472,6 +517,7 @@
 		altTileType="Sand1"
 		spriteCoords="5,5"
 		tint="255,255,255,255"
+		mapImageColor="0,0,0,0"
 		maxHealth="5"
 		/>
 
@@ -482,6 +528,7 @@
 		isDestructible="false"
 		spriteCoords="5,6"
 		tint="255,255,255,255"
+		mapImageColor="0,0,0,0"
 		maxHealth="5"
 		/>
 
@@ -492,6 +539,7 @@
 		isDestructible="false"
 		spriteCoords="5,7"
 		tint="255,255,255,255"
+		mapImageColor="0,0,0,0"
 		maxHealth="5"
 		/>
 	
@@ -502,6 +550,7 @@
 		isDestructible="false"
 		spriteCoords="6,0"
 		tint="210,180,140,255"
+		mapImageColor="0,0,0,0"
 		maxHealth="5"
 		/>
 
@@ -512,6 +561,7 @@
 		isDestructible="false"
 		spriteCoords="6,1"
 		tint="210,180,140,255"
+		mapImageColor="0,0,0,0"
 		maxHealth="5"
 		/>
 
@@ -522,6 +572,7 @@
 		isDestructible="false"
 		spriteCoords="6,2"
 		tint="210,180,140,255"
+		mapImageColor="0,0,0,0"
 		maxHealth="5"
 		/>
 
@@ -532,6 +583,7 @@
 		isDestructible="false"
 		spriteCoords="6,3"
 		tint="100,100,100,255"
+		mapImageColor="55,55,55,255"
 		maxHealth="5"
 		/>
 
@@ -542,6 +594,7 @@
 		isDestructible="false"
 		spriteCoords="6,4"
 		tint="255,255,255,255"
+		mapImageColor="0,0,0,0"
 		maxHealth="5"
 		/>
 
@@ -552,6 +605,7 @@
 		isDestructible="false"
 		spriteCoords="6,5"
 		tint="255,255,255,255"
+		mapImageColor="175,175,175,255"
 		maxHealth="5"
 		/>
 
@@ -562,6 +616,7 @@
 		isDestructible="false"
 		spriteCoords="6,6"
 		tint="255,255,255,255"
+		mapImageColor="0,0,0,0"
 		maxHealth="5"
 		/>
 
@@ -572,6 +627,7 @@
 		isDestructible="false"
 		spriteCoords="6,7"
 		tint="255,255,255,255"
+		mapImageColor="0,0,0,0"
 		maxHealth="5"
 		/>
 	
@@ -582,6 +638,7 @@
 		isDestructible="false"
 		spriteCoords="7,0"
 		tint="255,255,255,255"
+		mapImageColor="0,0,0,0"
 		maxHealth="5"
 		/>
 
@@ -592,6 +649,7 @@
 		isDestructible="false"
 		spriteCoords="7,1"
 		tint="255,255,255,255"
+		mapImageColor="0,0,0,0"
 		maxHealth="5"
 		/>
 	
@@ -602,6 +660,7 @@
 		isDestructible="false"
 		spriteCoords="7,2"
 		tint="255,215,0,255"
+		mapImageColor="0,0,0,0"
 		maxHealth="5"
 		/>
 
@@ -612,6 +671,7 @@
 		isDestructible="false"
 		spriteCoords="7,3"
 		tint="0,200,0,255"
+		mapImageColor="0,0,0,0"
 		maxHealth="5"
 		/>
 
@@ -622,6 +682,7 @@
 		isDestructible="false"
 		spriteCoords="7,4"
 		tint="0,200,0,255"
+		mapImageColor="0,0,0,0"
 		maxHealth="5"
 		/>
 
@@ -632,6 +693,7 @@
 		isDestructible="false"
 		spriteCoords="7,5"
 		tint="135,206,235,255"
+		mapImageColor="0,0,0,0"
 		maxHealth="5"
 		/>
 	
@@ -642,6 +704,7 @@
 		isDestructible="false"
 		spriteCoords="7,6"
 		tint="255,69,0,255"
+		mapImageColor="0,0,0,0"
 		maxHealth="5"
 		/>
 
@@ -652,6 +715,7 @@
 		isDestructible="false"
 		spriteCoords="7,7"
 		tint="255,69,0,255"
+		mapImageColor="0,0,0,0"
 		maxHealth="5"
 		/>
 	

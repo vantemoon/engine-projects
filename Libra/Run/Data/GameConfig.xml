@@ -5,7 +5,7 @@
     windowHeight="800"
     worldWidth="200"
     worldHeight="100"
-    numOfMaps="5"
+    numOfMaps="6"
 	maxGenerationAttemps="1000"
     tileSize="12.5"
 	deathDelay="3.0"

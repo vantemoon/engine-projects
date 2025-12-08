@@ -9,7 +9,7 @@
 struct MapDefinition
 {
 public:
-	std::string	m_name = "";
+	std::string	m_name;
 	IntVec2	m_dimensions;
 	float	m_aspectRatio = 1.f;
 	Vec2	m_exitPosition = Vec2::ZERO;
@@ -17,6 +17,9 @@ public:
 	int m_numOfLeos = 0;
 	int m_numOfScorpios = 0;
 	int m_numOfAries = 0;
+
+	std::string m_mapImageName;
+	IntVec2 m_mapImageOffset = IntVec2::ZERO;
 
 	TileDefinition const* m_fillTileType = nullptr;
 	TileDefinition const* m_borderTileType = nullptr;

@@ -12,6 +12,7 @@
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/EngineCommon.hpp"
 #include "Engine/Core/ErrorWarningAssert.hpp"
+#include "Engine/Core/Image.hpp"
 #include "Engine/Core/Time.hpp"
 #include "Engine/Core/Vertex.hpp"
 #include "Engine/Core/VertexUtils.hpp"
@@ -629,12 +630,85 @@ void Map::GenerateTiles()
 
 
 //-----------------------------------------------------------------------------------------------
+void Map::GenerateTilesFromImage()
+{
+	Image mapImage = Image( m_definition->m_mapImageName.c_str() );
+
+	IntVec2 imageDimensions = mapImage.GetDimensions();
+	if ( imageDimensions.x != m_dimensions.x || imageDimensions.y != m_dimensions.y )
+	{
+		ERROR_RECOVERABLE( "Map image dimensions do not match map dimensions." );
+		return;
+	}
+
+	RandomNumberGenerator rng;
+
+	for ( int y = 0; y < m_dimensions.y; ++y )
+	{
+		for ( int x = 0; x < m_dimensions.x; ++x )
+		{
+			IntVec2 tileCoords = IntVec2( x, y );
+
+			if ( x >= imageDimensions.x || y >= imageDimensions.y )
+			{
+				continue;
+			}
+
+			Rgba8 pixelColor = mapImage.GetTexelColor( tileCoords );
+
+			if ( pixelColor.a == 0 )
+			{
+				continue;
+			}
+
+			TileDefinition const* matchedDef = nullptr;
+
+			for ( auto const& pair : TileDefinition::s_definitions )
+			{
+				TileDefinition const* tileDef = pair.second;
+				if ( tileDef == nullptr )
+				{
+					continue;
+				}
+
+				if ( tileDef->m_mapImageColor.r == pixelColor.r &&
+					tileDef->m_mapImageColor.g == pixelColor.g &&
+					tileDef->m_mapImageColor.b == pixelColor.b )
+				{
+					matchedDef = tileDef;
+					break;
+				}
+			}
+
+			if ( matchedDef == nullptr )
+			{
+				ERROR_RECOVERABLE( "No matching tile definition found for pixel color in map image." );
+				continue;
+			}
+
+			int roll = rng.RollRandomIntInRange( 0, 255 );
+			if ( roll <= static_cast< int >( pixelColor.a ) )
+			{
+				int tileIndex = y * m_dimensions.x + x;
+				m_tiles[tileIndex] = Tile( tileCoords, matchedDef );
+			}
+		}
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
 void Map::PopulateMap()
 {
 	for ( int attempt = 0; attempt < g_gameConfigBlackboard.GetValue( "maxGenerationAttemps", 1000 ); ++attempt )
 	{
 		m_tiles.clear();
+		bool hasImage = m_definition->m_mapImageName != "";
 		GenerateTiles();
+		if ( hasImage )
+		{
+			GenerateTilesFromImage();
+		}
 		if ( IsMapValid() )
 		{
 			FillUnreachableTiles();

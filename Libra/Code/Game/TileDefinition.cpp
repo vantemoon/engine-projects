@@ -60,6 +60,11 @@ void TileDefinition::InitializeTileDefinitions()
 		{
 			newTileDef.m_tint.SetFromText( tintText );
 		}
+		const char* mapImageColorText = tileDefElement->Attribute( "mapImageColor" );
+		if ( mapImageColorText != nullptr )
+		{
+			newTileDef.m_mapImageColor.SetFromText( mapImageColorText );
+		}
 		const char* healthText = tileDefElement->Attribute( "maxHealth" );
 		if ( healthText != nullptr )
 		{

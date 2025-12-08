@@ -9,6 +9,8 @@
 		numOfLeos="5"
 		numOfAries="2"
 		
+		mapImageName=""
+		
 		fillTileType="Grass3"
 		borderTileType="Stone2"
 		bunkerFloorTileType="StoneTile"
@@ -31,6 +33,8 @@
 		numOfScorpios="10"
 		numOfLeos="3"
 		numOfAries="2"
+		
+		mapImageName=""
 		
 		fillTileType="Grass3"
 		borderTileType="StoneBrick4"
@@ -55,6 +59,8 @@
 		numOfLeos="2"
 		numOfAries="2"
 		
+		mapImageName=""
+		
 		fillTileType="Mud2"
 		borderTileType="MetalWall"
 		bunkerFloorTileType="StoneTile"
@@ -77,6 +83,8 @@
 		numOfScorpios="15"
 		numOfLeos="3"
 		numOfAries="5"
+		
+		mapImageName=""
 		
 		fillTileType="Sand2"
 		borderTileType="Stone1"
@@ -101,6 +109,8 @@
 		numOfLeos="3"
 		numOfAries="2"
 		
+		mapImageName=""
+		
 		fillTileType="Dirt5"
 		borderTileType="StoneBrick4"
 		bunkerFloorTileType="StoneTile"
@@ -112,6 +122,31 @@
 		wormLength1="10"
 		worm2TileType="StoneBrick4"
 		numOfWorms2="35"
+		wormLength2="10"
+		/>
+
+	<MapDefinition
+		name="Level6"
+		dimensions="20,20"
+		aspectRatio="0.5"
+		
+		numOfScorpios="10"
+		numOfLeos="2"
+		numOfAries="1"
+		
+		mapImageName="Data/Maps/Test.png"
+		
+		fillTileType="Dirt5"
+		borderTileType="StoneBrick4"
+		bunkerFloorTileType="StoneTile"
+		startBunkerWallTileType="StoneBrick4"
+		exitBunkerWallTileType="MetalWall"
+		
+		worm1TileType="Mud1"
+		numOfWorms1="10"
+		wormLength1="10"
+		worm2TileType="StoneBrick4"
+		numOfWorms2="20"
 		wormLength2="10"
 		/>
 
