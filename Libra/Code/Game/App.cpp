@@ -50,7 +50,7 @@ void App::Startup()
 
 	m_lastFrameStartTime = GetCurrentTimeSeconds();
 
-	g_engine->m_eventSystem->SubscribeEventCallbackFunction( "Quit", Quit );
+	g_engine->m_eventSystem->SubscribeEventCallbackFunction( "Quit", Command_Quit );
 }
 
 
@@ -169,13 +169,12 @@ void App::Render() const
 
 
 //-----------------------------------------------------------------------------------------------
-bool App::Quit( EventArgs& args )
+bool App::Command_Quit( EventArgs& args )
 {
 	UNUSED( args );
 	if ( g_app && !g_app->m_isQuitting )
 	{
 		g_app->SetIsQuitting();
-		return true;
 	}
 	return false;
 }

@@ -144,7 +144,7 @@
 		
 		worm1TileType="Mud1"
 		numOfWorms1="10"
-		wormLength1="10"
+		wormLength1="6"
 		worm2TileType="StoneBrick4"
 		numOfWorms2="20"
 		wormLength2="10"

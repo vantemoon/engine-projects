@@ -30,7 +30,7 @@ public:
 	void UpdateFromController();
 	void Render()									const;
 
-	static bool Quit( EventArgs& args );
+	static bool Command_Quit( EventArgs& args );
 	void SetIsQuitting();
 	bool IsQuitting()								const;
 	void HardReset();
