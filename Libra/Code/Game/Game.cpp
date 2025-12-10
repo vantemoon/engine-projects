@@ -276,6 +276,14 @@ void Game::UpdateMusic()
 			g_engine->m_audioSystem->SetSoundPlaybackSpeed( m_gameplayMusicPlaybackID, 0.f );
 		}
 	}
+	else if ( m_currentGameState == GameState::VICTORY )
+	{
+		if ( m_isGameplayMusicPlaying)
+		{
+			g_engine->m_audioSystem->StopSound( m_gameplayMusicPlaybackID );
+			m_isGameplayMusicPlaying = false;
+		}
+	}
 }
 
 
@@ -770,6 +778,7 @@ void Game::LoadNextMap()
 	{
 		g_engine->m_audioSystem->StartSound( m_victorySoundID, false );
 		m_currentGameState = GameState::VICTORY;
+		UpdateMusic();
 		return;
 	}
 	g_engine->m_audioSystem->StartSound( m_nextLevelSoundID, false );

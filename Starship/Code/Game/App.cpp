@@ -30,6 +30,8 @@ App::App()
 	m_game = new Game();
 
 	m_lastFrameStartTime = GetCurrentTimeSeconds();
+
+	g_engine->m_eventSystem->SubscribeEventCallbackFunction( "Quit", Command_Quit );
 }
 
 
@@ -120,6 +122,18 @@ void App::Render() const
 {
 	g_engine->m_renderer->ClearScreen( Rgba8( 0, 0, 0 ) );
 	m_game->Render();
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool App::Command_Quit( EventArgs& args )
+{
+	UNUSED( args );
+	if ( g_app && !g_app->m_isQuitting )
+	{
+		g_app->SetIsQuitting();
+	}
+	return false;
 }
 
 

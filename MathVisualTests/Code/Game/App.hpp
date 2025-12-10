@@ -1,5 +1,6 @@
 #pragma once
 #include "Game/GameCommon.hpp"
+#include "Engine/Core/EventSystem.hpp"
 #include "Engine/Renderer/Camera.hpp"
 
 
@@ -29,6 +30,7 @@ public:
 	void Render()									const;
 	void RenderHUD()								const;
 
+	static bool Command_Quit( EventArgs& args );
 	void SetIsQuitting();
 	bool IsQuitting()								const;
 	void HardReset( GameMode newGameMode );

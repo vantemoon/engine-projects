@@ -146,7 +146,7 @@ void Game::UpdateFromKeyboard()
 	if ( m_currentGameState == GameState::ATTRACT_MODE )
 	{
 		// Start the game
-		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_SPACE ) || g_engine->m_inputSystem->WasKeyJustPressed( 'N' ) )
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'P' ) || g_engine->m_inputSystem->WasKeyJustPressed( 'N' ) || g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_SPACE ) )
 		{
 			Reset();
 			m_currentGameState = GameState::PLAYING;

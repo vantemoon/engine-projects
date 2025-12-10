@@ -32,6 +32,8 @@ App::App()
 	m_gameMode = GAMEMODE_NEAREST_POINT;
 
 	m_lastFrameStartTime = GetCurrentTimeSeconds();
+
+	g_engine->m_eventSystem->SubscribeEventCallbackFunction( "Quit", Command_Quit );
 }
 
 
@@ -194,6 +196,18 @@ void App::RenderHUD() const
 	g_engine->m_renderer->DrawVertexArray( verts );
 
 	g_engine->m_renderer->EndCamera( *m_game->m_screenCamera );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool App::Command_Quit( EventArgs& args )
+{
+	UNUSED( args );
+	if ( g_app && !g_app->m_isQuitting )
+	{
+		g_app->SetIsQuitting();
+	}
+	return false;
 }
 
 
