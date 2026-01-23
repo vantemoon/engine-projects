@@ -11,12 +11,12 @@ Engine::Engine( EngineConfig const& config )
 {
 	g_engine = this;
 
-	m_window = new Window( config.m_windowConfig );
-	m_renderer = new Renderer( config.m_rendererConfig );
-	m_inputSystem = new InputSystem( config.m_inputConfig );
-	m_audioSystem = new AudioSystem( config.m_audioConfig );
-	m_eventSystem = new EventSystem( config.m_eventSystemConfig );
-	m_devConsole = new DevConsole( config.m_devConsoleConfig );
+	if ( config.m_windowConfig.m_isEnabled == true ) m_window = new Window( config.m_windowConfig );
+	if ( config.m_rendererConfig.m_isEnabled == true ) m_renderer = new Renderer( config.m_rendererConfig );
+	if ( config.m_inputConfig.m_isEnabled == true ) m_inputSystem = new InputSystem( config.m_inputConfig );
+	if ( config.m_audioConfig.m_isEnabled == true ) m_audioSystem = new AudioSystem( config.m_audioConfig );
+	if ( config.m_eventSystemConfig.m_isEnabled == true ) m_eventSystem = new EventSystem( config.m_eventSystemConfig );
+	if ( config.m_devConsoleConfig.m_isEnabled == true ) m_devConsole = new DevConsole( config.m_devConsoleConfig );
 }
 
 
@@ -46,46 +46,46 @@ Engine::~Engine()
 //-----------------------------------------------------------------------------------------------
 void Engine::Startup()
 {
-	m_window->Startup();
-	m_renderer->Startup();
-	m_devConsole->Startup();
-	m_eventSystem->Startup();
-	m_inputSystem->StartUp();
-	m_audioSystem->Startup();
+	if ( m_window ) m_window->Startup();
+	if ( m_renderer ) m_renderer->Startup();
+	if ( m_devConsole ) m_devConsole->Startup();
+	if ( m_eventSystem ) m_eventSystem->Startup();
+	if ( m_inputSystem ) m_inputSystem->StartUp();
+	if ( m_audioSystem ) m_audioSystem->Startup();
 }
 
 
 //-----------------------------------------------------------------------------------------------
 void Engine::Shutdown()
 {
-	m_audioSystem->Shutdown();
-	m_inputSystem->ShutDown();
-	m_devConsole->Shutdown();
-	m_eventSystem->Shutdown();
-	m_renderer->Shutdown();
-	m_window->Shutdown();
+	if ( m_audioSystem ) m_audioSystem->Shutdown();
+	if ( m_inputSystem ) m_inputSystem->ShutDown();
+	if ( m_devConsole ) m_devConsole->Shutdown();
+	if ( m_eventSystem ) m_eventSystem->Shutdown();
+	if ( m_renderer ) m_renderer->Shutdown();
+	if ( m_window ) m_window->Shutdown();
 }
 
 
 //-----------------------------------------------------------------------------------------------
 void Engine::BeginFrame()
 {
-	m_window->BeginFrame();
-	m_renderer->BeginFrame();
-	m_eventSystem->BeginFrame();
-	m_devConsole->BeginFrame();
-	m_inputSystem->BeginFrame();
-	m_audioSystem->BeginFrame();
+	if ( m_window ) m_window->BeginFrame();
+	if ( m_renderer ) m_renderer->BeginFrame();
+	if ( m_eventSystem ) m_eventSystem->BeginFrame();
+	if ( m_devConsole ) m_devConsole->BeginFrame();
+	if ( m_inputSystem ) m_inputSystem->BeginFrame();
+	if ( m_audioSystem ) m_audioSystem->BeginFrame();
 }
 
 
 //-----------------------------------------------------------------------------------------------
 void Engine::EndFrame()
 {
-	m_window->EndFrame();
-	m_renderer->EndFrame();
-	m_eventSystem->EndFrame();
-	m_devConsole->EndFrame();
-	m_inputSystem->EndFrame();
-	m_audioSystem->EndFrame();
+	if ( m_window ) m_window->EndFrame();
+	if ( m_renderer ) m_renderer->EndFrame();
+	if ( m_eventSystem ) m_eventSystem->EndFrame();
+	if ( m_devConsole ) m_devConsole->EndFrame();
+	if ( m_inputSystem ) m_inputSystem->EndFrame();
+	if ( m_audioSystem ) m_audioSystem->EndFrame();
 }

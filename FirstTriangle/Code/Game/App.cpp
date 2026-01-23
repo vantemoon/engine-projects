@@ -17,8 +17,13 @@ App* g_app = nullptr;
 App::App()
 {
 	EngineConfig engineConfig;
+
+	// Set up window config
 	engineConfig.m_windowConfig.m_clientAspect = 2.0f;
 	engineConfig.m_windowConfig.m_windowTitle = "First Triangle";
+
+	// Set up renderer config
+	engineConfig.m_rendererConfig.m_isEnabled = false;
 
 	g_engine = new Engine( engineConfig );
 	g_engine->Startup();
@@ -67,13 +72,16 @@ void App::RunFrame()
 //-----------------------------------------------------------------------------------------------
 void App::UpdateFromKeyboard()
 {
+	if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_ESCAPE ) )
+	{
+		SetIsQuitting();
+	}
 }
 
 
 //-----------------------------------------------------------------------------------------------
 void App::UpdateFromController()
 {
-	// Currently no global controller actions
 }
 
 
@@ -93,6 +101,10 @@ void App::Update( [[maybe_unused]] float deltaSeconds )
 //-----------------------------------------------------------------------------------------------
 void App::Render() const
 {
+	if ( g_engine->m_renderer == nullptr )
+	{
+		return;
+	}
 	g_engine->m_renderer->ClearScreen( Rgba8( 0, 0, 0 ) );
 }
 
