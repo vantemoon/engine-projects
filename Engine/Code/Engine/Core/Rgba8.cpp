@@ -45,6 +45,16 @@ void Rgba8::SetFromText( const char* text )
 
 
 //-----------------------------------------------------------------------------------------------
+void Rgba8::GetAsFloats( float* colorAsFloats ) const
+{
+	colorAsFloats[0] = NormalizeByte( r );
+	colorAsFloats[1] = NormalizeByte( g );
+	colorAsFloats[2] = NormalizeByte( b );
+	colorAsFloats[3] = NormalizeByte( a );
+}
+
+
+//-----------------------------------------------------------------------------------------------
 Rgba8 Rgba8::Interpolate( Rgba8 const& start, Rgba8 const& end, float fractionOfEnd ) const
 {
 	float newR = ::Interpolate( NormalizeByte( start.r ), NormalizeByte( end.r ), fractionOfEnd );

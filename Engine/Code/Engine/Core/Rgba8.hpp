@@ -19,6 +19,7 @@ public:
 
 	Rgba8 Interpolate( Rgba8 const& start, Rgba8 const& end, float fractionOfEnd ) const;
 	void  SetFromText( const char* text );
+	void  GetAsFloats( float* colorAsFloats ) const;
 
 	static const Rgba8 WHITE;
 	static const Rgba8 BLACK;

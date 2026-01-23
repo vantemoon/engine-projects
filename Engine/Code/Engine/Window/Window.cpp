@@ -62,6 +62,20 @@ Vec2 Window::GetNormalizedMouseUV() const
 
 
 //-----------------------------------------------------------------------------------------------
+void* Window::GetHwnd() const
+{
+	return m_windowHandle;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+IntVec2 Window::GetClientDimensions() const
+{
+	return m_clientDimensions;
+}
+
+
+//-----------------------------------------------------------------------------------------------
 // Handles Windows (Win32) messages/events; i.e. the OS is trying to tell us something happened.
 // This function is called back by Windows whenever we tell it to (by calling DispatchMessage).
 LRESULT CALLBACK WindowsMessageHandlingProcedure( HWND windowHandle, UINT wmMessageCode, WPARAM wParam, LPARAM lParam )
@@ -180,6 +194,7 @@ void Window::CreateOSWindow()
 		// Client window has a taller aspect than desktop; shrink client width to match its height
 		clientWidth = clientHeight * clientAspect;
 	}
+	m_clientDimensions = IntVec2( ( int ) clientWidth, ( int ) clientHeight );
 
 	// Calculate client rect bounds by centering the client area
 	float clientMarginX = 0.5f * ( desktopWidth - clientWidth );

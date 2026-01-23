@@ -26,7 +26,6 @@ App::App()
 	engineConfig.m_rendererConfig.m_isEnabled = false;
 
 	g_engine = new Engine( engineConfig );
-	g_engine->Startup();
 
 	m_lastFrameStartTime = GetCurrentTimeSeconds();
 

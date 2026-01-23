@@ -17,12 +17,16 @@ Engine::Engine( EngineConfig const& config )
 	if ( config.m_audioConfig.m_isEnabled == true ) m_audioSystem = new AudioSystem( config.m_audioConfig );
 	if ( config.m_eventSystemConfig.m_isEnabled == true ) m_eventSystem = new EventSystem( config.m_eventSystemConfig );
 	if ( config.m_devConsoleConfig.m_isEnabled == true ) m_devConsole = new DevConsole( config.m_devConsoleConfig );
+
+	Startup();
 }
 
 
 //-----------------------------------------------------------------------------------------------
 Engine::~Engine()
 {
+	Shutdown();
+
 	delete m_audioSystem;
 	m_audioSystem = nullptr;
 
