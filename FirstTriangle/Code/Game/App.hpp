@@ -21,6 +21,7 @@ public:
 	App();
 	~App();
 
+	void Startup();
 	void RunMainLoop();
 	void RunFrame();
 	void Update( float deltaSeconds );
