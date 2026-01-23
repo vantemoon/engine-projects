@@ -16,12 +16,6 @@
     <ClCompile Include="App.cpp">
       <Filter>Framework</Filter>
     </ClCompile>
-    <ClCompile Include="Game.cpp">
-      <Filter>Gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="Entity.cpp">
-      <Filter>Gameplay</Filter>
-    </ClCompile>
     <ClCompile Include="GameCommon.cpp">
       <Filter>Framework</Filter>
     </ClCompile>
@@ -29,12 +23,6 @@
   <ItemGroup>
     <ClInclude Include="App.hpp">
       <Filter>Framework</Filter>
-    </ClInclude>
-    <ClInclude Include="Game.hpp">
-      <Filter>Gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="Entity.hpp">
-      <Filter>Gameplay</Filter>
     </ClInclude>
     <ClInclude Include="GameCommon.hpp">
       <Filter>Framework</Filter>

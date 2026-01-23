@@ -1,3 +1,3 @@
-Protogame2D - Sylvia Sun
+First Triangle
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Basis project for P4 branching any new 2D game project.
+A throwaway project that sets up DirectX 11 and renders a triangle to the screen

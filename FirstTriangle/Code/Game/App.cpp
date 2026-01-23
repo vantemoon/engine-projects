@@ -1,5 +1,4 @@
 #include "Game/App.hpp"
-#include "Game/Game.hpp"
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/Rgba8.hpp"
 #include "Engine/Core/Time.hpp"
@@ -24,8 +23,6 @@ App::App()
 	g_engine = new Engine( engineConfig );
 	g_engine->Startup();
 
-	m_game = new Game();
-
 	m_lastFrameStartTime = GetCurrentTimeSeconds();
 
 	g_engine->m_eventSystem->SubscribeEventCallbackFunction( "Quit", Command_Quit );
@@ -35,9 +32,6 @@ App::App()
 //-----------------------------------------------------------------------------------------------
 App::~App()
 {
-	delete m_game;
-	m_game = nullptr;
-
 	delete g_engine;
 	g_engine = nullptr;
 }
@@ -73,13 +67,6 @@ void App::RunFrame()
 //-----------------------------------------------------------------------------------------------
 void App::UpdateFromKeyboard()
 {
-	if ( !m_game->m_currentGameState == GameState::ATTRACT_MODE )
-	{
-		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_F8 ) )
-		{
-			HardReset();
-		}
-	}
 }
 
 
@@ -93,24 +80,13 @@ void App::UpdateFromController()
 //-----------------------------------------------------------------------------------------------
 void App::HardReset()
 {
-	if ( m_game != nullptr )
-	{
-		delete m_game;
-		m_game = nullptr;
-	}
-
-	m_game = new Game();
 }
 
 
 //-----------------------------------------------------------------------------------------------
-void App::Update( float deltaSeconds )
+void App::Update( [[maybe_unused]] float deltaSeconds )
 {
 	UpdateFromKeyboard();
-
-	float timeScale = 1.f;
-
-	m_game->Update( deltaSeconds * timeScale );
 }
 
 
@@ -118,7 +94,6 @@ void App::Update( float deltaSeconds )
 void App::Render() const
 {
 	g_engine->m_renderer->ClearScreen( Rgba8( 0, 0, 0 ) );
-	m_game->Render();
 }
 
 
