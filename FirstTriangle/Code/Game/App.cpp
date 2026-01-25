@@ -19,11 +19,11 @@
 #pragma comment( lib, "dxgi.lib" )
 #pragma comment( lib, "d3dcompiler.lib" )
 
-#if defined(_DEBUG)
+#if defined( _DEBUG )
 #define ENGINE_DEBUG_RENDER
 #endif
 
-#if defined(ENGINE_DEBUG_RENDER)
+#if defined( ENGINE_DEBUG_RENDER )
 #include <dxgidebug.h>
 #pragma comment( lib, "dxguid.lib" )
 #endif
@@ -34,13 +34,14 @@ IDXGISwapChain* m_swapChain = nullptr;
 ID3D11RenderTargetView* m_renderTargetView = nullptr;
 ID3D11VertexShader* m_vertexShader = nullptr;
 ID3D11PixelShader* m_pixelShader = nullptr;
+ID3D11InputLayout* m_inputLayoutForVertex_PCU = nullptr;
 ID3D11Buffer* m_vertexBuffer = nullptr;
 ID3D11RasterizerState* m_rasterizerState = nullptr;
 
 std::vector<uint8_t> m_vertexShaderByteCode;
 std::vector<uint8_t> m_pixelShaderByteCode;
 
-#if defined(ENGINE_DEBUG_RENDER)
+#if defined( ENGINE_DEBUG_RENDER )
 void* m_dxgiDebug = nullptr;
 void* m_dxgiDebugModule = nullptr;
 #endif
@@ -75,6 +76,8 @@ App::App()
 //-----------------------------------------------------------------------------------------------
 App::~App()
 {
+	Shutdown();
+
 	delete g_engine;
 	g_engine = nullptr;
 }
@@ -84,7 +87,7 @@ App::~App()
 void App::Startup()
 {
 	unsigned int deviceFlags = 0;
-#if defined(ENGINE_DEBUG_RENDER)
+#if defined( ENGINE_DEBUG_RENDER )
 	deviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
 
@@ -96,7 +99,7 @@ void App::Startup()
 	swapChainDesc.SampleDesc.Count = 1;
 	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 	swapChainDesc.BufferCount = 2;
-	swapChainDesc.OutputWindow = (HWND) g_engine->m_window->GetHwnd();
+	swapChainDesc.OutputWindow = ( HWND ) g_engine->m_window->GetHwnd();
 	swapChainDesc.Windowed = true;
 	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 
@@ -135,6 +138,53 @@ void App::Startup()
 	}
 
 	backBuffer->Release();
+
+	// Create debug module
+#if defined( ENGINE_DEBUG_RENDER )
+	m_dxgiDebugModule = ( void* )::LoadLibraryA( "dxgidebug.dll" );
+	if ( m_dxgiDebugModule == nullptr )
+	{
+		ERROR_AND_DIE( "Could not load dxgidebug.dll" );
+	}
+
+	typedef HRESULT( WINAPI* GetDebugModuleCB )( REFIID, void** );
+	( ( GetDebugModuleCB )::GetProcAddress( ( HMODULE ) m_dxgiDebugModule, "DXGIGetDebugInterface" ) )
+		(__uuidof( IDXGIDebug ), &m_dxgiDebug);
+
+	if ( m_dxgiDebug == nullptr )
+	{
+		ERROR_AND_DIE( "Could not load debug module." );
+	}
+#endif
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void App::Shutdown()
+{
+	m_rasterizerState->Release();
+	m_vertexBuffer->Release();
+	m_vertexShader->Release();
+	m_pixelShader->Release();
+	m_inputLayoutForVertex_PCU->Release();
+	m_renderTargetView->Release();
+	m_swapChain->Release();
+	m_deviceContext->Release();
+	m_device->Release();
+
+	// Report error leaks and release debug module
+#if defined(ENGINE_DEBUG_RENDER)
+	( ( IDXGIDebug* )m_dxgiDebug )->ReportLiveObjects(
+		DXGI_DEBUG_ALL,
+		( DXGI_DEBUG_RLO_FLAGS )( DXGI_DEBUG_RLO_DETAIL | DXGI_DEBUG_RLO_IGNORE_INTERNAL )
+	);
+
+	( ( IDXGIDebug* ) m_dxgiDebug )->Release();
+	m_dxgiDebug = nullptr;
+
+	::FreeLibrary( ( HMODULE ) m_dxgiDebugModule );
+	m_dxgiDebugModule = nullptr;
+#endif
 }
 
 
