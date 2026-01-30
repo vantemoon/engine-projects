@@ -38,7 +38,6 @@ public:
 	void BeginFrame();
 	void EndFrame();
 
-	void CreateRenderingContext();
 	void ClearScreen( Rgba8 const& clearColor );
 	void BeginCamera( Camera const& camera );
 	void EndCamera( Camera const& camera );
