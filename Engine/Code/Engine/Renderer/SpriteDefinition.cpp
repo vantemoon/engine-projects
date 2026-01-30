@@ -1,4 +1,5 @@
 #include "Engine/Renderer/SpriteDefinition.hpp"
+#include "Engine/Renderer/SpriteSheet.hpp"
 #include "Engine/Math/AABB2.hpp"
 
 

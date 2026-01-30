@@ -1,10 +1,10 @@
 #pragma once
 #include "Engine/Renderer/Texture.hpp"
+#include "Engine/Renderer/SpriteDefinition.hpp"
 #include <vector>
 
 
 //-----------------------------------------------------------------------------------------------
-class SpriteDefinition;
 class Texture;
 struct AABB2;
 struct IntVec2;

@@ -1,4 +1,5 @@
 #include "Engine/Renderer/SpriteAnimDefinition.hpp"
+#include "Engine/Renderer/SpriteSheet.hpp"
 
 
 //-----------------------------------------------------------------------------------------------

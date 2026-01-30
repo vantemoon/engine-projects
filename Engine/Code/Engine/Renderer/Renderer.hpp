@@ -1,6 +1,16 @@
 #pragma once
+#include "Game/EngineBuildPreferences.hpp"
 #include <cstdint>
 #include <vector>
+
+#define DX_SAFE_RELEASE( dxObject )\
+{\
+    if ( ( dxObject ) != nullptr )\
+    {\
+        ( dxObject )->Release();\
+        ( dxObject ) = nullptr;\
+    }\
+}
 
 
 //-----------------------------------------------------------------------------------------------
@@ -10,6 +20,13 @@ struct Vertex;
 class BitmapFont;
 class Camera;
 class Texture;
+class Shader;
+
+struct ID3D11RasterizerState;
+struct ID3D11RenderTargetView;
+struct ID3D11Device;
+struct ID3D11DeviceContext;
+struct IDXGISwapChain;
 
 
 //-----------------------------------------------------------------------------------------------
@@ -48,6 +65,10 @@ public:
 
 	Texture* CreateOrGetTextureFromFile( char const* imageFilePath );
 	BitmapFont* CreateOrGetBitmapFontFromFile( char const* fontFilePathNameWithNoExtension );
+
+	Shader* CreateShader( char const* shaderName, char const* shaderSource );
+	bool CompileShaderToBytecode( std::vector<unsigned char>& outBytecode, char const* name, char const* source, char const* entryPoint, char const* target );
+	void BindShader( Shader* shader );
 	
 private:
 	Texture* CreateTextureFromFile( char const* imageFilePath );
@@ -61,4 +82,14 @@ public:
 	RenderConfig m_config;
 	std::vector<Texture*> m_loadedTextures;
 	std::vector<BitmapFont*> m_loadedFonts;
+
+protected:
+	ID3D11RasterizerState* m_rasterizerState = nullptr;
+	ID3D11RenderTargetView* m_renderTargetView = nullptr;
+	ID3D11Device* m_device = nullptr;
+	ID3D11DeviceContext* m_deviceContext = nullptr;
+	IDXGISwapChain* m_swapChain = nullptr;
+
+	std::vector<Shader*> m_loadedShaders;
+	Shader* m_currentShader = nullptr;
 };

@@ -1,10 +1,11 @@
 #pragma once
 #include "Engine/Math/Vec2.hpp"
-#include "Engine/Renderer/SpriteSheet.hpp"
 
 
 //-----------------------------------------------------------------------------------------------
 struct AABB2;
+class SpriteSheet;
+class Texture;
 
 
 //-----------------------------------------------------------------------------------------------

@@ -9,11 +9,59 @@
 #include "Engine/Math/Vec3.hpp"
 #include "Engine/Renderer/BitmapFont.hpp"
 #include "Engine/Renderer/Camera.hpp"
+#include "Engine/Renderer/Shader.hpp"
 #include "Engine/Renderer/Texture.hpp"
 #include "ThirdParty/stb/stb_image.h"
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include <d3d11.h>
+#include <d3dcompiler.h>
+#include <dxgi.h>
+
+#pragma comment( lib, "d3d11.lib" )
+#pragma comment( lib, "dxgi.lib" )
+#pragma comment( lib, "d3dcompiler.lib" )
+
+#if defined( ENGINE_DEBUG_RENDER )
+#include <dxgidebug.h>
+#pragma comment( lib, "dxguid.lib" )
+#endif
+
+#if defined( ENGINE_DEBUG_RENDER )
+void* m_dxgiDebug = nullptr;
+void* m_dxgiDebugModule = nullptr;
+#endif
+
+const char* g_shaderSource = R"(	
+struct vs_input_t
+{
+	float3 localPosition : POSITION;
+	float4 color : COLOR;
+	float2 uv : TEXCOORD;
+};
+
+struct v2p_t
+{
+	float4 position : SV_Position;
+	float4 color : COLOR;
+	float2 uv : TEXCOORD;
+};
+
+v2p_t VertexMain( vs_input_t input )
+{
+	v2p_t v2p;
+	v2p.position = float4( input.localPosition, 1 );
+	v2p.color = input.color;
+	v2p.uv = input.uv;
+	return v2p;
+}
+
+float4 PixelMain( v2p_t input ) : SV_Target0
+{
+	return float4( input.color );
+}
+)";
 
 
 //-----------------------------------------------------------------------------------------------
@@ -30,13 +78,123 @@ Renderer::~Renderer() = default;
 //-----------------------------------------------------------------------------------------------
 void Renderer::Startup()
 {
+	unsigned int deviceFlags = 0;
+#if defined( ENGINE_DEBUG_RENDER )
+	deviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
+#endif
+
+	// Create device and swap chain
+	DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
+	swapChainDesc.BufferDesc.Width = g_engine->m_window->GetClientDimensions().x;
+	swapChainDesc.BufferDesc.Height = g_engine->m_window->GetClientDimensions().y;
+	swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	swapChainDesc.SampleDesc.Count = 1;
+	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+	swapChainDesc.BufferCount = 2;
+	swapChainDesc.OutputWindow = ( HWND ) g_engine->m_window->GetHwnd();
+	swapChainDesc.Windowed = true;
+	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+
+	HRESULT hr;
+	hr = D3D11CreateDeviceAndSwapChain(
+		nullptr,
+		D3D_DRIVER_TYPE_HARDWARE,
+		NULL,
+		deviceFlags,
+		nullptr,
+		0,
+		D3D11_SDK_VERSION,
+		&swapChainDesc,
+		&m_swapChain,
+		&m_device,
+		nullptr,
+		&m_deviceContext
+	);
+	if ( !SUCCEEDED( hr ) )
+	{
+		ERROR_AND_DIE( "Could not create D3D 11 device and swap chian." );
+	}
+
+	// Get back buffer texture
+	ID3D11Texture2D* backBuffer;
+	hr = m_swapChain->GetBuffer( 0, __uuidof( ID3D11Texture2D ), ( void** ) &backBuffer );
+	if ( !SUCCEEDED( hr ) )
+	{
+		ERROR_AND_DIE( "Could not get swap chain buffer." );
+	}
+
+	hr = m_device->CreateRenderTargetView( backBuffer, NULL, &m_renderTargetView );
+	if ( !SUCCEEDED( hr ) )
+	{
+		ERROR_AND_DIE( "Could not create render target view for swap chain buffer." );
+	}
+
+	backBuffer->Release();
+
+	// Create debug module
+#if defined( ENGINE_DEBUG_RENDER )
+	m_dxgiDebugModule = ( void* )::LoadLibraryA( "dxgidebug.dll" );
+	if ( m_dxgiDebugModule == nullptr )
+	{
+		ERROR_AND_DIE( "Could not load dxgidebug.dll" );
+	}
+
+	typedef HRESULT( WINAPI* GetDebugModuleCB )( REFIID, void** );
+	( ( GetDebugModuleCB )::GetProcAddress( ( HMODULE ) m_dxgiDebugModule, "DXGIGetDebugInterface" ) )
+		( __uuidof( IDXGIDebug ), &m_dxgiDebug );
+
+	if ( m_dxgiDebug == nullptr )
+	{
+		ERROR_AND_DIE( "Could not load debug module." );
+	}
+#endif
+
+	// Create and bind default shader
+	Shader* defaultShader = CreateShader( "default", g_shaderSource );
+	BindShader( defaultShader );
 }
 
 
 //-----------------------------------------------------------------------------------------------
 void Renderer::Shutdown()
 {
-	// DO NOTHING
+	m_rasterizerState->Release();
+	m_renderTargetView->Release();
+	m_swapChain->Release();
+	m_deviceContext->Release();
+	m_device->Release();
+
+	// Release loaded textures
+	for ( Texture* texture : m_loadedTextures )
+	{
+		delete texture;
+	}
+
+	// Release loaded fonts
+	for ( BitmapFont* font : m_loadedFonts )
+	{
+		delete font;
+	}
+
+	// Release loaded shaders
+	for ( Shader* shader : m_loadedShaders )
+	{
+		delete shader;
+	}
+
+	// Report error leaks and release debug module
+#if defined(ENGINE_DEBUG_RENDER)
+	( ( IDXGIDebug* ) m_dxgiDebug )->ReportLiveObjects(
+		DXGI_DEBUG_ALL,
+		( DXGI_DEBUG_RLO_FLAGS ) ( DXGI_DEBUG_RLO_DETAIL | DXGI_DEBUG_RLO_IGNORE_INTERNAL )
+	);
+
+	( ( IDXGIDebug* ) m_dxgiDebug )->Release();
+	m_dxgiDebug = nullptr;
+
+	::FreeLibrary( ( HMODULE ) m_dxgiDebugModule );
+	m_dxgiDebugModule = nullptr;
+#endif
 }
 
 
@@ -50,17 +208,26 @@ void Renderer::BeginFrame()
 //-----------------------------------------------------------------------------------------------
 void Renderer::EndFrame()
 {
-	// "Present" the back-buffer by swapping the front (visible) and back (working) screen buffers
+	// Present
+	HRESULT hr;
+	hr = m_swapChain->Present( 0, 0 );
+	if ( hr == DXGI_ERROR_DEVICE_REMOVED || hr == DXGI_ERROR_DEVICE_RESET )
+	{
+		ERROR_AND_DIE( "Device has been lost, application will now terminate." );
+	}
 }
 
 
 //-----------------------------------------------------------------------------------------------
-void Renderer::ClearScreen( [[maybe_unused]] Rgba8 const& clearColor )
+void Renderer::ClearScreen( Rgba8 const& clearColor )
 {
-	/*float redByte = static_cast<float> ( clearColor.r ) / 255.f;
-	float greenByte = static_cast<float> ( clearColor.g ) / 255.f;
-	float blueByte = static_cast<float> ( clearColor.b ) / 255.f;
-	float alphaByte = static_cast<float> ( clearColor.a ) / 255.f;*/
+	// Set render target
+	m_deviceContext->OMSetRenderTargets( 1, &m_renderTargetView, nullptr );
+
+	// Clear the screen
+	float clearColorAsFloats[4];
+	clearColor.GetAsFloats( clearColorAsFloats );
+	m_deviceContext->ClearRenderTargetView( m_renderTargetView, clearColorAsFloats );
 }
 
 
@@ -232,4 +399,132 @@ BitmapFont* Renderer::GetBitmapFontForFileName( char const* fontFilePathNameWith
 		}
 	}
 	return nullptr;
+}
+
+
+//------------------------------------------------------------------------------------------------
+void Renderer::BindShader( Shader* shader )
+{
+	if ( shader != m_currentShader )
+	{
+		m_currentShader = shader;
+
+		m_deviceContext->IASetInputLayout( shader->m_inputLayout );
+		m_deviceContext->VSSetShader( shader->m_vertexShader, nullptr, 0 );
+		m_deviceContext->PSSetShader( shader->m_pixelShader, nullptr, 0 );
+	}
+}
+
+
+//------------------------------------------------------------------------------------------------
+Shader* Renderer::CreateShader( char const* shaderName, char const* shaderSource )
+{
+	ShaderConfig config;
+	config.m_name = shaderName;
+	Shader* shader = new Shader( config );
+
+	// Compile vertex shader
+	std::vector<unsigned char> vertexShaderByteCode;
+	if ( !CompileShaderToBytecode( vertexShaderByteCode, shaderName, shaderSource, "VertexMain", "vs_5_0" ) )
+	{
+		ERROR_AND_DIE( Stringf( "Could not compile vertex shader." ) );
+	}
+
+	// Create vertex shader
+	HRESULT hr;
+	hr = m_device->CreateVertexShader(
+		vertexShaderByteCode.data(),
+		vertexShaderByteCode.size(),
+		NULL, &shader->m_vertexShader );
+	if ( !SUCCEEDED( hr ) )
+	{
+		ERROR_AND_DIE( Stringf( "Could not create vertex shader." ) );
+	}
+
+	// Compile pixel shader
+	std::vector<unsigned char> pixelShaderByteCode;
+	if ( !CompileShaderToBytecode( pixelShaderByteCode, shaderName, shaderSource, "PixelMain", "ps_5_0" ) )
+	{
+		ERROR_AND_DIE( Stringf( "Could not compile pixel shader." ) );
+	}
+
+	// Create pixel shader
+	hr = m_device->CreatePixelShader(
+		pixelShaderByteCode.data(),
+		pixelShaderByteCode.size(),
+		NULL, &shader->m_pixelShader );
+	if ( !SUCCEEDED( hr ) )
+	{
+		ERROR_AND_DIE( Stringf( "Could not create pixel shader." ) );
+	}
+
+	// Create input layout
+	D3D11_INPUT_ELEMENT_DESC inputElementDescs[] =
+	{
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "COLOR", 0, DXGI_FORMAT_R8G8B8A8_UNORM, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+	};
+
+	UINT numElements = ARRAYSIZE( inputElementDescs );
+	hr = m_device->CreateInputLayout(
+		inputElementDescs,
+		numElements,
+		vertexShaderByteCode.data(),
+		vertexShaderByteCode.size(),
+		&shader->m_inputLayout );
+	if ( !SUCCEEDED( hr ) )
+	{
+		ERROR_AND_DIE( Stringf( "Could not create vertex layout for PCU vertex." ) );
+	}
+	
+	m_loadedShaders.push_back( shader );
+	return shader;
+}
+
+
+//------------------------------------------------------------------------------------------------
+bool Renderer::CompileShaderToBytecode( std::vector<unsigned char>& outBytecode, char const* name, char const* source, char const* entryPoint, char const* target )
+{
+	// Compile vertex shader
+	DWORD shaderFlags = D3DCOMPILE_OPTIMIZATION_LEVEL3;
+#if defined( ENGINE_DEBUG_RENDER )
+	shaderFlags = D3DCOMPILE_DEBUG;
+	shaderFlags |= D3DCOMPILE_SKIP_OPTIMIZATION;
+	shaderFlags |= D3DCOMPILE_WARNINGS_ARE_ERRORS;
+#endif
+	ID3DBlob* shaderBlob = NULL;
+	ID3DBlob* errorBlob = NULL;
+
+	HRESULT hr;
+	hr = D3DCompile(
+		source, strlen( source ),
+		name, nullptr, nullptr,
+		entryPoint, target, shaderFlags,
+		0, &shaderBlob, &errorBlob );
+
+	if ( SUCCEEDED( hr ) )
+	{
+		outBytecode.resize( shaderBlob->GetBufferSize() );
+		memcpy(
+			outBytecode.data(),
+			shaderBlob->GetBufferPointer(),
+			shaderBlob->GetBufferSize() );
+	}
+	else
+	{
+		if ( errorBlob != NULL )
+		{
+			DebuggerPrintf( ( char* ) errorBlob->GetBufferPointer() );
+		}
+		ERROR_AND_DIE( Stringf( "Could not compile vertex shader." ) );
+	}
+
+	shaderBlob->Release();
+	if ( errorBlob != NULL )
+	{
+		errorBlob->Release();
+	}
+
+	return true;
 }
