@@ -279,6 +279,8 @@ void Game::RenderAttractMode() const
 	// Clear screen
 	g_engine->m_renderer->ClearScreen( Rgba8::MAGENTA );
 
+	g_engine->m_renderer->BeginCamera( *m_screenCamera );
+
 	// Colors
 	const Rgba8 brightYellow = Rgba8( 253, 239, 3 );
 	const Rgba8 brightCyan = Rgba8( 87, 231, 239 );
@@ -292,8 +294,6 @@ void Game::RenderAttractMode() const
 		( unsigned char ) ( brightCyan.g * flicker ),
 		( unsigned char ) ( brightCyan.b * flicker )
 	);
-
-	g_engine->m_renderer->BeginCamera( *m_screenCamera );
 
 	const float currentTime = ( float ) GetCurrentTimeSeconds();
 	const float centerX = SCREEN_SIZE_X * 0.5f;
@@ -325,18 +325,16 @@ void Game::RenderAttractMode() const
 	AABB2 texturedAABB2( 300.f, 100.f, 800.f, 600.f );
 	AddVertsForAABB2D( testTextureVerts, texturedAABB2, Rgba8( 255, 255, 255, 255 ) ); // This should now set UVs on each Vertex!!
 	g_engine->m_renderer->BindTexture( testTexture );
-	g_engine->m_renderer->DrawVertexArray( testTextureVerts );
+	// g_engine->m_renderer->DrawVertexArray( testTextureVerts );
 
 	std::vector<Vertex> ringVerts;
 	AddVertsForRing2D( ringVerts, Vec2( SCREEN_CENTER_X, SCREEN_CENTER_Y ), 200.f, 20.f, Rgba8( 255, 0, 255 ), 32 );
 	g_engine->m_renderer->BindTexture( nullptr ); // NOTE: We now have to do this before rendering anything UN-textured!
-	g_engine->m_renderer->DrawVertexArray( ringVerts );
+	// g_engine->m_renderer->DrawVertexArray( ringVerts );
 
 	// Render 
-	g_engine->m_renderer->DrawVertexArray( 3, triangleVertexArray );
-	g_engine->m_renderer->DrawVertexArray( ( int ) verts.size(), verts.data() );
-
-	g_engine->m_renderer->EndCamera( *m_screenCamera );
+	// g_engine->m_renderer->DrawVertexArray( 3, triangleVertexArray );
+	// g_engine->m_renderer->DrawVertexArray( ( int ) verts.size(), verts.data() );
 
 	// Render triangle
 	Vertex vertices[] =
@@ -347,6 +345,8 @@ void Game::RenderAttractMode() const
 	};
 
 	g_engine->m_renderer->DrawVertexArray( 3, vertices );
+
+	g_engine->m_renderer->EndCamera( *m_screenCamera );
 }
 
 
