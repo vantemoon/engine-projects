@@ -250,13 +250,14 @@ void Game::DebugDraw() const
 //-----------------------------------------------------------------------------------------------
 void Game::Render() const
 {
-	g_engine->m_renderer->ClearScreen( Rgba8::MAGENTA );
-
 	if ( m_currentGameState == GameState::ATTRACT_MODE )
 	{
 		RenderAttractMode();
 		return;
 	};
+
+	// Clear screen
+	g_engine->m_renderer->ClearScreen( Rgba8::BLUE );
 
 	g_engine->m_renderer->BeginCamera( *m_worldCamera );
 
@@ -275,6 +276,9 @@ void Game::Render() const
 //-----------------------------------------------------------------------------------------------
 void Game::RenderAttractMode() const
 {
+	// Clear screen
+	g_engine->m_renderer->ClearScreen( Rgba8::MAGENTA );
+
 	// Colors
 	const Rgba8 brightYellow = Rgba8( 253, 239, 3 );
 	const Rgba8 brightCyan = Rgba8( 87, 231, 239 );
