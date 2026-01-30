@@ -333,6 +333,16 @@ void Game::RenderAttractMode() const
 	g_engine->m_renderer->DrawVertexArray( ( int ) verts.size(), verts.data() );
 
 	g_engine->m_renderer->EndCamera( *m_screenCamera );
+
+	// Render triangle
+	Vertex vertices[] =
+	{
+		Vertex( Vec3( -0.5f, -0.5f, 0.f ), Rgba8::WHITE, Vec2( 0.f, 0.f ) ),
+		Vertex( Vec3( 0.0f,  0.5f, 0.f ), Rgba8::WHITE, Vec2( 0.f, 0.f ) ),
+		Vertex( Vec3( 0.5f, -0.5f, 0.f ), Rgba8::WHITE, Vec2( 0.0f, 0.f ) )
+	};
+
+	g_engine->m_renderer->DrawVertexArray( 3, vertices );
 }
 
 

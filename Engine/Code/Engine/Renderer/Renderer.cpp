@@ -11,6 +11,7 @@
 #include "Engine/Renderer/Camera.hpp"
 #include "Engine/Renderer/Shader.hpp"
 #include "Engine/Renderer/Texture.hpp"
+#include "Engine/Renderer/VertexBuffer.hpp"
 #include "ThirdParty/stb/stb_image.h"
 
 #define WIN32_LEAN_AND_MEAN
@@ -152,6 +153,29 @@ void Renderer::Startup()
 	// Create and bind default shader
 	Shader* defaultShader = CreateShader( "default", g_shaderSource );
 	BindShader( defaultShader );
+
+	// Create vertex buffer
+	m_immediateVBO = CreateVertexBuffer( sizeof( Vertex ), sizeof( Vertex ) );
+
+	// Set rasterizer state
+	D3D11_RASTERIZER_DESC rasterizerDesc = {};
+	rasterizerDesc.FillMode = D3D11_FILL_SOLID;
+	rasterizerDesc.CullMode = D3D11_CULL_NONE;
+	rasterizerDesc.FrontCounterClockwise = false;
+	rasterizerDesc.DepthBias = 0;
+	rasterizerDesc.DepthBiasClamp = 0.f;
+	rasterizerDesc.SlopeScaledDepthBias = 0.f;
+	rasterizerDesc.DepthClipEnable = true;
+	rasterizerDesc.ScissorEnable = false;
+	rasterizerDesc.MultisampleEnable = false;
+	rasterizerDesc.AntialiasedLineEnable = true;
+
+	hr = m_device->CreateRasterizerState( &rasterizerDesc, &m_rasterizerState );
+	if ( !SUCCEEDED( hr ) )
+	{
+		ERROR_AND_DIE( Stringf( "Could not create rasterizer state." ) );
+	}
+	m_deviceContext->RSSetState( m_rasterizerState );
 }
 
 
@@ -182,6 +206,10 @@ void Renderer::Shutdown()
 		delete shader;
 	}
 
+	// Release immediate VBO
+	delete m_immediateVBO;
+	m_immediateVBO = nullptr;
+
 	// Report error leaks and release debug module
 #if defined(ENGINE_DEBUG_RENDER)
 	( ( IDXGIDebug* ) m_dxgiDebug )->ReportLiveObjects(
@@ -201,7 +229,8 @@ void Renderer::Shutdown()
 //-----------------------------------------------------------------------------------------------
 void Renderer::BeginFrame()
 {
-	// DO NOTHING
+	// Set render target
+	m_deviceContext->OMSetRenderTargets( 1, &m_renderTargetView, nullptr );
 }
 
 
@@ -234,8 +263,15 @@ void Renderer::ClearScreen( Rgba8 const& clearColor )
 //-----------------------------------------------------------------------------------------------
 void Renderer::BeginCamera( [[maybe_unused]] Camera const& camera )
 {
-	Vec2 bottomLeft = camera.GetOrthoBottomLeft();
-	Vec2 topRight = camera.GetOrthoTopRight();
+	// Set viewport
+	D3D11_VIEWPORT viewport = {};
+	viewport.TopLeftX = 0.f;
+	viewport.TopLeftY = 0.f;
+	viewport.Width = ( float ) g_engine->m_window->GetClientDimensions().x;
+	viewport.Height = ( float ) g_engine->m_window->GetClientDimensions().y;
+	viewport.MinDepth = 0.f;
+	viewport.MaxDepth = 1.f;
+	m_deviceContext->RSSetViewports( 1, &viewport );
 }
 
 
@@ -247,8 +283,10 @@ void Renderer::EndCamera( [[maybe_unused]] Camera const& camera )
 
 
 //-----------------------------------------------------------------------------------------------
-void Renderer::DrawVertexArray( [[maybe_unused]] int numVertexes, [[maybe_unused]] Vertex const* vertexes )
+void Renderer::DrawVertexArray( int numVertexes, Vertex const* vertexes )
 {
+	CopyCPUToGPU( vertexes, numVertexes * sizeof( Vertex ), m_immediateVBO );
+	DrawVertexBuffer( m_immediateVBO, numVertexes );
 }
 
 
@@ -527,4 +565,52 @@ bool Renderer::CompileShaderToBytecode( std::vector<unsigned char>& outBytecode,
 	}
 
 	return true;
+}
+
+
+//------------------------------------------------------------------------------------------------
+VertexBuffer* Renderer::CreateVertexBuffer( const unsigned int size, unsigned int stride )
+{
+	VertexBuffer* vbo = new VertexBuffer( m_device, size, stride );
+	return vbo;
+}
+
+
+//------------------------------------------------------------------------------------------------
+void Renderer::CopyCPUToGPU( void const* data, unsigned int size, VertexBuffer* vbo )
+{
+	unsigned int vboSize = vbo->GetSize();
+	if ( size > vboSize )
+	{
+		vbo->Resize( size );
+	}
+
+	// Copy vertices
+	D3D11_MAPPED_SUBRESOURCE resource;
+	m_deviceContext->Map(
+		vbo->m_buffer,
+		0,
+		D3D11_MAP_WRITE_DISCARD,
+		0,
+		&resource );
+	memcpy( resource.pData, data, size );
+	m_deviceContext->Unmap( vbo->m_buffer, 0 );
+}
+
+
+//------------------------------------------------------------------------------------------------
+void Renderer::BindVertexBuffer( VertexBuffer* vbo )
+{
+	UINT stride = vbo->GetStride();
+	UINT offset = 0;
+	m_deviceContext->IASetVertexBuffers( 0, 1, &vbo->m_buffer, &stride, &offset );
+	m_deviceContext->IASetPrimitiveTopology( D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
+}
+
+
+//------------------------------------------------------------------------------------------------
+void Renderer::DrawVertexBuffer( VertexBuffer* vbo, unsigned int vertexCount )
+{
+	BindVertexBuffer( vbo );
+	m_deviceContext->Draw( vertexCount, 0 );
 }

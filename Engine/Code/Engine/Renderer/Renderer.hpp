@@ -21,6 +21,7 @@ class BitmapFont;
 class Camera;
 class Texture;
 class Shader;
+class VertexBuffer;
 
 struct ID3D11RasterizerState;
 struct ID3D11RenderTargetView;
@@ -69,6 +70,12 @@ public:
 	Shader* CreateShader( char const* shaderName, char const* shaderSource );
 	bool CompileShaderToBytecode( std::vector<unsigned char>& outBytecode, char const* name, char const* source, char const* entryPoint, char const* target );
 	void BindShader( Shader* shader );
+
+	VertexBuffer* CreateVertexBuffer( const unsigned int size, unsigned int stride );
+	void CopyCPUToGPU( void const* data, unsigned int size, VertexBuffer* vbo );
+	void BindVertexBuffer( VertexBuffer* vbo );
+
+	void DrawVertexBuffer( VertexBuffer* vbo, unsigned int vertexCount );
 	
 private:
 	Texture* CreateTextureFromFile( char const* imageFilePath );
@@ -92,4 +99,6 @@ protected:
 
 	std::vector<Shader*> m_loadedShaders;
 	Shader* m_currentShader = nullptr;
+
+	VertexBuffer* m_immediateVBO = nullptr;
 };
