@@ -194,6 +194,33 @@ float DotProduct2D( Vec2 const& a, Vec2 const& b )
 
 
 //-----------------------------------------------------------------------------------------------
+float DotProduct3D( Vec3 const& a, Vec3 const& b )
+{
+	float dotProduct = ( a.x * b.x ) + ( a.y * b.y ) + ( a.z * b.z );
+	return dotProduct;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+float CrossProduct2D( Vec2 const& a, Vec2 const& b )
+{
+	float crossProduct = ( a.x * b.y ) - ( a.y * b.x );
+	return crossProduct;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+Vec3 CrossProduct3D( Vec3 const& a, Vec3 const& b )
+{
+	Vec3 crossProduct;
+	crossProduct.x = ( a.y * b.z ) - ( a.z * b.y );
+	crossProduct.y = ( a.z * b.x ) - ( a.x * b.z );
+	crossProduct.z = ( a.x * b.y ) - ( a.y * b.x );
+	return crossProduct;
+}
+
+
+//-----------------------------------------------------------------------------------------------
 float GetDistanceSquared2D( Vec2 const& positionA, Vec2 const& positionB )
 {
 	float deltaX = positionB.x - positionA.x;
@@ -750,9 +777,9 @@ float NormalizeByte( unsigned char byteValue )
 
 
 //-----------------------------------------------------------------------------------------------
-unsigned char DenormalizeByte( float normalizedValue )
+unsigned char DenormalizeByte( float zeroToOne )
 {
-	normalizedValue = GetClampedZeroToOne( normalizedValue );
-	unsigned char byteValue = static_cast<unsigned char>( normalizedValue * 255.f );
-	return byteValue;
+	int byteValue = static_cast<int>( zeroToOne * 256.f );
+	byteValue = static_cast<int>( GetClamped( static_cast<float>( byteValue ), 0.f, 255.f ) );
+	return static_cast<unsigned char>( byteValue );
 }
