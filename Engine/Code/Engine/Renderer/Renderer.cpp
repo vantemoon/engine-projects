@@ -415,6 +415,10 @@ BitmapFont* Renderer::GetBitmapFontForFileName( char const* fontFilePathNameWith
 //------------------------------------------------------------------------------------------------
 void Renderer::BindShader( Shader* shader )
 {
+	if ( shader == nullptr )
+	{
+		shader = m_defaultShader;
+	}
 	if ( shader != m_currentShader )
 	{
 		m_currentShader = shader;
