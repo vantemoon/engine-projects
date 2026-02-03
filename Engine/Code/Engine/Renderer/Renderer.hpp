@@ -67,6 +67,7 @@ public:
 	Texture* CreateOrGetTextureFromFile( char const* imageFilePath );
 	BitmapFont* CreateOrGetBitmapFontFromFile( char const* fontFilePathNameWithNoExtension );
 
+	Shader* CreateShader( char const* shaderName );
 	Shader* CreateShader( char const* shaderName, char const* shaderSource );
 	bool CompileShaderToBytecode( std::vector<unsigned char>& outBytecode, char const* name, char const* source, char const* entryPoint, char const* target );
 	void BindShader( Shader* shader );
@@ -98,6 +99,7 @@ protected:
 	IDXGISwapChain* m_swapChain = nullptr;
 
 	std::vector<Shader*> m_loadedShaders;
+	Shader* m_defaultShader = nullptr;
 	Shader* m_currentShader = nullptr;
 
 	VertexBuffer* m_immediateVBO = nullptr;

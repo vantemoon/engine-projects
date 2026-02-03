@@ -1,6 +1,7 @@
 #include "Engine/Renderer/Renderer.hpp"
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/ErrorWarningAssert.hpp"
+#include "Engine/Core/FileUtils.hpp"
 #include "Engine/Core/Rgba8.hpp"
 #include "Engine/Core/StringUtils.hpp"
 #include "Engine/Core/Vertex.hpp"
@@ -9,6 +10,7 @@
 #include "Engine/Math/Vec3.hpp"
 #include "Engine/Renderer/BitmapFont.hpp"
 #include "Engine/Renderer/Camera.hpp"
+#include "Engine/Renderer/DefaultShader.hpp"
 #include "Engine/Renderer/Shader.hpp"
 #include "Engine/Renderer/Texture.hpp"
 #include "Engine/Renderer/VertexBuffer.hpp"
@@ -33,36 +35,6 @@
 void* m_dxgiDebug = nullptr;
 void* m_dxgiDebugModule = nullptr;
 #endif
-
-const char* g_shaderSource = R"(	
-struct vs_input_t
-{
-	float3 localPosition : POSITION;
-	float4 color : COLOR;
-	float2 uv : TEXCOORD;
-};
-
-struct v2p_t
-{
-	float4 position : SV_Position;
-	float4 color : COLOR;
-	float2 uv : TEXCOORD;
-};
-
-v2p_t VertexMain( vs_input_t input )
-{
-	v2p_t v2p;
-	v2p.position = float4( input.localPosition, 1 );
-	v2p.color = input.color;
-	v2p.uv = input.uv;
-	return v2p;
-}
-
-float4 PixelMain( v2p_t input ) : SV_Target0
-{
-	return float4( input.color );
-}
-)";
 
 
 //-----------------------------------------------------------------------------------------------
@@ -151,8 +123,8 @@ void Renderer::Startup()
 #endif
 
 	// Create and bind default shader
-	Shader* defaultShader = CreateShader( "default", g_shaderSource );
-	BindShader( defaultShader );
+	m_defaultShader = CreateShader( "Default", g_shaderSource );
+	BindShader( m_defaultShader );
 
 	// Create vertex buffer
 	m_immediateVBO = CreateVertexBuffer( sizeof( Vertex ), sizeof( Vertex ) );
@@ -451,6 +423,19 @@ void Renderer::BindShader( Shader* shader )
 		m_deviceContext->VSSetShader( shader->m_vertexShader, nullptr, 0 );
 		m_deviceContext->PSSetShader( shader->m_pixelShader, nullptr, 0 );
 	}
+}
+
+
+//------------------------------------------------------------------------------------------------
+Shader* Renderer::CreateShader( char const* shaderName )
+{
+	std::string filename = Stringf( "Data/Shaders/%s.hlsl", shaderName );
+	std::string shaderSource;
+	if ( ::FileReadToString( shaderSource, filename ) != 0 )
+	{
+		ERROR_AND_DIE( Stringf( "Could not read shader file \"%s\"", filename.c_str() ) );
+	}
+	return CreateShader( shaderName, shaderSource.c_str() );
 }
 
 
