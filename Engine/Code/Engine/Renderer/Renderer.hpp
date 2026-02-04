@@ -29,6 +29,7 @@ struct ID3D11RenderTargetView;
 struct ID3D11Device;
 struct ID3D11DeviceContext;
 struct IDXGISwapChain;
+struct ID3D11BlendState;
 
 
 //-----------------------------------------------------------------------------------------------
@@ -43,6 +44,8 @@ enum BlendMode
 {
 	ALPHA,
 	ADDITIVE,
+	OPAQUE,
+	COUNT
 };
 
 
@@ -64,6 +67,7 @@ public:
 	void DrawVertexArray( int numVertexes, Vertex const* vertexes );
 	void BindTexture( Texture* texture );
 	void SetBlendMode( BlendMode mode );
+	void SetStatesIfChanged();
 
 	Texture* CreateOrGetTextureFromFile( char const* imageFilePath );
 	BitmapFont* CreateOrGetBitmapFontFromFile( char const* fontFilePathNameWithNoExtension );
@@ -108,4 +112,8 @@ protected:
 
 	VertexBuffer* m_immediateVBO = nullptr;
 	ConstantBuffer* m_cameraCBO = nullptr;
+
+	ID3D11BlendState* m_blendState = nullptr;
+	BlendMode m_desiredBlendMode = BlendMode::ALPHA;
+	ID3D11BlendState* m_blendStates[( int ) BlendMode::COUNT] = {};
 };

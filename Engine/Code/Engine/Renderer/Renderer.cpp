@@ -37,6 +37,10 @@ void* m_dxgiDebug = nullptr;
 void* m_dxgiDebugModule = nullptr;
 #endif
 
+#if defined(OPAQUE)
+#undef OPAQUE
+#endif
+
 
 //-----------------------------------------------------------------------------------------------
 struct CameraConstants
@@ -167,6 +171,36 @@ void Renderer::Startup()
 		ERROR_AND_DIE( Stringf( "Could not create rasterizer state." ) );
 	}
 	m_deviceContext->RSSetState( m_rasterizerState );
+
+	// Create blend states for all blend modes
+	D3D11_BLEND_DESC blendDesc = {};
+	blendDesc.RenderTarget[0].BlendEnable = TRUE;
+	blendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
+	blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_ZERO;
+	blendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].SrcBlendAlpha = blendDesc.RenderTarget[0].SrcBlend;
+	blendDesc.RenderTarget[0].DestBlendAlpha = blendDesc.RenderTarget[0].DestBlend;
+	blendDesc.RenderTarget[0].BlendOpAlpha = blendDesc.RenderTarget[0].BlendOp;
+	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+	hr = m_device->CreateBlendState( &blendDesc, &m_blendStates[( int ) BlendMode::OPAQUE] );
+	if ( !SUCCEEDED( hr ) )
+	{
+		ERROR_AND_DIE( "Could not create OPAQUE blend state." );
+	}
+	blendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+	blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+	hr = m_device->CreateBlendState( &blendDesc, &m_blendStates[( int ) BlendMode::ALPHA] );
+	if ( !SUCCEEDED( hr ) )
+	{
+		ERROR_AND_DIE( "Could not create ALPHA blend state." );
+	}
+	blendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
+	blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_ONE;
+	hr = m_device->CreateBlendState( &blendDesc, &m_blendStates[( int ) BlendMode::ADDITIVE] );
+	if ( !SUCCEEDED( hr ) )
+	{
+		ERROR_AND_DIE( "Could not create ADDITIVE blend state." );
+	}
 }
 
 
@@ -178,6 +212,12 @@ void Renderer::Shutdown()
 	DX_SAFE_RELEASE( m_swapChain );
 	DX_SAFE_RELEASE( m_deviceContext );
 	DX_SAFE_RELEASE( m_device );
+
+	// Release blend states
+	for ( int blendModeIndex = 0; blendModeIndex < ( int ) BlendMode::COUNT; ++blendModeIndex )
+	{
+		DX_SAFE_RELEASE( m_blendStates[blendModeIndex] );
+	}
 
 	// Release loaded textures
 	for ( Texture* texture : m_loadedTextures )
@@ -200,6 +240,10 @@ void Renderer::Shutdown()
 	// Release immediate VBO
 	delete m_immediateVBO;
 	m_immediateVBO = nullptr;
+
+	// Release camera CBO
+	delete m_cameraCBO;
+	m_cameraCBO = nullptr;
 
 	// Report error leaks and release debug module
 #if defined(ENGINE_DEBUG_RENDER)
@@ -330,21 +374,26 @@ void Renderer::BindTexture( Texture* texture )
 }
 
 
-//-----------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------
 void Renderer::SetBlendMode( BlendMode blendMode )
 {
-	if ( blendMode == BlendMode::ALPHA )
+	m_desiredBlendMode = blendMode;
+}
+
+
+//------------------------------------------------------------------------------------------------
+void Renderer::SetStatesIfChanged()
+{
+	ID3D11BlendState* desiredBlendState = m_blendStates[( int ) m_desiredBlendMode];
+	if ( desiredBlendState == m_blendState )
 	{
-		// Set standard alpha blending
+		return;
 	}
-	else if ( blendMode == BlendMode::ADDITIVE )
-	{
-		// Set additive blending
-	}
-	else
-	{
-		ERROR_AND_DIE( Stringf( "Unknown / unsupported blend mode #%i", blendMode ) );
-	}
+
+	m_blendState = desiredBlendState;
+	float blendFactor[4] = { 0.f, 0.f, 0.f, 0.f };
+	UINT sampleMask = 0xffffffff;
+	m_deviceContext->OMSetBlendState( m_blendState, blendFactor, sampleMask );
 }
 
 
@@ -631,6 +680,7 @@ void Renderer::BindVertexBuffer( VertexBuffer* vbo )
 void Renderer::DrawVertexBuffer( VertexBuffer* vbo, unsigned int vertexCount )
 {
 	BindVertexBuffer( vbo );
+	SetStatesIfChanged();
 	m_deviceContext->Draw( vertexCount, 0 );
 }
 
