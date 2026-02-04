@@ -325,26 +325,16 @@ void Game::RenderAttractMode() const
 	AABB2 texturedAABB2( 300.f, 100.f, 800.f, 600.f );
 	AddVertsForAABB2D( testTextureVerts, texturedAABB2, Rgba8( 255, 255, 255, 255 ) ); // This should now set UVs on each Vertex!!
 	g_engine->m_renderer->BindTexture( testTexture );
-	// g_engine->m_renderer->DrawVertexArray( testTextureVerts );
+	g_engine->m_renderer->DrawVertexArray( testTextureVerts );
 
 	std::vector<Vertex> ringVerts;
 	AddVertsForRing2D( ringVerts, Vec2( SCREEN_CENTER_X, SCREEN_CENTER_Y ), 200.f, 20.f, Rgba8( 255, 0, 255 ), 32 );
 	g_engine->m_renderer->BindTexture( nullptr ); // NOTE: We now have to do this before rendering anything UN-textured!
-	// g_engine->m_renderer->DrawVertexArray( ringVerts );
+	g_engine->m_renderer->DrawVertexArray( ringVerts );
 
 	// Render 
-	// g_engine->m_renderer->DrawVertexArray( 3, triangleVertexArray );
-	// g_engine->m_renderer->DrawVertexArray( ( int ) verts.size(), verts.data() );
-
-	// Render triangle
-	Vertex vertices[] =
-	{
-		Vertex( Vec3( -0.5f, -0.5f, 0.f ), Rgba8::WHITE, Vec2( 0.f, 0.f ) ),
-		Vertex( Vec3( 0.0f,  0.5f, 0.f ), Rgba8::WHITE, Vec2( 0.f, 0.f ) ),
-		Vertex( Vec3( 0.5f, -0.5f, 0.f ), Rgba8::WHITE, Vec2( 0.0f, 0.f ) )
-	};
-
-	g_engine->m_renderer->DrawVertexArray( 3, vertices );
+	g_engine->m_renderer->DrawVertexArray( 3, triangleVertexArray );
+	g_engine->m_renderer->DrawVertexArray( ( int ) verts.size(), verts.data() );
 
 	g_engine->m_renderer->EndCamera( *m_screenCamera );
 }

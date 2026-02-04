@@ -49,11 +49,11 @@ float Interpolate( float start, float end, float fractionTowardEnd )
 //-----------------------------------------------------------------------------------------------
 float GetFractionWithinRange( float value, float rangeStart, float rangeEnd )
 {
-	if ( rangeStart == rangeEnd )
+	float fraction = 0.5f;
+	if ( rangeStart != rangeEnd )
 	{
-		return 0.5f;
+		fraction = ( value - rangeStart ) / ( rangeEnd - rangeStart );
 	}
-	float fraction = ( value - rangeStart ) / ( rangeEnd - rangeStart );
 	return fraction;
 }
 
