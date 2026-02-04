@@ -21,6 +21,7 @@ class BitmapFont;
 class Camera;
 class Texture;
 class Shader;
+class ConstantBuffer;
 class VertexBuffer;
 
 struct ID3D11RasterizerState;
@@ -75,8 +76,11 @@ public:
 	VertexBuffer* CreateVertexBuffer( const unsigned int size, unsigned int stride );
 	void CopyCPUToGPU( void const* data, unsigned int size, VertexBuffer* vbo );
 	void BindVertexBuffer( VertexBuffer* vbo );
-
 	void DrawVertexBuffer( VertexBuffer* vbo, unsigned int vertexCount );
+
+	ConstantBuffer* CreateConstantBuffer( unsigned int const size );
+	void CopyCPUToGPU( void const* data, unsigned int size, ConstantBuffer* cbo );
+	void BindConstantBuffer( int slot, ConstantBuffer* cbo );
 	
 private:
 	Texture* CreateTextureFromFile( char const* imageFilePath );

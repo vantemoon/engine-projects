@@ -157,6 +157,9 @@
     <ClCompile Include="Core\FileUtils.cpp">
       <Filter>Core</Filter>
     </ClCompile>
+    <ClCompile Include="Renderer\ConstantBuffer.cpp">
+      <Filter>Renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Math\Vec2.hpp">
@@ -319,6 +322,9 @@
       <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="Renderer\DefaultShader.hpp">
+      <Filter>Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer\ConstantBuffer.hpp">
       <Filter>Renderer</Filter>
     </ClInclude>
   </ItemGroup>

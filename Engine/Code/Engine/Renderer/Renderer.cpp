@@ -10,6 +10,7 @@
 #include "Engine/Math/Vec3.hpp"
 #include "Engine/Renderer/BitmapFont.hpp"
 #include "Engine/Renderer/Camera.hpp"
+#include "Engine/Renderer/ConstantBuffer.hpp"
 #include "Engine/Renderer/DefaultShader.hpp"
 #include "Engine/Renderer/Shader.hpp"
 #include "Engine/Renderer/Texture.hpp"
@@ -154,11 +155,11 @@ void Renderer::Startup()
 //-----------------------------------------------------------------------------------------------
 void Renderer::Shutdown()
 {
-	m_rasterizerState->Release();
-	m_renderTargetView->Release();
-	m_swapChain->Release();
-	m_deviceContext->Release();
-	m_device->Release();
+	DX_SAFE_RELEASE( m_rasterizerState );
+	DX_SAFE_RELEASE( m_renderTargetView );
+	DX_SAFE_RELEASE( m_swapChain );
+	DX_SAFE_RELEASE( m_deviceContext );
+	DX_SAFE_RELEASE( m_device );
 
 	// Release loaded textures
 	for ( Texture* texture : m_loadedTextures )
@@ -602,4 +603,56 @@ void Renderer::DrawVertexBuffer( VertexBuffer* vbo, unsigned int vertexCount )
 {
 	BindVertexBuffer( vbo );
 	m_deviceContext->Draw( vertexCount, 0 );
+}
+
+
+//------------------------------------------------------------------------------------------------
+ConstantBuffer* Renderer::CreateConstantBuffer( unsigned int size )
+{
+	ConstantBuffer* cbo = new ConstantBuffer( size );
+
+	// Create constant buffer
+	D3D11_BUFFER_DESC constantBufferDesc = {};
+	constantBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	constantBufferDesc.ByteWidth = static_cast< UINT >( cbo->m_size );
+	constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	constantBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+
+	HRESULT hr;
+	hr = m_device->CreateBuffer(
+		&constantBufferDesc,
+		nullptr,
+		&cbo->m_buffer );
+	if ( !SUCCEEDED( hr ) )
+	{
+		ERROR_AND_DIE( "Could not create vertex buffer." );
+	}
+
+	return cbo;
+}
+
+
+//------------------------------------------------------------------------------------------------
+void Renderer::CopyCPUToGPU( void const* data, unsigned int size, ConstantBuffer* cbo )
+{
+	GUARANTEE_OR_DIE( size <= cbo->m_size, Stringf( "Data size (%u bytes) exceeds constant buffer size (%zu bytes).", size, cbo->m_size ) );
+
+	// Copy data
+	D3D11_MAPPED_SUBRESOURCE resource;
+	m_deviceContext->Map(
+		cbo->m_buffer,
+		0,
+		D3D11_MAP_WRITE_DISCARD,
+		0,
+		&resource );
+	memcpy( resource.pData, data, size );
+	m_deviceContext->Unmap( cbo->m_buffer, 0 );
+}
+
+
+//------------------------------------------------------------------------------------------------
+void Renderer::BindConstantBuffer( int slot, ConstantBuffer* cbo )
+{
+	m_deviceContext->VSSetConstantBuffers( slot, 1, &cbo->m_buffer );
+	m_deviceContext->PSSetConstantBuffers( slot, 1, &cbo->m_buffer );
 }
