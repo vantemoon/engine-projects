@@ -39,6 +39,21 @@ void* m_dxgiDebugModule = nullptr;
 
 
 //-----------------------------------------------------------------------------------------------
+struct CameraConstants
+{
+	float OrthoMinX;
+	float OrthoMinY;
+	float OrthoMinZ;
+	float OrthoMaxX;
+	float OrthoMaxY;
+	float OrthoMaxZ;
+	float pad0;
+	float pad1;
+};
+static const int k_cameraConstantsSlot = 2;
+
+
+//-----------------------------------------------------------------------------------------------
 Renderer::Renderer( RenderConfig const& config )
 	: m_config( config )
 {
@@ -129,6 +144,9 @@ void Renderer::Startup()
 
 	// Create vertex buffer
 	m_immediateVBO = CreateVertexBuffer( sizeof( Vertex ), sizeof( Vertex ) );
+
+	// Create camera constant buffer
+	m_cameraCBO = CreateConstantBuffer( sizeof( CameraConstants ) );
 
 	// Set rasterizer state
 	D3D11_RASTERIZER_DESC rasterizerDesc = {};
@@ -245,6 +263,17 @@ void Renderer::BeginCamera( [[maybe_unused]] Camera const& camera )
 	viewport.MinDepth = 0.f;
 	viewport.MaxDepth = 1.f;
 	m_deviceContext->RSSetViewports( 1, &viewport );
+
+	// Update camera constant buffer
+	CameraConstants cameraData;
+	cameraData.OrthoMinX = camera.GetOrthoBottomLeft().x;
+	cameraData.OrthoMinY = camera.GetOrthoBottomLeft().y;
+	cameraData.OrthoMinZ = 0.f;
+	cameraData.OrthoMaxX = camera.GetOrthoTopRight().x;
+	cameraData.OrthoMaxY = camera.GetOrthoTopRight().y;
+	cameraData.OrthoMaxZ = 1.f;
+	CopyCPUToGPU( &cameraData, sizeof( CameraConstants ), m_cameraCBO );
+	BindConstantBuffer( k_cameraConstantsSlot, m_cameraCBO );
 }
 
 

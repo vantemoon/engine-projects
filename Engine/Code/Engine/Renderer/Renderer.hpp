@@ -107,4 +107,5 @@ protected:
 	Shader* m_currentShader = nullptr;
 
 	VertexBuffer* m_immediateVBO = nullptr;
+	ConstantBuffer* m_cameraCBO = nullptr;
 };
