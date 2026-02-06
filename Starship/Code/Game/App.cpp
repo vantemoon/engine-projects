@@ -25,7 +25,6 @@ App::App()
 	engineConfig.m_windowConfig.m_windowTitle = "Starship Gold";
 	
 	g_engine = new Engine( engineConfig );
-	g_engine->Startup();
 
 	m_game = new Game();
 
