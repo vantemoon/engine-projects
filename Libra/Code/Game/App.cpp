@@ -44,7 +44,6 @@ void App::Startup()
 	engineConfig.m_windowConfig.m_windowTitle = g_gameConfigBlackboard.GetValue( "windowTitle", "Libra" );
 
 	g_engine = new Engine( engineConfig );
-	g_engine->Startup();
 
 	m_game = new Game();
 

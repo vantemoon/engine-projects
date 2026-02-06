@@ -26,7 +26,6 @@ App::App()
 	engineConfig.m_windowConfig.m_windowTitle = "Math Visual Tests";
 
 	g_engine = new Engine( engineConfig );
-	g_engine->Startup();
 
 	m_game = new GameNearestPoint();
 	m_gameMode = GAMEMODE_NEAREST_POINT;
