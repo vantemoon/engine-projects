@@ -2,6 +2,7 @@
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/ErrorWarningAssert.hpp"
 #include "Engine/Core/FileUtils.hpp"
+#include "Engine/Core/Image.hpp"
 #include "Engine/Core/Rgba8.hpp"
 #include "Engine/Core/StringUtils.hpp"
 #include "Engine/Core/Vertex.hpp"
@@ -201,6 +202,33 @@ void Renderer::Startup()
 	{
 		ERROR_AND_DIE( "Could not create ADDITIVE blend state." );
 	}
+
+	// Create sampler states for all sampler modes
+	D3D11_SAMPLER_DESC samplerDesc = {};
+	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
+	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+	samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+	hr = m_device->CreateSamplerState( &samplerDesc, &m_samplerStates[( int ) SamplerMode::POINT_CLAMP] );
+	if ( !SUCCEEDED( hr ) )
+	{
+		ERROR_AND_DIE( "Could not create sampler state: POINT_CLAMP." );
+	}
+	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	hr = m_device->CreateSamplerState( &samplerDesc, &m_samplerStates[( int ) SamplerMode::BILINEAR_WRAP] );
+	if ( !SUCCEEDED( hr ) )
+	{
+		ERROR_AND_DIE( "Could not create sampler state: BILINEAR_WRAP." );
+	}
+
+	// Create and bind the default texture (2x2 white texture)
+	m_defaultTexture = CreateTextureFromImage( "Default", Image( IntVec2( 2, 2 ), Rgba8::WHITE ) );
+	BindTexture( m_defaultTexture );
 }
 
 
@@ -343,33 +371,16 @@ void Renderer::DrawVertexArray( std::vector<Vertex> const& verts )
 }
 
 
-//------------------------------------------------------------------------------------------------
-Texture* Renderer::CreateTextureFromData( char const* name, IntVec2 dimensions, int bytesPerTexel, uint8_t* texelData )
-{
-	// Check if the load was successful
-	GUARANTEE_OR_DIE( texelData, Stringf( "CreateTextureFromData failed for \"%s\" - texelData was null!", name ) );
-	GUARANTEE_OR_DIE( bytesPerTexel >= 3 && bytesPerTexel <= 4, Stringf( "CreateTextureFromData failed for \"%s\" - unsupported BPP=%i (must be 3 or 4)", name, bytesPerTexel ) );
-	GUARANTEE_OR_DIE( dimensions.x > 0 && dimensions.y > 0, Stringf( "CreateTextureFromData failed for \"%s\" - illegal texture dimensions (%i x %i)", name, dimensions.x, dimensions.y ) );
-
-	Texture* newTexture = new Texture();
-	newTexture->m_name = name; // NOTE: m_name must be a std::string, otherwise it may point to temporary data!
-	newTexture->m_dimensions = dimensions;
-
-	m_loadedTextures.push_back( newTexture );
-	return newTexture;
-}
-
-
 //-----------------------------------------------------------------------------------------------
 void Renderer::BindTexture( Texture* texture )
 {
 	if ( texture )
 	{
-		// Bind the texture
+		m_deviceContext->PSSetShaderResources( 0, 1, &texture->m_shaderResourceView );
 	}
 	else
 	{
-		// Disable texturing
+		m_deviceContext->PSSetShaderResources( 0, 1, &m_defaultTexture->m_shaderResourceView );
 	}
 }
 
@@ -382,38 +393,116 @@ void Renderer::SetBlendMode( BlendMode blendMode )
 
 
 //------------------------------------------------------------------------------------------------
+void Renderer::SetSamplerMode( SamplerMode samplerMode )
+{
+	m_desiredSamplerMode = samplerMode;
+}
+
+
+//------------------------------------------------------------------------------------------------
 void Renderer::SetStatesIfChanged()
 {
 	ID3D11BlendState* desiredBlendState = m_blendStates[( int ) m_desiredBlendMode];
-	if ( desiredBlendState == m_blendState )
+	if ( desiredBlendState != m_blendState )
 	{
-		return;
+		m_blendState = desiredBlendState;
+		float blendFactor[4] = { 0.f, 0.f, 0.f, 0.f };
+		UINT sampleMask = 0xffffffff;
+		m_deviceContext->OMSetBlendState( m_blendState, blendFactor, sampleMask );
 	}
 
-	m_blendState = desiredBlendState;
-	float blendFactor[4] = { 0.f, 0.f, 0.f, 0.f };
-	UINT sampleMask = 0xffffffff;
-	m_deviceContext->OMSetBlendState( m_blendState, blendFactor, sampleMask );
+	ID3D11SamplerState* desiredSamplerState = m_samplerStates[( int ) m_desiredSamplerMode];
+	if ( desiredSamplerState != m_samplerState )
+	{
+		m_samplerState = desiredSamplerState;
+		m_deviceContext->PSSetSamplers( 0, 1, &m_samplerState );
+	}
+}
+
+
+//------------------------------------------------------------------------------------------------
+Image* Renderer::CreateImageFromFile( char const* imageFilePath )
+{
+	Image* newImage = new Image( imageFilePath );
+	return newImage;
+}
+
+
+//------------------------------------------------------------------------------------------------
+Texture* Renderer::CreateTextureFromImage( char const* name, Image const& image )
+{
+	// Check if the load was successful
+	GUARANTEE_OR_DIE( image.GetDimensions().x > 0 && image.GetDimensions().y > 0, Stringf( "CreateTextureFromImage failed for \"%s\" - image dimensions were invalid (%i x %i)", name, image.GetDimensions().x, image.GetDimensions().y ) );
+
+	Texture* newTexture = new Texture();
+	newTexture->m_name = name;
+	newTexture->m_dimensions = image.GetDimensions();
+
+	D3D11_TEXTURE2D_DESC textureDesc = {};
+	textureDesc.Width = image.GetDimensions().x;
+	textureDesc.Height = image.GetDimensions().y;
+	textureDesc.MipLevels = 1;
+	textureDesc.ArraySize = 1;
+	textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	textureDesc.SampleDesc.Count = 1;
+	textureDesc.Usage = D3D11_USAGE_IMMUTABLE;
+	textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+
+	D3D11_SUBRESOURCE_DATA textureData;
+	textureData.pSysMem = image.GetRawData();
+	textureData.SysMemPitch = 4 * image.GetDimensions().x;
+
+	HRESULT hr;
+	hr = m_device->CreateTexture2D( &textureDesc, &textureData, &newTexture->m_texture );
+	if ( !SUCCEEDED( hr ) )
+	{
+		ERROR_AND_DIE( Stringf( "Could not create texture for image \"%s\".", name ) );
+	}
+
+	hr = m_device->CreateShaderResourceView( newTexture->m_texture, NULL, &newTexture->m_shaderResourceView );
+	if ( !SUCCEEDED( hr ) )
+	{
+		ERROR_AND_DIE( Stringf( "Could not create shader resource view for image \"%s\".", name ) );
+	}
+
+	m_loadedTextures.push_back( newTexture );
+	return newTexture;
+}
+
+
+//------------------------------------------------------------------------------------------------
+Texture* Renderer::CreateTextureFromData( char const* name, IntVec2 dimensions, int bytesPerTexel, uint8_t* texelData )
+{
+	// Check if the load was successful
+	GUARANTEE_OR_DIE( texelData, Stringf( "CreateTextureFromData failed for \"%s\" - texelData was null!", name ) );
+	GUARANTEE_OR_DIE( bytesPerTexel >= 3 && bytesPerTexel <= 4, Stringf( "CreateTextureFromData failed for \"%s\" - unsupported BPP=%i (must be 3 or 4)", name, bytesPerTexel ) );
+	GUARANTEE_OR_DIE( dimensions.x > 0 && dimensions.y > 0, Stringf( "CreateTextureFromData failed for \"%s\" - illegal texture dimensions (%i x %i)", name, dimensions.x, dimensions.y ) );
+
+	Image* newImage = new Image( dimensions, Rgba8::WHITE );
+	for ( int y = 0; y < dimensions.y; ++y )
+	{
+		for ( int x = 0; x < dimensions.x; ++x )
+		{
+			int texelIndex = ( y * dimensions.x + x ) * bytesPerTexel;
+			uint8_t r = texelData[texelIndex + 0];
+			uint8_t g = texelData[texelIndex + 1];
+			uint8_t b = texelData[texelIndex + 2];
+			uint8_t a = ( bytesPerTexel == 4 ) ? texelData[texelIndex + 3] : 255;
+			newImage->SetTexelColor( IntVec2( x, y ), Rgba8( r, g, b, a ) );
+		}
+	}
+	Texture* newTexture = CreateTextureFromImage( name, *newImage );
+
+	m_loadedTextures.push_back( newTexture );
+	return newTexture;
 }
 
 
 //------------------------------------------------------------------------------------------------
 Texture* Renderer::CreateTextureFromFile( char const* imageFilePath )
 {
-	IntVec2 dimensions = IntVec2::ZERO;		// This will be filled in for us to indicate image width & height
-	int bytesPerTexel = 0;					// ...and how many color components the image had (e.g. 3=RGB=24bit, 4=RGBA=32bit)
-
-	// Load (and decompress) the image RGB(A) bytes from a file on disk into a memory buffer (array of bytes)
-	stbi_set_flip_vertically_on_load( 1 ); // We prefer uvTexCoords has origin (0,0) at BOTTOM LEFT
-	unsigned char* texelData = stbi_load( imageFilePath, &dimensions.x, &dimensions.y, &bytesPerTexel, 0 );
-
-	// Check if the load was successful
-	GUARANTEE_OR_DIE( texelData, Stringf( "Failed to load image \"%s\"", imageFilePath ) );
-
-	Texture* newTexture = CreateTextureFromData( imageFilePath, dimensions, bytesPerTexel, texelData );
-
-	// Free the raw image texel data now that we've sent a copy of it down to the GPU to be stored in video memory
-	stbi_image_free( texelData );
+	Image* image = CreateImageFromFile( imageFilePath );
+	Texture* newTexture = CreateTextureFromImage( imageFilePath, *image );
 
 	return newTexture;
 }

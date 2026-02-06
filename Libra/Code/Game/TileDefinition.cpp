@@ -5,6 +5,7 @@
 #include "Engine/Core/EngineCommon.hpp"
 #include "Engine/Core/XmlUtils.hpp"
 #include "Engine/Renderer/SpriteDefinition.hpp"
+#include "Engine/Renderer/SpriteSheet.hpp"
 
 
 //-----------------------------------------------------------------------------------------------

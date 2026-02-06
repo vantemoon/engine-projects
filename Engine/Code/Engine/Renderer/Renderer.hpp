@@ -19,6 +19,7 @@ struct Rgba8;
 struct Vertex;
 class BitmapFont;
 class Camera;
+class Image;
 class Texture;
 class Shader;
 class ConstantBuffer;
@@ -30,6 +31,7 @@ struct ID3D11Device;
 struct ID3D11DeviceContext;
 struct IDXGISwapChain;
 struct ID3D11BlendState;
+struct ID3D11SamplerState;
 
 
 //-----------------------------------------------------------------------------------------------
@@ -40,11 +42,20 @@ struct RenderConfig
 
 
 //-----------------------------------------------------------------------------------------------
-enum BlendMode
+enum class BlendMode
 {
 	ALPHA,
 	ADDITIVE,
 	OPAQUE,
+	COUNT
+};
+
+
+//-----------------------------------------------------------------------------------------------
+enum class SamplerMode
+{
+	POINT_CLAMP,
+	BILINEAR_WRAP,
 	COUNT
 };
 
@@ -67,6 +78,7 @@ public:
 	void DrawVertexArray( int numVertexes, Vertex const* vertexes );
 	void BindTexture( Texture* texture );
 	void SetBlendMode( BlendMode mode );
+	void SetSamplerMode( SamplerMode mode );
 	void SetStatesIfChanged();
 
 	Texture* CreateOrGetTextureFromFile( char const* imageFilePath );
@@ -87,6 +99,8 @@ public:
 	void BindConstantBuffer( int slot, ConstantBuffer* cbo );
 	
 private:
+	Image* CreateImageFromFile( char const* imageFilePath );
+	Texture* CreateTextureFromImage( char const* name, Image const& image );
 	Texture* CreateTextureFromFile( char const* imageFilePath );
 	Texture* CreateTextureFromData( char const* name, IntVec2 dimensions, int bytesPerTexel, uint8_t* texelData );
 	Texture* GetTextureForFileName( char const* imageFilePath );
@@ -116,4 +130,10 @@ protected:
 	ID3D11BlendState* m_blendState = nullptr;
 	BlendMode m_desiredBlendMode = BlendMode::ALPHA;
 	ID3D11BlendState* m_blendStates[( int ) BlendMode::COUNT] = {};
+
+	Texture* m_defaultTexture = nullptr;
+
+	ID3D11SamplerState* m_samplerState = nullptr;
+	SamplerMode m_desiredSamplerMode = SamplerMode::POINT_CLAMP;
+	ID3D11SamplerState* m_samplerStates[( int ) SamplerMode::COUNT] = {};
 };
