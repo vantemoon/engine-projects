@@ -10,3 +10,6 @@
 
 #define ENGINE_DISABLE_AUDIO	// (If uncommented) Disables AudioSystem code and fmod linkage.
 
+#if defined( _DEBUG )
+#define ENGINE_DEBUG_RENDER
+#endif

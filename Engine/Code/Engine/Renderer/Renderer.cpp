@@ -237,15 +237,20 @@ void Renderer::Shutdown()
 {
 	DX_SAFE_RELEASE( m_rasterizerState );
 	DX_SAFE_RELEASE( m_renderTargetView );
-	DX_SAFE_RELEASE( m_swapChain );
-	DX_SAFE_RELEASE( m_deviceContext );
-	DX_SAFE_RELEASE( m_device );
 
 	// Release blend states
 	for ( int blendModeIndex = 0; blendModeIndex < ( int ) BlendMode::COUNT; ++blendModeIndex )
 	{
 		DX_SAFE_RELEASE( m_blendStates[blendModeIndex] );
 	}
+	m_blendState = nullptr;
+
+	// Release sampler states
+	for ( int samplerModeIndex = 0; samplerModeIndex < ( int ) SamplerMode::COUNT; ++samplerModeIndex )
+	{
+		DX_SAFE_RELEASE( m_samplerStates[samplerModeIndex] );
+	}
+	m_samplerState = nullptr;
 
 	// Release loaded textures
 	for ( Texture* texture : m_loadedTextures )
@@ -272,6 +277,11 @@ void Renderer::Shutdown()
 	// Release camera CBO
 	delete m_cameraCBO;
 	m_cameraCBO = nullptr;
+
+	// Release device-related objects
+	DX_SAFE_RELEASE( m_swapChain );
+	DX_SAFE_RELEASE( m_deviceContext );
+	DX_SAFE_RELEASE( m_device );
 
 	// Report error leaks and release debug module
 #if defined(ENGINE_DEBUG_RENDER)
