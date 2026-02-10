@@ -66,6 +66,12 @@ void DevConsole::Execute( std::string const& consoleCommandText )
 	{
 		std::string command = splitText[0];
 		EventArgs args;
+		std::vector<std::string> registeredEventNames = g_engine->m_eventSystem->GetEventNames();
+		if ( std::find( registeredEventNames.begin(), registeredEventNames.end(), command ) == registeredEventNames.end() )
+		{
+			AddLine( WARNING, "Unknown command: " + command );
+			return;
+		}
 		for ( int argIndex = 1; argIndex < ( int ) splitText.size(); ++ argIndex )
 		{
 			std::string arg = splitText[argIndex];
@@ -78,7 +84,7 @@ void DevConsole::Execute( std::string const& consoleCommandText )
 			}
 			else
 			{
-				// Not a valid command argument
+				AddLine( WARNING, "Invalid argument: " + arg );
 			}
 		}
 		AddLine( INFO_MINOR, "Executed command: " + consoleCommandText );

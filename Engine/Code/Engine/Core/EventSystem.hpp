@@ -34,6 +34,8 @@ public:
 	void FireEvent( std::string const& eventName, EventArgs& args );
 	void FireEvent( std::string const& eventName );
 
+	std::vector<std::string> GetEventNames() const;
+
 protected:
 	EventSystemConfig								 m_config;
 	std::map<std::string, EventCallbackFunctionList> m_subscriptionListsByEventName;

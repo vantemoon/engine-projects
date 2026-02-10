@@ -74,3 +74,16 @@ void EventSystem::FireEvent( std::string const& eventName )
 	EventArgs args;
 	FireEvent( eventName, args );
 }
+
+
+//-----------------------------------------------------------------------------------------------
+std::vector<std::string> EventSystem::GetEventNames() const
+{
+	std::vector<std::string> eventNames;
+	for ( int eventIndex = 0; eventIndex < ( int ) m_subscriptionListsByEventName.size(); ++ eventIndex )
+	{
+		std::string eventName = std::next( m_subscriptionListsByEventName.begin(), eventIndex )->first;
+		eventNames.push_back( eventName );
+	}
+	return eventNames;
+}
