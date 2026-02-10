@@ -1,6 +1,7 @@
 #pragma once
 #include "Engine/Input/KeyButtonState.hpp"
 #include "Engine/Input/XboxController.hpp"
+#include "Engine/Core/EventSystem.hpp"
 
 
 //----------------------------------------------------------------
@@ -25,6 +26,10 @@ extern unsigned char const KEYCODE_DOWNARROW;
 extern unsigned char const KEYCODE_LBUTTON;
 extern unsigned char const KEYCODE_RBUTTON;
 extern unsigned char const KEYCODE_TILDE;
+extern unsigned char const KEYCODE_INSERT;
+extern unsigned char const KEYCODE_DELETE;
+extern unsigned char const KEYCODE_HOME;
+extern unsigned char const KEYCODE_END;
 
 
 //----------------------------------------------------------------
@@ -57,6 +62,9 @@ public:
 	void HandleKeyPressed( unsigned char keyCode );
 	void HandleKeyReleased( unsigned char keyCode );
 	XboxController const& GetController( int controllerID );
+
+	static bool Command_KeyDown( EventArgs& args );
+	static bool Command_KeyUp( EventArgs& args );
 
 	InputConfig m_config;
 

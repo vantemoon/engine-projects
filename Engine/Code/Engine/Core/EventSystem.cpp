@@ -83,6 +83,10 @@ std::vector<std::string> EventSystem::GetEventNames() const
 	for ( int eventIndex = 0; eventIndex < ( int ) m_subscriptionListsByEventName.size(); ++ eventIndex )
 	{
 		std::string eventName = std::next( m_subscriptionListsByEventName.begin(), eventIndex )->first;
+		if ( eventName == "KeyDown" || eventName == "KeyUp" )
+		{
+			continue; // skip raw keyboard events
+		}
 		eventNames.push_back( eventName );
 	}
 	return eventNames;

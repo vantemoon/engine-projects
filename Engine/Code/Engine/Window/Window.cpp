@@ -86,15 +86,16 @@ LRESULT CALLBACK WindowsMessageHandlingProcedure( HWND windowHandle, UINT wmMess
 		case WM_CLOSE:
 		{
 			g_engine->m_eventSystem->FireEvent( "Quit" );
-			// return 0; // "Consumes" this message (tells Windows "okay, we handled it")
+			return 0;
 		}
 
 		// Raw physical keyboard "key-was-just-depressed" event (case-insensitive, not translated)
 		case WM_KEYDOWN:
 		{
 			unsigned char asKey = ( unsigned char ) wParam;
-
-			g_engine->m_inputSystem->HandleKeyPressed( asKey );
+			EventArgs args;
+			args.SetValue( "key", std::string( 1, ( char ) asKey ) );
+			g_engine->m_eventSystem->FireEvent( "KeyDown", args );
 			break;
 		}
 
@@ -102,8 +103,9 @@ LRESULT CALLBACK WindowsMessageHandlingProcedure( HWND windowHandle, UINT wmMess
 		case WM_KEYUP:
 		{
 			unsigned char asKey = ( unsigned char ) wParam;
-
-			g_engine->m_inputSystem->HandleKeyReleased( asKey );
+			EventArgs args;
+			args.SetValue( "key", std::string( 1, ( char ) asKey ) );
+			g_engine->m_eventSystem->FireEvent( "KeyUp", args );
 			break;
 		}
 
