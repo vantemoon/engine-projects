@@ -40,3 +40,11 @@ protected:
 	EventSystemConfig								 m_config;
 	std::map<std::string, EventCallbackFunctionList> m_subscriptionListsByEventName;
 };
+
+
+//-----------------------------------------------------------------------------------------------
+// Standalone global-namespace helper functions
+void SubscribeEventCallbackFunction( std::string const& eventName, EventCallbackFunction funtionPtr );
+void UnsubscribeEventCallbackFunction( std::string const& eventName, EventCallbackFunction funtionPtr );
+void FireEvent( std::string const& eventName, EventArgs& args );
+void FireEvent( std::string const& eventName );

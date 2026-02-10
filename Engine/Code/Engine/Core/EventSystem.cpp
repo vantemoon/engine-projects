@@ -1,4 +1,5 @@
 #include "Engine/Core/EventSystem.hpp"
+#include "Engine/Core/Engine.hpp"
 
 
 //-----------------------------------------------------------------------------------------------
@@ -94,4 +95,44 @@ std::vector<std::string> EventSystem::GetEventNames() const
 		eventNames.push_back( eventName );
 	}
 	return eventNames;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void SubscribeEventCallbackFunction( std::string const& eventName, EventCallbackFunction funtionPtr )
+{
+	if ( g_engine && g_engine->m_eventSystem )
+	{
+		g_engine->m_eventSystem->SubscribeEventCallbackFunction( eventName, funtionPtr );
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void UnsubscribeEventCallbackFunction( std::string const& eventName, EventCallbackFunction funtionPtr )
+{
+	if ( g_engine && g_engine->m_eventSystem )
+	{
+		g_engine->m_eventSystem->UnsubscribeEventCallbackFunction( eventName, funtionPtr );
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void FireEvent( std::string const& eventName, EventArgs& args )
+{
+	if ( g_engine && g_engine->m_eventSystem )
+	{
+		g_engine->m_eventSystem->FireEvent( eventName, args );
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void FireEvent( std::string const& eventName )
+{
+	if ( g_engine && g_engine->m_eventSystem )
+	{
+		g_engine->m_eventSystem->FireEvent( eventName );
+	}
 }
