@@ -63,8 +63,9 @@ public:
 	void HandleKeyReleased( unsigned char keyCode );
 	XboxController const& GetController( int controllerID );
 
-	static bool Command_KeyDown( EventArgs& args );
-	static bool Command_KeyUp( EventArgs& args );
+	static bool Event_KeyPressed( EventArgs& args );
+	static bool Event_KeyReleased( EventArgs& args );
+	static bool Event_CharacterInput( EventArgs& args );
 
 	InputConfig m_config;
 

@@ -92,9 +92,8 @@ LRESULT CALLBACK WindowsMessageHandlingProcedure( HWND windowHandle, UINT wmMess
 		// Raw physical keyboard "key-was-just-depressed" event (case-insensitive, not translated)
 		case WM_KEYDOWN:
 		{
-			unsigned char asKey = ( unsigned char ) wParam;
 			EventArgs args;
-			args.SetValue( "key", std::string( 1, ( char ) asKey ) );
+			args.SetValue( "KeyCode", Stringf( "%d", ( unsigned char ) wParam ) );
 			g_engine->m_eventSystem->FireEvent( "KeyDown", args );
 			break;
 		}
@@ -102,10 +101,18 @@ LRESULT CALLBACK WindowsMessageHandlingProcedure( HWND windowHandle, UINT wmMess
 		// Raw physical keyboard "key-was-just-released" event (case-insensitive, not translated)
 		case WM_KEYUP:
 		{
-			unsigned char asKey = ( unsigned char ) wParam;
 			EventArgs args;
-			args.SetValue( "key", std::string( 1, ( char ) asKey ) );
+			args.SetValue( "KeyCode", Stringf( "%d", ( unsigned char ) wParam ) );
 			g_engine->m_eventSystem->FireEvent( "KeyUp", args );
+			break;
+		}
+
+		// Character input event (case-sensitive, translated by keyboard layout, taking into account modifiers like Shift, AltGr, etc.)
+		case WM_CHAR:
+		{
+			EventArgs args;
+			args.SetValue( "Character", Stringf( "%c", ( char ) wParam ) );
+			g_engine->m_eventSystem->FireEvent( "CharacterInput", args );
 			break;
 		}
 

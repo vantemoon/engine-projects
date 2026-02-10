@@ -1,6 +1,7 @@
 #include "Engine/Input/InputSystem.hpp"
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/ErrorWarningAssert.hpp"
+#include "Engine/Core/DevConsole.hpp"
 #include "Engine/Input/AnalogJoystick.hpp"
 #include <Windows.h>
 
@@ -54,8 +55,9 @@ void InputSystem::StartUp()
 	}
 
 	// Subscribe to raw Windows key events
-	g_engine->m_eventSystem->SubscribeEventCallbackFunction( "KeyDown", Command_KeyDown );
-	g_engine->m_eventSystem->SubscribeEventCallbackFunction( "KeyUp", Command_KeyUp );
+	g_engine->m_eventSystem->SubscribeEventCallbackFunction( "KeyDown", Event_KeyPressed );
+	g_engine->m_eventSystem->SubscribeEventCallbackFunction( "KeyUp", Event_KeyReleased );
+	g_engine->m_eventSystem->SubscribeEventCallbackFunction( "CharacterInput", Event_CharacterInput );
 }
 
 
@@ -140,15 +142,14 @@ XboxController const& InputSystem::GetController( int controllerID )
 
 
 //----------------------------------------------------------------
-bool InputSystem::Command_KeyDown( EventArgs& args )
+bool InputSystem::Event_KeyPressed( EventArgs& args )
 {
 	UNUSED( args );
 	if ( g_engine && g_engine->m_inputSystem )
 	{
-		std::string key = args.GetValue( "key", "" );
-		if ( key.size() == 1 )
+		unsigned char keyCode = static_cast<unsigned char>( args.GetValue( "KeyCode", -1 ) );
+		if ( keyCode >= 0 && keyCode < NUM_KEYCODES )
 		{
-			unsigned char keyCode = static_cast<unsigned char>( key[0] );
 			g_engine->m_inputSystem->HandleKeyPressed( keyCode );
 			return true; // Consumes event; do not call other subscribers’ callback functions
 		}
@@ -158,18 +159,33 @@ bool InputSystem::Command_KeyDown( EventArgs& args )
 
 
 //----------------------------------------------------------------
-bool InputSystem::Command_KeyUp( EventArgs& args )
+bool InputSystem::Event_KeyReleased( EventArgs& args )
 {
 	UNUSED( args );
 	if ( g_engine && g_engine->m_inputSystem )
 	{
-		std::string key = args.GetValue( "key", "" );
-		if ( key.size() == 1 )
+		unsigned char keyCode = static_cast<unsigned char>( args.GetValue( "KeyCode", -1 ) );
+		if ( keyCode >= 0 && keyCode < NUM_KEYCODES )
 		{
-			unsigned char keyCode = static_cast<unsigned char>( key[0] );
 			g_engine->m_inputSystem->HandleKeyReleased( keyCode );
 			return true; // Consumes event; do not call other subscribers’ callback functions
 		}
+	}
+	return false; // Does not consume event; continue to call other subscribers’ callback functions
+}
+
+
+//----------------------------------------------------------------
+bool InputSystem::Event_CharacterInput( EventArgs& args )
+{
+	UNUSED( args );
+	if ( g_engine && g_engine->m_inputSystem )
+	{
+		std::string characterText = args.GetValue( "Character", "" );
+		char character = characterText.empty() ? '\0' : characterText[0];
+		UNUSED( character );
+		// Handle character input if needed (e.g. for text input fields, etc.)
+		return true; // Consumes event; do not call other subscribers’ callback functions
 	}
 	return false; // Does not consume event; continue to call other subscribers’ callback functions
 }
