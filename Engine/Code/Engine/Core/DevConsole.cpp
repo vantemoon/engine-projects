@@ -238,6 +238,11 @@ bool DevConsole::Command_KeyPressed( EventArgs& args )
 
 		if ( g_engine->m_devConsole->GetMode() != DevConsoleMode::HIDDEN )
 		{
+			if ( keyCode == KEYCODE_ENTER )
+			{
+				g_engine->m_devConsole->Execute( g_gameConfigBlackboard.GetValue( "testCommand", "" ) );
+				return true;
+			}
 			return true;
 		}
 	}

@@ -472,22 +472,6 @@ void Game::UpdateFromKeyboard()
 			LoadNextMap();
 		}
 	}
-
-	// Toggle developer console
-	if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_TILDE ) )
-	{
-		g_engine->m_devConsole->ToggleMode( DevConsoleMode::OPEN_FULL );
-	}
-
-	// If the console is open, press enter to print a new line
-	if ( g_engine->m_devConsole->GetMode() == DevConsoleMode::OPEN_FULL )
-	{
-		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_ENTER ) )
-		{
-			// g_engine->m_devConsole->AddLine( g_engine->m_devConsole->INFO_MINOR, "" );
-			g_engine->m_devConsole->Execute( g_gameConfigBlackboard.GetValue( "testCommand", "" ) );
-		}
-	}
 }
 
 
