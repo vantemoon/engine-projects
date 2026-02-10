@@ -95,7 +95,7 @@ LRESULT CALLBACK WindowsMessageHandlingProcedure( HWND windowHandle, UINT wmMess
 			EventArgs args;
 			args.SetValue( "KeyCode", Stringf( "%d", ( unsigned char ) wParam ) );
 			g_engine->m_eventSystem->FireEvent( "KeyDown", args );
-			break;
+			return 0;
 		}
 
 		// Raw physical keyboard "key-was-just-released" event (case-insensitive, not translated)
@@ -104,7 +104,7 @@ LRESULT CALLBACK WindowsMessageHandlingProcedure( HWND windowHandle, UINT wmMess
 			EventArgs args;
 			args.SetValue( "KeyCode", Stringf( "%d", ( unsigned char ) wParam ) );
 			g_engine->m_eventSystem->FireEvent( "KeyUp", args );
-			break;
+			return 0;
 		}
 
 		// Character input event (case-sensitive, translated by keyboard layout, taking into account modifiers like Shift, AltGr, etc.)
@@ -113,7 +113,7 @@ LRESULT CALLBACK WindowsMessageHandlingProcedure( HWND windowHandle, UINT wmMess
 			EventArgs args;
 			args.SetValue( "Character", Stringf( "%c", ( char ) wParam ) );
 			g_engine->m_eventSystem->FireEvent( "CharacterInput", args );
-			break;
+			return 0;
 		}
 
 		case WM_LBUTTONDOWN:

@@ -53,11 +53,6 @@ void InputSystem::StartUp()
 	{
 		m_controllers[controllerIndex] = XboxController( controllerIndex );
 	}
-
-	// Subscribe to raw Windows key events
-	g_engine->m_eventSystem->SubscribeEventCallbackFunction( "KeyDown", Event_KeyPressed );
-	g_engine->m_eventSystem->SubscribeEventCallbackFunction( "KeyUp", Event_KeyReleased );
-	g_engine->m_eventSystem->SubscribeEventCallbackFunction( "CharacterInput", Event_CharacterInput );
 }
 
 
@@ -182,7 +177,15 @@ bool InputSystem::Event_CharacterInput( EventArgs& args )
 	if ( g_engine && g_engine->m_inputSystem )
 	{
 		std::string characterText = args.GetValue( "Character", "" );
-		char character = characterText.empty() ? '\0' : characterText[0];
+		char character;
+		if ( characterText.size() > 0 )
+		{
+			character = characterText[0];
+		}
+		else
+		{
+			character = '\0';
+		}
 		UNUSED( character );
 		// Handle character input if needed (e.g. for text input fields, etc.)
 		return true; // Consumes event; do not call other subscribers’ callback functions

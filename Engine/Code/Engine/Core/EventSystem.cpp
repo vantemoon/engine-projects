@@ -62,7 +62,11 @@ void EventSystem::FireEvent( std::string const& eventName, EventArgs& args )
 	{
 		if ( callbackFunction != nullptr )
 		{
-			callbackFunction( args );
+			bool wasConsumed = callbackFunction( args );
+			if ( wasConsumed )
+			{
+				break;
+			}
 		}
 	}
 }

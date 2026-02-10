@@ -6,6 +6,7 @@
 #include "Engine/Core/VertexUtils.hpp"
 #include "Engine/Core/Time.hpp"
 #include "Engine/Core/StringUtils.hpp"
+#include "Engine/Input/InputSystem.hpp"
 
 
 //-----------------------------------------------------------------------------------------------
@@ -32,6 +33,12 @@ DevConsole::~DevConsole()
 void DevConsole::Startup()
 {
 	g_engine->m_eventSystem->SubscribeEventCallbackFunction( "Test", Command_Test );
+	g_engine->m_eventSystem->SubscribeEventCallbackFunction( "KeyDown", Command_KeyPressed );
+	g_engine->m_eventSystem->SubscribeEventCallbackFunction( "KeyUp", Command_KeyReleased );
+	g_engine->m_eventSystem->SubscribeEventCallbackFunction( "CharacterInput", Command_CharacterInput );
+	g_engine->m_eventSystem->SubscribeEventCallbackFunction( "KeyDown", InputSystem::Event_KeyPressed );
+	g_engine->m_eventSystem->SubscribeEventCallbackFunction( "KeyUp", InputSystem::Event_KeyReleased );
+	g_engine->m_eventSystem->SubscribeEventCallbackFunction( "CharacterInput", InputSystem::Event_CharacterInput );
 }
 
 
@@ -57,7 +64,7 @@ void DevConsole::EndFrame()
 //-----------------------------------------------------------------------------------------------
 void DevConsole::Execute( std::string const& consoleCommandText )
 {
-	Strings splitText = SplitStringOnDelimiter( consoleCommandText, ' ');
+	Strings splitText = SplitStringOnDelimiter( consoleCommandText, ' ' );
 	if ( splitText.size() == 0 )
 	{
 		AddLine( INFO_MINOR, "" );
@@ -214,6 +221,57 @@ bool DevConsole::Command_Test( EventArgs& args )
 		return true; // Consumes event; do not call other subscribers’ callback functions
 	}
 	return false; // Does not consume event; continue to call other subscribers’ callback functions
+}
+
+
+//------------------------------------------------------------------------------------------------
+bool DevConsole::Command_KeyPressed( EventArgs& args )
+{
+	if ( g_engine && g_engine->m_devConsole )
+	{
+		unsigned char keyCode = static_cast<unsigned char>( args.GetValue( "KeyCode", -1 ) );
+		if ( keyCode == KEYCODE_TILDE )
+		{
+			g_engine->m_devConsole->ToggleMode( DevConsoleMode::OPEN_FULL );
+			return true;
+		}
+
+		if ( g_engine->m_devConsole->GetMode() != DevConsoleMode::HIDDEN )
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+
+//------------------------------------------------------------------------------------------------
+bool DevConsole::Command_KeyReleased( EventArgs& args )
+{
+	UNUSED( args );
+	if ( g_engine && g_engine->m_devConsole )
+	{
+		if ( g_engine->m_devConsole->GetMode() != DevConsoleMode::HIDDEN )
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+
+//------------------------------------------------------------------------------------------------
+bool DevConsole::Command_CharacterInput( EventArgs& args )
+{
+	UNUSED( args );
+	if ( g_engine && g_engine->m_devConsole )
+	{
+		if ( g_engine->m_devConsole->GetMode() != DevConsoleMode::HIDDEN )
+		{
+			return true;
+		}
+	}
+	return false;
 }
 
 
