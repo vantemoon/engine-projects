@@ -250,6 +250,21 @@ void DevConsole::Render_OpenFull( AABB2 const& bound, BitmapFont& font, float fo
 
 	g_engine->m_renderer->BindTexture( &font.GetTexture() );
 	g_engine->m_renderer->DrawVertexArray( static_cast< int >( textVerts.size() ), textVerts.data() );
+
+	RenderInsertionPoint( cellHeight * fontAspect, cellHeight );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void DevConsole::RenderInsertionPoint( float cellWidth, float cellHeight ) const
+{
+	float offsetFromStart = m_insertionPointPosition * cellWidth + 5.f;
+	Vec2 mins = Vec2( offsetFromStart, 2.f );
+	Vec2 maxs = Vec2( offsetFromStart + 2.f, cellHeight + 2.f );
+	std::vector<Vertex> verts;
+	AddVertsForAABB2D( verts, AABB2( mins, maxs ), DEFAULT_TEXT_COLOR );
+	g_engine->m_renderer->BindTexture( nullptr );
+	g_engine->m_renderer->DrawVertexArray( static_cast< int >( verts.size() ), verts.data() );
 }
 
 
@@ -280,6 +295,7 @@ bool DevConsole::Command_KeyPressed( EventArgs& args )
 					std::string currentCommand = g_gameConfigBlackboard.GetValue( "currentCommand", "" );
 					g_engine->m_devConsole->Execute( currentCommand );
 					g_gameConfigBlackboard.SetValue( "currentCommand", "" );
+					g_engine->m_devConsole->m_insertionPointPosition = 0;
 				}
 				return true;
 			}
@@ -289,6 +305,7 @@ bool DevConsole::Command_KeyPressed( EventArgs& args )
 				if ( !g_gameConfigBlackboard.GetValue( "currentCommand", "" ).empty() )
 				{
 					g_gameConfigBlackboard.SetValue( "currentCommand", "" );
+					g_engine->m_devConsole->m_insertionPointPosition = 0;
 				}
 				else
 				{
@@ -334,9 +351,7 @@ bool DevConsole::Command_CharacterInput( EventArgs& args )
 			int character = static_cast<int>( characterText[0] );
 			if ( character >= 32 && character <= 126 && characterText != "`" && characterText != "~" )
 			{
-				std::string currentCommand = g_gameConfigBlackboard.GetValue( "currentCommand", "" );
-				currentCommand += characterText;
-				g_gameConfigBlackboard.SetValue( "currentCommand", currentCommand );
+				g_engine->m_devConsole->InsertCharacterAtInsertionPoint( static_cast<char>( character ) );
 			}
 			return true;
 		}
@@ -395,4 +410,14 @@ bool DevConsole::Command_Test( EventArgs& args )
 int DevConsole::AddTwoInts( int a, int b ) const
 {
 	return a + b;
+}
+
+
+//------------------------------------------------------------------------------------------------
+void DevConsole::InsertCharacterAtInsertionPoint( char character )
+{
+	std::string currentCommand = g_gameConfigBlackboard.GetValue( "currentCommand", "" );
+	currentCommand.insert( m_insertionPointPosition, 1, character );
+	g_gameConfigBlackboard.SetValue( "currentCommand", currentCommand );
+	m_insertionPointPosition ++;
 }

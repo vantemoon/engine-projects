@@ -64,10 +64,13 @@ public:
 
 protected:
 	void Render_OpenFull( AABB2 const& bound, BitmapFont& font, float fontAspect = 1.f ) const;
+	void RenderInsertionPoint( float cellWidth, float cellHeight ) const;
+	void InsertCharacterAtInsertionPoint( char character );
 
 protected:
 	DevConsoleConfig			m_config;
 	DevConsoleMode				m_mode = DevConsoleMode::HIDDEN;
 	std::vector<DevConsoleLine> m_lines;
 	int							m_frameNumber = 0;
+	int                         m_insertionPointPosition = 0;
 };
