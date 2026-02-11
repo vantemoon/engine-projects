@@ -49,7 +49,7 @@ void App::Startup()
 
 	m_lastFrameStartTime = GetCurrentTimeSeconds();
 
-	g_engine->m_eventSystem->SubscribeEventCallbackFunction( "quit", Command_Quit );
+	g_engine->m_eventSystem->SubscribeEventCallbackFunction( "Quit", Command_Quit );
 }
 
 

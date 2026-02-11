@@ -47,12 +47,10 @@ public:
 	void SetMode( DevConsoleMode mode );
 	void ToggleMode( DevConsoleMode mode );
 
-	static bool Command_Test( EventArgs& args );
 	static bool Command_KeyPressed( EventArgs& args );
 	static bool Command_KeyReleased( EventArgs& args );
 	static bool Command_CharacterInput( EventArgs& args );
-
-	int AddTwoInts( int a, int b ) const;
+	static bool Command_Help( EventArgs& args );
 
 	static const Rgba8 ERROR;
 	static const Rgba8 WARNING;

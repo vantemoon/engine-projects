@@ -85,7 +85,7 @@ LRESULT CALLBACK WindowsMessageHandlingProcedure( HWND windowHandle, UINT wmMess
 		// App close requested via "X" button, or right-click "Close Window" on task bar, or "Close" from system menu, or Alt-F4
 		case WM_CLOSE:
 		{
-			g_engine->m_eventSystem->FireEvent( "quit" );
+			g_engine->m_eventSystem->FireEvent( "Quit" );
 			return 0;
 		}
 

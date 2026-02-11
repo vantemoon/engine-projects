@@ -34,7 +34,8 @@ DevConsole::~DevConsole()
 //-----------------------------------------------------------------------------------------------
 void DevConsole::Startup()
 {
-	g_engine->m_eventSystem->SubscribeEventCallbackFunction( "Test", Command_Test );
+	g_engine->m_eventSystem->SubscribeEventCallbackFunction( "Help", Command_Help );
+
 	g_engine->m_eventSystem->SubscribeEventCallbackFunction( "KeyDown", Command_KeyPressed );
 	g_engine->m_eventSystem->SubscribeEventCallbackFunction( "KeyUp", Command_KeyReleased );
 	g_engine->m_eventSystem->SubscribeEventCallbackFunction( "CharacterInput", Command_CharacterInput );
@@ -74,8 +75,6 @@ void DevConsole::Execute( std::string const& consoleCommandText )
 	else
 	{
 		std::string command = splitText[0];
-		std::transform( command.begin(), command.end(), command.begin(),
-			[]( unsigned char c ) { return static_cast< char >( std::tolower( c ) ); } );
 		EventArgs args;
 		std::vector<std::string> registeredEventNames = g_engine->m_eventSystem->GetEventNames();
 		if ( std::find( registeredEventNames.begin(), registeredEventNames.end(), command ) == registeredEventNames.end() )
@@ -217,22 +216,6 @@ void DevConsole::Render_OpenFull( AABB2 const& bound, BitmapFont& font, float fo
 
 
 //------------------------------------------------------------------------------------------------
-bool DevConsole::Command_Test( EventArgs& args )
-{
-	UNUSED( args );
-	if ( g_engine && g_engine->m_devConsole )
-	{
-		int a = args.GetValue( "a", 0 );
-		int b = args.GetValue( "b", 0 );
-		int result = g_engine->m_devConsole->AddTwoInts( a, b );
-		g_engine->m_devConsole->AddLine( INFO_MINOR, Stringf( "Test command received: %d + %d = %d", a, b, result ) );
-		return true; // Consumes event; do not call other subscribers’ callback functions
-	}
-	return false; // Does not consume event; continue to call other subscribers’ callback functions
-}
-
-
-//------------------------------------------------------------------------------------------------
 bool DevConsole::Command_KeyPressed( EventArgs& args )
 {
 	if ( g_engine && g_engine->m_devConsole )
@@ -305,7 +288,18 @@ bool DevConsole::Command_CharacterInput( EventArgs& args )
 
 
 //------------------------------------------------------------------------------------------------
-int DevConsole::AddTwoInts( int a, int b ) const
+bool DevConsole::Command_Help( EventArgs& args )
 {
-	return a + b;
+	UNUSED( args );
+	if ( g_engine && g_engine->m_devConsole )
+	{
+		std::vector<std::string> eventNames = g_engine->m_eventSystem->GetEventNames();
+		g_engine->m_devConsole->AddLine( INFO_MAJOR, "Registered commands:" );
+		for ( std::string const& eventName : eventNames )
+		{
+			g_engine->m_devConsole->AddLine( DEFAULT_TEXT_COLOR, eventName );
+		}
+		return true;
+	}
+	return false;
 }
