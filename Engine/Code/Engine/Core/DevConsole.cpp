@@ -36,6 +36,8 @@ void DevConsole::Startup()
 {
 	g_engine->m_eventSystem->SubscribeEventCallbackFunction( "Help", Command_Help );
 	g_engine->m_eventSystem->SubscribeEventCallbackFunction( "Clear", Command_Clear );
+	g_engine->m_eventSystem->SubscribeEventCallbackFunction( "Test", Command_Test );
+	g_engine->m_eventSystem->SetEventRequiredArgs( "Test", { "a=<int>", "b=<int>" } );
 
 	g_engine->m_eventSystem->SubscribeEventCallbackFunction( "KeyDown", Command_KeyPressed );
 	g_engine->m_eventSystem->SubscribeEventCallbackFunction( "KeyUp", Command_KeyReleased );
@@ -239,7 +241,7 @@ bool DevConsole::Command_KeyPressed( EventArgs& args )
 			// Console is open
 			if ( key == KEYCODE_ENTER )
 			{
-				if ( g_gameConfigBlackboard.GetValue( "currentCommand", "" ) == "" )
+				if ( g_gameConfigBlackboard.GetValue( "currentCommand", "" ).empty() )
 				{
 					g_engine->m_devConsole->SetMode( DevConsoleMode::HIDDEN );
 				}
@@ -255,7 +257,7 @@ bool DevConsole::Command_KeyPressed( EventArgs& args )
 
 			if ( key == KEYCODE_ESCAPE )
 			{
-				if ( g_gameConfigBlackboard.GetValue( "currentCommand", "" ) != "" )
+				if ( !g_gameConfigBlackboard.GetValue( "currentCommand", "" ).empty() )
 				{
 					g_gameConfigBlackboard.SetValue( "currentCommand", "" );
 				}
@@ -320,7 +322,7 @@ bool DevConsole::Command_Help( EventArgs& args )
 	UNUSED( args );
 	if ( g_engine && g_engine->m_devConsole )
 	{
-		std::vector<std::string> eventNames = g_engine->m_eventSystem->GetEventNames();
+		std::vector<std::string> eventNames = g_engine->m_eventSystem->GetEventNames( true );
 		g_engine->m_devConsole->AddLine( INFO_MAJOR, "Registered commands:" );
 		for ( std::string const& eventName : eventNames )
 		{
@@ -342,4 +344,26 @@ bool DevConsole::Command_Clear( EventArgs& args )
 		return true;
 	}
 	return false;
+}
+
+
+//------------------------------------------------------------------------------------------------
+bool DevConsole::Command_Test( EventArgs& args )
+{
+	UNUSED( args );
+	if ( g_engine && g_engine->m_devConsole )
+	{
+		int a = args.GetValue( "a", 0 );
+		int b = args.GetValue( "b", 0 );
+		int result = g_engine->m_devConsole->AddTwoInts( a, b );
+		g_engine->m_devConsole->AddLine( INFO_MAJOR, "Result of AddTwoInts( " + std::to_string( a ) + ", " + std::to_string( b ) + " ) = " + std::to_string( result ) );
+	}
+	return false;
+}
+
+
+//------------------------------------------------------------------------------------------------
+int DevConsole::AddTwoInts( int a, int b ) const
+{
+	return a + b;
 }

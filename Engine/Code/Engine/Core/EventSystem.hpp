@@ -17,6 +17,7 @@ struct EventSystemConfig
 typedef NamedStrings EventArgs;
 typedef bool ( *EventCallbackFunction )( EventArgs& );
 typedef std::vector<EventCallbackFunction> EventCallbackFunctionList;
+typedef std::vector<std::string> EventRequiredArgsList;
 
 
 //-----------------------------------------------------------------------------------------------
@@ -52,11 +53,13 @@ public:
 	void FireEvent( std::string const& eventName, EventArgs& args );
 	void FireEvent( std::string const& eventName );
 
-	std::vector<std::string> GetEventNames() const;
+	void SetEventRequiredArgs( std::string const& eventName, EventRequiredArgsList const& requiredArgs );
+	std::vector<std::string> GetEventNames( bool includeRequiredArgs = false ) const;
 
 protected:
 	EventSystemConfig														m_config;
-	std::map<std::string, EventCallbackFunctionList, cmpCaseInsensitive>		m_subscriptionListsByEventName;
+	std::map<std::string, EventCallbackFunctionList, cmpCaseInsensitive>	m_subscriptionListsByEventName;
+	std::map<std::string, EventRequiredArgsList, cmpCaseInsensitive>		m_requiredArgsByEventName;
 };
 
 

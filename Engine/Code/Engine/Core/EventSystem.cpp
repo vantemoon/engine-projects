@@ -84,7 +84,7 @@ void EventSystem::FireEvent( std::string const& eventName )
 
 
 //-----------------------------------------------------------------------------------------------
-std::vector<std::string> EventSystem::GetEventNames() const
+std::vector<std::string> EventSystem::GetEventNames( bool includeRequiredArgs ) const
 {
 	std::vector<std::string> eventNames;
 	for ( int eventIndex = 0; eventIndex < ( int ) m_subscriptionListsByEventName.size(); ++ eventIndex )
@@ -94,9 +94,33 @@ std::vector<std::string> EventSystem::GetEventNames() const
 		{
 			continue; // skip raw keyboard events
 		}
+
+		if ( includeRequiredArgs )
+		{
+			auto requiredArgsIter = m_requiredArgsByEventName.find( eventName );
+			if ( requiredArgsIter != m_requiredArgsByEventName.end() && !requiredArgsIter->second.empty() )
+			{
+				std::string eventNameWithArgs = eventName;
+				for ( std::string const& requiredArg : requiredArgsIter->second )
+				{
+					eventNameWithArgs += " ";
+					eventNameWithArgs += requiredArg;
+				}
+				eventNames.push_back( eventNameWithArgs );
+				continue;
+			}
+		}
+
 		eventNames.push_back( eventName );
 	}
 	return eventNames;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void EventSystem::SetEventRequiredArgs( std::string const& eventName, EventRequiredArgsList const& requiredArgs )
+{
+	m_requiredArgsByEventName[eventName] = requiredArgs;
 }
 
 

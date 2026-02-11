@@ -53,6 +53,9 @@ public:
 	static bool Command_Help( EventArgs& args );
 	static bool Command_Clear( EventArgs& args );
 
+	static bool Command_Test( EventArgs& args );
+	int AddTwoInts( int a, int b ) const;
+
 	static const Rgba8 ERROR;
 	static const Rgba8 WARNING;
 	static const Rgba8 INFO_MAJOR;
