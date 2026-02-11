@@ -7,6 +7,7 @@
 #include "Engine/Core/Time.hpp"
 #include "Engine/Core/StringUtils.hpp"
 #include "Engine/Input/InputSystem.hpp"
+#include <algorithm>
 
 
 //-----------------------------------------------------------------------------------------------
@@ -73,6 +74,8 @@ void DevConsole::Execute( std::string const& consoleCommandText )
 	else
 	{
 		std::string command = splitText[0];
+		std::transform( command.begin(), command.end(), command.begin(),
+			[]( unsigned char c ) { return static_cast< char >( std::tolower( c ) ); } );
 		EventArgs args;
 		std::vector<std::string> registeredEventNames = g_engine->m_eventSystem->GetEventNames();
 		if ( std::find( registeredEventNames.begin(), registeredEventNames.end(), command ) == registeredEventNames.end() )
@@ -247,7 +250,8 @@ bool DevConsole::Command_KeyPressed( EventArgs& args )
 			if ( key == KEYCODE_ENTER )
 			{
 				g_engine->m_devConsole->AddLine( DEFAULT_TEXT_COLOR, g_gameConfigBlackboard.GetValue( "currentCommand", "" ) );
-				g_engine->m_devConsole->Execute( g_gameConfigBlackboard.GetValue( "currentCommand", "" ) );
+				std::string currentCommand = g_gameConfigBlackboard.GetValue( "currentCommand", "" );
+				g_engine->m_devConsole->Execute( currentCommand );
 				g_gameConfigBlackboard.SetValue( "currentCommand", "" );
 				return true;
 			}
