@@ -14,6 +14,7 @@ const Rgba8 DevConsole::ERROR = Rgba8( 255, 0, 0 );
 const Rgba8 DevConsole::WARNING = Rgba8( 255, 255, 0 );
 const Rgba8 DevConsole::INFO_MAJOR = Rgba8( 0, 255, 0 );
 const Rgba8 DevConsole::INFO_MINOR = Rgba8( 0, 0, 255 );
+const Rgba8 DevConsole::DEFAULT_TEXT_COLOR = Rgba8::WHITE;
 
 
 //-----------------------------------------------------------------------------------------------
@@ -186,7 +187,7 @@ void DevConsole::Render_OpenFull( AABB2 const& bound, BitmapFont& font, float fo
 	AddVertsForAABB2D( backgroundVerts, bound, Rgba8( 0, 0, 0, 200 ) );
 
 	float cellHeight = 20.f;
-	float yOffset = bound.m_mins.y + 2.f;
+	float yOffset = bound.m_mins.y + 2.f + cellHeight;
 	for ( int lineIndex = static_cast< int >( m_lines.size() ) - 1; lineIndex >= 0; -- lineIndex )
 	{
 		if ( yOffset + cellHeight > bound.m_maxs.y )
@@ -199,6 +200,10 @@ void DevConsole::Render_OpenFull( AABB2 const& bound, BitmapFont& font, float fo
 		font.AddVertsForText2D( textVerts, textMins, cellHeight, line.second, line.first, fontAspect );
 		yOffset += cellHeight;
 	}
+
+	std::string currentCommand = g_gameConfigBlackboard.GetValue( "currentCommand", "" );
+	Vec2 textMins = Vec2( bound.m_mins.x + 5.f, 2.f );
+	font.AddVertsForText2D( textVerts, textMins, cellHeight, currentCommand, DEFAULT_TEXT_COLOR, fontAspect );
 
 	g_engine->m_renderer->BindTexture( nullptr );
 	g_engine->m_renderer->DrawVertexArray( static_cast< int >( backgroundVerts.size() ), backgroundVerts.data() );
@@ -229,8 +234,8 @@ bool DevConsole::Command_KeyPressed( EventArgs& args )
 {
 	if ( g_engine && g_engine->m_devConsole )
 	{
-		unsigned char keyCode = static_cast<unsigned char>( args.GetValue( "KeyCode", -1 ) );
-		if ( keyCode == KEYCODE_TILDE )
+		unsigned char key = static_cast<unsigned char>( args.GetValue( "KeyCode", -1 ) );
+		if ( key == KEYCODE_TILDE )
 		{
 			g_engine->m_devConsole->ToggleMode( DevConsoleMode::OPEN_FULL );
 			return true;
@@ -238,12 +243,19 @@ bool DevConsole::Command_KeyPressed( EventArgs& args )
 
 		if ( g_engine->m_devConsole->GetMode() != DevConsoleMode::HIDDEN )
 		{
-			if ( keyCode == KEYCODE_ENTER )
+			// Console is open
+			if ( key == KEYCODE_ENTER )
 			{
-				g_engine->m_devConsole->Execute( g_gameConfigBlackboard.GetValue( "testCommand", "" ) );
+				g_engine->m_devConsole->AddLine( DEFAULT_TEXT_COLOR, g_gameConfigBlackboard.GetValue( "currentCommand", "" ) );
+				g_engine->m_devConsole->Execute( g_gameConfigBlackboard.GetValue( "currentCommand", "" ) );
+				g_gameConfigBlackboard.SetValue( "currentCommand", "" );
 				return true;
 			}
 			return true;
+		}
+		else // Console is closed
+		{
+			return false;
 		}
 	}
 	return false;
@@ -273,6 +285,14 @@ bool DevConsole::Command_CharacterInput( EventArgs& args )
 	{
 		if ( g_engine->m_devConsole->GetMode() != DevConsoleMode::HIDDEN )
 		{
+			std::string characterText = args.GetValue( "Character", "" );
+			int character = static_cast<int>( characterText[0] );
+			if ( character >= 32 && character <= 126 && characterText != "`" && characterText != "~" )
+			{
+				std::string currentCommand = g_gameConfigBlackboard.GetValue( "currentCommand", "" );
+				currentCommand += characterText;
+				g_gameConfigBlackboard.SetValue( "currentCommand", currentCommand );
+			}
 			return true;
 		}
 	}

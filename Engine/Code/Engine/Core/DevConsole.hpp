@@ -58,6 +58,7 @@ public:
 	static const Rgba8 WARNING;
 	static const Rgba8 INFO_MAJOR;
 	static const Rgba8 INFO_MINOR;
+	static const Rgba8 DEFAULT_TEXT_COLOR;
 
 protected:
 	void Render_OpenFull( AABB2 const& bound, BitmapFont& font, float fontAspect = 1.f ) const;
