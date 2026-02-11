@@ -53,8 +53,9 @@ public:
 	void FireEvent( std::string const& eventName, EventArgs& args );
 	void FireEvent( std::string const& eventName );
 
-	void SetEventRequiredArgs( std::string const& eventName, EventRequiredArgsList const& requiredArgs );
 	std::vector<std::string> GetEventNames( bool includeRequiredArgs = false ) const;
+	void SetEventRequiredArgs( std::string const& eventName, EventRequiredArgsList const& requiredArgs );
+	EventRequiredArgsList GetEventRequiredArgs( std::string const& eventName ) const;
 
 protected:
 	EventSystemConfig														m_config;

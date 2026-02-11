@@ -125,6 +125,22 @@ void EventSystem::SetEventRequiredArgs( std::string const& eventName, EventRequi
 
 
 //-----------------------------------------------------------------------------------------------
+EventRequiredArgsList EventSystem::GetEventRequiredArgs( std::string const& eventName ) const
+{
+	// Return a list of required arguments for the event, or an empty list if the event doesn't have required arguments
+	auto requiredArgsIter = m_requiredArgsByEventName.find( eventName );
+	if ( requiredArgsIter != m_requiredArgsByEventName.end() )
+	{
+		return requiredArgsIter->second;
+	}
+	else
+	{
+		return EventRequiredArgsList();
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
 void SubscribeEventCallbackFunction( std::string const& eventName, EventCallbackFunction funtionPtr )
 {
 	if ( g_engine && g_engine->m_eventSystem )

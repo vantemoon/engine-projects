@@ -81,15 +81,33 @@ void DevConsole::Execute( std::string const& consoleCommandText )
 		std::string commandLower = ToLower( command );
 		EventArgs args;
 		std::vector<std::string> registeredEventNames = g_engine->m_eventSystem->GetEventNames();
-		bool isRegistered = std::any_of( registeredEventNames.begin(), registeredEventNames.end(),
-			[&commandLower]( std::string const& eventName )
+		bool isRegistered = false;
+		for ( std::string const& eventName : registeredEventNames )
+		{
+			if ( ToLower( eventName ) == commandLower )
 			{
-				return ToLower( eventName ) == commandLower;
-			} );
+				isRegistered = true;
+				break;
+			}
+		}
 		if ( !isRegistered )
 		{
 			AddLine( WARNING, "Unknown command: " + command );
 			return;
+		}
+		if ( splitText.size() == 1 )
+		{
+			EventRequiredArgsList requiredArgs = g_engine->m_eventSystem->GetEventRequiredArgs( command );
+			if ( !requiredArgs.empty() )
+			{
+				std::string requiredArgsString;
+				for ( std::string const& requiredArg : requiredArgs )
+				{
+					requiredArgsString += requiredArg + " ";
+				}
+				AddLine( WARNING, "Command requires arguments: " + requiredArgsString );
+				return;
+			}
 		}
 		for ( int argIndex = 1; argIndex < ( int ) splitText.size(); ++ argIndex )
 		{
@@ -104,6 +122,17 @@ void DevConsole::Execute( std::string const& consoleCommandText )
 			else
 			{
 				AddLine( WARNING, "Invalid argument: " + arg );
+				EventRequiredArgsList requiredArgs = g_engine->m_eventSystem->GetEventRequiredArgs( command );
+				if ( !requiredArgs.empty() )
+				{
+					std::string requiredArgsString;
+					for ( std::string const& requiredArg : requiredArgs )
+					{
+						requiredArgsString += requiredArg + " ";
+					}
+					AddLine( WARNING, "Command requires arguments: " + requiredArgsString );
+				}
+				return;
 			}
 		}
 		AddLine( INFO_MINOR, "Executed command: " + consoleCommandText );
