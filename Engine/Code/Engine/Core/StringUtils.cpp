@@ -1,4 +1,6 @@
 #include "Engine/Core/StringUtils.hpp"
+#include <algorithm>
+#include <cctype>
 #include <stdarg.h>
 
 
@@ -63,4 +65,14 @@ Strings SplitStringOnDelimiter( std::string const& originalString, char delimite
 	splitStrings.push_back( substring );
 
 	return splitStrings;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+std::string ToLower( std::string const& text )
+{
+	std::string lowered = text;
+	std::transform( lowered.begin(), lowered.end(), lowered.begin(),
+		[]( unsigned char c ) { return static_cast<char>( std::tolower( c ) ); } );
+	return lowered;
 }

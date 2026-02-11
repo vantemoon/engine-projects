@@ -75,9 +75,15 @@ void DevConsole::Execute( std::string const& consoleCommandText )
 	else
 	{
 		std::string command = splitText[0];
+		std::string commandLower = ToLower( command );
 		EventArgs args;
 		std::vector<std::string> registeredEventNames = g_engine->m_eventSystem->GetEventNames();
-		if ( std::find( registeredEventNames.begin(), registeredEventNames.end(), command ) == registeredEventNames.end() )
+		bool isRegistered = std::any_of( registeredEventNames.begin(), registeredEventNames.end(),
+			[&commandLower]( std::string const& eventName )
+			{
+				return ToLower( eventName ) == commandLower;
+			} );
+		if ( !isRegistered )
 		{
 			AddLine( WARNING, "Unknown command: " + command );
 			return;

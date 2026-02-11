@@ -1,5 +1,7 @@
 #include "Engine/Core/EventSystem.hpp"
 #include "Engine/Core/Engine.hpp"
+#include <algorithm>
+#include <cctype>
 
 
 //-----------------------------------------------------------------------------------------------

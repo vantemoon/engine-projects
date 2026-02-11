@@ -1,7 +1,9 @@
 #pragma once
 #include "Engine/Core/NamedStrings.hpp"
+#include <algorithm>
 #include <string>
 #include <vector>
+#include <map>
 
 
 //-----------------------------------------------------------------------------------------------
@@ -15,6 +17,22 @@ struct EventSystemConfig
 typedef NamedStrings EventArgs;
 typedef bool ( *EventCallbackFunction )( EventArgs& );
 typedef std::vector<EventCallbackFunction> EventCallbackFunctionList;
+
+
+//-----------------------------------------------------------------------------------------------
+struct cmpCaseInsensitive
+{
+	bool operator() ( std::string const& a, std::string const& b ) const
+	{
+		std::string lowerA = a;
+		std::string lowerB = b;
+		std::transform( lowerA.begin(), lowerA.end(), lowerA.begin(),
+			[]( unsigned char c ) { return static_cast<char>( std::tolower( c ) ); } );
+		std::transform( lowerB.begin(), lowerB.end(), lowerB.begin(),
+			[]( unsigned char c ) { return static_cast<char>( std::tolower( c ) ); } );
+		return lowerA < lowerB;
+	}
+};
 
 
 //-----------------------------------------------------------------------------------------------
@@ -37,8 +55,8 @@ public:
 	std::vector<std::string> GetEventNames() const;
 
 protected:
-	EventSystemConfig								 m_config;
-	std::map<std::string, EventCallbackFunctionList> m_subscriptionListsByEventName;
+	EventSystemConfig														m_config;
+	std::map<std::string, EventCallbackFunctionList, cmpCaseInsensitive>		m_subscriptionListsByEventName;
 };
 
 
