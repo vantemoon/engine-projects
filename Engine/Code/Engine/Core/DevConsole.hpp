@@ -52,7 +52,6 @@ public:
 	static bool Command_CharacterInput( EventArgs& args );
 	static bool Command_Help( EventArgs& args );
 	static bool Command_Clear( EventArgs& args );
-	static bool Command_ClearCurrentCommand( EventArgs& args );
 
 	static const Rgba8 ERROR;
 	static const Rgba8 WARNING;

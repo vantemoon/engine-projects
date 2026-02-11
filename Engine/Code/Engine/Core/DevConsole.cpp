@@ -36,7 +36,6 @@ void DevConsole::Startup()
 {
 	g_engine->m_eventSystem->SubscribeEventCallbackFunction( "Help", Command_Help );
 	g_engine->m_eventSystem->SubscribeEventCallbackFunction( "Clear", Command_Clear );
-	g_engine->m_eventSystem->SubscribeEventCallbackFunction( "ClearCurrentCommand", Command_ClearCurrentCommand );
 
 	g_engine->m_eventSystem->SubscribeEventCallbackFunction( "KeyDown", Command_KeyPressed );
 	g_engine->m_eventSystem->SubscribeEventCallbackFunction( "KeyUp", Command_KeyReleased );
@@ -340,19 +339,6 @@ bool DevConsole::Command_Clear( EventArgs& args )
 	if ( g_engine && g_engine->m_devConsole )
 	{
 		g_engine->m_devConsole->m_lines.clear();
-		return true;
-	}
-	return false;
-}
-
-
-//------------------------------------------------------------------------------------------------
-bool DevConsole::Command_ClearCurrentCommand( EventArgs& args )
-{
-	UNUSED( args );
-	if ( g_engine && g_engine->m_devConsole )
-	{
-		g_gameConfigBlackboard.SetValue( "currentCommand", "" );
 		return true;
 	}
 	return false;
