@@ -21,7 +21,6 @@ unsigned char const KEYCODE_F11 = VK_F11;
 unsigned char const KEYCODE_ESCAPE = VK_ESCAPE;
 unsigned char const KEYCODE_SPACE = VK_SPACE;
 unsigned char const KEYCODE_ENTER = VK_RETURN;
-unsigned char const KEYCODE_BACKSPACE = VK_BACK;
 unsigned char const KEYCODE_UPARROW = VK_UP;
 unsigned char const KEYCODE_DOWNARROW = VK_DOWN;
 unsigned char const KEYCODE_LEFTARROW = VK_LEFT;
@@ -31,6 +30,7 @@ unsigned char const KEYCODE_RBUTTON = VK_RBUTTON;
 unsigned char const KEYCODE_TILDE = VK_OEM_3;
 unsigned char const KEYCODE_INSERT = VK_INSERT;
 unsigned char const KEYCODE_DELETE = VK_DELETE;
+unsigned char const KEYCODE_BACKSPACE = VK_BACK;
 unsigned char const KEYCODE_HOME = VK_HOME;
 unsigned char const KEYCODE_END = VK_END;
 

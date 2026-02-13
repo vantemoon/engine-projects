@@ -66,11 +66,15 @@ protected:
 	void Render_OpenFull( AABB2 const& bound, BitmapFont& font, float fontAspect = 1.f ) const;
 	void RenderInsertionPoint( float cellWidth, float cellHeight ) const;
 	void InsertCharacterAtInsertionPoint( char character );
+	std::string GetPreviousCommand( int offsetFromCurrent ) const;
+	std::string GetNextCommand( int offsetFromCurrent ) const;
 
 protected:
 	DevConsoleConfig			m_config;
 	DevConsoleMode				m_mode = DevConsoleMode::HIDDEN;
 	std::vector<DevConsoleLine> m_lines;
+	std::vector<std::string>	m_commandHistory;
+	int							m_commandHistorySearchOffset = 0;
 	int							m_frameNumber = 0;
 	int                         m_insertionPointPosition = 0;
 };

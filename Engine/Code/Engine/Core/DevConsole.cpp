@@ -70,6 +70,9 @@ void DevConsole::EndFrame()
 //-----------------------------------------------------------------------------------------------
 void DevConsole::Execute( std::string const& consoleCommandText )
 {
+	m_commandHistory.push_back( consoleCommandText );
+	m_commandHistorySearchOffset = 0;
+
 	Strings splitText = SplitStringOnDelimiter( consoleCommandText, ' ' );
 	if ( splitText.size() == 0 )
 	{
@@ -313,6 +316,81 @@ bool DevConsole::Command_KeyPressed( EventArgs& args )
 				}
 				return true;
 			}
+
+			if ( key == KEYCODE_LEFTARROW )
+			{
+				if ( g_engine->m_devConsole->m_insertionPointPosition > 0 )
+				{
+					g_engine->m_devConsole->m_insertionPointPosition --;
+				}
+				return true;
+			}
+
+			if ( key == KEYCODE_RIGHTARROW )
+			{
+				std::string currentCommand = g_gameConfigBlackboard.GetValue( "currentCommand", "" );
+				if ( g_engine->m_devConsole->m_insertionPointPosition < ( int ) currentCommand.size() )
+				{
+					g_engine->m_devConsole->m_insertionPointPosition ++;
+				}
+				return true;
+			}
+
+			if ( key == KEYCODE_HOME )
+			{
+				g_engine->m_devConsole->m_insertionPointPosition = 0;
+				return true;
+			}
+
+			if ( key == KEYCODE_END )
+			{
+				std::string currentCommand = g_gameConfigBlackboard.GetValue( "currentCommand", "" );
+				g_engine->m_devConsole->m_insertionPointPosition = ( int ) currentCommand.size();
+				return true;
+			}
+
+			if ( key == KEYCODE_DELETE )
+			{
+				std::string currentCommand = g_gameConfigBlackboard.GetValue( "currentCommand", "" );
+				if ( g_engine->m_devConsole->m_insertionPointPosition < ( int ) currentCommand.size() )
+				{
+					currentCommand.erase( g_engine->m_devConsole->m_insertionPointPosition, 1 );
+					g_gameConfigBlackboard.SetValue( "currentCommand", currentCommand );
+				}
+			}
+
+			if ( key == KEYCODE_BACKSPACE )
+			{
+				std::string currentCommand = g_gameConfigBlackboard.GetValue( "currentCommand", "" );
+				if ( g_engine->m_devConsole->m_insertionPointPosition > 0 && !currentCommand.empty() )
+				{
+					currentCommand.erase( g_engine->m_devConsole->m_insertionPointPosition - 1, 1 );
+					g_gameConfigBlackboard.SetValue( "currentCommand", currentCommand );
+					g_engine->m_devConsole->m_insertionPointPosition --;
+				}
+			}
+
+			if ( key == KEYCODE_UPARROW )
+			{
+				std::string currentCommand = g_engine->m_devConsole->GetPreviousCommand( g_engine->m_devConsole->m_commandHistorySearchOffset );
+				g_gameConfigBlackboard.SetValue( "currentCommand", currentCommand );
+				g_engine->m_devConsole->m_insertionPointPosition = ( int ) currentCommand.size();
+				if ( g_engine->m_devConsole->m_commandHistorySearchOffset < ( int ) g_engine->m_devConsole->m_commandHistory.size() - 1 )
+				{
+					g_engine->m_devConsole->m_commandHistorySearchOffset ++;
+				}
+			}
+
+			if ( key == KEYCODE_DOWNARROW )
+			{
+				if ( g_engine->m_devConsole->m_commandHistorySearchOffset > 0 )
+				{
+					g_engine->m_devConsole->m_commandHistorySearchOffset --;
+				}
+				std::string currentCommand = g_engine->m_devConsole->GetNextCommand( g_engine->m_devConsole->m_commandHistorySearchOffset );
+				g_gameConfigBlackboard.SetValue( "currentCommand", currentCommand );
+				g_engine->m_devConsole->m_insertionPointPosition = ( int ) currentCommand.size();
+			}
 			return true;
 		}
 		else // Console is closed
@@ -420,4 +498,34 @@ void DevConsole::InsertCharacterAtInsertionPoint( char character )
 	currentCommand.insert( m_insertionPointPosition, 1, character );
 	g_gameConfigBlackboard.SetValue( "currentCommand", currentCommand );
 	m_insertionPointPosition ++;
+}
+
+
+//------------------------------------------------------------------------------------------------
+std::string DevConsole::GetPreviousCommand( int offsetFromCurrent ) const
+{
+	int commandHistoryIndex = ( int ) m_commandHistory.size() - 1 - offsetFromCurrent;
+	if ( commandHistoryIndex >= 0 && commandHistoryIndex < ( int ) m_commandHistory.size() )
+	{
+		return m_commandHistory[commandHistoryIndex];
+	}
+	else
+	{
+		return "";
+	}
+}
+
+
+//------------------------------------------------------------------------------------------------
+std::string DevConsole::GetNextCommand( int offsetFromCurrent ) const
+{
+	int commandHistoryIndex = ( int ) m_commandHistory.size() - offsetFromCurrent;
+	if ( commandHistoryIndex >= 0 && commandHistoryIndex < ( int ) m_commandHistory.size() )
+	{
+		return m_commandHistory[commandHistoryIndex];
+	}
+	else
+	{
+		return "";
+	}
 }
