@@ -12,6 +12,8 @@ struct DevConsoleConfig
 {
 	bool m_isEnabled = true;
 	std::string m_consoleFont = "Data/Fonts/SquirrelFixedFont";
+	int m_linesOnScreen = 40;
+	int m_maxCommandHistory = 128;
 };
 
 
@@ -64,7 +66,7 @@ public:
 
 protected:
 	void Render_OpenFull( AABB2 const& bound, BitmapFont& font, float fontAspect = 1.f ) const;
-	void RenderInsertionPoint( float cellWidth, float cellHeight ) const;
+	void RenderInsertionPoint( float cellWidth, float cellHeight, int insertionPointPosition ) const;
 	void InsertCharacterAtInsertionPoint( char character );
 	std::string GetPreviousCommand( int offsetFromCurrent ) const;
 	std::string GetNextCommand( int offsetFromCurrent ) const;
@@ -73,8 +75,11 @@ protected:
 	DevConsoleConfig			m_config;
 	DevConsoleMode				m_mode = DevConsoleMode::HIDDEN;
 	std::vector<DevConsoleLine> m_lines;
+	int                         m_linesOnScreen = 40;
+	int                         m_maxCommandHistory = 128;
 	std::vector<std::string>	m_commandHistory;
 	int							m_commandHistorySearchOffset = 0;
 	int							m_frameNumber = 0;
 	int                         m_insertionPointPosition = 0;
+	bool						m_isInsertionPointVisible = true;
 };

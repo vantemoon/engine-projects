@@ -21,6 +21,8 @@ const Rgba8 DevConsole::DEFAULT_TEXT_COLOR = Rgba8::WHITE;
 //-----------------------------------------------------------------------------------------------
 DevConsole::DevConsole( DevConsoleConfig const& config )
 	: m_config( config )
+	, m_linesOnScreen( config.m_linesOnScreen )
+	, m_maxCommandHistory( config.m_maxCommandHistory )
 {
 }
 
@@ -72,6 +74,12 @@ void DevConsole::Execute( std::string const& consoleCommandText )
 {
 	m_commandHistory.push_back( consoleCommandText );
 	m_commandHistorySearchOffset = 0;
+
+	if ( m_maxCommandHistory > 0 && ( int ) m_commandHistory.size() > m_maxCommandHistory )
+	{
+		int excessCount = ( int ) m_commandHistory.size() - m_maxCommandHistory;
+		m_commandHistory.erase( m_commandHistory.begin(), m_commandHistory.begin() + excessCount );
+	}
 
 	Strings splitText = SplitStringOnDelimiter( consoleCommandText, ' ' );
 	if ( splitText.size() == 0 )
@@ -230,9 +238,22 @@ void DevConsole::Render_OpenFull( AABB2 const& bound, BitmapFont& font, float fo
 	AddVertsForAABB2D( backgroundVerts, bound, Rgba8( 0, 0, 0, 200 ) );
 
 	float cellHeight = 20.f;
+	float cellWidth = cellHeight * fontAspect;
+	float availableWidth = bound.m_maxs.x - bound.m_mins.x - 10.f;
+	int maxVisibleChars = static_cast<int>( availableWidth / cellWidth );
+	if ( maxVisibleChars < 0 )
+	{
+		maxVisibleChars = 0;
+	}
+
 	float yOffset = bound.m_mins.y + 2.f + cellHeight;
+	int linesRendered = 0;
 	for ( int lineIndex = static_cast< int >( m_lines.size() ) - 1; lineIndex >= 0; -- lineIndex )
 	{
+		if ( m_linesOnScreen > 0 && linesRendered >= m_linesOnScreen )
+		{
+			break;
+		}
 		if ( yOffset + cellHeight > bound.m_maxs.y )
 		{
 			break;
@@ -242,11 +263,31 @@ void DevConsole::Render_OpenFull( AABB2 const& bound, BitmapFont& font, float fo
 		Vec2 textMins = Vec2( bound.m_mins.x + 5.f, yOffset );
 		font.AddVertsForText2D( textVerts, textMins, cellHeight, line.second, line.first, fontAspect );
 		yOffset += cellHeight;
+		++ linesRendered;
 	}
 
 	std::string currentCommand = g_gameConfigBlackboard.GetValue( "currentCommand", "" );
+	int commandLength = static_cast<int>( currentCommand.size() );
+	int insertionPointPosition = m_insertionPointPosition;
+	if ( insertionPointPosition < 0 )
+	{
+		insertionPointPosition = 0;
+	}
+	if ( insertionPointPosition > commandLength )
+	{
+		insertionPointPosition = commandLength;
+	}
+
+	int startIndex = 0;
+	if ( maxVisibleChars > 0 && insertionPointPosition > maxVisibleChars )
+	{
+		startIndex = insertionPointPosition - maxVisibleChars;
+	}
+	std::string visibleCommand = currentCommand.substr( startIndex, maxVisibleChars );
+	int visibleInsertionPoint = insertionPointPosition - startIndex;
+
 	Vec2 textMins = Vec2( bound.m_mins.x + 5.f, 2.f );
-	font.AddVertsForText2D( textVerts, textMins, cellHeight, currentCommand, DEFAULT_TEXT_COLOR, fontAspect );
+	font.AddVertsForText2D( textVerts, textMins, cellHeight, visibleCommand, DEFAULT_TEXT_COLOR, fontAspect );
 
 	g_engine->m_renderer->BindTexture( nullptr );
 	g_engine->m_renderer->DrawVertexArray( static_cast< int >( backgroundVerts.size() ), backgroundVerts.data() );
@@ -254,14 +295,14 @@ void DevConsole::Render_OpenFull( AABB2 const& bound, BitmapFont& font, float fo
 	g_engine->m_renderer->BindTexture( &font.GetTexture() );
 	g_engine->m_renderer->DrawVertexArray( static_cast< int >( textVerts.size() ), textVerts.data() );
 
-	RenderInsertionPoint( cellHeight * fontAspect, cellHeight );
+	RenderInsertionPoint( cellWidth, cellHeight, visibleInsertionPoint );
 }
 
 
 //-----------------------------------------------------------------------------------------------
-void DevConsole::RenderInsertionPoint( float cellWidth, float cellHeight ) const
+void DevConsole::RenderInsertionPoint( float cellWidth, float cellHeight, int insertionPointPosition ) const
 {
-	float offsetFromStart = m_insertionPointPosition * cellWidth + 5.f;
+	float offsetFromStart = insertionPointPosition * cellWidth + 5.f;
 	Vec2 mins = Vec2( offsetFromStart, 2.f );
 	Vec2 maxs = Vec2( offsetFromStart + 2.f, cellHeight + 2.f );
 	std::vector<Vertex> verts;
@@ -495,6 +536,15 @@ int DevConsole::AddTwoInts( int a, int b ) const
 void DevConsole::InsertCharacterAtInsertionPoint( char character )
 {
 	std::string currentCommand = g_gameConfigBlackboard.GetValue( "currentCommand", "" );
+	if ( m_insertionPointPosition < 0 )
+	{
+		m_insertionPointPosition = 0;
+	}
+	if ( m_insertionPointPosition > ( int ) currentCommand.size() )
+	{
+		m_insertionPointPosition = ( int ) currentCommand.size();
+	}
+
 	currentCommand.insert( m_insertionPointPosition, 1, character );
 	g_gameConfigBlackboard.SetValue( "currentCommand", currentCommand );
 	m_insertionPointPosition ++;
