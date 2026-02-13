@@ -75,8 +75,8 @@ void Game::Update( float deltaSeconds )
 
 	g_app->m_game->DeleteGarbageEntities();
 
-	/*if ( m_isBackgroundMusicPlaying )
-		g_engine->m_audioSystem->SetSoundPlaybackVolume( m_backgroundMusicSoundID, 0.25f );*/
+	if ( m_isBackgroundMusicPlaying )
+		g_engine->m_audioSystem->SetSoundPlaybackVolume( m_backgroundMusicSoundID, 0.25f );
 
 	m_worldCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( WORLD_SIZE_X, WORLD_SIZE_Y ) );
 	m_screenCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) );
@@ -127,7 +127,7 @@ void Game::UpdateAttractMode( [[maybe_unused]] float deltaSeconds )
 	UpdateFromKeyboard();
 	UpdateFromController();
 
-	/*if ( !m_isBackgroundMusicPlaying )
+	if ( !m_isBackgroundMusicPlaying )
 	{
 		m_backgroundMusicSoundID = g_engine->m_audioSystem->CreateOrGetSound( "Data/Audio/TestSound.mp3" );
 		g_engine->m_audioSystem->StartSound( m_backgroundMusicSoundID, false, 0.8f, 0.f, 1.f );
@@ -136,7 +136,7 @@ void Game::UpdateAttractMode( [[maybe_unused]] float deltaSeconds )
 	else
 	{
 		g_engine->m_audioSystem->SetSoundPlaybackVolume( m_backgroundMusicSoundID, 0.8f );
-	}*/
+	}
 }
 
 

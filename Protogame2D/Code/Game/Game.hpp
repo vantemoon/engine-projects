@@ -17,8 +17,8 @@ public:
 	Camera*     m_worldCamera = nullptr;
 	Camera*     m_screenCamera = nullptr;
 
-	/*bool        m_isBackgroundMusicPlaying = false;
-	SoundID     m_backgroundMusicSoundID = 0;*/
+	bool        m_isBackgroundMusicPlaying = false;
+	SoundID     m_backgroundMusicSoundID = 0;
 
 	bool        m_isScreenShaking = false;
 	float	    m_screenShakeIntensity = 0.f;
