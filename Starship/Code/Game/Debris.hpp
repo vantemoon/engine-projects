@@ -17,7 +17,7 @@ private:
 public:
 	Debris( Game* game, Vec2 const& startingPosition, Vec2 const& startingVelocity, float startingAngularVelocity, Rgba8 const& color, float minRadius, float maxRadius );
 	~Debris()								  override;
-	void Update( float deltaSeconds )		  override;
+	void Update()		                      override;
 	void Render()						const override;
 
 private:

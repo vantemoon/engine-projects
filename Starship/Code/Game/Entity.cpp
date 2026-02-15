@@ -4,6 +4,7 @@
 #include "Game/GameCommon.hpp"
 #include "Game/PlayerShip.hpp"
 #include "Engine/Audio/AudioSystem.hpp"
+#include "Engine/Core/Clock.hpp"
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Math/MathUtils.hpp"
 #include "Engine/Math/Vec2.hpp"
@@ -40,8 +41,9 @@ void Entity::InitializeVertexArray()
 
 
 //-----------------------------------------------------------------------------------------------
-void Entity::Update( float deltaSeconds )
+void Entity::Update()
 {
+	float deltaSeconds = ( float ) m_game->m_gameClock->GetDeltaSeconds();
 	m_position += m_velocity * deltaSeconds;
 	m_orientationDegrees += m_angularVelocityDegreesPerSecond * deltaSeconds;
 }

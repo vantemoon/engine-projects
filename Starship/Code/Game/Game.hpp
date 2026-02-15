@@ -52,7 +52,6 @@ public:
 	int         m_currentSelectedEntityIndex = -1;
 
 	bool        m_isDebugFeaturesOn = false;
-	bool        m_isPausedAfterNextUpdate = false;
 
 	Clock*		m_gameClock = nullptr;
 

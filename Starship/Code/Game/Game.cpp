@@ -204,7 +204,7 @@ void Game::Update()
 
 	if ( m_isScreenShaking )
 	{
-		float shakeElapsedTime = ( float ) m_gameClock->GetTotalSeconds() - m_screenShakeStartTime;
+		float shakeElapsedTime = ( float ) Clock::GetSystemClock().GetTotalSeconds() - m_screenShakeStartTime;
 		if ( shakeElapsedTime < m_screenShakeDuration )
 		{
 			float t = shakeElapsedTime / m_screenShakeDuration;
@@ -222,13 +222,6 @@ void Game::Update()
 	}
 	
 	UpdateScanMode();
-
-	if ( m_isPausedAfterNextUpdate )
-	{
-		m_currentGameState = GameState::PAUSED;
-		m_gameClock->Pause();
-		m_isPausedAfterNextUpdate = false;
-	}
 }
 
 
@@ -479,8 +472,8 @@ void Game::UpdateFromKeyboard()
 		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'O' ) )
 		{
 			m_currentGameState = GameState::PLAYING;
-			m_gameClock->Unpause();
-			m_isPausedAfterNextUpdate = true;
+			m_gameClock->StepSingleFrame();
+			m_currentGameState = GameState::PAUSED;
 		}
 
 		// Spawn an asteroid (for debugging)
@@ -575,17 +568,15 @@ void Game::UpdateFromController()
 //-----------------------------------------------------------------------------------------------
 void Game::UpdateEntities()
 {
-	float deltaSeconds = ( float ) m_gameClock->GetDeltaSeconds();
-
 	// Player ship
-	m_playerShip->Update( deltaSeconds );
+	m_playerShip->Update();
 
 	// Bullets
 	for( int bulletIndex = 0; bulletIndex < MAX_BULLETS; ++ bulletIndex )
 	{
 		if( m_bullets[bulletIndex] != nullptr )
 		{
-			m_bullets[bulletIndex]->Update( deltaSeconds );
+			m_bullets[bulletIndex]->Update();
 		}
 	}
 
@@ -594,7 +585,7 @@ void Game::UpdateEntities()
 	{
 		if( m_asteroids[asteroidIndex] != nullptr )
 		{
-			m_asteroids[asteroidIndex]->Update( deltaSeconds );
+			m_asteroids[asteroidIndex]->Update();
 		}
 	}
 
@@ -603,7 +594,7 @@ void Game::UpdateEntities()
 	{
 		if( m_beetles[beetleIndex] != nullptr )
 		{
-			m_beetles[beetleIndex]->Update( deltaSeconds );
+			m_beetles[beetleIndex]->Update();
 
 			for ( int otherBeetleIndex = beetleIndex + 1; otherBeetleIndex < MAX_BEETLES; ++otherBeetleIndex )
 			{
@@ -622,7 +613,7 @@ void Game::UpdateEntities()
 	{
 		if( m_wasps[waspIndex] != nullptr )
 		{
-			m_wasps[waspIndex]->Update( deltaSeconds );
+			m_wasps[waspIndex]->Update();
 		}
 	}
 
@@ -631,7 +622,7 @@ void Game::UpdateEntities()
 	{
 		if( m_debris[debrisIndex] != nullptr )
 		{
-			m_debris[debrisIndex]->Update( deltaSeconds );
+			m_debris[debrisIndex]->Update();
 		}
 	}
 
@@ -640,7 +631,7 @@ void Game::UpdateEntities()
 	{
 		if( m_impactWaves[impactWaveIndex] != nullptr )
 		{
-			m_impactWaves[impactWaveIndex]->Update( deltaSeconds );
+			m_impactWaves[impactWaveIndex]->Update();
 		}
 	}
 }

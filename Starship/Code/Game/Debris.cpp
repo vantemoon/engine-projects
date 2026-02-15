@@ -1,5 +1,7 @@
 #include "Game/Debris.hpp"
+#include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
+#include "Engine/Core/Clock.hpp"
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/Vertex.hpp"
 #include "Engine/Core/VertexUtils.hpp"
@@ -34,8 +36,9 @@ Debris::~Debris()
 
 
 //-----------------------------------------------------------------------------------------------
-void Debris::Update( float deltaSeconds )
+void Debris::Update()
 {
+    float deltaSeconds = ( float ) m_game->m_gameClock->GetDeltaSeconds();
 	m_ageSeconds += deltaSeconds;
 	if ( m_ageSeconds >= DEBRIS_LIFETIME_SECONDS || IsOffScreen() )
 	{
@@ -43,7 +46,7 @@ void Debris::Update( float deltaSeconds )
 		m_isGarbage = true;
 	}
 
-	Entity::Update( deltaSeconds );
+	Entity::Update();
 }
 
 

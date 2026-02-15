@@ -8,7 +8,7 @@ class Beetle : public Entity
 public:
 	Beetle( Game* game, Vec2 const& startingPosition );
 	~Beetle()								  override;
-	void Update( float deltaSeconds )		  override;
+	void Update()							  override;
 	void Render()						const override;
 	void Die()								  override;
 

@@ -23,6 +23,6 @@ public:
 	ImpactWave( Game* game, Vec2 const& center, float lifeSeconds, float startRadius, float endRadius, float startThickness, float endThickness, 
 		        Rgba8 const& startColour, Rgba8 const& endColour );
 	~ImpactWave() override = default;
-	void Update( float deltaSeconds ) override;
+	void Update() override;
 	void Render() const override;
 };

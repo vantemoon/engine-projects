@@ -5,6 +5,7 @@
 #include "Game/GameCommon.hpp"
 #include "Game/PlayerShip.hpp"
 #include "Engine/Audio/AudioSystem.hpp"
+#include "Engine/Core/Clock.hpp"
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/Time.hpp"
 #include "Engine/Core/Vertex.hpp"
@@ -38,9 +39,9 @@ Beetle::~Beetle()
 
 
 //-----------------------------------------------------------------------------------------------
-void Beetle::Update( float deltaSeconds )
+void Beetle::Update()
 {
-	Entity::Update( deltaSeconds );
+	Entity::Update();
 
 	if ( m_game->m_playerShip->m_isDead || m_game->m_playerShip->m_isInvincible )
 	{
@@ -83,7 +84,7 @@ void Beetle::Die()
 	if ( m_game->m_screenShakeIntensity < 0.5f )
 		m_game->m_screenShakeIntensity = 0.5f;
 	m_game->m_screenShakeDuration = 1.f;
-	m_game->m_screenShakeStartTime = ( float ) GetCurrentTimeSeconds();
+	m_game->m_screenShakeStartTime = m_game->m_screenShakeStartTime = ( float ) Clock::GetSystemClock().GetTotalSeconds();
 
 	SoundID entityDeathSound = g_engine->m_audioSystem->CreateOrGetSound( "Data/Audio/BeetlesWaspsDie.wav" );
 	g_engine->m_audioSystem->StartSound( entityDeathSound, false, 0.6f, 0.f, 0.5f );

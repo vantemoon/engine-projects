@@ -1,5 +1,7 @@
 #include "Game/ImpactWave.hpp"
+#include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
+#include "Engine/Core/Clock.hpp"
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/Vertex.hpp"
 #include "Engine/Core/VertexUtils.hpp"
@@ -27,8 +29,9 @@ ImpactWave::ImpactWave( Game* game, Vec2 const& center, float lifeSeconds, float
 
 
 //-----------------------------------------------------------------------------------------------
-void ImpactWave::Update( float deltaSeconds )
+void ImpactWave::Update()
 {
+	float deltaSeconds = ( float ) m_game->m_gameClock->GetDeltaSeconds();
 	m_ageSeconds += deltaSeconds;
 	if ( m_ageSeconds >= m_lifeSeconds )
 	{
@@ -36,7 +39,7 @@ void ImpactWave::Update( float deltaSeconds )
 		m_isGarbage = true;
 	}
 
-	Entity::Update( deltaSeconds );
+	Entity::Update();
 }
 
 

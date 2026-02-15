@@ -36,10 +36,10 @@ public:
 	PlayerShip( Game* game, Vec2 const& startingPosition, Vec2 const& startingVelocity );
 	~PlayerShip() override;
 
-	void  Update( float deltaSeconds )									  override;
+	void  Update()														  override;
 	void  UpdateFromKeyboard();
-	void  UpdateFromController( float deltaseconds );
-	void  UpdateEnergy( float deltaSeconds );
+	void  UpdateFromController();
+	void  UpdateEnergy();
 	bool  HasEnoughEnergy( float cost )								const;
 	float GetEnergyFraction()										const;
 	bool  TrySpendEnergy( float cost );
@@ -48,13 +48,13 @@ public:
 	void  Respawn();
 	void  GetVertexArrayCopy( Vertex* out_vertexArray )				const;
 	void  StartRespawnInvincibility( float durationSeconds );
-	void  UpdateInvincibility( float deltaSeconds );
+	void  UpdateInvincibility();
 
 private:
 	void  InitializeVertexArray()										  override;
 	void  RenderThrust()											const;
 	void  BounceOffWorldEdges();
-	void  Accelerate( float deltaSeconds );
+	void  Accelerate();
 	void  TurnLeft();
 	void  TurnRight();
 };

@@ -21,7 +21,7 @@ public:
 	~Bullet()										override;
 
 	void InitializeVertexArray()					override;
-	void Update( float deltaSeconds )				override;
+	void Update()									override;
 	void Render()							  const override;
 	void Die( bool shouldSpawnDebris );
 };

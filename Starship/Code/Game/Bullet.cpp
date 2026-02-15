@@ -3,6 +3,7 @@
 #include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
 #include "Game/PlayerShip.hpp"
+#include "Engine/Core/Clock.hpp"
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/Vertex.hpp"
 #include "Engine/Core/VertexUtils.hpp"
@@ -46,10 +47,11 @@ Bullet::~Bullet() = default;
 
 
 //-----------------------------------------------------------------------------------------------
-void Bullet::Update( float deltaSeconds )
+void Bullet::Update()
 {
-	Entity::Update( deltaSeconds );
+	Entity::Update();
 
+	float deltaSeconds = ( float ) m_game->m_gameClock->GetDeltaSeconds();
 	m_ageSeconds += deltaSeconds;
 	if ( m_ageSeconds > BULLET_LIFETIME_SECONDS )
 	{

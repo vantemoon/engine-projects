@@ -5,6 +5,7 @@
 #include "Game/GameCommon.hpp"
 #include "Game/PlayerShip.hpp"
 #include "Engine/Audio/AudioSystem.hpp"
+#include "Engine/Core/Clock.hpp"
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/Time.hpp"
 #include "Engine/Core/Vertex.hpp"
@@ -164,9 +165,9 @@ Asteroid::~Asteroid() = default;
 
 
 //-----------------------------------------------------------------------------------------------
-void Asteroid::Update( float deltaSeconds )
+void Asteroid::Update()
 {
-	Entity::Update( deltaSeconds );
+	Entity::Update();
 
 	if( IsOffScreen() )
 		WrapAroundScreen();
@@ -216,7 +217,7 @@ void Asteroid::Die()
 	if ( m_game->m_screenShakeIntensity < 0.5f )
 		m_game->m_screenShakeIntensity = 0.5f;
 	m_game->m_screenShakeDuration = 1.f;
-	m_game->m_screenShakeStartTime = ( float ) GetCurrentTimeSeconds();
+	m_game->m_screenShakeStartTime = m_game->m_screenShakeStartTime = ( float ) Clock::GetSystemClock().GetTotalSeconds();
 
 	m_game->SpawnImpactWave( m_position );
 

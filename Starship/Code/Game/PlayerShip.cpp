@@ -101,16 +101,16 @@ PlayerShip::~PlayerShip() = default;
 
 
 //-----------------------------------------------------------------------------------------------
-void PlayerShip::Update( float deltaSeconds )
+void PlayerShip::Update()
 {
 	
-	Entity::Update( deltaSeconds );
+	Entity::Update();
 
 	UpdateFromKeyboard();
-	UpdateFromController( deltaSeconds );
+	UpdateFromController();
 
 	if ( IsAlive() )
-		UpdateEnergy( deltaSeconds );
+		UpdateEnergy();
 
 	if ( m_isDead )
 		return;
@@ -119,7 +119,7 @@ void PlayerShip::Update( float deltaSeconds )
 	{
 		m_thrustFraction = 0.f;
 	}
-	Accelerate( deltaSeconds * m_thrustFraction );
+	Accelerate();
 	
 
 	BounceOffWorldEdges();
@@ -138,15 +138,16 @@ void PlayerShip::Update( float deltaSeconds )
 	}
 
 	if ( IsAlive() )
-		UpdateInvincibility( deltaSeconds );
+		UpdateInvincibility();
 }
 
 
 //-----------------------------------------------------------------------------------------------
-void PlayerShip::UpdateEnergy( float deltaSeconds )
+void PlayerShip::UpdateEnergy()
 {
 	if ( m_currentEnergy < m_maxEnergy )
 	{
+		float deltaSeconds = ( float ) m_game->m_gameClock->GetDeltaSeconds();
 		m_currentEnergy += m_energyRechargeRate * deltaSeconds;
 		if ( m_currentEnergy > m_maxEnergy )
 		{
@@ -281,7 +282,7 @@ void PlayerShip::UpdateFromKeyboard()
 
 
 //-----------------------------------------------------------------------------------------------
-void PlayerShip::UpdateFromController( float deltaSeconds )
+void PlayerShip::UpdateFromController()
 {
 	XboxController const& controller = g_engine->m_inputSystem->GetController( 0 );
 
@@ -303,6 +304,7 @@ void PlayerShip::UpdateFromController( float deltaSeconds )
 	float rightTriggerValue = controller.GetRightTrigger();
 	bool  isRightTriggerPressed = ( rightTriggerValue > 0.35f );
 
+	float deltaSeconds = ( float ) m_game->m_gameClock->GetDeltaSeconds();
 	fireCooldownSeconds -= deltaSeconds;
 	if ( fireCooldownSeconds < 0.f )
 		fireCooldownSeconds = 0.f;
@@ -451,7 +453,7 @@ void PlayerShip::Die()
 	if ( m_game->m_screenShakeIntensity < 0.8f )
 		m_game->m_screenShakeIntensity = 0.8f;
 	m_game->m_screenShakeDuration = 2.f;
-	m_game->m_screenShakeStartTime = ( float ) GetCurrentTimeSeconds();
+	m_game->m_screenShakeStartTime = m_game->m_screenShakeStartTime = ( float ) Clock::GetSystemClock().GetTotalSeconds();
 }
 
 
@@ -487,8 +489,10 @@ void PlayerShip::BounceOffWorldEdges()
 
 
 //-----------------------------------------------------------------------------------------------
-void PlayerShip::Accelerate( float deltaSeconds )
+void PlayerShip::Accelerate()
 {
+	float deltaSeconds = ( float ) m_game->m_gameClock->GetDeltaSeconds();
+	deltaSeconds *= m_thrustFraction;
 	Vec2 forwardNormal = GetForwardNormal();
 	m_velocity += forwardNormal * PLAYER_SHIP_ACCELERATION * deltaSeconds;
 }
@@ -535,8 +539,9 @@ void PlayerShip::StartRespawnInvincibility( float durationSeconds )
 
 
 //-----------------------------------------------------------------------------------------------
-void PlayerShip::UpdateInvincibility( float deltaSeconds )
+void PlayerShip::UpdateInvincibility()
 {
+	float deltaSeconds = ( float ) m_game->m_gameClock->GetDeltaSeconds();
 	if ( !m_isInvincible ) return;
 
 	// Countdown

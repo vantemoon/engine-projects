@@ -3,6 +3,7 @@
 #include "Game/GameCommon.hpp"
 #include "Game/PlayerShip.hpp"
 #include "Engine/Audio/AudioSystem.hpp"
+#include "Engine/Core/Clock.hpp"
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/Time.hpp"
 #include "Engine/Core/Vertex.hpp"
@@ -37,14 +38,14 @@ Wasp::~Wasp()
 
 
 //-----------------------------------------------------------------------------------------------
-void Wasp::Update( float deltaSeconds )
+void Wasp::Update()
 {
-	Entity::Update( deltaSeconds );
+	Entity::Update();
 
 	Vec2 toPlayer = m_game->m_playerShip->m_position - m_position;
 	m_orientationDegrees = toPlayer.GetOrientationDegrees();
 
-	Accelerate( deltaSeconds );
+	Accelerate();
 
 	this->CheckCollisionWithBullets();
 	this->CheckCollisionWithPlayerShip();
@@ -79,7 +80,7 @@ void Wasp::Die()
 	if ( m_game->m_screenShakeIntensity < 0.5f )
 		m_game->m_screenShakeIntensity = 0.5f;
 	m_game->m_screenShakeDuration = 1.f;
-	m_game->m_screenShakeStartTime = ( float ) GetCurrentTimeSeconds();
+	m_game->m_screenShakeStartTime = m_game->m_screenShakeStartTime = ( float ) Clock::GetSystemClock().GetTotalSeconds();
 
 	SoundID entityDeathSound = g_engine->m_audioSystem->CreateOrGetSound( "Data/Audio/BeetlesWaspsDie.wav" );
 	g_engine->m_audioSystem->StartSound( entityDeathSound, false, 0.6f, 0.f, 0.5f );
@@ -108,8 +109,9 @@ void Wasp::InitializeVertexArray()
 
 
 //-----------------------------------------------------------------------------------------------
-void Wasp::Accelerate( float deltaSeconds )
+void Wasp::Accelerate()
 {
+	float deltaSeconds = ( float ) m_game->m_gameClock->GetDeltaSeconds();
 	Vec2 forwardNormal = this->GetForwardNormal();
 	m_velocity += forwardNormal * WASP_ACCELERATION * deltaSeconds;
 	float speed = m_velocity.GetLength();
