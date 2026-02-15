@@ -102,12 +102,6 @@ void Game::Update()
 			m_worldCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( WORLD_SIZE_X, WORLD_SIZE_Y ) );
 		}
 	}
-
-	if ( m_isPausedAfterNextUpdate )
-	{
-		m_currentGameState = GameState::PAUSED;
-		m_isPausedAfterNextUpdate = false;
-	}
 }
 
 
@@ -173,11 +167,23 @@ void Game::UpdateFromKeyboard()
 		if ( m_currentGameState != GameState::PAUSED && g_engine->m_inputSystem->WasKeyJustPressed( 'P' ) )
 		{
 			m_currentGameState = GameState::PAUSED;
+			m_gameClock->Pause();
 		}
 
 		else if ( m_currentGameState == GameState::PAUSED && g_engine->m_inputSystem->WasKeyJustPressed( 'P' ) )
 		{
 			m_currentGameState = GameState::PLAYING;
+			m_gameClock->Unpause();
+		}
+
+		// Slow the time scale to 1/10
+		if ( g_engine->m_inputSystem->IsKeyDown( 'T' ) )
+		{
+			m_gameClock->SetTimeScale( 0.1 );
+		}
+		if ( g_engine->m_inputSystem->WasKeyJustReleased( 'T' ) )
+		{
+			m_gameClock->SetTimeScale( 1.0 );
 		}
 
 		// Toggle debug features
@@ -187,10 +193,11 @@ void Game::UpdateFromKeyboard()
 		}
 
 		// Pause the game after the next update (for debugging)
-		if ( m_isDebugFeaturesOn && g_engine->m_inputSystem->WasKeyJustPressed( 'O' ) )
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'O' ) )
 		{
 			m_currentGameState = GameState::PLAYING;
-			m_isPausedAfterNextUpdate = true;
+			m_gameClock->StepSingleFrame();
+			m_currentGameState = GameState::PAUSED;
 		}
 
 		// Kill all enemies (for debugging)

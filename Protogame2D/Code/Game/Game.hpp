@@ -29,7 +29,6 @@ public:
 	GameState   m_currentGameState;
 
 	bool        m_isDebugFeaturesOn = false;
-	bool        m_isPausedAfterNextUpdate = false;
 
 	Clock*		m_gameClock = nullptr;
 
