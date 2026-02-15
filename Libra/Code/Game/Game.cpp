@@ -559,14 +559,12 @@ void Game::Render() const
 	if ( m_currentGameState == GameState::ATTRACT_MODE )
 	{
 		RenderAttractMode();
-		RenderDevConsole();
 		return;
 	}
 
 	if ( m_currentGameState == GameState::VICTORY )
 	{
 		RenderVictoryMode();
-		RenderDevConsole();
 		return;
 	}
 
@@ -598,10 +596,6 @@ void Game::Render() const
 	{
 		RenderGameOverMode();
 	};
-
-	// RenderHUD();
-
-	RenderDevConsole();
 
 	g_engine->m_renderer->EndCamera( *cameraToUse );
 }

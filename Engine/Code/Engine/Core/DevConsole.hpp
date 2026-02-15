@@ -62,6 +62,7 @@ public:
 	static const Rgba8 WARNING;
 	static const Rgba8 INFO_MAJOR;
 	static const Rgba8 INFO_MINOR;
+	static const Rgba8 SUCCESS;
 	static const Rgba8 DEFAULT_TEXT_COLOR;
 
 protected:

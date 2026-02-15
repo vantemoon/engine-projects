@@ -11,10 +11,11 @@
 
 
 //-----------------------------------------------------------------------------------------------
-const Rgba8 DevConsole::ERROR = Rgba8( 255, 0, 0 );
-const Rgba8 DevConsole::WARNING = Rgba8( 255, 255, 0 );
-const Rgba8 DevConsole::INFO_MAJOR = Rgba8( 0, 255, 0 );
-const Rgba8 DevConsole::INFO_MINOR = Rgba8( 0, 0, 255 );
+const Rgba8 DevConsole::ERROR = Rgba8::RED;
+const Rgba8 DevConsole::WARNING = Rgba8::MAGENTA;
+const Rgba8 DevConsole::INFO_MAJOR = Rgba8::CYAN;
+const Rgba8 DevConsole::INFO_MINOR = Rgba8::YELLOW;
+const Rgba8 DevConsole::SUCCESS = Rgba8::GREEN;
 const Rgba8 DevConsole::DEFAULT_TEXT_COLOR = Rgba8::WHITE;
 
 
@@ -103,6 +104,7 @@ void DevConsole::Execute( std::string const& consoleCommandText )
 		}
 		if ( !isRegistered )
 		{
+			AddLine( ERROR, consoleCommandText );
 			AddLine( WARNING, "Unknown command: " + command );
 			return;
 		}
@@ -116,6 +118,7 @@ void DevConsole::Execute( std::string const& consoleCommandText )
 				{
 					requiredArgsString += requiredArg + " ";
 				}
+				AddLine( ERROR, consoleCommandText );
 				AddLine( WARNING, "Command requires arguments: " + requiredArgsString );
 				return;
 			}
@@ -132,6 +135,7 @@ void DevConsole::Execute( std::string const& consoleCommandText )
 			}
 			else
 			{
+				AddLine( ERROR, consoleCommandText );
 				AddLine( WARNING, "Invalid argument: " + arg );
 				EventRequiredArgsList requiredArgs = g_engine->m_eventSystem->GetEventRequiredArgs( command );
 				if ( !requiredArgs.empty() )
@@ -146,7 +150,8 @@ void DevConsole::Execute( std::string const& consoleCommandText )
 				return;
 			}
 		}
-		AddLine( INFO_MINOR, "Executed command: " + consoleCommandText );
+		AddLine( SUCCESS, consoleCommandText );
+		AddLine( SUCCESS, "Executed command: " + consoleCommandText );
 		g_engine->m_eventSystem->FireEvent( command, args );
 	}
 }
@@ -335,7 +340,6 @@ bool DevConsole::Command_KeyPressed( EventArgs& args )
 				}
 				else
 				{
-					g_engine->m_devConsole->AddLine( DEFAULT_TEXT_COLOR, g_gameConfigBlackboard.GetValue( "currentCommand", "" ) );
 					std::string currentCommand = g_gameConfigBlackboard.GetValue( "currentCommand", "" );
 					g_engine->m_devConsole->Execute( currentCommand );
 					g_gameConfigBlackboard.SetValue( "currentCommand", "" );
@@ -424,6 +428,13 @@ bool DevConsole::Command_KeyPressed( EventArgs& args )
 
 			if ( key == KEYCODE_DOWNARROW )
 			{
+				if ( g_engine->m_devConsole->m_commandHistorySearchOffset == 0 )
+				{
+					g_gameConfigBlackboard.SetValue( "currentCommand", "" );
+					g_engine->m_devConsole->m_insertionPointPosition = 0;
+					return true;
+				}
+
 				if ( g_engine->m_devConsole->m_commandHistorySearchOffset > 0 )
 				{
 					g_engine->m_devConsole->m_commandHistorySearchOffset --;
@@ -432,6 +443,7 @@ bool DevConsole::Command_KeyPressed( EventArgs& args )
 				g_gameConfigBlackboard.SetValue( "currentCommand", currentCommand );
 				g_engine->m_devConsole->m_insertionPointPosition = ( int ) currentCommand.size();
 			}
+
 			return true;
 		}
 		else // Console is closed
@@ -489,7 +501,7 @@ bool DevConsole::Command_Help( EventArgs& args )
 		g_engine->m_devConsole->AddLine( INFO_MAJOR, "Registered commands:" );
 		for ( std::string const& eventName : eventNames )
 		{
-			g_engine->m_devConsole->AddLine( DEFAULT_TEXT_COLOR, eventName );
+			g_engine->m_devConsole->AddLine( INFO_MINOR, eventName );
 		}
 		return true;
 	}
@@ -569,7 +581,7 @@ std::string DevConsole::GetPreviousCommand( int offsetFromCurrent ) const
 //------------------------------------------------------------------------------------------------
 std::string DevConsole::GetNextCommand( int offsetFromCurrent ) const
 {
-	int commandHistoryIndex = ( int ) m_commandHistory.size() - offsetFromCurrent;
+	int commandHistoryIndex = ( int ) m_commandHistory.size() - 1 - offsetFromCurrent;
 	if ( commandHistoryIndex >= 0 && commandHistoryIndex < ( int ) m_commandHistory.size() )
 	{
 		return m_commandHistory[commandHistoryIndex];

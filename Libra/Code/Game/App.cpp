@@ -162,8 +162,8 @@ void App::Update( float deltaSeconds )
 //-----------------------------------------------------------------------------------------------
 void App::Render() const
 {
-	g_engine->m_renderer->ClearScreen( Rgba8( 0, 0, 0 ) );
 	m_game->Render();
+	m_game->RenderDevConsole();
 }
 
 
