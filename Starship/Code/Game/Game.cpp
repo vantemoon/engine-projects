@@ -9,12 +9,13 @@
 #include "Game/PlayerShip.hpp"
 #include "Game/Wasp.hpp"
 #include "Engine/Audio/AudioSystem.hpp"
+#include "Engine/Core/Clock.hpp"
 #include "Engine/Core/Engine.hpp"
+#include "Engine/Core/EngineCommon.hpp"
 #include "Engine/Core/ErrorWarningAssert.hpp"
 #include "Engine/Core/Rgba8.hpp"
 #include "Engine/Core/SimpleTriangleFont.hpp"
 #include "Engine/Core/StringUtils.hpp"
-#include "Engine/Core/Time.hpp"
 #include "Engine/Core/Vertex.hpp"
 #include "Engine/Core/VertexUtils.hpp"
 #include "Engine/Input/InputSystem.hpp"
@@ -38,6 +39,8 @@ Game::Game()
 	m_currentGameState = ATTRACT_MODE;
 
 	InitializeTargersArray( m_scanTargets, MAX_TARGETS );
+
+	m_gameClock = new Clock();
 }
 
 
@@ -87,7 +90,6 @@ Game::~Game()
 //-----------------------------------------------------------------------------------------------
 void Game::InitializeTargersArray(Entity** out_targetsArray, int maxTargets)
 {
-	// Example implementation: set all pointers to nullptr
     for (int i = 0; i < maxTargets; ++i) {
         out_targetsArray[i] = nullptr;
     }
@@ -170,11 +172,11 @@ void Game::DeleteGarbageEntities()
 
 
 //-----------------------------------------------------------------------------------------------
-void Game::Update( float deltaSeconds )
+void Game::Update()
 {
 	if ( m_currentGameState == GameState::ATTRACT_MODE )
 	{
-		UpdateAttractMode( deltaSeconds );
+		UpdateAttractMode();
 		return;
 	};
 
@@ -185,18 +187,12 @@ void Game::Update( float deltaSeconds )
 		return;
 	};
 
-	if ( m_isScanModeOn )
-	{
-		printf( "SCAN MODE ON\n" );
-		deltaSeconds *= 0.1f;
-	};
-
 	CheckPlayerLives();
 
 	UpdateWaves();
 	UpdateFromKeyboard();
 	UpdateFromController();
-	UpdateEntities( deltaSeconds );
+	UpdateEntities();
 
 	g_app->m_game->DeleteGarbageEntities();
 
@@ -208,7 +204,7 @@ void Game::Update( float deltaSeconds )
 
 	if ( m_isScreenShaking )
 	{
-		float shakeElapsedTime = ( float ) GetCurrentTimeSeconds() - m_screenShakeStartTime;
+		float shakeElapsedTime = ( float ) m_gameClock->GetTotalSeconds() - m_screenShakeStartTime;
 		if ( shakeElapsedTime < m_screenShakeDuration )
 		{
 			float t = shakeElapsedTime / m_screenShakeDuration;
@@ -225,18 +221,19 @@ void Game::Update( float deltaSeconds )
 		}
 	}
 	
-	UpdateScanMode( deltaSeconds );
+	UpdateScanMode();
 
 	if ( m_isPausedAfterNextUpdate )
 	{
 		m_currentGameState = GameState::PAUSED;
+		m_gameClock->Pause();
 		m_isPausedAfterNextUpdate = false;
 	}
 }
 
 
 //-----------------------------------------------------------------------------------------------
-void Game::UpdateScanMode( [[maybe_unused]] float deltaSeconds )
+void Game::UpdateScanMode()
 {
 	BuildScanTargets();
 }
@@ -266,7 +263,7 @@ void Game::UpdateWaves()
 			m_currentGameState = GameState::VICTORY;
 			m_waveNumber = 0;
 
-			SoundID gameWinSound = g_engine->m_audioSystem->CreateOrGetSound( "Data/Braam - Zone End.wav" );
+			SoundID gameWinSound = g_engine->m_audioSystem->CreateOrGetSound( "Data/Audio/Braam - Zone End.wav" );
 			g_engine->m_audioSystem->StartSound( gameWinSound, false, 0.7f, 0.f, 0.8f );
 
 			m_currentGameState = GameState::ATTRACT_MODE;
@@ -365,20 +362,20 @@ void Game::StartNextWave()
 			break;
 	}
 
-	SoundID waveStartSound = g_engine->m_audioSystem->CreateOrGetSound( "Data/NewWave.wav" );
+	SoundID waveStartSound = g_engine->m_audioSystem->CreateOrGetSound( "Data/Audio/NewWave.wav" );
 	g_engine->m_audioSystem->StartSound( waveStartSound, false, 0.7f, 0.f, 0.8f );
 }
 
 
 //-----------------------------------------------------------------------------------------------
-void Game::UpdateAttractMode( [[maybe_unused]] float deltaSeconds )
+void Game::UpdateAttractMode()
 {
 	UpdateFromKeyboard();
 	UpdateFromController();
 
 	if ( !m_isBackgroundMusicPlaying )
 	{
-		m_backgroundMusicSoundID = g_engine->m_audioSystem->CreateOrGetSound( "Data/12 Track 12.mp3" );
+		m_backgroundMusicSoundID = g_engine->m_audioSystem->CreateOrGetSound( "Data/Audio/12 Track 12.mp3" );
 		g_engine->m_audioSystem->StartSound( m_backgroundMusicSoundID, true, 0.8f, 0.f, 1.f );
 		m_isBackgroundMusicPlaying = true;
 	}
@@ -394,6 +391,9 @@ void Game::UpdateFromKeyboard()
 {
 	if ( m_currentGameState == GameState::ATTRACT_MODE )
 	{
+		m_gameClock->Unpause();
+		m_gameClock->SetTimeScale( 1.0f );
+
 		// Start the game
 		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_SPACE ) || g_engine->m_inputSystem->WasKeyJustPressed( 'N' ) )
 		{
@@ -413,6 +413,7 @@ void Game::UpdateFromKeyboard()
 		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_ESCAPE ) )
 		{
 			m_currentGameState = GameState::ATTRACT_MODE;
+			m_gameClock->Reset();
 			m_isScanModeOn = false;
 		}
 
@@ -420,11 +421,13 @@ void Game::UpdateFromKeyboard()
 		if ( m_currentGameState != GameState::PAUSED && g_engine->m_inputSystem->WasKeyJustPressed( 'P' ) )
 		{
 			m_currentGameState = GameState::PAUSED;
+			m_gameClock->Pause();
 		}
 
 		else if ( m_currentGameState == GameState::PAUSED && g_engine->m_inputSystem->WasKeyJustPressed( 'P' ) )
 		{
 			m_currentGameState = GameState::PLAYING;
+			m_gameClock->Unpause();
 		}
 
 		if ( m_isScanModeOn && g_engine->m_inputSystem->WasKeyJustPressed( 'F' ) )
@@ -473,9 +476,10 @@ void Game::UpdateFromKeyboard()
 		}
 
 		// Pause the game after the next update (for debugging)
-		if ( m_isDebugFeaturesOn && g_engine->m_inputSystem->WasKeyJustPressed( 'O' ) )
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'O' ) )
 		{
 			m_currentGameState = GameState::PLAYING;
+			m_gameClock->Unpause();
 			m_isPausedAfterNextUpdate = true;
 		}
 
@@ -501,6 +505,9 @@ void Game::UpdateFromController()
 
 	if ( m_currentGameState == GameState::ATTRACT_MODE )
 	{
+		m_gameClock->Unpause();
+		m_gameClock->SetTimeScale( 1.0f );
+
 		// Start the game
 		if ( controller.WasButtonJustPressed( XBOX_BUTTON_A ) || controller.WasButtonJustPressed( XBOX_BUTTON_START ) )
 		{
@@ -519,6 +526,7 @@ void Game::UpdateFromController()
 		if ( controller.WasButtonJustPressed( XBOX_BUTTON_BACK ) )
 		{
 			m_currentGameState = GameState::ATTRACT_MODE;
+			m_gameClock->Reset();
 			m_isScanModeOn = false;
 		}
 
@@ -565,8 +573,10 @@ void Game::UpdateFromController()
 
 
 //-----------------------------------------------------------------------------------------------
-void Game::UpdateEntities( float deltaSeconds )
+void Game::UpdateEntities()
 {
+	float deltaSeconds = ( float ) m_gameClock->GetDeltaSeconds();
+
 	// Player ship
 	m_playerShip->Update( deltaSeconds );
 
@@ -777,6 +787,8 @@ void Game::DebugDraw() const
 //-----------------------------------------------------------------------------------------------
 void Game::Render() const
 {
+	g_engine->m_renderer->ClearScreen( Rgba8( 0, 0, 0 ) );
+
 	if ( m_currentGameState == GameState::ATTRACT_MODE )
 	{
 		RenderAttractMode();
@@ -815,7 +827,7 @@ void Game::RenderAttractMode() const
 	const Rgba8 dimYellow = Rgba8( 253, 239, 3, 80 );
 	const Rgba8 neonPink = Rgba8( 248, 21, 98 );
 
-	float flicker = 0.9f + 0.1f * SinDegrees( ( float ) GetCurrentTimeSeconds() * 720.f );
+	float flicker = 0.8f + 0.2f * SinDegrees( ( float ) m_gameClock->GetTotalSeconds() * 720.f );
 	Rgba8 flickerCol = Rgba8(
 		( unsigned char ) ( brightCyan.r * flicker ),
 		( unsigned char ) ( brightCyan.g * flicker ),
@@ -824,7 +836,7 @@ void Game::RenderAttractMode() const
 
 	g_engine->m_renderer->BeginCamera( *m_screenCamera );
 
-	const float currentTime = ( float ) GetCurrentTimeSeconds();
+	const float currentTime = ( float ) m_gameClock->GetTotalSeconds();
 
 	// Ships
 	const float shipScale = SCREEN_SIZE_X * 0.04f;
@@ -933,11 +945,11 @@ void Game::RenderParallaxBackground() const
 			columnHeadY[columnIndex] = randomStartRatio * maxStartY;
 		}
 
-		lastUpdateTime = ( float ) GetCurrentTimeSeconds();
+		lastUpdateTime = ( float ) m_gameClock->GetTotalSeconds();
 		isInitialised = true;
 	}
 
-	float currentTime = ( float ) GetCurrentTimeSeconds();
+	float currentTime = ( float ) m_gameClock->GetTotalSeconds();
 	float deltaSeconds = currentTime - lastUpdateTime;
 	if ( deltaSeconds < 0.0f ) deltaSeconds = 0.0f;
 	if ( deltaSeconds > 0.1f ) deltaSeconds = 0.1f;
@@ -1362,6 +1374,20 @@ void Game::RenderScanMode() const
 
 
 //-----------------------------------------------------------------------------------------------
+void Game::RenderDevConsole() const
+{
+	g_engine->m_renderer->BeginCamera( *m_screenCamera );
+
+	float screenWidth = g_gameConfigBlackboard.GetValue( "windowWidth", 1600.f );
+	float screenHeight = g_gameConfigBlackboard.GetValue( "windowHeight", 800.f );
+	AABB2 devConsoleBounds = AABB2( 0.f, 0.f, screenWidth, screenHeight );
+	g_engine->m_devConsole->Render( devConsoleBounds );
+
+	g_engine->m_renderer->EndCamera( *m_screenCamera );
+}
+
+
+//-----------------------------------------------------------------------------------------------
 Vec3 Game::TransformWorldToScreen( Vec3 const& worldPosition ) const
 {
 	Vec2 worldBottomLeft = m_worldCamera->GetOrthoBottomLeft();
@@ -1606,7 +1632,7 @@ void Game::SpawnBulletFromPlayerShip()
 	if ( freeSlotIndex != -1 )
 	{
 		m_bullets[freeSlotIndex] = new Bullet( this, m_playerShip );
-		SoundID shootSound = g_engine->m_audioSystem->CreateOrGetSound( "Data/PlayershipShoot.wav" );
+		SoundID shootSound = g_engine->m_audioSystem->CreateOrGetSound( "Data/Audio/PlayershipShoot.wav" );
 		g_engine->m_audioSystem->StartSound( shootSound );
 	}
 	else
@@ -1748,18 +1774,18 @@ void Game::CheckPlayerLives()
 
 		if ( timeOfDeath == 0.f )
 		{
-			timeOfDeath = ( float ) GetCurrentTimeSeconds();
+			timeOfDeath = ( float ) m_gameClock->GetTotalSeconds();
 		}
 
 		// Return to attract mode after 3 seconds
-		if ( ( float ) GetCurrentTimeSeconds() - timeOfDeath >= 3.f )
+		if ( ( float ) m_gameClock->GetTotalSeconds(); - timeOfDeath >= 3.f )
 		{
 			m_currentGameState = GameState::ATTRACT_MODE;
 			m_waveNumber = 0;
 			m_playerSpareLives = NUM_PLAYER_LIVES - 1;
 			timeOfDeath = 0.f;
 
-			SoundID gameOverSound = g_engine->m_audioSystem->CreateOrGetSound( "Data/Braam - Retro Pulse.wav" );
+			SoundID gameOverSound = g_engine->m_audioSystem->CreateOrGetSound( "Data/Audio/Braam - Retro Pulse.wav" );
 			g_engine->m_audioSystem->StartSound( gameOverSound, false, 0.7f, 0.f, 0.8f );
 		}
 	}

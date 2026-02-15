@@ -81,7 +81,7 @@ void Wasp::Die()
 	m_game->m_screenShakeDuration = 1.f;
 	m_game->m_screenShakeStartTime = ( float ) GetCurrentTimeSeconds();
 
-	SoundID entityDeathSound = g_engine->m_audioSystem->CreateOrGetSound( "Data/BeetlesWaspsDie.wav" );
+	SoundID entityDeathSound = g_engine->m_audioSystem->CreateOrGetSound( "Data/Audio/BeetlesWaspsDie.wav" );
 	g_engine->m_audioSystem->StartSound( entityDeathSound, false, 0.6f, 0.f, 0.5f );
 }
 

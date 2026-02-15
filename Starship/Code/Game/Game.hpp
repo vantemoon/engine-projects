@@ -9,6 +9,7 @@ class  Asteroid;   // Forward declaration
 class  Beetle;     // Forward declaration
 class  Bullet;     // Forward declaration
 class  Camera;     // Forward declaration
+class  Clock;      // Forward declaration
 class  Debris;     // Forward declaration
 class  Entity;     // Forward declaration
 class  ImpactWave; // Forward declaration
@@ -53,14 +54,16 @@ public:
 	bool        m_isDebugFeaturesOn = false;
 	bool        m_isPausedAfterNextUpdate = false;
 
+	Clock*		m_gameClock = nullptr;
+
 public:
 	Game();
 	~Game();
 
-	void Update( float deltaSeconds);
-	void UpdateAttractMode( float deltaSeconds );
-	void UpdateScanMode( float deltaSeconds );
-	void UpdateEntities( float deltaSeconds );
+	void Update();
+	void UpdateAttractMode();
+	void UpdateScanMode();
+	void UpdateEntities();
 	void UpdateFromKeyboard();
 	void UpdateFromController();
 	void UpdateWaves();
@@ -73,6 +76,7 @@ public:
 	void RenderOffscreenIndicator()									  const;
 	void RenderAttractMode()										  const;
 	void RenderScanMode()											  const;
+	void RenderDevConsole()											  const;
 	void RenderParallaxBackground()									  const;
 	Vec2 GetRandomOffscreenPosition( float cosmeticRadius )		      const;
 	int  BuildScanTargets();

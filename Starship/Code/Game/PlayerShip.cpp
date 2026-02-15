@@ -7,6 +7,7 @@
 #include "Game/GameCommon.hpp"
 #include "Game/Wasp.hpp"
 #include "Engine/Audio/AudioSystem.hpp"
+#include "Engine/Core/Clock.hpp"
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/ErrorWarningAssert.hpp"
 #include "Engine/Core/Rgba8.hpp"
@@ -234,19 +235,21 @@ void PlayerShip::UpdateFromKeyboard()
 	if ( IsAlive() && g_engine->m_inputSystem->IsKeyDown( 'T' ) )
 	{
 		m_game->m_isScanModeOn = true;
+		m_game->m_gameClock->SetTimeScale( 0.1f );
 		m_game->BuildScanTargets();
 		if ( !m_game->m_isTargetInitialized )
 		{
 			m_game->m_currentSelectedEntityIndex = m_game->GetEnemyClosestToPlayer();
 			m_game->m_isTargetInitialized = true;
 
-			SoundID scanSound = g_engine->m_audioSystem->CreateOrGetSound( "Data/Scan.wav" );
+			SoundID scanSound = g_engine->m_audioSystem->CreateOrGetSound( "Data/Audio/Scan.wav" );
 			g_engine->m_audioSystem->StartSound( scanSound, false, 0.3f, 0.f, 1.f );
 		}
 	}
 	else if ( g_engine->m_inputSystem->WasKeyJustReleased( 'T' ) )
 	{
 		m_game->m_isScanModeOn = false;
+		m_game->m_gameClock->SetTimeScale( 1.f );
 		m_game->m_isTargetInitialized = false;
 		for ( int targetIndex = 0; targetIndex < MAX_TARGETS; ++targetIndex )
 		{
@@ -263,14 +266,14 @@ void PlayerShip::UpdateFromKeyboard()
 		{
 			m_game->m_currentSelectedEntityIndex = m_game->StepCurrentSelectedEntityIndex( m_game->m_currentSelectedEntityIndex, -1 );
 
-			SoundID scanSound = g_engine->m_audioSystem->CreateOrGetSound( "Data/Scan.wav" );
+			SoundID scanSound = g_engine->m_audioSystem->CreateOrGetSound( "Data/Audio/Scan.wav" );
 			g_engine->m_audioSystem->StartSound( scanSound, false, 0.3f, 0.f, 1.f );
 		}
 		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_RIGHTARROW ) )
 		{
 			m_game->m_currentSelectedEntityIndex = m_game->StepCurrentSelectedEntityIndex( m_game->m_currentSelectedEntityIndex, 1 );
 
-			SoundID scanSound = g_engine->m_audioSystem->CreateOrGetSound( "Data/Scan.wav" );
+			SoundID scanSound = g_engine->m_audioSystem->CreateOrGetSound( "Data/Audio/Scan.wav" );
 			g_engine->m_audioSystem->StartSound( scanSound, false, 0.3f, 0.f, 1.f );
 		}
 	}
@@ -333,6 +336,7 @@ void PlayerShip::UpdateFromController( float deltaSeconds )
 	if ( IsAlive() && isLeftTriggerPressed && !wasLeftTriggerPressedLastFrame )
 	{
 		m_game->m_isScanModeOn = true;
+		m_game->m_gameClock->SetTimeScale( 0.1f );
 		m_game->BuildScanTargets();
 		if ( !m_game->m_isTargetInitialized )
 		{
@@ -343,6 +347,7 @@ void PlayerShip::UpdateFromController( float deltaSeconds )
 	else if ( wasLeftTriggerJustReleased )
 	{
 		m_game->m_isScanModeOn = false;
+		m_game->m_gameClock->SetTimeScale( 1.f );
 		m_game->m_isTargetInitialized = false;
 		for ( int targetIndex = 0; targetIndex < MAX_TARGETS; ++targetIndex )
 		{
@@ -437,7 +442,7 @@ void PlayerShip::Die()
 
 	m_game->SpawnDebrisCluster( 30, m_position, m_velocity, Rgba8( 102, 153, 204 ), m_cosmeticRadius * 0.1f, m_cosmeticRadius * 0.8f );
 
-	SoundID shipExplosionSound = g_engine->m_audioSystem->CreateOrGetSound( "Data/PlayershipDie.wav" );
+	SoundID shipExplosionSound = g_engine->m_audioSystem->CreateOrGetSound( "Data/Audio/PlayershipDie.wav" );
 	g_engine->m_audioSystem->StartSound( shipExplosionSound, false, 0.5f, 0.f, 0.5f );
 
 	m_game->SpawnImpactWave( m_position );
@@ -513,7 +518,7 @@ void PlayerShip::Respawn()
 	m_orientationDegrees = 0.f;
 	m_thrustFraction = 0.f;
 
-	SoundID shipRespawnSound = g_engine->m_audioSystem->CreateOrGetSound( "Data/PlayershipRespawn.wav" );
+	SoundID shipRespawnSound = g_engine->m_audioSystem->CreateOrGetSound( "Data/Audio/PlayershipRespawn.wav" );
 	g_engine->m_audioSystem->StartSound( shipRespawnSound, false, 0.5f, 0.f, 1.f );
 }
 

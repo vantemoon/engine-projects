@@ -3,9 +3,9 @@
 #include "Game/Bullet.hpp"
 #include "Game/Game.hpp"
 #include "Game/PlayerShip.hpp"
+#include "Engine/Core/Clock.hpp"
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/Rgba8.hpp"
-#include "Engine/Core/Time.hpp"
 #include "Engine/Input/InputSystem.hpp"
 #include "Engine/Math/RandomNumberGenerator.hpp"
 #include "Engine/Math/MathUtils.hpp"
@@ -27,8 +27,6 @@ App::App()
 	g_engine = new Engine( engineConfig );
 
 	m_game = new Game();
-
-	m_lastFrameStartTime = GetCurrentTimeSeconds();
 
 	g_engine->m_eventSystem->SubscribeEventCallbackFunction( "Quit", Command_Quit );
 }
@@ -58,15 +56,11 @@ void App::RunMainLoop()
 //-----------------------------------------------------------------------------------------------
 void App::RunFrame()
 {
+	Clock::TickSystemClock();
+
 	g_engine->BeginFrame();
 
-	double currentTime = GetCurrentTimeSeconds();
-	float deltaSeconds = static_cast<float> ( currentTime - m_lastFrameStartTime );
-	deltaSeconds = GetClamped( deltaSeconds, 0.f, 0.1f );
-
-	m_lastFrameStartTime = currentTime;
-
-	Update( deltaSeconds );
+	Update();
 	Render(); // Draw the current state of the game
 	g_engine->EndFrame(); // Allow engine subsystems to do post-frame stuff
 }
@@ -106,21 +100,19 @@ void App::HardReset()
 
 
 //-----------------------------------------------------------------------------------------------
-void App::Update( float deltaSeconds )
+void App::Update()
 {
 	UpdateFromKeyboard();
 
-	float timeScale = 1.f;
-
-	m_game->Update( deltaSeconds * timeScale );
+	m_game->Update();
 }
 
 
 //-----------------------------------------------------------------------------------------------
 void App::Render() const
 {
-	g_engine->m_renderer->ClearScreen( Rgba8( 0, 0, 0 ) );
 	m_game->Render();
+	m_game->RenderDevConsole();
 }
 
 

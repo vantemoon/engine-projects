@@ -220,6 +220,6 @@ void Asteroid::Die()
 
 	m_game->SpawnImpactWave( m_position );
 
-	SoundID entityDeathSound = g_engine->m_audioSystem->CreateOrGetSound( "Data/AsteroidsDie.wav" );
+	SoundID entityDeathSound = g_engine->m_audioSystem->CreateOrGetSound( "Data/Audio/AsteroidsDie.wav" );
 	g_engine->m_audioSystem->StartSound( entityDeathSound, false, 0.5f );
 }
