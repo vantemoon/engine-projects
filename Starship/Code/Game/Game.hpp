@@ -55,6 +55,8 @@ public:
 
 	Clock*		m_gameClock = nullptr;
 
+	bool        m_hasControlsBeenShown = false;
+
 public:
 	Game();
 	~Game();
@@ -98,4 +100,5 @@ private:
 	void InitializeTargersArray( Entity** out_targetsArray, int maxTargets );
 	Vec3 TransformWorldToScreen( Vec3 const& worldPosition )		   const;
 	bool IsOnScreen( Vec2 const& worldPosition, float cosmeticRadius ) const;
+	void AddInstructionsToDevConsole();
 };

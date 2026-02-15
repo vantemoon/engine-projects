@@ -174,6 +174,13 @@ void Game::DeleteGarbageEntities()
 //-----------------------------------------------------------------------------------------------
 void Game::Update()
 {
+	if ( !m_hasControlsBeenShown )
+	{
+		g_engine->m_devConsole->ToggleMode( DevConsoleMode::OPEN_FULL );
+		AddInstructionsToDevConsole();
+		m_hasControlsBeenShown = true;
+	}
+
 	if ( m_currentGameState == GameState::ATTRACT_MODE )
 	{
 		UpdateAttractMode();
@@ -1892,4 +1899,30 @@ int Game::FindFreeEntityIndex( Entity** entityList, int maxCount ) const
 	}
 
 	return -1;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game::AddInstructionsToDevConsole()
+{
+	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MAJOR, "Keyboard" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "A/D:        Rotate ship left/right" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "W:          Apply thrust" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "Space:      Fire a bullet" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "T:          Enter the scan mode, time slowed to 1/10" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "Arrow Keys: Change the selected target (only in scan mode)" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "F:          Detonate/telefrag the selected target (only in scan mode)" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "N:          Respawn if dead" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "P:          Pause or resume" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "O:          Advance one frame, then pause" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "Esc:        Return to Attract mode or exit if already there" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "" );
+
+	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MAJOR, "Debug" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "F1:         Toggle debug mode" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "F8:         Hard-reset the game (only in debug mode)" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "I:          Spawn an asteroid (only in debug mode)" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "K:          Kill all hostile entities in this wave (only in debug mode)" );
 }

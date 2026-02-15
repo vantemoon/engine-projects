@@ -1,11 +1,9 @@
 Starship Gold (SD1-A04)
 
 
-
 While working on Starship, I started noticing how often I was rewriting code with almost the same logic, just in slightly different ways, like updating entities or spawning new ones. At first it felt faster to just copy and tweak what I already had, but the more entity types and features I added, the messier things got. It became especially annoying when I added a new entity type and had to hunt through different functions to paste in the same code again. Eventually, I took some time to pull out the repeating parts and turn them into small, reusable functions. That made everything easier to manage and debug, and I realized how much time clean, reusable code actually saves in the long run.
 
 I also got a lot more comfortable with refactoring, something we did often for the engine. I used to be scared of touching code that already worked because I didn’t want to break anything, and honestly, I did break things a few times. But over time, I learned that refactoring isn’t about fixing what’s broken, it’s about understanding your logic and improving it. Every time I reorganized a messy system, I saw it more clearly and felt more confident in the code. Now I see refactoring as part of the creative process, not something to avoid.
-
 
 
 Build Instructions:
@@ -36,23 +34,19 @@ Keyboard
 A/D: Rotate ship left/right
 W: Apply thrust
 Space: Fire a bullet
-T: Enter the scan mode
-Arrow Keys: Change the selected target in scan mode
-F: Detonate/telefrag the selected target
+T: Enter the scan mode, time slowed to 1/10
+Arrow Keys: Change the selected target (only in scan mode)
+F: Detonate/telefrag the selected target (only in scan mode)
 N: Respawn if dead
 P: Pause or resume
+O: Advance one frame, then pause
 Esc: Return to Attract mode or exit if already there
-
 
 DEBUG:
 F1: Toggle debug mode
-------- the following controls are only available in debug mode -------
-F8: Hard-reset the game
-I: Spawn an asteroid
-O: Advance one frame, then pause
-K: Kill all hostile entities in this wave
-
-
+F8: Hard-reset the game (only in debug mode)
+I: Spawn an asteroid (only in debug mode)
+K: Kill all hostile entities in this wave (only in debug mode)
 
 
 Gameplay Details:
@@ -70,6 +64,7 @@ Gameplay progresses in waves of increasing difficulty, with victory achieved aft
 
 Known Issues:
 None at this time.
+
 
 Sound Credits:
 - Player ship shoots bullet: Bxfr generated

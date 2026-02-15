@@ -192,6 +192,14 @@ void DevConsole::AddLine( Rgba8 const& color, std::string const& text )
 
 
 //-----------------------------------------------------------------------------------------------
+void DevConsole::AddLineWithoutTimestamp( Rgba8 const& color, std::string const& text )
+{
+	std::string line = text;
+	m_lines.emplace_back( color, line );
+}
+
+
+//-----------------------------------------------------------------------------------------------
 void DevConsole::Render( AABB2 const& bound ) const
 {
 	if ( m_mode == DevConsoleMode::HIDDEN )

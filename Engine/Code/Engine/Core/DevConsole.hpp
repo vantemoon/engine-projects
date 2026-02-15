@@ -43,6 +43,7 @@ public:
 
 	void Execute( std::string const& consoleCommandText );
 	void AddLine( Rgba8 const& color, std::string const& text );
+	void AddLineWithoutTimestamp( Rgba8 const& color, std::string const& text );
 	void Render( AABB2 const& bound ) const;
 
 	DevConsoleMode GetMode() const;
