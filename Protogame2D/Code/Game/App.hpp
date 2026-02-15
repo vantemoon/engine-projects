@@ -23,7 +23,7 @@ public:
 
 	void RunMainLoop();
 	void RunFrame();
-	void Update( float deltaSeconds );
+	void Update();
 	void UpdateFromKeyboard();
 	void UpdateFromController();
 	void Render()									const;
@@ -36,6 +36,5 @@ public:
 public:
 	Game*			m_game = nullptr;
 
-	double			m_lastFrameStartTime = 0.0;
 	bool			m_isQuitting = false;
 };

@@ -105,7 +105,7 @@ void DevConsole::Execute( std::string const& consoleCommandText )
 		if ( !isRegistered )
 		{
 			AddLine( ERROR, consoleCommandText );
-			AddLine( WARNING, "Unknown command: " + command );
+			AddLine( ERROR, "Unknown command: " + command );
 			return;
 		}
 		if ( splitText.size() == 1 )
@@ -118,7 +118,7 @@ void DevConsole::Execute( std::string const& consoleCommandText )
 				{
 					requiredArgsString += requiredArg + " ";
 				}
-				AddLine( ERROR, consoleCommandText );
+				AddLine( WARNING, consoleCommandText );
 				AddLine( WARNING, "Command requires arguments: " + requiredArgsString );
 				return;
 			}
@@ -135,7 +135,7 @@ void DevConsole::Execute( std::string const& consoleCommandText )
 			}
 			else
 			{
-				AddLine( ERROR, consoleCommandText );
+				AddLine( WARNING, consoleCommandText );
 				AddLine( WARNING, "Invalid argument: " + arg );
 				EventRequiredArgsList requiredArgs = g_engine->m_eventSystem->GetEventRequiredArgs( command );
 				if ( !requiredArgs.empty() )
@@ -240,7 +240,7 @@ void DevConsole::Render_OpenFull( AABB2 const& bound, BitmapFont& font, float fo
 	std::vector<Vertex> backgroundVerts;
 	std::vector<Vertex> textVerts;
 
-	AddVertsForAABB2D( backgroundVerts, bound, Rgba8( 0, 0, 0, 200 ) );
+	AddVertsForAABB2D( backgroundVerts, bound, Rgba8( 0, 0, 0, 150 ) );
 
 	float cellHeight = 20.f;
 	float cellWidth = cellHeight * fontAspect;

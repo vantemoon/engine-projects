@@ -1,6 +1,7 @@
 #pragma once
 #include "Game/GameCommon.hpp"
 #include "Engine/Audio/AudioSystem.hpp"
+#include "Engine/Core/Clock.hpp"
 #include "Engine/Core/Rgba8.hpp"
 
 
@@ -30,13 +31,15 @@ public:
 	bool        m_isDebugFeaturesOn = false;
 	bool        m_isPausedAfterNextUpdate = false;
 
+	Clock*		m_gameClock = nullptr;
+
 public:
 	Game();
 	~Game();
 
-	void Update( float deltaSeconds);
-	void UpdateAttractMode( float deltaSeconds );
-	void UpdateEntities( float deltaSeconds );
+	void Update();
+	void UpdateAttractMode();
+	void UpdateEntities();
 	void UpdateFromKeyboard();
 	void UpdateFromController();
 	void ScreenShake( float intensity );
@@ -44,6 +47,7 @@ public:
 	void RenderEntities()											  const;
 	void RenderHUD()												  const;
 	void RenderAttractMode()										  const;
+	void RenderDevConsole()											  const;
 	Vec2 GetRandomOffscreenPosition( float cosmeticRadius )		      const;
 	void Reset();
 	void KillAllEnemies(); // For testing and debugging

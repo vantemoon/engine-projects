@@ -3,11 +3,11 @@
 #include "Game/GameCommon.hpp"
 #include "Engine/Audio/AudioSystem.hpp"
 #include "Engine/Core/Engine.hpp"
+#include "Engine/Core/EngineCommon.hpp"
 #include "Engine/Core/ErrorWarningAssert.hpp"
 #include "Engine/Core/Rgba8.hpp"
 #include "Engine/Core/SimpleTriangleFont.hpp"
 #include "Engine/Core/StringUtils.hpp"
-#include "Engine/Core/Time.hpp"
 #include "Engine/Core/Vertex.hpp"
 #include "Engine/Core/VertexUtils.hpp"
 #include "Engine/Input/InputSystem.hpp"
@@ -29,6 +29,8 @@ Game::Game()
 	m_screenCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) );
 
 	m_currentGameState = ATTRACT_MODE;
+
+	m_gameClock = new Clock();
 }
 
 
@@ -54,11 +56,11 @@ void Game::DeleteGarbageEntities()
 
 
 //-----------------------------------------------------------------------------------------------
-void Game::Update( float deltaSeconds )
+void Game::Update()
 {
 	if ( m_currentGameState == GameState::ATTRACT_MODE )
 	{
-		UpdateAttractMode( deltaSeconds );
+		UpdateAttractMode();
 		return;
 	};
 
@@ -71,7 +73,7 @@ void Game::Update( float deltaSeconds )
 
 	UpdateFromKeyboard();
 	UpdateFromController();
-	UpdateEntities( deltaSeconds );
+	UpdateEntities();
 
 	g_app->m_game->DeleteGarbageEntities();
 
@@ -83,7 +85,8 @@ void Game::Update( float deltaSeconds )
 
 	if ( m_isScreenShaking )
 	{
-		float shakeElapsedTime = ( float ) GetCurrentTimeSeconds() - m_screenShakeStartTime;
+		// float shakeElapsedTime = ( float ) GetCurrentTimeSeconds() - m_screenShakeStartTime;
+		float shakeElapsedTime = ( float ) m_gameClock->GetTotalSeconds() - m_screenShakeStartTime;
 		if ( shakeElapsedTime < m_screenShakeDuration )
 		{
 			float t = shakeElapsedTime / m_screenShakeDuration;
@@ -122,7 +125,7 @@ void Game::ScreenShake( float intensity )
 
 
 //-----------------------------------------------------------------------------------------------
-void Game::UpdateAttractMode( [[maybe_unused]] float deltaSeconds )
+void Game::UpdateAttractMode()
 {
 	UpdateFromKeyboard();
 	UpdateFromController();
@@ -230,7 +233,7 @@ void Game::UpdateFromController()
 
 
 //-----------------------------------------------------------------------------------------------
-void Game::UpdateEntities( [[maybe_unused]] float deltaSeconds )
+void Game::UpdateEntities()
 {
 	// #ToDo: Update all entities in the game world
 }
@@ -253,6 +256,7 @@ void Game::Render() const
 	if ( m_currentGameState == GameState::ATTRACT_MODE )
 	{
 		RenderAttractMode();
+		RenderDevConsole();
 		return;
 	};
 
@@ -277,7 +281,7 @@ void Game::Render() const
 void Game::RenderAttractMode() const
 {
 	// Clear screen
-	g_engine->m_renderer->ClearScreen( Rgba8::MAGENTA );
+	g_engine->m_renderer->ClearScreen( Rgba8::BLACK );
 
 	g_engine->m_renderer->BeginCamera( *m_screenCamera );
 
@@ -288,14 +292,14 @@ void Game::RenderAttractMode() const
 	const Rgba8 dimYellow = Rgba8( 253, 239, 3, 80 );
 	const Rgba8 neonPink = Rgba8( 248, 21, 98 );
 
-	float flicker = 0.9f + 0.1f * SinDegrees( ( float ) GetCurrentTimeSeconds() * 720.f );
+	float flicker = 0.9f + 0.1f * SinDegrees( ( float ) m_gameClock->GetTotalSeconds() * 720.f );
 	Rgba8 flickerCol = Rgba8(
 		( unsigned char ) ( brightCyan.r * flicker ),
 		( unsigned char ) ( brightCyan.g * flicker ),
 		( unsigned char ) ( brightCyan.b * flicker )
 	);
 
-	const float currentTime = ( float ) GetCurrentTimeSeconds();
+	const float currentTime = ( float ) m_gameClock->GetTotalSeconds();
 	const float centerX = SCREEN_SIZE_X * 0.5f;
 	const float centerY = SCREEN_SIZE_Y * 0.5f;
 
@@ -349,7 +353,7 @@ void Game::RenderEntities() const
 
 	Vertex squareVertexArray[6];
 	float squareSize = 10.f;
-	float time = ( float ) GetCurrentTimeSeconds();
+	float time = ( float ) m_gameClock->GetTotalSeconds();
 	float squareX = WORLD_SIZE_X * 0.5f + ( WORLD_SIZE_X * 0.1f ) * SinDegrees( time * 60.f );
 	squareVertexArray[0].m_position = Vec3( squareX - squareSize, 50.f - squareSize, 0.f );
 	squareVertexArray[1].m_position = Vec3( squareX + squareSize, 50.f - squareSize, 0.f );
@@ -382,6 +386,20 @@ void Game::RenderHUD() const
 	AddVertsForTextTriangles2D( verts, "GAME MODE", Vec2( 10.f, SCREEN_SIZE_Y - 30.f ), 24.f, Rgba8( 255, 255, 255 ) );
 
 	g_engine->m_renderer->DrawVertexArray( ( int ) verts.size(), verts.data() );
+
+	g_engine->m_renderer->EndCamera( *m_screenCamera );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game::RenderDevConsole() const
+{
+	g_engine->m_renderer->BeginCamera( *m_screenCamera );
+
+	float screenWidth = g_gameConfigBlackboard.GetValue( "windowWidth", 1600.f );
+	float screenHeight = g_gameConfigBlackboard.GetValue( "windowHeight", 800.f );
+	AABB2 devConsoleBounds = AABB2( 0.f, 0.f, screenWidth, screenHeight );
+	g_engine->m_devConsole->Render( devConsoleBounds );
 
 	g_engine->m_renderer->EndCamera( *m_screenCamera );
 }

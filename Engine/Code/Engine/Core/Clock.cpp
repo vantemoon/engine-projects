@@ -9,14 +9,14 @@ static Clock* g_systemClock = nullptr;
 //-----------------------------------------------------------------------------------------------
 Clock::Clock()
 {
-	if ( g_systemClock != nullptr )
+	if ( g_systemClock == nullptr )
 	{
-		g_systemClock->AddChild( this );
-		m_parent = g_systemClock;
+		g_systemClock = this;
 	}
 	else
 	{
-		g_systemClock = this;
+		g_systemClock->AddChild( this );
+		m_parent = g_systemClock;
 	}
 }
 
@@ -137,6 +137,10 @@ int Clock::GetFrameCount() const
 //-----------------------------------------------------------------------------------------------
 Clock& Clock::GetSystemClock()
 {
+	if ( g_systemClock == nullptr )
+	{
+		g_systemClock = new Clock();
+	}
 	return *g_systemClock;
 }
 
@@ -144,10 +148,7 @@ Clock& Clock::GetSystemClock()
 //-----------------------------------------------------------------------------------------------
 void Clock::TickSystemClock()
 {
-	if ( g_systemClock != nullptr )
-	{
-		g_systemClock->Tick();
-	}
+	GetSystemClock().Tick();
 }
 
 
