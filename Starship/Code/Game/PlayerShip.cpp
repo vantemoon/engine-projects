@@ -403,6 +403,7 @@ void PlayerShip::Render() const
 	}
 
 	TransformVertexArrayXY3D( NUM_PLAYER_SHIP_VERTS, tempShipWorldVerts, 1.f, m_orientationDegrees, m_position );
+	g_engine->m_renderer->BindTexture( nullptr );
 	g_engine->m_renderer->DrawVertexArray( NUM_PLAYER_SHIP_VERTS, tempShipWorldVerts );
 
 	if ( m_isAccelerating )
@@ -432,6 +433,7 @@ void PlayerShip::RenderThrust() const
 	thrustVerts[2] = Vertex( Vec3( -2.f, 1.f, 0.f ), flickerColor, Vec2() );
 
 	TransformVertexArrayXY3D( 3, thrustVerts, 1.f, m_orientationDegrees, m_position );
+	g_engine->m_renderer->BindTexture( nullptr );
 	g_engine->m_renderer->DrawVertexArray( 3, thrustVerts );
 }
 

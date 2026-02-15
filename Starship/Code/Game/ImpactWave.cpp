@@ -92,5 +92,6 @@ void ImpactWave::Render() const
 		prevOuter = currOuter;
 	}
 
+	g_engine->m_renderer->BindTexture( nullptr );
 	g_engine->m_renderer->DrawVertexArray( vertexIndex, verts );
 }

@@ -8,6 +8,10 @@
 
 
 //-----------------------------------------------------------------------------------------------
+class Timer;
+
+
+//-----------------------------------------------------------------------------------------------
 struct DevConsoleConfig
 {
 	bool m_isEnabled = true;
@@ -84,4 +88,5 @@ protected:
 	int							m_frameNumber = 0;
 	int                         m_insertionPointPosition = 0;
 	bool						m_isInsertionPointVisible = true;
+	Timer*						m_insertionPointBlinkTimer = nullptr;
 };

@@ -1,6 +1,7 @@
 #pragma once
 #include "Game/GameCommon.hpp"
 #include "Engine/Audio/AudioSystem.hpp"
+#include "Engine/Core/EventSystem.hpp"
 #include "Engine/Core/Rgba8.hpp"
 
 
@@ -101,4 +102,5 @@ private:
 	Vec3 TransformWorldToScreen( Vec3 const& worldPosition )		   const;
 	bool IsOnScreen( Vec2 const& worldPosition, float cosmeticRadius ) const;
 	void AddInstructionsToDevConsole();
+	static bool Command_SetTimeScale( EventArgs& args );
 };

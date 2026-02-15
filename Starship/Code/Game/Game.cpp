@@ -29,7 +29,7 @@
 Game::Game()
 {
 	m_playerShip = new PlayerShip( this, Vec2( WORLD_CENTER_X, WORLD_CENTER_Y ), Vec2( 0.f, 0.f ) );
-	
+
 	m_worldCamera = new Camera();
 	m_screenCamera = new Camera();
 
@@ -41,6 +41,9 @@ Game::Game()
 	InitializeTargersArray( m_scanTargets, MAX_TARGETS );
 
 	m_gameClock = new Clock();
+
+	g_engine->m_eventSystem->SubscribeEventCallbackFunction( "SetTimeScale", Command_SetTimeScale );
+	g_engine->m_eventSystem->SetEventRequiredArgs( "SetTimeScale", { "scale=<float>" } );
 }
 
 
@@ -898,6 +901,7 @@ void Game::RenderAttractMode() const
 
 	// Render 
 	RenderParallaxBackground();
+	g_engine->m_renderer->BindTexture( nullptr );
 	g_engine->m_renderer->DrawVertexArray( NUM_PLAYER_SHIP_VERTS, shipVertexArray2 );
 	g_engine->m_renderer->DrawVertexArray( NUM_PLAYER_SHIP_VERTS, shipVertexArray1 );
 	g_engine->m_renderer->DrawVertexArray( 3, triangleVertexArray );
@@ -1017,6 +1021,7 @@ void Game::RenderParallaxBackground() const
 
 	if ( !textVertices.empty() )
 	{
+		g_engine->m_renderer->BindTexture( nullptr );
 		g_engine->m_renderer->DrawVertexArray( ( int ) textVertices.size(), textVertices.data() );
 	}
 
@@ -1113,6 +1118,7 @@ void Game::RenderHUD() const
 
 		Vec2 position = Vec2( startX + lifeIndex * spacing, startY );
 		TransformVertexArrayXY3D( NUM_PLAYER_SHIP_VERTS, shipVertexArray, scale, rotation, position );
+		g_engine->m_renderer->BindTexture( nullptr );
 		g_engine->m_renderer->DrawVertexArray( NUM_PLAYER_SHIP_VERTS, shipVertexArray );
 	}
 
@@ -1145,6 +1151,7 @@ void Game::RenderHUD() const
 	bg[3] = Vertex( Vec3( barX, barY, 0.f ), bgColour, Vec2( 0, 0 ) );
 	bg[4] = Vertex( Vec3( barX + barWidth, barY + barHeight, 0.f ), bgColour, Vec2( 0, 0 ) );
 	bg[5] = Vertex( Vec3( barX, barY + barHeight, 0.f ), bgColour, Vec2( 0, 0 ) );
+	g_engine->m_renderer->BindTexture( nullptr );
 	g_engine->m_renderer->DrawVertexArray( 6, bg );
 
 	float fillW = barWidth * energyRatio;
@@ -1155,6 +1162,7 @@ void Game::RenderHUD() const
 	fill[3] = Vertex( Vec3( barX, barY, 0.f ), fillColour, Vec2( 0, 0 ) );
 	fill[4] = Vertex( Vec3( barX + fillW, barY + barHeight, 0.f ), fillColour, Vec2( 0, 0 ) );
 	fill[5] = Vertex( Vec3( barX, barY + barHeight, 0.f ), fillColour, Vec2( 0, 0 ) );
+	g_engine->m_renderer->BindTexture( nullptr );
 	g_engine->m_renderer->DrawVertexArray( 6, fill );
 
 	DebugDrawLine( Vec2( barX, barY ), Vec2( barX + barWidth, barY ), 4.f, borderColour, borderColour );
@@ -1173,6 +1181,7 @@ void Game::RenderHUD() const
 	AddVertsForTextTriangles2D( textVerts, labelEnergy, Vec2( barX + 1.5f, barY + 30.f + 1.5f ), 16.f, Rgba8( 253, 239, 3, 60 ) );
 	AddVertsForTextTriangles2D( textVerts, labelEnergy, Vec2( barX, barY + 30.f ), 16.f, Rgba8( 253, 239, 3, 230 ) );
 
+	g_engine->m_renderer->BindTexture( nullptr );
 	g_engine->m_renderer->DrawVertexArray( ( int ) textVerts.size(), textVerts.data() );
 
 	const float cellH = 28.f;
@@ -1188,6 +1197,7 @@ void Game::RenderHUD() const
 	AddVertsForTextTriangles2D( verts, waveText, Vec2( x + 1.f, y - 1.f ), cellH, shadowColour );
 	AddVertsForTextTriangles2D( verts, waveText, Vec2( x, y ), cellH, textColour );
 
+	g_engine->m_renderer->BindTexture( nullptr );
 	g_engine->m_renderer->DrawVertexArray( ( int ) verts.size(), verts.data() );
 
 	g_engine->m_renderer->EndCamera( *m_screenCamera );
@@ -1275,6 +1285,7 @@ void Game::RenderOffscreenIndicator() const
 		arrowVerts[3] = Vertex( Vec3( arrowLeft.x, arrowLeft.y, 0.f ), Rgba8( 255, 0, 0 ), Vec2( 0.f, 0.f ) );
 		arrowVerts[4] = Vertex( Vec3( arrowTip.x, arrowTip.y, 0.f ), Rgba8( 255, 0, 0 ), Vec2( 0.f, 0.f ) );
 		arrowVerts[5] = Vertex( Vec3( arrowRight.x, arrowRight.y, 0.f ), Rgba8( 255, 0, 0 ), Vec2( 0.f, 0.f ) );
+		g_engine->m_renderer->BindTexture( nullptr );
 		g_engine->m_renderer->DrawVertexArray( 6, arrowVerts );
 
 	}
@@ -1303,6 +1314,7 @@ void Game::RenderScanMode() const
 	overlayVerts[4].m_color = overlayColor;
 	overlayVerts[5].m_position = Vec3( 0.f, ( float ) SCREEN_SIZE_Y, 0.f );
 	overlayVerts[5].m_color = overlayColor;
+	g_engine->m_renderer->BindTexture( nullptr );
 	g_engine->m_renderer->DrawVertexArray( 6, overlayVerts );
 
 	// Highlight selected enemy
@@ -1364,6 +1376,7 @@ void Game::RenderScanMode() const
 		AddVertsForTextTriangles2D( textVerts, distanceString, Vec2( panelPos.x + 10.f, panelPos.y + 50.f ), 14.f, Rgba8( 255, 255, 255 ) );
 		AddVertsForTextTriangles2D( textVerts, speedString, Vec2( panelPos.x + 10.f, panelPos.y + 30.f ), 14.f, Rgba8( 255, 255, 255 ) );
 		AddVertsForTextTriangles2D( textVerts, positionString, Vec2( panelPos.x + 10.f, panelPos.y + 10.f ), 14.f, Rgba8( 255, 255, 255 ) );
+		g_engine->m_renderer->BindTexture( nullptr );
 		g_engine->m_renderer->DrawVertexArray( ( int ) textVerts.size(), textVerts.data() );
 	}
 
@@ -1925,4 +1938,22 @@ void Game::AddInstructionsToDevConsole()
 	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "F8:         Hard-reset the game (only in debug mode)" );
 	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "I:          Spawn an asteroid (only in debug mode)" );
 	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "K:          Kill all hostile entities in this wave (only in debug mode)" );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool Game::Command_SetTimeScale( EventArgs& args )
+{
+	if ( g_engine && g_engine->m_devConsole )
+	{
+		float timeScale = args.GetValue( "scale", 1.f );
+		if (!g_app->m_game)
+		{
+			g_engine->m_devConsole->AddLine( DevConsole::INFO_MINOR, "No game instance available to set time scale on." );
+			return false;
+		}
+		g_app->m_game->m_gameClock->SetTimeScale( timeScale );
+		g_engine->m_devConsole->AddLine( DevConsole::INFO_MAJOR, "Game clock time scale set to " + std::to_string( timeScale ) );
+	}
+	return false;
 }

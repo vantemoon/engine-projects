@@ -63,6 +63,7 @@ void Wasp::Render() const
 	}
 	// Transform the copy to world space and render the vertexes
 	TransformVertexArrayXY3D( NUM_WASP_VERTS, tempWaspWorldVerts, 1.f, m_orientationDegrees, m_position );
+	g_engine->m_renderer->BindTexture( nullptr );
 	g_engine->m_renderer->DrawVertexArray( NUM_WASP_VERTS, tempWaspWorldVerts );
 }
 

@@ -3,11 +3,13 @@
 #include "Engine/Core/EngineCommon.hpp"
 #include "Engine/Renderer/BitmapFont.hpp"
 #include "Engine/Renderer/Renderer.hpp"
+#include "Engine/Core/Clock.hpp"
 #include "Engine/Core/VertexUtils.hpp"
-#include "Engine/Core/Time.hpp"
+#include "Engine/Core/Timer.hpp"
 #include "Engine/Core/StringUtils.hpp"
 #include "Engine/Input/InputSystem.hpp"
 #include <algorithm>
+#include <math.h>
 
 
 //-----------------------------------------------------------------------------------------------
@@ -31,12 +33,21 @@ DevConsole::DevConsole( DevConsoleConfig const& config )
 //-----------------------------------------------------------------------------------------------
 DevConsole::~DevConsole()
 {
+	delete m_insertionPointBlinkTimer;
+	m_insertionPointBlinkTimer = nullptr;
 }
 
 
 //-----------------------------------------------------------------------------------------------
 void DevConsole::Startup()
 {
+	if ( m_insertionPointBlinkTimer == nullptr )
+	{
+		m_insertionPointBlinkTimer = new Timer( 0.5 );
+	}
+	m_insertionPointBlinkTimer->Start();
+	m_isInsertionPointVisible = true;
+
 	g_engine->m_eventSystem->SubscribeEventCallbackFunction( "Help", Command_Help );
 	g_engine->m_eventSystem->SubscribeEventCallbackFunction( "Clear", Command_Clear );
 	g_engine->m_eventSystem->SubscribeEventCallbackFunction( "Test", Command_Test );
@@ -54,6 +65,8 @@ void DevConsole::Startup()
 //-----------------------------------------------------------------------------------------------
 void DevConsole::Shutdown()
 {
+	delete m_insertionPointBlinkTimer;
+	m_insertionPointBlinkTimer = nullptr;
 }
 
 
@@ -61,6 +74,22 @@ void DevConsole::Shutdown()
 void DevConsole::BeginFrame()
 {
 	m_frameNumber ++;
+
+	if ( m_mode == DevConsoleMode::HIDDEN || m_insertionPointBlinkTimer == nullptr )
+	{
+		return;
+	}
+
+	double elapsedSeconds = m_insertionPointBlinkTimer->GetElapsedSeconds();
+	if ( elapsedSeconds >= m_insertionPointBlinkTimer->m_period )
+	{
+		int periodsElapsed = static_cast<int>( floor( elapsedSeconds / m_insertionPointBlinkTimer->m_period ) );
+		if ( ( periodsElapsed % 2 ) != 0 )
+		{
+			m_isInsertionPointVisible = !m_isInsertionPointVisible;
+		}
+		m_insertionPointBlinkTimer->m_startTime += periodsElapsed * m_insertionPointBlinkTimer->m_period;
+	}
 }
 
 
@@ -160,7 +189,7 @@ void DevConsole::Execute( std::string const& consoleCommandText )
 //-----------------------------------------------------------------------------------------------
 void DevConsole::AddLine( Rgba8 const& color, std::string const& text )
 {
-	double t = GetCurrentTimeSeconds();
+	double t = Clock::GetSystemClock().GetTotalSeconds();
 	int totalSeconds = ( int ) t;
 	int hours = ( totalSeconds / 3600 ) % 24;
 	int minutes = ( totalSeconds / 60 ) % 60;
@@ -308,13 +337,21 @@ void DevConsole::Render_OpenFull( AABB2 const& bound, BitmapFont& font, float fo
 	g_engine->m_renderer->BindTexture( &font.GetTexture() );
 	g_engine->m_renderer->DrawVertexArray( static_cast< int >( textVerts.size() ), textVerts.data() );
 
-	RenderInsertionPoint( cellWidth, cellHeight, visibleInsertionPoint );
+	if ( m_isInsertionPointVisible )
+	{
+		RenderInsertionPoint( cellWidth, cellHeight, visibleInsertionPoint );
+	}
 }
 
 
 //-----------------------------------------------------------------------------------------------
 void DevConsole::RenderInsertionPoint( float cellWidth, float cellHeight, int insertionPointPosition ) const
 {
+	if ( !m_isInsertionPointVisible )
+	{
+		return;
+	}
+
 	float offsetFromStart = insertionPointPosition * cellWidth + 5.f;
 	Vec2 mins = Vec2( offsetFromStart, 2.f );
 	Vec2 maxs = Vec2( offsetFromStart + 2.f, cellHeight + 2.f );
@@ -330,6 +367,12 @@ bool DevConsole::Command_KeyPressed( EventArgs& args )
 {
 	if ( g_engine && g_engine->m_devConsole )
 	{
+		if ( g_engine->m_devConsole->m_insertionPointBlinkTimer != nullptr )
+		{
+			g_engine->m_devConsole->m_insertionPointBlinkTimer->Start();
+			g_engine->m_devConsole->m_isInsertionPointVisible = true;
+		}
+
 		unsigned char key = static_cast<unsigned char>( args.GetValue( "KeyCode", -1 ) );
 		if ( key == KEYCODE_TILDE )
 		{
@@ -481,16 +524,21 @@ bool DevConsole::Command_KeyReleased( EventArgs& args )
 //------------------------------------------------------------------------------------------------
 bool DevConsole::Command_CharacterInput( EventArgs& args )
 {
-	UNUSED( args );
 	if ( g_engine && g_engine->m_devConsole )
 	{
 		if ( g_engine->m_devConsole->GetMode() != DevConsoleMode::HIDDEN )
 		{
+			if ( g_engine->m_devConsole->m_insertionPointBlinkTimer != nullptr )
+			{
+				g_engine->m_devConsole->m_insertionPointBlinkTimer->Start();
+				g_engine->m_devConsole->m_isInsertionPointVisible = true;
+			}
+
 			std::string characterText = args.GetValue( "Character", "" );
-			int character = static_cast<int>( characterText[0] );
+			int character = static_cast< int >( characterText[0] );
 			if ( character >= 32 && character <= 126 && characterText != "`" && characterText != "~" )
 			{
-				g_engine->m_devConsole->InsertCharacterAtInsertionPoint( static_cast<char>( character ) );
+				g_engine->m_devConsole->InsertCharacterAtInsertionPoint( static_cast< char >( character ) );
 			}
 			return true;
 		}
