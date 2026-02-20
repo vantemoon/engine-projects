@@ -1,5 +1,6 @@
 #pragma once
-#include "Engine/Math/Vec2.hpp"
+#include "Engine/Math/EulerAngles.hpp"
+#include "Engine/Math/Vec3.hpp"
 
 
 //-----------------------------------------------------------------------------------------------
@@ -11,34 +12,16 @@ struct Vertex; // Forward declaration
 class Entity
 {
 public:
-	Vec2		 m_position;
-	Vec2		 m_velocity;
-	Vertex*		 m_vertexArray = nullptr;
-	float		 m_orientationDegrees;
-	float		 m_angularVelocityDegreesPerSecond;
-	float		 m_physicsRadius;
-	float		 m_cosmeticRadius;
-	int			 m_health;
-	bool		 m_isDead = false;
-	bool		 m_isGarbage = false;
-	Game*		 m_game = nullptr;
+	Entity( Game* owner );
+	virtual ~Entity();
+
+	virtual void Update( float deltaSeconds ) = 0;
+	virtual void Render() const = 0;
 
 public:
-	Entity( Game* game, Vec2 startingPosition );
-	virtual ~Entity();
-	virtual void Update( float deltaSeconds );
-	virtual void Render()													 const;
-	virtual void TakeDamage( int damage );
-	virtual void Die();
-
-	// Accessors
-	virtual bool IsOffScreen()												 const;
-	virtual Vec2 GetForwardNormal()											 const;
-	bool         IsAlive()													 const;
-	// void         GetEnemyTypeAndAction( char** out_type, char** out_action ) const;
-
-protected:
-	virtual void InitializeVertexArray();
-	// virtual void CheckCollisionWithBullets();
-	// virtual void CheckCollisionWithPlayerShip();
+	Game* m_game = nullptr;
+	Vec3 m_position;
+	Vec3 m_velocity;
+	EulerAngles m_orientation;
+	EulerAngles m_angularVelocity;
 };

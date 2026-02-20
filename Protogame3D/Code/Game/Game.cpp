@@ -1,5 +1,6 @@
 #include "Game/Game.hpp"
 #include "Game/App.hpp"
+#include "Game/Entity.hpp"
 #include "Game/GameCommon.hpp"
 #include "Engine/Audio/AudioSystem.hpp"
 #include "Engine/Core/Engine.hpp"
@@ -25,7 +26,7 @@ Game::Game()
 	m_worldCamera = new Camera();
 	m_screenCamera = new Camera();
 
-	m_worldCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( WORLD_SIZE_X, WORLD_SIZE_Y ) );
+	m_worldCamera->SetOrthoView( Vec2( -1.f, -1.f ), Vec2( 1.f, 1.f ) );
 	m_screenCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) );
 
 	m_currentGameState = ATTRACT_MODE;
@@ -350,6 +351,11 @@ void Game::RenderEntities() const
 
 	// #ToDo: Render all entities in the game world
 
+	for ( Entity* entity : m_entities )
+	{
+		entity->Render();
+	}
+
 	Vertex squareVertexArray[6];
 	float squareSize = 10.f;
 	float time = ( float ) m_gameClock->GetTotalSeconds();
@@ -489,10 +495,14 @@ void Game::AddInstructionsToDevConsole() const
 {
 	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MAJOR, "Keyboard" );
 	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "" );
-	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "NONE" );
+
+	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "Space (Attract Mode):      Switch to Game Mode" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "P     (Attract Mode):      Switch to Game Mode" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "Esc   (Attract Mode):      Exit the game" );
 	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "" );
 
-	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MAJOR, "Debug" );
-	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "" );
-	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "NONE" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "P        (Game Mode):      Pause or resume" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "O        (Game Mode):      Advance one frame, then pause" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "T        (Game Mode):      Hold to slow time to 1/10th speed" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "Esc      (Game Mode):      Switch to Attract Mode" );
 }

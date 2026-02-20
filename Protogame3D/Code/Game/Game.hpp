@@ -2,6 +2,7 @@
 #include "Game/GameCommon.hpp"
 #include "Engine/Core/Clock.hpp"
 #include "Engine/Core/Rgba8.hpp"
+#include <vector>
 
 
 //-----------------------------------------------------------------------------------------------
@@ -14,6 +15,8 @@ struct Vec3;       // Forward declaration
 class Game
 {
 public:
+	std::vector<Entity*> m_entities;
+
 	Camera*     m_worldCamera = nullptr;
 	Camera*     m_screenCamera = nullptr;
 
