@@ -358,6 +358,8 @@ void Game::RenderAttractMode() const
 
 	g_engine->m_renderer->BeginCamera( *m_screenCamera );
 
+	RenderHUD();
+
 	g_engine->m_renderer->EndCamera( *m_screenCamera );
 }
 
@@ -380,6 +382,23 @@ void Game::RenderEntities() const
 void Game::RenderHUD() const
 {
 	g_engine->m_renderer->BeginCamera( *m_screenCamera );
+
+	// Text
+	std::vector<Vertex> verts;
+	
+	if ( m_currentGameState == GameState::ATTRACT_MODE )
+	{
+		AddVertsForTextTriangles2D( verts, "ATTRACT MODE", Vec2( 10.f, SCREEN_SIZE_Y - 30.f ), 24.f, Rgba8( 255, 255, 255 ) );
+	}
+	else if ( m_currentGameState == GameState::PAUSED )
+	{
+		AddVertsForTextTriangles2D( verts, "PAUSED", Vec2( 10.f, SCREEN_SIZE_Y - 30.f ), 24.f, Rgba8( 255, 255, 255 ) );
+	}
+	else if ( m_currentGameState == GameState::PLAYING )
+	{
+		AddVertsForTextTriangles2D( verts, "GAME MODE", Vec2( 10.f, SCREEN_SIZE_Y - 30.f ), 24.f, Rgba8( 255, 255, 255 ) );
+	}
+	g_engine->m_renderer->DrawVertexArray( verts );
 
 	g_engine->m_renderer->EndCamera( *m_screenCamera );
 }
