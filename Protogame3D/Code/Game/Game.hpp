@@ -1,6 +1,5 @@
 #pragma once
 #include "Game/GameCommon.hpp"
-#include "Engine/Audio/AudioSystem.hpp"
 #include "Engine/Core/Clock.hpp"
 #include "Engine/Core/Rgba8.hpp"
 
@@ -18,9 +17,6 @@ public:
 	Camera*     m_worldCamera = nullptr;
 	Camera*     m_screenCamera = nullptr;
 
-	bool        m_isBackgroundMusicPlaying = false;
-	SoundID     m_backgroundMusicSoundID = 0;
-
 	bool        m_isScreenShaking = false;
 	float	    m_screenShakeIntensity = 0.f;
 	float       m_screenShakeDuration = 0.f;
@@ -31,6 +27,8 @@ public:
 	bool        m_isDebugFeaturesOn = false;
 
 	Clock*		m_gameClock = nullptr;
+
+	bool        m_hasControlsBeenShown = false;
 
 public:
 	Game();
@@ -56,4 +54,5 @@ private:
 	void DebugDraw()												   const;
 	Vec3 TransformWorldToScreen( Vec3 const& worldPosition )		   const;
 	bool IsOnScreen( Vec2 const& worldPosition, float cosmeticRadius ) const;
+	void AddInstructionsToDevConsole()								   const;
 };

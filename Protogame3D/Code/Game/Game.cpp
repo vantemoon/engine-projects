@@ -58,6 +58,13 @@ void Game::DeleteGarbageEntities()
 //-----------------------------------------------------------------------------------------------
 void Game::Update()
 {
+	if ( !m_hasControlsBeenShown )
+	{
+		g_engine->m_devConsole->ToggleMode( DevConsoleMode::OPEN_FULL );
+		AddInstructionsToDevConsole();
+		m_hasControlsBeenShown = true;
+	}
+
 	if ( m_currentGameState == GameState::ATTRACT_MODE )
 	{
 		UpdateAttractMode();
@@ -77,15 +84,11 @@ void Game::Update()
 
 	g_app->m_game->DeleteGarbageEntities();
 
-	if ( m_isBackgroundMusicPlaying )
-		g_engine->m_audioSystem->SetSoundPlaybackVolume( m_backgroundMusicSoundID, 0.25f );
-
 	m_worldCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( WORLD_SIZE_X, WORLD_SIZE_Y ) );
 	m_screenCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) );
 
 	if ( m_isScreenShaking )
 	{
-		// float shakeElapsedTime = ( float ) GetCurrentTimeSeconds() - m_screenShakeStartTime;
 		float shakeElapsedTime = ( float ) m_gameClock->GetTotalSeconds() - m_screenShakeStartTime;
 		if ( shakeElapsedTime < m_screenShakeDuration )
 		{
@@ -123,17 +126,6 @@ void Game::UpdateAttractMode()
 {
 	UpdateFromKeyboard();
 	UpdateFromController();
-
-	if ( !m_isBackgroundMusicPlaying )
-	{
-		m_backgroundMusicSoundID = g_engine->m_audioSystem->CreateOrGetSound( "Data/Audio/TestSound.mp3" );
-		g_engine->m_audioSystem->StartSound( m_backgroundMusicSoundID, false, 0.8f, 0.f, 1.f );
-		m_isBackgroundMusicPlaying = true;
-	}
-	else
-	{
-		g_engine->m_audioSystem->SetSoundPlaybackVolume( m_backgroundMusicSoundID, 0.8f );
-	}
 }
 
 
@@ -489,4 +481,18 @@ void Game::Reset()
 	// #ToDo: Delete all entities and reset game state
 	m_isScreenShaking = false;
 	m_isDebugFeaturesOn = false;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game::AddInstructionsToDevConsole() const
+{
+	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MAJOR, "Keyboard" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "NONE" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "" );
+
+	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MAJOR, "Debug" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "NONE" );
 }
