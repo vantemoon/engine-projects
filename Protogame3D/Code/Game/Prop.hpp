@@ -16,7 +16,7 @@ public:
 	void Update( float deltaSeconds ) override;
 	void Render() const override;
 
-private:
+public:
 	std::vector<Vertex> m_vertexes;
 	Rgba8               m_color = Rgba8::WHITE;
 	Texture*			m_texture = nullptr;

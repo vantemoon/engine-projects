@@ -1,10 +1,10 @@
 #pragma once
 #include "Engine/Core/Vertex.hpp"
+#include "Engine/Math/AABB2.hpp"
 #include <vector>
 
 
 //-----------------------------------------------------------------------------------------------
-struct AABB2;
 struct OBB2;
 
 
@@ -22,3 +22,9 @@ void AddVertsForCapsule2D( std::vector<Vertex>& verts, Vec2 const& boneStart, Ve
 void AddVertsForTriangle2D( std::vector<Vertex>& verts, Vec2 const& ccw0, Vec2 const& ccw1, Vec2 const& ccw2, Rgba8 const& color );
 void AddVertsForLineSegment2D( std::vector<Vertex>& verts, Vec2 const& start, Vec2 const& end, float thickness, Rgba8 const& color );
 void AddVertsForArrow2D( std::vector<Vertex>& verts, Vec2 const& startTail, Vec2 const& endTip, float thickness, float arrowRadius, Rgba8 const& color );
+
+
+//-----------------------------------------------------------------------------------------------
+void AddVertsForQuad3D( std::vector<Vertex>& verts, 
+						Vec3 const& bottomLeft, Vec3 const& bottomRight, Vec3 const& topRight, Vec3 const& topLeft, 
+	                    Rgba8 const& color = Rgba8::WHITE, AABB2 const& UVs = AABB2::ZERO_TO_ONE );

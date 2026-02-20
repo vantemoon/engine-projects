@@ -2,6 +2,8 @@
 #include "Game/App.hpp"
 #include "Game/Entity.hpp"
 #include "Game/GameCommon.hpp"
+#include "Game/Player.hpp"
+#include "Game/Prop.hpp"
 #include "Engine/Audio/AudioSystem.hpp"
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/EngineCommon.hpp"
@@ -32,17 +34,91 @@ Game::Game()
 	m_currentGameState = ATTRACT_MODE;
 
 	m_gameClock = new Clock();
+
+	Startup();
 }
 
 
 //-----------------------------------------------------------------------------------------------
 Game::~Game()
 {
+	m_entities.clear();
+
 	delete m_worldCamera;
 	m_worldCamera = nullptr;
 
 	delete m_screenCamera;
 	m_screenCamera = nullptr;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game::Startup()
+{
+	Player* player = new Player( this );
+	m_entities.push_back( player );
+
+	Prop* prop = new Prop( this );
+	prop->m_position = Vec3( 0.f, 0.f, 0.f );
+
+	const float halfSize = 0.5f;
+
+	const Rgba8 red( 255, 0, 0 );
+	const Rgba8 cyan( 0, 255, 255 );
+	const Rgba8 green( 0, 255, 0 );
+	const Rgba8 magenta( 255, 0, 255 );
+	const Rgba8 blue( 0, 0, 255 );
+	const Rgba8 yellow( 255, 255, 0 );
+
+	// +X (Red)
+	AddVertsForQuad3D( prop->m_vertexes,
+		Vec3( halfSize, -halfSize, -halfSize ),
+		Vec3( halfSize, halfSize, -halfSize ),
+		Vec3( halfSize, halfSize, halfSize ),
+		Vec3( halfSize, -halfSize, halfSize ),
+		red );
+
+	// -X (Cyan)
+	AddVertsForQuad3D( prop->m_vertexes,
+		Vec3( -halfSize, halfSize, -halfSize ),
+		Vec3( -halfSize, -halfSize, -halfSize ),
+		Vec3( -halfSize, -halfSize, halfSize ),
+		Vec3( -halfSize, halfSize, halfSize ),
+		cyan );
+
+	// +Y (Green)
+	AddVertsForQuad3D( prop->m_vertexes,
+		Vec3( -halfSize, halfSize, -halfSize ),
+		Vec3( -halfSize, halfSize, halfSize ),
+		Vec3( halfSize, halfSize, halfSize ),
+		Vec3( halfSize, halfSize, -halfSize ),
+		green );
+
+	// -Y (Magenta)
+	AddVertsForQuad3D( prop->m_vertexes,
+		Vec3( -halfSize, -halfSize, -halfSize ),
+		Vec3( halfSize, -halfSize, -halfSize ),
+		Vec3( halfSize, -halfSize, halfSize ),
+		Vec3( -halfSize, -halfSize, halfSize ),
+		magenta );
+
+	// +Z (Blue)
+	AddVertsForQuad3D( prop->m_vertexes,
+		Vec3( -halfSize, -halfSize, halfSize ),
+		Vec3( halfSize, -halfSize, halfSize ),
+		Vec3( halfSize, halfSize, halfSize ),
+		Vec3( -halfSize, halfSize, halfSize ),
+		blue );
+
+	// -Z (Yellow)
+	AddVertsForQuad3D( prop->m_vertexes,
+		Vec3( halfSize, -halfSize, -halfSize ),
+		Vec3( -halfSize, -halfSize, -halfSize ),
+		Vec3( -halfSize, halfSize, -halfSize ),
+		Vec3( halfSize, halfSize, -halfSize ),
+		yellow );
+
+	m_entities.push_back( prop );
 }
 
 
@@ -85,7 +161,7 @@ void Game::Update()
 
 	g_app->m_game->DeleteGarbageEntities();
 
-	m_worldCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( WORLD_SIZE_X, WORLD_SIZE_Y ) );
+	m_worldCamera->SetOrthoView( Vec2( -1.f, -1.f ), Vec2( 1.f, 1.f ) );
 	m_screenCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) );
 
 	if ( m_isScreenShaking )
@@ -138,7 +214,7 @@ void Game::UpdateFromKeyboard()
 		// Start the game
 		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'P' ) || g_engine->m_inputSystem->WasKeyJustPressed( 'N' ) || g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_SPACE ) )
 		{
-			Reset();
+			// Reset();
 			m_currentGameState = GameState::PLAYING;
 		};
 
@@ -192,12 +268,6 @@ void Game::UpdateFromKeyboard()
 			m_gameClock->StepSingleFrame();
 			m_currentGameState = GameState::PAUSED;
 		}
-
-		// Kill all enemies (for debugging)
-		if ( m_isDebugFeaturesOn && g_engine->m_inputSystem->WasKeyJustPressed( 'K' ) )
-		{
-			KillAllEnemies();
-		}
 	}
 }
 
@@ -212,7 +282,7 @@ void Game::UpdateFromController()
 		// Start the game
 		if ( controller.WasButtonJustPressed( XBOX_BUTTON_A ) || controller.WasButtonJustPressed( XBOX_BUTTON_START ) )
 		{
-			Reset();
+			// Reset();
 			m_currentGameState = GameState::PLAYING;
 		};
 		// Quit the game
@@ -235,7 +305,10 @@ void Game::UpdateFromController()
 //-----------------------------------------------------------------------------------------------
 void Game::UpdateEntities()
 {
-	// #ToDo: Update all entities in the game world
+	for ( Entity* entity : m_entities )
+	{
+		entity->Update( ( float ) m_gameClock->GetDeltaSeconds() );
+	}
 }
 
 
@@ -261,7 +334,7 @@ void Game::Render() const
 	};
 
 	// Clear screen
-	g_engine->m_renderer->ClearScreen( Rgba8::BLUE );
+	g_engine->m_renderer->ClearScreen( Rgba8( 50, 50, 50 ) );
 
 	g_engine->m_renderer->BeginCamera( *m_worldCamera );
 
@@ -285,61 +358,6 @@ void Game::RenderAttractMode() const
 
 	g_engine->m_renderer->BeginCamera( *m_screenCamera );
 
-	// Colors
-	const Rgba8 brightYellow = Rgba8( 253, 239, 3 );
-	const Rgba8 brightCyan = Rgba8( 87, 231, 239 );
-	const Rgba8 dimCyan = Rgba8( 87, 231, 239, 80 );
-	const Rgba8 dimYellow = Rgba8( 253, 239, 3, 80 );
-	const Rgba8 neonPink = Rgba8( 248, 21, 98 );
-
-	float flicker = 0.9f + 0.1f * SinDegrees( ( float ) m_gameClock->GetTotalSeconds() * 720.f );
-	Rgba8 flickerCol = Rgba8(
-		( unsigned char ) ( brightCyan.r * flicker ),
-		( unsigned char ) ( brightCyan.g * flicker ),
-		( unsigned char ) ( brightCyan.b * flicker )
-	);
-
-	const float currentTime = ( float ) m_gameClock->GetTotalSeconds();
-	const float centerX = SCREEN_SIZE_X * 0.5f;
-	const float centerY = SCREEN_SIZE_Y * 0.5f;
-
-	// Play triangle
-	float triBase = SCREEN_SIZE_X * 0.05f;
-	float triPulse = 1.f + 0.06f * SinDegrees( currentTime * 180.f );
-	float triSize = triBase * triPulse;
-
-	Vertex triangleVertexArray[3];
-	triangleVertexArray[0].m_position = Vec3( centerX - triSize, centerY - triSize, 0.f );
-	triangleVertexArray[1].m_position = Vec3( centerX - triSize, centerY + triSize, 0.f );
-	triangleVertexArray[2].m_position = Vec3( centerX + triSize, centerY, 0.f );
-
-	float triAlpha = 0.55f + 0.45f * SinDegrees( currentTime * 180.f );
-	Rgba8 triangleColor = Rgba8( 0, 153, 0, ( unsigned char ) ( triAlpha * 255.f ) );
-	triangleVertexArray[0].m_color = triangleColor;
-	triangleVertexArray[1].m_color = triangleColor;
-	triangleVertexArray[2].m_color = triangleColor;
-
-	// Text
-	std::vector<Vertex> verts;
-	AddVertsForTextTriangles2D( verts, "PROTOGAME2D", Vec2( 10.f, SCREEN_SIZE_Y - 30.f ), 24.f, Rgba8( 255, 255, 255 ) );
-
-	// Texture
-	Texture* testTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Image/Test_StbiFlippedAndOpenGL.png" );
-	std::vector<Vertex> testTextureVerts;
-	AABB2 texturedAABB2( 300.f, 100.f, 800.f, 600.f );
-	AddVertsForAABB2D( testTextureVerts, texturedAABB2, Rgba8( 255, 255, 255, 255 ) ); // This should now set UVs on each Vertex!!
-	g_engine->m_renderer->BindTexture( testTexture );
-	g_engine->m_renderer->DrawVertexArray( testTextureVerts );
-
-	std::vector<Vertex> ringVerts;
-	AddVertsForRing2D( ringVerts, Vec2( SCREEN_CENTER_X, SCREEN_CENTER_Y ), 200.f, 20.f, Rgba8( 255, 0, 255 ), 32 );
-	g_engine->m_renderer->BindTexture( nullptr ); // NOTE: We now have to do this before rendering anything UN-textured!
-	g_engine->m_renderer->DrawVertexArray( ringVerts );
-
-	// Render 
-	g_engine->m_renderer->DrawVertexArray( 3, triangleVertexArray );
-	g_engine->m_renderer->DrawVertexArray( ( int ) verts.size(), verts.data() );
-
 	g_engine->m_renderer->EndCamera( *m_screenCamera );
 }
 
@@ -349,32 +367,10 @@ void Game::RenderEntities() const
 {
 	g_engine->m_renderer->BeginCamera( *m_worldCamera );
 
-	// #ToDo: Render all entities in the game world
-
 	for ( Entity* entity : m_entities )
 	{
 		entity->Render();
 	}
-
-	Vertex squareVertexArray[6];
-	float squareSize = 10.f;
-	float time = ( float ) m_gameClock->GetTotalSeconds();
-	float squareX = WORLD_SIZE_X * 0.5f + ( WORLD_SIZE_X * 0.1f ) * SinDegrees( time * 60.f );
-	squareVertexArray[0].m_position = Vec3( squareX - squareSize, 50.f - squareSize, 0.f );
-	squareVertexArray[1].m_position = Vec3( squareX + squareSize, 50.f - squareSize, 0.f );
-	squareVertexArray[2].m_position = Vec3( squareX + squareSize, 50.f + squareSize, 0.f );
-	squareVertexArray[3].m_position = Vec3( squareX - squareSize, 50.f - squareSize, 0.f );
-	squareVertexArray[4].m_position = Vec3( squareX + squareSize, 50.f + squareSize, 0.f );
-	squareVertexArray[5].m_position = Vec3( squareX - squareSize, 50.f + squareSize, 0.f );
-	Rgba8 squareColor = Rgba8( 200, 50, 50 );
-	squareVertexArray[0].m_color = squareColor;
-	squareVertexArray[1].m_color = squareColor;
-	squareVertexArray[2].m_color = squareColor;
-	squareVertexArray[3].m_color = squareColor;
-	squareVertexArray[4].m_color = squareColor;
-	squareVertexArray[5].m_color = squareColor;
-
-	g_engine->m_renderer->DrawVertexArray( 6, squareVertexArray );
 
 	g_engine->m_renderer->EndCamera( *m_worldCamera );
 }
@@ -384,13 +380,6 @@ void Game::RenderEntities() const
 void Game::RenderHUD() const
 {
 	g_engine->m_renderer->BeginCamera( *m_screenCamera );
-
-	// #ToDo: Render HUD elements (health, score, etc.)
-
-	std::vector<Vertex> verts;
-	AddVertsForTextTriangles2D( verts, "GAME MODE", Vec2( 10.f, SCREEN_SIZE_Y - 30.f ), 24.f, Rgba8( 255, 255, 255 ) );
-
-	g_engine->m_renderer->DrawVertexArray( ( int ) verts.size(), verts.data() );
 
 	g_engine->m_renderer->EndCamera( *m_screenCamera );
 }
@@ -447,44 +436,9 @@ bool Game::IsOnScreen( Vec2 const& worldPosition, float cosmeticRadius ) const
 
 
 //-----------------------------------------------------------------------------------------------
-Vec2 Game::GetRandomOffscreenPosition( float cosmeticRadius ) const
-{
-	RandomNumberGenerator rng;
-	float randomX = rng.RollRandomFloatInRange( -cosmeticRadius, WORLD_SIZE_X + cosmeticRadius );
-	float randomY = rng.RollRandomFloatInRange( -cosmeticRadius, WORLD_SIZE_Y + cosmeticRadius );
-	int side = rng.RollRandomIntLessThan( 4 ); // 0: left, 1: right, 2: bottom, 3: top
-	switch ( side )
-	{
-		case 0: // left
-			randomX = -cosmeticRadius;
-			break;
-		case 1: // right
-			randomX = WORLD_SIZE_X + cosmeticRadius;
-			break;
-		case 2: // bottom
-			randomY = -cosmeticRadius;
-			break;
-		case 3: // top
-			randomY = WORLD_SIZE_Y + cosmeticRadius;
-			break;
-		default:
-			break;
-	}
-	return Vec2( randomX, randomY );
-}
-
-
-//-----------------------------------------------------------------------------------------------
-void Game::KillAllEnemies()
-{
-	// #ToDo: Kill all enemy entities in the game world
-}
-
-
-//-----------------------------------------------------------------------------------------------
 void Game::Reset()
 {
-	// #ToDo: Delete all entities and reset game state
+	m_entities.clear();
 	m_isScreenShaking = false;
 	m_isDebugFeaturesOn = false;
 }

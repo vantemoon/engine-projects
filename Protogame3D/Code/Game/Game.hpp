@@ -37,6 +37,7 @@ public:
 	Game();
 	~Game();
 
+	void Startup();
 	void Update();
 	void UpdateAttractMode();
 	void UpdateEntities();
@@ -48,9 +49,7 @@ public:
 	void RenderHUD()												  const;
 	void RenderAttractMode()										  const;
 	void RenderDevConsole()											  const;
-	Vec2 GetRandomOffscreenPosition( float cosmeticRadius )		      const;
 	void Reset();
-	void KillAllEnemies(); // For testing and debugging
 
 private:
 	void DeleteGarbageEntities();

@@ -29,4 +29,8 @@ public:
 	void        SetCenter( Vec2 const& newCenter );
 	void        SetDimensions( Vec2 const& newDimensions );
 	void 	    StretchToIncludePoint( Vec2 const& point );
+
+public:
+	static const AABB2 ZERO_TO_ONE;
+	static const AABB2 NEGATIVE_ONE_TO_ONE;
 };
