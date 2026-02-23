@@ -61,6 +61,17 @@ enum class SamplerMode
 
 
 //-----------------------------------------------------------------------------------------------
+enum class RasterizerMode
+{
+	SOLID_CULL_NONE,
+	SOLID_CULL_BACK,
+	WIREFRAME_CULL_NONE,
+	WIREFRAME_CULL_BACK,
+	COUNT
+};
+
+
+//-----------------------------------------------------------------------------------------------
 class Renderer
 {
 public:
@@ -79,6 +90,7 @@ public:
 	void BindTexture( Texture* texture );
 	void SetBlendMode( BlendMode mode );
 	void SetSamplerMode( SamplerMode mode );
+	void SetRasterizerMode( RasterizerMode mode );
 	void SetStatesIfChanged();
 
 	Texture* CreateOrGetTextureFromFile( char const* imageFilePath );
@@ -114,7 +126,6 @@ public:
 	std::vector<BitmapFont*> m_loadedFonts;
 
 protected:
-	ID3D11RasterizerState* m_rasterizerState = nullptr;
 	ID3D11RenderTargetView* m_renderTargetView = nullptr;
 	ID3D11Device* m_device = nullptr;
 	ID3D11DeviceContext* m_deviceContext = nullptr;
@@ -136,4 +147,8 @@ protected:
 	ID3D11SamplerState* m_samplerState = nullptr;
 	SamplerMode m_desiredSamplerMode = SamplerMode::POINT_CLAMP;
 	ID3D11SamplerState* m_samplerStates[( int ) SamplerMode::COUNT] = {};
+
+	ID3D11RasterizerState* m_rasterizerState = nullptr;
+	RasterizerMode m_desiredRasterizerMode = RasterizerMode::SOLID_CULL_BACK;
+	ID3D11RasterizerState* m_rasterizerStates[( int ) RasterizerMode::COUNT] = {};
 };

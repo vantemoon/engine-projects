@@ -25,6 +25,7 @@
 //-----------------------------------------------------------------------------------------------
 Game::Game()
 {
+	// Cameras
 	m_worldCamera = new Camera();
 	m_screenCamera = new Camera();
 
@@ -38,12 +39,14 @@ Game::Game()
 	Mat44 cameraToRender( values );
 	m_worldCamera->SetCameraToRenderTransform( cameraToRender );
 	m_worldCamera->SetPerspectiveView( g_engine->m_window->m_config.m_clientAspect, 60.f, 0.1f, 100.f );
-	// m_worldCamera->SetPosition( Vec3( -2.f, 0.f, 0.f ) ); // For testing only
 	m_screenCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) );
 
+	// Clock and game state
+	m_gameClock = new Clock();
 	m_currentGameState = ATTRACT_MODE;
 
-	m_gameClock = new Clock();
+	// Renderer defaults
+	g_engine->m_renderer->SetRasterizerMode( RasterizerMode::SOLID_CULL_BACK );
 
 	Startup();
 }

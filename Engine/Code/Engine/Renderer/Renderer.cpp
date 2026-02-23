@@ -148,11 +148,11 @@ void Renderer::Startup()
 	// Create camera constant buffer
 	m_cameraCBO = CreateConstantBuffer( sizeof( CameraConstants ) );
 
-	// Set rasterizer state
+	// Create rasterizer states for all rasterizer modes
 	D3D11_RASTERIZER_DESC rasterizerDesc = {};
 	rasterizerDesc.FillMode = D3D11_FILL_SOLID;
 	rasterizerDesc.CullMode = D3D11_CULL_NONE;
-	rasterizerDesc.FrontCounterClockwise = false;
+	rasterizerDesc.FrontCounterClockwise = true;
 	rasterizerDesc.DepthBias = 0;
 	rasterizerDesc.DepthBiasClamp = 0.f;
 	rasterizerDesc.SlopeScaledDepthBias = 0.f;
@@ -161,12 +161,37 @@ void Renderer::Startup()
 	rasterizerDesc.MultisampleEnable = false;
 	rasterizerDesc.AntialiasedLineEnable = true;
 
-	hr = m_device->CreateRasterizerState( &rasterizerDesc, &m_rasterizerState );
+	hr = m_device->CreateRasterizerState( &rasterizerDesc, 
+		&m_rasterizerStates[( int ) RasterizerMode::SOLID_CULL_NONE] );
 	if ( !SUCCEEDED( hr ) )
 	{
-		ERROR_AND_DIE( Stringf( "Could not create rasterizer state." ) );
+		ERROR_AND_DIE( "Could not create rasterizer state: SOLID_CULL_NONE." );
 	}
-	m_deviceContext->RSSetState( m_rasterizerState );
+
+	rasterizerDesc.CullMode = D3D11_CULL_BACK;
+	hr = m_device->CreateRasterizerState( &rasterizerDesc, 
+		&m_rasterizerStates[( int ) RasterizerMode::SOLID_CULL_BACK] );
+	if ( !SUCCEEDED( hr ) )
+	{
+		ERROR_AND_DIE( "Could not create rasterizer state: SOLID_CULL_BACK." );
+	}
+
+	rasterizerDesc.FillMode = D3D11_FILL_WIREFRAME;
+	rasterizerDesc.CullMode = D3D11_CULL_NONE;
+	hr = m_device->CreateRasterizerState( &rasterizerDesc, 
+		&m_rasterizerStates[( int ) RasterizerMode::WIREFRAME_CULL_NONE] );
+	if ( !SUCCEEDED( hr ) )
+	{
+		ERROR_AND_DIE( "Could not create rasterizer state: WIREFRAME_CULL_NONE." );
+	}
+
+	rasterizerDesc.CullMode = D3D11_CULL_BACK;
+	hr = m_device->CreateRasterizerState( &rasterizerDesc, 
+		&m_rasterizerStates[( int ) RasterizerMode::WIREFRAME_CULL_BACK] );
+	if ( !SUCCEEDED( hr ) )
+	{
+		ERROR_AND_DIE( "Could not create rasterizer state: WIREFRAME_CULL_BACK." );
+	}
 
 	// Create blend states for all blend modes
 	D3D11_BLEND_DESC blendDesc = {};
@@ -181,21 +206,21 @@ void Renderer::Startup()
 	hr = m_device->CreateBlendState( &blendDesc, &m_blendStates[( int ) BlendMode::OPAQUE] );
 	if ( !SUCCEEDED( hr ) )
 	{
-		ERROR_AND_DIE( "Could not create OPAQUE blend state." );
+		ERROR_AND_DIE( "Could not create blend state: OPAQUE." );
 	}
 	blendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
 	blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
 	hr = m_device->CreateBlendState( &blendDesc, &m_blendStates[( int ) BlendMode::ALPHA] );
 	if ( !SUCCEEDED( hr ) )
 	{
-		ERROR_AND_DIE( "Could not create ALPHA blend state." );
+		ERROR_AND_DIE( "Could not create blend state: ALPHA." );
 	}
 	blendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
 	blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_ONE;
 	hr = m_device->CreateBlendState( &blendDesc, &m_blendStates[( int ) BlendMode::ADDITIVE] );
 	if ( !SUCCEEDED( hr ) )
 	{
-		ERROR_AND_DIE( "Could not create ADDITIVE blend state." );
+		ERROR_AND_DIE( "Could not create blend state: ADDITIVE." );
 	}
 
 	// Create sampler states for all sampler modes
@@ -402,6 +427,13 @@ void Renderer::SetSamplerMode( SamplerMode samplerMode )
 
 
 //------------------------------------------------------------------------------------------------
+void Renderer::SetRasterizerMode( RasterizerMode rasterizerMode )
+{
+	m_desiredRasterizerMode = rasterizerMode;
+}
+
+
+//------------------------------------------------------------------------------------------------
 void Renderer::SetStatesIfChanged()
 {
 	ID3D11BlendState* desiredBlendState = m_blendStates[( int ) m_desiredBlendMode];
@@ -418,6 +450,13 @@ void Renderer::SetStatesIfChanged()
 	{
 		m_samplerState = desiredSamplerState;
 		m_deviceContext->PSSetSamplers( 0, 1, &m_samplerState );
+	}
+
+	ID3D11RasterizerState* desiredRasterizerState = m_rasterizerStates[( int ) m_desiredRasterizerMode];
+	if ( desiredRasterizerState != m_rasterizerState )
+	{
+		m_rasterizerState = desiredRasterizerState;
+		m_deviceContext->RSSetState( m_rasterizerState );
 	}
 }
 
