@@ -37,6 +37,9 @@
     <ClInclude Include="UnitTests_MP2A01.hpp">
       <Filter>Unit Tests</Filter>
     </ClInclude>
+    <ClInclude Include="UnitTests_MP2A02.hpp">
+      <Filter>Unit Tests</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -61,6 +64,9 @@
       <Filter>Unit Tests</Filter>
     </ClCompile>
     <ClCompile Include="UnitTests_MP2A01.cpp">
+      <Filter>Unit Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="UnitTests_MP2A02.cpp">
       <Filter>Unit Tests</Filter>
     </ClCompile>
   </ItemGroup>
