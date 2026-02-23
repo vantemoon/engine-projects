@@ -28,7 +28,7 @@ Game::Game()
 	m_worldCamera = new Camera();
 	m_screenCamera = new Camera();
 
-	m_worldCamera->SetOrthoView( Vec2( -1.f, -1.f ), Vec2( 1.f, 1.f ) );
+	m_worldCamera->SetPerspectiveView( g_engine->m_window->m_config.m_clientAspect, 60.f, 0.1f, 100.f );
 	m_screenCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) );
 
 	m_currentGameState = ATTRACT_MODE;
@@ -154,7 +154,7 @@ void Game::Update()
 
 	g_app->m_game->DeleteGarbageEntities();
 
-	m_worldCamera->SetOrthoView( Vec2( -1.f, -1.f ), Vec2( 1.f, 1.f ) );
+	m_worldCamera->SetPerspectiveView( g_engine->m_window->m_config.m_clientAspect, 60.f, 0.1f, 100.f );
 	m_screenCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) );
 
 	if ( m_isScreenShaking )
@@ -391,6 +391,7 @@ void Game::RenderHUD() const
 	{
 		AddVertsForTextTriangles2D( verts, "GAME MODE", Vec2( 10.f, SCREEN_SIZE_Y - 30.f ), 24.f, Rgba8( 255, 255, 255 ) );
 	}
+	g_engine->m_renderer->BindTexture( nullptr );
 	g_engine->m_renderer->DrawVertexArray( verts );
 
 	g_engine->m_renderer->EndCamera( *m_screenCamera );

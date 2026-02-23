@@ -3,67 +3,34 @@
 
 //-----------------------------------------------------------------------------------------------
 const char* g_shaderSource = R"(	
-float Interpolate( float start, float end, float fractionTowardEnd )
-{
-	float result = start + ( ( end - start ) * fractionTowardEnd );
-	return result;
-}
-
-float GetFractionWithinRange( float value, float rangeStart, float rangeEnd )
-{
-	float fraction = 0.5f;
-	if ( rangeStart != rangeEnd )
-	{
-		fraction = ( value - rangeStart ) / ( rangeEnd - rangeStart );
-	}
-	return fraction;
-}
-
-float RangeMap( float inValue, float inStart, float inEnd, float outStart, float outEnd )
-{
-	float fraction = GetFractionWithinRange( inValue, inStart, inEnd );
-	float outValue = Interpolate( outStart, outEnd, fraction );
-	return outValue;
-}
-
 cbuffer CameraConstants : register( b2 )
 {
-	float OrthoMinX;
-	float OrthoMinY;
-	float OrthoMinZ;
-	float OrthoMaxX;
-	float OrthoMaxY;
-	float OrthoMaxZ;
-	float pad0;
-	float pad1;
+	float4x4 WorldToCameraTransform;  // View transform
+	float4x4 CameraToRenderTransform; // Non-standard transform from game to DirectX conventions
+	float4x4 RenderToClipTransform;   // Projection transform
 };
 
 struct vs_input_t
 {
-	float3 localPosition : POSITION;
+	float3 modelSpacePosition : POSITION;
 	float4 color : COLOR;
 	float2 uv : TEXCOORD;
 };
 
 struct v2p_t
 {
-	float4 position : SV_Position;
+	float4 clipSpacePosition : SV_Position;
 	float4 color : COLOR;
 	float2 uv : TEXCOORD;
 };
 
 v2p_t VertexMain( vs_input_t input )
 {
-	float4 localPosition = float4( input.localPosition, 1 );
-
-	float4 clipPosition;
-	clipPosition.x = RangeMap( localPosition.x, OrthoMinX, OrthoMaxX, -1.0f, 1.0f );
-	clipPosition.y = RangeMap( localPosition.y, OrthoMinY, OrthoMaxY, -1.0f, 1.0f );
-	clipPosition.z = RangeMap( localPosition.z, OrthoMinZ, OrthoMaxZ, 0.0f, 1.0f );
-	clipPosition.w = localPosition.w;
+	float4 modelSpacePosition = float4( input.modelSpacePosition, 1.f );
+	float4 clipSpacePosition = mul( RenderToClipTransform, modelSpacePosition );
 
 	v2p_t v2p;
-	v2p.position = clipPosition;
+	v2p.clipSpacePosition = clipSpacePosition;
 	v2p.color = input.color;
 	v2p.uv = input.uv;
 	return v2p;

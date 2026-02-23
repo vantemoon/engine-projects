@@ -46,14 +46,9 @@ void* m_dxgiDebugModule = nullptr;
 //-----------------------------------------------------------------------------------------------
 struct CameraConstants
 {
-	float OrthoMinX;
-	float OrthoMinY;
-	float OrthoMinZ;
-	float OrthoMaxX;
-	float OrthoMaxY;
-	float OrthoMaxZ;
-	float pad0;
-	float pad1;
+	Mat44 WorldToCameraTransform;  // View transform
+	Mat44 CameraToRenderTransform; // Non-standard transform from game to DirectX conventions
+	Mat44 RenderToClipTransform;   // Projection transform
 };
 static const int k_cameraConstantsSlot = 2;
 
@@ -348,12 +343,9 @@ void Renderer::BeginCamera( [[maybe_unused]] Camera const& camera )
 
 	// Update camera constant buffer
 	CameraConstants cameraData;
-	cameraData.OrthoMinX = camera.GetOrthoBottomLeft().x;
-	cameraData.OrthoMinY = camera.GetOrthoBottomLeft().y;
-	cameraData.OrthoMinZ = 0.f;
-	cameraData.OrthoMaxX = camera.GetOrthoTopRight().x;
-	cameraData.OrthoMaxY = camera.GetOrthoTopRight().y;
-	cameraData.OrthoMaxZ = 1.f;
+	cameraData.WorldToCameraTransform = camera.GetWorldToCameraTransform();
+	cameraData.CameraToRenderTransform = camera.GetCameraToRenderTransform();
+	cameraData.RenderToClipTransform = camera.GetRenderToClipTransform();
 	CopyCPUToGPU( &cameraData, sizeof( CameraConstants ), m_cameraCBO );
 	BindConstantBuffer( k_cameraConstantsSlot, m_cameraCBO );
 }
