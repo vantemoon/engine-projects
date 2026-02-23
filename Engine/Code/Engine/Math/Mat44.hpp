@@ -25,6 +25,8 @@ struct Mat44
 	static Mat44 const MakeZRotationDegrees( float rotationDegreesAboutZ );
 	static Mat44 const MakeYRotationDegrees( float rotationDegreesAboutY );
 	static Mat44 const MakeXRotationDegrees( float rotationDegreesAboutX );
+	static Mat44 const MakeOrthoProjection( float left, float right, float bottom, float top, float zNear, float zFar );
+	static Mat44 const MakePerspectiveProjection( float fovYDegrees, float aspect, float zNear, float zFar );
 
 	Vec2 const TransformVectorQuantity2D( Vec2 const& vectorQuantityXY ) const;  // Assumes z = 0, w = 0
 	Vec3 const TransformVectorQuantity3D( Vec3 const& vectorQuantityXYZ ) const; // Assumes w = 0
@@ -45,6 +47,7 @@ struct Mat44
 	Vec4 const GetJBasis4D() const;
 	Vec4 const GetKBasis4D() const;
 	Vec4 const GetTranslation4D() const;
+	Mat44 const GetOrthonormalInverse() const; // Only works for orthonormal affine matrices (i.e. no non-uniform scale or shear)
 
 	void SetTranslation2D( Vec2 const& translationXY );  // Set translationZ = 0, translationW = 1
 	void SetTranslation3D( Vec3 const& translation3D );  // Set translationW = 1
@@ -53,6 +56,8 @@ struct Mat44
 	void SetIJK3D( Vec3 const& iBasis3D, Vec3 const& jBasis3D, Vec3 const& kBasis3D );      // Set w = 0 for i, j, k; does not modify t
 	void SetIJKT3D( Vec3 const& iBasis3D, Vec3 const& jBasis3D, Vec3 const& kBasis3D, Vec3 const& translation3D ); // Set w = 0 for i, j, k; w = 1 for t
 	void SetIJKT4D( Vec4 const& iBasis4D, Vec4 const& jBasis4D, Vec4 const& kBasis4D, Vec4 const& translation4D ); // All 16 values provided
+	void Transpose(); // Swaps columns with rows
+	void Orthonormalize_XFwd_YLeft_ZUp(); // Forward is canonical, Up is secondary, Left is tertiary (i.e. "left" is whatever is needed to make a right-handed coordinate system)
 
 	void Append( Mat44 const& appendThis );							// Multiply on the right in column notation / on the left in row notation
 	void AppendZRotation( float rotationDegreesAboutZ );			// Same as appending (*= in column notation) a z-rotation matrix

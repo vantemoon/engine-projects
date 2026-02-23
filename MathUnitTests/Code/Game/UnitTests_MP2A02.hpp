@@ -15,10 +15,10 @@ void RunTests_MP2A02();
 //
 #define ENABLE_TestSet_MP2A02_AABB3_Basics
 #define ENABLE_TestSet_MP2A02_DotProduct4D
-//#define ENABLE_TestSet_MP2A02_OrthoProjection
-//#define ENABLE_TestSet_MP2A02_PerspectiveProjection
-//#define ENABLE_TestSet_MP2A02_TransposeInvert
-//#define ENABLE_TestSet_MP2A02_OrthoNormalize
+#define ENABLE_TestSet_MP2A02_OrthoProjection
+#define ENABLE_TestSet_MP2A02_PerspectiveProjection
+#define ENABLE_TestSet_MP2A02_TransposeInvert
+#define ENABLE_TestSet_MP2A02_OrthoNormalize
 
 
 //-----------------------------------------------------------------------------------------------
@@ -44,4 +44,4 @@ void RunTests_MP2A02();
 #define Mat44_CreatePerspectiveProjection			MakePerspectiveProjection
 #define Mat44_Transpose								Transpose
 #define Mat44_GetOrthonormalInverse					GetOrthonormalInverse
-#define Mat44_Orthonormalize_XFwd_YLeft_ZUp			Orthonormalize_XFwd_YLeft_ZUp2
+#define Mat44_Orthonormalize_XFwd_YLeft_ZUp			Orthonormalize_XFwd_YLeft_ZUp
