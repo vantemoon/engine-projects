@@ -38,6 +38,7 @@ Game::Game()
 	Mat44 cameraToRender( values );
 	m_worldCamera->SetCameraToRenderTransform( cameraToRender );
 	m_worldCamera->SetPerspectiveView( g_engine->m_window->m_config.m_clientAspect, 60.f, 0.1f, 100.f );
+	// m_worldCamera->SetPosition( Vec3( -2.f, 0.f, 0.f ) ); // For testing only
 	m_screenCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) );
 
 	m_currentGameState = ATTRACT_MODE;

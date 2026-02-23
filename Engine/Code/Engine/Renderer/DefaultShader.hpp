@@ -27,7 +27,8 @@ struct v2p_t
 v2p_t VertexMain( vs_input_t input )
 {
 	float4 modelSpacePosition = float4( input.modelSpacePosition, 1.f );
-	float4 renderSpacePosition = mul( CameraToRenderTransform, modelSpacePosition );
+	float4 cameraSpacePosition = mul( WorldToCameraTransform, modelSpacePosition );
+	float4 renderSpacePosition = mul( CameraToRenderTransform, cameraSpacePosition );
 	float4 clipSpacePosition = mul( RenderToClipTransform, renderSpacePosition );
 
 	v2p_t v2p;
