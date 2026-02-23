@@ -63,20 +63,13 @@ void Game::Startup()
 
 	const float halfSize = 0.5f;
 
-	const Rgba8 red( 255, 0, 0 );
-	const Rgba8 cyan( 0, 255, 255 );
-	const Rgba8 green( 0, 255, 0 );
-	const Rgba8 magenta( 255, 0, 255 );
-	const Rgba8 blue( 0, 0, 255 );
-	const Rgba8 yellow( 255, 255, 0 );
-
 	// +X (Red)
 	AddVertsForQuad3D( prop->m_vertexes,
 		Vec3( halfSize, -halfSize, -halfSize ),
 		Vec3( halfSize, halfSize, -halfSize ),
 		Vec3( halfSize, halfSize, halfSize ),
 		Vec3( halfSize, -halfSize, halfSize ),
-		red );
+		Rgba8::RED );
 
 	// -X (Cyan)
 	AddVertsForQuad3D( prop->m_vertexes,
@@ -84,7 +77,7 @@ void Game::Startup()
 		Vec3( -halfSize, -halfSize, -halfSize ),
 		Vec3( -halfSize, -halfSize, halfSize ),
 		Vec3( -halfSize, halfSize, halfSize ),
-		cyan );
+		Rgba8::CYAN );
 
 	// +Y (Green)
 	AddVertsForQuad3D( prop->m_vertexes,
@@ -92,7 +85,7 @@ void Game::Startup()
 		Vec3( -halfSize, halfSize, halfSize ),
 		Vec3( halfSize, halfSize, halfSize ),
 		Vec3( halfSize, halfSize, -halfSize ),
-		green );
+		Rgba8::GREEN );
 
 	// -Y (Magenta)
 	AddVertsForQuad3D( prop->m_vertexes,
@@ -100,7 +93,7 @@ void Game::Startup()
 		Vec3( halfSize, -halfSize, -halfSize ),
 		Vec3( halfSize, -halfSize, halfSize ),
 		Vec3( -halfSize, -halfSize, halfSize ),
-		magenta );
+		Rgba8::MAGENTA );
 
 	// +Z (Blue)
 	AddVertsForQuad3D( prop->m_vertexes,
@@ -108,7 +101,7 @@ void Game::Startup()
 		Vec3( halfSize, -halfSize, halfSize ),
 		Vec3( halfSize, halfSize, halfSize ),
 		Vec3( -halfSize, halfSize, halfSize ),
-		blue );
+		Rgba8::BLUE );
 
 	// -Z (Yellow)
 	AddVertsForQuad3D( prop->m_vertexes,
@@ -116,7 +109,7 @@ void Game::Startup()
 		Vec3( -halfSize, -halfSize, -halfSize ),
 		Vec3( -halfSize, halfSize, -halfSize ),
 		Vec3( halfSize, halfSize, -halfSize ),
-		yellow );
+		Rgba8::YELLOW );
 
 	m_entities.push_back( prop );
 }
