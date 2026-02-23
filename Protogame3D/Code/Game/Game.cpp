@@ -28,6 +28,15 @@ Game::Game()
 	m_worldCamera = new Camera();
 	m_screenCamera = new Camera();
 
+	float values[16] =
+	{
+		 0.f, 0.f, 1.f, 0.f, // Column-major order from left to right
+		-1.f, 0.f, 0.f, 0.f,
+		 0.f, 1.f, 0.f, 0.f,
+		 0.f, 0.f, 0.f, 1.f
+	};
+	Mat44 cameraToRender( values );
+	m_worldCamera->SetCameraToRenderTransform( cameraToRender );
 	m_worldCamera->SetPerspectiveView( g_engine->m_window->m_config.m_clientAspect, 60.f, 0.1f, 100.f );
 	m_screenCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) );
 
