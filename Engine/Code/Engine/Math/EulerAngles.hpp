@@ -20,6 +20,8 @@ public:
 
 	friend EulerAngles const Interpolate( EulerAngles const& from, EulerAngles const& to, float lerpFraction );
 
+	static const EulerAngles ZERO;
+
 public:
 	float m_yawDegrees = 0.f;   // rotation about the up (Y) axis
 	float m_pitchDegrees = 0.f; // rotation about the right (X) axis

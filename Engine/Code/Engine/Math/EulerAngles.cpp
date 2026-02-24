@@ -5,6 +5,10 @@
 
 
 //-----------------------------------------------------------------------------------------------
+EulerAngles const EulerAngles::ZERO = EulerAngles( 0.f, 0.f, 0.f );
+
+
+//-----------------------------------------------------------------------------------------------
 EulerAngles::EulerAngles( float yawDegrees, float pitchDegrees, float rollDegrees )
 	: m_yawDegrees( yawDegrees )
 	, m_pitchDegrees( pitchDegrees )
