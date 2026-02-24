@@ -26,6 +26,7 @@ public:
 	void Update();
 	void UpdateFromKeyboard();
 	void UpdateFromController();
+	void UpdateMouse();
 	void Render()									const;
 
 	static bool Command_Quit( EventArgs& args );

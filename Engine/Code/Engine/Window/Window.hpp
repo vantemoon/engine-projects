@@ -28,6 +28,8 @@ public:
 	void* GetHwnd() const;
 	IntVec2 GetClientDimensions() const;
 
+	bool IsFocused() const;
+
 	WindowConfig	m_config;
 	void*			m_displayDeviceContext = 0;
 	void*			m_windowHandle = 0;

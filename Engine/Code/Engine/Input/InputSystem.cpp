@@ -3,6 +3,7 @@
 #include "Engine/Core/ErrorWarningAssert.hpp"
 #include "Engine/Core/DevConsole.hpp"
 #include "Engine/Input/AnalogJoystick.hpp"
+#include "Engine/Window/Window.hpp"
 #include <Windows.h>
 
 
@@ -59,14 +60,14 @@ void InputSystem::StartUp()
 //----------------------------------------------------------------
 void InputSystem::ShutDown()
 {
-    for (int keyIndex = 0; keyIndex < NUM_KEYCODES; ++keyIndex)
-    {
-        m_keyStates[keyIndex] = KeyButtonState();
-    }
-    for (int controllerIndex = 0; controllerIndex < NUM_XBOX_CONTROLLERS; ++controllerIndex)
-    {
-        m_controllers[controllerIndex].Reset();
-    }
+	for ( int keyIndex = 0; keyIndex < NUM_KEYCODES; ++keyIndex )
+	{
+		m_keyStates[keyIndex] = KeyButtonState();
+	}
+	for ( int controllerIndex = 0; controllerIndex < NUM_XBOX_CONTROLLERS; ++controllerIndex )
+	{
+		m_controllers[controllerIndex].Reset();
+	}
 }
 
 
@@ -76,6 +77,59 @@ void InputSystem::BeginFrame()
 	for ( int controllerIndex = 0; controllerIndex < NUM_XBOX_CONTROLLERS; ++controllerIndex )
 	{
 		m_controllers[controllerIndex].Update();
+	}
+
+	HWND hwnd = static_cast<HWND>( g_engine->m_window->GetHwnd() );
+	IntVec2 clientDimensions = g_engine->m_window->GetClientDimensions();
+
+	if ( m_cursorState.m_mode == CursorMode::FPS )
+	{
+		while ( ShowCursor( FALSE ) >= 0 )
+		{
+			// Loop until Windows reports the cursor is hidden (negative return value)
+		}
+	}
+	else
+	{
+		while ( ShowCursor( TRUE ) < 0 )
+		{
+			// Loop until Windows reports the cursor is shown (non-negative return value)
+		}
+	}
+
+	bool isWindowFocused = g_engine->m_window->IsFocused();
+	IntVec2 previousCursorClientPosition = m_cursorState.m_cursorClientPosition;
+
+	POINT cursorScreenPos;
+	GetCursorPos( &cursorScreenPos );
+	ScreenToClient( hwnd, &cursorScreenPos );
+	IntVec2 currentCursorClientPosition = IntVec2( cursorScreenPos.x, cursorScreenPos.y );
+
+	if ( m_cursorState.m_mode == CursorMode::FPS )
+	{
+		if ( isWindowFocused )
+		{
+			m_cursorState.m_cursorClientDelta = currentCursorClientPosition - previousCursorClientPosition;
+		}
+		else
+		{
+			m_cursorState.m_cursorClientDelta = IntVec2( 0, 0 );
+		}
+
+		IntVec2 centerClient = IntVec2( clientDimensions.x / 2, clientDimensions.y / 2 );
+		POINT centerScreen = { centerClient.x, centerClient.y };
+		ClientToScreen( hwnd, &centerScreen );
+		SetCursorPos( centerScreen.x, centerScreen.y );
+
+		POINT recenteredScreenPos;
+		GetCursorPos( &recenteredScreenPos );
+		ScreenToClient( hwnd, &recenteredScreenPos );
+		m_cursorState.m_cursorClientPosition = IntVec2( recenteredScreenPos.x, recenteredScreenPos.y );
+	}
+	else
+	{
+		m_cursorState.m_cursorClientDelta    = IntVec2( 0, 0 );
+		m_cursorState.m_cursorClientPosition = currentCursorClientPosition;
 	}
 }
 
@@ -137,6 +191,37 @@ XboxController const& InputSystem::GetController( int controllerID )
 
 
 //----------------------------------------------------------------
+void InputSystem::SetCursorMode( CursorMode mode )
+{
+	m_cursorState.m_mode = mode;
+}
+
+
+//----------------------------------------------------------------
+IntVec2 InputSystem::GetCursorClientDelta() const
+{
+	return m_cursorState.m_cursorClientDelta;
+}
+
+
+//----------------------------------------------------------------
+IntVec2 InputSystem::GetCursorClientPosition() const
+{
+	return m_cursorState.m_cursorClientPosition;
+}
+
+
+//----------------------------------------------------------------
+IntVec2 InputSystem::GetCursorNormalizedPosition() const
+{
+	IntVec2 clientDimensions = g_engine->m_window->GetClientDimensions();
+	IntVec2 cursorPosition = GetCursorClientPosition();
+	IntVec2 normalizedPosition = IntVec2( cursorPosition.x * 1000 / clientDimensions.x, cursorPosition.y * 1000 / clientDimensions.y );
+	return normalizedPosition;
+}
+
+
+//----------------------------------------------------------------
 bool InputSystem::Event_KeyPressed( EventArgs& args )
 {
 	UNUSED( args );
@@ -146,10 +231,10 @@ bool InputSystem::Event_KeyPressed( EventArgs& args )
 		if ( keyCode >= 0 && keyCode < NUM_KEYCODES )
 		{
 			g_engine->m_inputSystem->HandleKeyPressed( keyCode );
-			return true; // Consumes event; do not call other subscribers’ callback functions
+			return true; // Consumes event; do not call other subscribers' callback functions
 		}
 	}
-	return false; // Does not consume event; continue to call other subscribers’ callback functions
+	return false; // Does not consume event; continue to call other subscribers' callback functions
 }
 
 
@@ -163,10 +248,10 @@ bool InputSystem::Event_KeyReleased( EventArgs& args )
 		if ( keyCode >= 0 && keyCode < NUM_KEYCODES )
 		{
 			g_engine->m_inputSystem->HandleKeyReleased( keyCode );
-			return true; // Consumes event; do not call other subscribers’ callback functions
+			return true; // Consumes event; do not call other subscribers' callback functions
 		}
 	}
-	return false; // Does not consume event; continue to call other subscribers’ callback functions
+	return false; // Does not consume event; continue to call other subscribers' callback functions
 }
 
 
@@ -188,7 +273,7 @@ bool InputSystem::Event_CharacterInput( EventArgs& args )
 		}
 		UNUSED( character );
 		// Handle character input if needed (e.g. for text input fields, etc.)
-		return true; // Consumes event; do not call other subscribers’ callback functions
+		return true; // Consumes event; do not call other subscribers' callback functions
 	}
-	return false; // Does not consume event; continue to call other subscribers’ callback functions
+	return false; // Does not consume event; continue to call other subscribers' callback functions
 }

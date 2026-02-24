@@ -100,9 +100,29 @@ void App::HardReset()
 //-----------------------------------------------------------------------------------------------
 void App::Update()
 {
+	UpdateMouse();
 	UpdateFromKeyboard();
 
 	m_game->Update();
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void App::UpdateMouse()
+{
+	bool isWindowFocused = g_engine->m_window->IsFocused();
+	bool isDevConsoleOpen = g_engine->m_devConsole->GetMode() != DevConsoleMode::HIDDEN;
+	bool isGameInAttractMode = m_game->m_currentGameState == GameState::ATTRACT_MODE;
+
+	if ( !isWindowFocused || isDevConsoleOpen || isGameInAttractMode )
+	{
+		g_engine->m_inputSystem->SetCursorMode( CursorMode::POINTER );
+	}
+	else
+	{
+		g_engine->m_inputSystem->SetCursorMode( CursorMode::FPS );
+	}
+
 }
 
 

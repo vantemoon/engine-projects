@@ -76,6 +76,15 @@ IntVec2 Window::GetClientDimensions() const
 
 
 //-----------------------------------------------------------------------------------------------
+bool Window::IsFocused() const
+{
+	HWND foregroundWindowHandle = GetForegroundWindow();
+	bool isFocused = ( foregroundWindowHandle == ( HWND ) m_windowHandle );
+	return isFocused;
+}
+
+
+//-----------------------------------------------------------------------------------------------
 // Handles Windows (Win32) messages/events; i.e. the OS is trying to tell us something happened.
 // This function is called back by Windows whenever we tell it to (by calling DispatchMessage).
 LRESULT CALLBACK WindowsMessageHandlingProcedure( HWND windowHandle, UINT wmMessageCode, WPARAM wParam, LPARAM lParam )

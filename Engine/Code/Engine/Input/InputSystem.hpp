@@ -45,6 +45,24 @@ struct InputConfig
 };
 
 
+//-----------------------------------------------------------------------------------------------
+enum class CursorMode
+{
+	POINTER,
+	FPS
+};
+
+
+//-----------------------------------------------------------------------------------------------
+struct CursorState
+{
+	IntVec2 m_cursorClientDelta;
+	IntVec2 m_cursorClientPosition;
+
+	CursorMode m_mode = CursorMode::POINTER;
+};
+
+
 //----------------------------------------------------------------
 class InputSystem
 {
@@ -64,11 +82,18 @@ public:
 	void HandleKeyReleased( unsigned char keyCode );
 	XboxController const& GetController( int controllerID );
 
+	void SetCursorMode( CursorMode mode );
+	IntVec2 GetCursorClientDelta() const;
+	IntVec2 GetCursorClientPosition() const;
+	IntVec2 GetCursorNormalizedPosition() const;
+
+
 	static bool Event_KeyPressed( EventArgs& args );
 	static bool Event_KeyReleased( EventArgs& args );
 	static bool Event_CharacterInput( EventArgs& args );
 
 	InputConfig m_config;
+	CursorState m_cursorState;
 
 protected:
 	KeyButtonState m_keyStates[ NUM_KEYCODES ];
