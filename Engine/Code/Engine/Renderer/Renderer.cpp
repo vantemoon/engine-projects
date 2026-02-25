@@ -373,11 +373,8 @@ void Renderer::BeginCamera( Camera const& camera )
 
 	// Update camera constant buffer
 	CameraConstants cameraData;
-	if ( camera.GetMode() == Camera::eMode_Perspective )
-	{
-		cameraData.WorldToCameraTransform = camera.GetWorldToCameraTransform();
-		cameraData.CameraToRenderTransform = camera.GetCameraToRenderTransform();
-	}
+	cameraData.WorldToCameraTransform = camera.GetWorldToCameraTransform();
+	cameraData.CameraToRenderTransform = camera.GetCameraToRenderTransform();
 	cameraData.RenderToClipTransform = camera.GetRenderToClipTransform();
 	CopyCPUToGPU( &cameraData, sizeof( CameraConstants ), m_cameraCBO );
 	BindConstantBuffer( k_cameraConstantsSlot, m_cameraCBO );

@@ -210,7 +210,7 @@ void Game::UpdateFromKeyboard()
 		// Start the game
 		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'P' ) || g_engine->m_inputSystem->WasKeyJustPressed( 'N' ) || g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_SPACE ) )
 		{
-			// Reset();
+			Reset();
 			m_currentGameState = GameState::PLAYING;
 		};
 
@@ -426,6 +426,7 @@ bool Game::IsOnScreen( Vec2 const& worldPosition, float cosmeticRadius ) const
 void Game::Reset()
 {
 	m_entities.clear();
+	Startup();
 	m_isScreenShaking = false;
 	m_isDebugFeaturesOn = false;
 }

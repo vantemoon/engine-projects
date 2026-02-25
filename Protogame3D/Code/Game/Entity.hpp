@@ -17,6 +17,7 @@ public:
 
 	virtual void Update( float deltaSeconds ) = 0;
 	virtual void Render() const = 0;
+	virtual Mat44 GetModelToWorldTransform() const;
 
 public:
 	Game* m_game = nullptr;
