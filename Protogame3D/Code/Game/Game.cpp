@@ -144,6 +144,8 @@ void Game::Update()
 	{
 		UpdateFromKeyboard();
 		UpdateFromController();
+
+		m_player->UpdateCamera();
 		return;
 	};
 

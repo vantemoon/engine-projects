@@ -20,6 +20,8 @@ App::App()
 	m_devConsoleCamera = new Camera();
 	m_devConsoleCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) );
 
+	m_systemClock = new Clock();
+
 	EngineConfig engineConfig;
 	engineConfig.m_windowConfig.m_clientAspect = 2.0f;
 	engineConfig.m_windowConfig.m_windowTitle = "Protogame3D";

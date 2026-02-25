@@ -1,4 +1,5 @@
 #pragma once
+#include "Engine/Core/Clock.hpp"
 #include "Engine/Core/EventSystem.hpp"
 #include "Engine/Renderer/Camera.hpp"
 
@@ -38,6 +39,7 @@ public:
 public:
 	Game*			m_game = nullptr;
 	Camera*			m_devConsoleCamera = nullptr;
+	Clock*			m_systemClock = nullptr;
 
 	bool			m_isQuitting = false;
 };

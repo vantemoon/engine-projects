@@ -17,6 +17,7 @@ public:
 	~Player();
 
 	void Update( float deltaSeconds ) override;
+	void UpdateCamera();
 	void UpdateFromMouse();
 	void UpdateFromKeyboard( float deltaSeconds );
 	void UpdateFromController( float deltaSeconds );
