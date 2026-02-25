@@ -56,7 +56,7 @@ void Player::UpdateFromMouse()
 	int deltaY = mouseDelta.y;
 
 	// Yaw (not clamped)
-	m_orientation.m_yawDegrees += ( float ) deltaX * sensitivity;
+	m_orientation.m_yawDegrees -= ( float ) deltaX * sensitivity;
 
 	// Pitch (clamped)
 	float pitch = GetClamped( m_orientation.m_pitchDegrees + ( float ) deltaY * sensitivity, -85.f, 85.f );
@@ -70,12 +70,12 @@ void Player::UpdateFromKeyboard( float deltaSeconds )
 	// Roll (clamped)
 	if ( g_engine->m_inputSystem->IsKeyDown( 'Q' ) )
 	{
-		float roll = GetClamped( m_orientation.m_rollDegrees - 90.f * deltaSeconds, -45.f, 45.f );
+		float roll = GetClamped( m_orientation.m_rollDegrees + 90.f * deltaSeconds, -45.f, 45.f );
 		m_orientation.m_rollDegrees = roll;
 	}
 	if ( g_engine->m_inputSystem->IsKeyDown( 'E' ) )
 	{
-		float roll = GetClamped( m_orientation.m_rollDegrees + 90.f * deltaSeconds, -45.f, 45.f );
+		float roll = GetClamped( m_orientation.m_rollDegrees - 90.f * deltaSeconds, -45.f, 45.f );
 		m_orientation.m_rollDegrees = roll;
 	}
 
@@ -114,11 +114,11 @@ void Player::UpdateFromKeyboard( float deltaSeconds )
 	// Up and down movement
 	if ( g_engine->m_inputSystem->IsKeyDown( 'Z' ) )
 	{
-		m_position += up * movementAmount;
+		m_position += up * -movementAmount;
 	}
 	if ( g_engine->m_inputSystem->IsKeyDown( 'C' ) )
 	{
-		m_position += up * -movementAmount;
+		m_position += up * movementAmount;
 	}
 
 	// Reset position and orientation
@@ -140,15 +140,15 @@ void Player::UpdateFromController( float deltaSeconds )
 	float leftTrigger = controller.GetLeftTrigger();
 
 	// Yaw (not clamped)
-	m_orientation.m_yawDegrees += rightStickPosition.x * 90.f * deltaSeconds;
+	m_orientation.m_yawDegrees -= rightStickPosition.x * 90.f * deltaSeconds;
 
 	// Pitch (clamped)
-	float pitch = GetClamped( m_orientation.m_pitchDegrees + rightStickPosition.y * 90.f * deltaSeconds, -85.f, 85.f );
+	float pitch = GetClamped( m_orientation.m_pitchDegrees - rightStickPosition.y * 90.f * deltaSeconds, -85.f, 85.f );
 	m_orientation.m_pitchDegrees = pitch;
 
 	// Roll (clamped)
-	float rightTriggerRoll = rightTrigger * 90.f * deltaSeconds;
-	float leftTriggerRoll = leftTrigger * -90.f * deltaSeconds;
+	float rightTriggerRoll = rightTrigger * -90.f * deltaSeconds;
+	float leftTriggerRoll = leftTrigger * 90.f * deltaSeconds;
 	float roll = GetClamped( m_orientation.m_rollDegrees + rightTriggerRoll + leftTriggerRoll, -45.f, 45.f );
 	m_orientation.m_rollDegrees = roll;
 
@@ -171,7 +171,14 @@ void Player::UpdateFromController( float deltaSeconds )
 	m_position += forward * leftStickPosition.y * movementSpeed * deltaSeconds;
 
 	// Up and down movement
-	m_position += up * ( rightTrigger - leftTrigger ) * movementSpeed * deltaSeconds;
+	if ( controller.IsButtonDown( XBOX_BUTTON_LEFT_SHOULDER ) )
+	{
+		m_position += up * -movementSpeed * deltaSeconds;
+	}
+	if ( controller.IsButtonDown( XBOX_BUTTON_RIGHT_SHOULDER ) )
+	{
+		m_position += up * movementSpeed * deltaSeconds;
+	}
 
 	// Reset position and orientation
 	if ( controller.WasButtonJustPressed( XBOX_BUTTON_START ) )
