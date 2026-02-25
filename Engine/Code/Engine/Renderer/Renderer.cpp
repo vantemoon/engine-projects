@@ -153,12 +153,12 @@ void Renderer::Startup()
 	rasterizerDesc.FillMode = D3D11_FILL_SOLID;
 	rasterizerDesc.CullMode = D3D11_CULL_NONE;
 	rasterizerDesc.FrontCounterClockwise = true;
-	rasterizerDesc.DepthBias = 0;
-	rasterizerDesc.DepthBiasClamp = 0.f;
-	rasterizerDesc.SlopeScaledDepthBias = 0.f;
+	// rasterizerDesc.DepthBias = 0;
+	// rasterizerDesc.DepthBiasClamp = 0.f;
+	// rasterizerDesc.SlopeScaledDepthBias = 0.f;
 	rasterizerDesc.DepthClipEnable = true;
-	rasterizerDesc.ScissorEnable = false;
-	rasterizerDesc.MultisampleEnable = false;
+	// rasterizerDesc.ScissorEnable = false;
+	// rasterizerDesc.MultisampleEnable = false;
 	rasterizerDesc.AntialiasedLineEnable = true;
 
 	hr = m_device->CreateRasterizerState( &rasterizerDesc, 
@@ -255,7 +255,6 @@ void Renderer::Startup()
 //-----------------------------------------------------------------------------------------------
 void Renderer::Shutdown()
 {
-	DX_SAFE_RELEASE( m_rasterizerState );
 	DX_SAFE_RELEASE( m_renderTargetView );
 
 	// Release blend states
@@ -271,6 +270,12 @@ void Renderer::Shutdown()
 		DX_SAFE_RELEASE( m_samplerStates[samplerModeIndex] );
 	}
 	m_samplerState = nullptr;
+
+	// Release rasterizer states
+	for ( int rasterizerModeIndex = 0; rasterizerModeIndex < ( int ) RasterizerMode::COUNT; ++rasterizerModeIndex )
+	{
+		DX_SAFE_RELEASE( m_rasterizerStates[rasterizerModeIndex] );
+	}
 
 	// Release loaded textures
 	for ( Texture* texture : m_loadedTextures )
@@ -368,8 +373,11 @@ void Renderer::BeginCamera( Camera const& camera )
 
 	// Update camera constant buffer
 	CameraConstants cameraData;
-	cameraData.WorldToCameraTransform = camera.GetWorldToCameraTransform();
-	cameraData.CameraToRenderTransform = camera.GetCameraToRenderTransform();
+	if ( camera.GetMode() == Camera::eMode_Perspective )
+	{
+		cameraData.WorldToCameraTransform = camera.GetWorldToCameraTransform();
+		cameraData.CameraToRenderTransform = camera.GetCameraToRenderTransform();
+	}
 	cameraData.RenderToClipTransform = camera.GetRenderToClipTransform();
 	CopyCPUToGPU( &cameraData, sizeof( CameraConstants ), m_cameraCBO );
 	BindConstantBuffer( k_cameraConstantsSlot, m_cameraCBO );
@@ -388,6 +396,7 @@ void Renderer::DrawVertexArray( int numVertexes, Vertex const* vertexes )
 {
 	CopyCPUToGPU( vertexes, numVertexes * sizeof( Vertex ), m_immediateVBO );
 	DrawVertexBuffer( m_immediateVBO, numVertexes );
+
 }
 
 

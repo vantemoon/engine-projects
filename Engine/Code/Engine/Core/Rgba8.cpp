@@ -13,6 +13,17 @@ const Rgba8 Rgba8::YELLOW = Rgba8( 255, 255, 0, 255 );
 const Rgba8 Rgba8::CYAN = Rgba8( 0, 255, 255, 255 );
 const Rgba8 Rgba8::MAGENTA = Rgba8( 255, 0, 255, 255 );
 
+
+
+//-----------------------------------------------------------------------------------------------
+const Rgba8 Rgba8::ERROR = Rgba8( 255, 0, 0, 255 );
+const Rgba8 Rgba8::WARNING = Rgba8( 255, 0, 255, 255 );
+const Rgba8 Rgba8::INFO_MAJOR = Rgba8( 0, 255, 255, 255 );
+const Rgba8 Rgba8::INFO_MINOR = Rgba8( 255, 255, 0, 255 );
+const Rgba8 Rgba8::SUCCESS = Rgba8( 0, 255, 0, 255 );
+const Rgba8 Rgba8::DEFAULT_TEXT_COLOR = Rgba8( 255, 255, 255, 255 );
+
+
 //-----------------------------------------------------------------------------------------------
 Rgba8::Rgba8( unsigned char redByte, unsigned char greenByte, unsigned char blueByte, unsigned char alphaByte )
 	: r( redByte )

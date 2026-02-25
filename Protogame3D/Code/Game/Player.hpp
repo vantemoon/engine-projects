@@ -3,8 +3,15 @@
 
 
 //-----------------------------------------------------------------------------------------------
+class  Camera;     // Forward declaration
+
+
+//-----------------------------------------------------------------------------------------------
 class Player : public Entity
 {
+public:
+	Camera* m_playerCamera = nullptr;
+
 public:
 	Player( Game* owner );
 	~Player();

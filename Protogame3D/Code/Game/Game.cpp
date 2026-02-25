@@ -26,19 +26,7 @@
 Game::Game()
 {
 	// Cameras
-	m_worldCamera = new Camera();
 	m_screenCamera = new Camera();
-
-	float values[16] =
-	{
-		 0.f, 0.f, 1.f, 0.f, // Column-major order from left to right
-		-1.f, 0.f, 0.f, 0.f,
-		 0.f, 1.f, 0.f, 0.f,
-		 0.f, 0.f, 0.f, 1.f
-	};
-	Mat44 cameraToRender( values );
-	m_worldCamera->SetCameraToRenderTransform( cameraToRender );
-	m_worldCamera->SetPerspectiveView( g_engine->m_window->m_config.m_clientAspect, 60.f, 0.1f, 100.f );
 	m_screenCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) );
 
 	// Clock and game state
@@ -57,9 +45,6 @@ Game::~Game()
 {
 	m_entities.clear();
 
-	delete m_worldCamera;
-	m_worldCamera = nullptr;
-
 	delete m_screenCamera;
 	m_screenCamera = nullptr;
 }
@@ -70,6 +55,7 @@ void Game::Startup()
 {
 	Player* player = new Player( this );
 	m_entities.push_back( player );
+	m_player = player;
 
 	Prop* prop = new Prop( this );
 	prop->m_position = Vec3( 0.f, 0.f, 0.f );
@@ -167,7 +153,6 @@ void Game::Update()
 
 	g_app->m_game->DeleteGarbageEntities();
 
-	m_worldCamera->SetPerspectiveView( g_engine->m_window->m_config.m_clientAspect, 60.f, 0.1f, 100.f );
 	m_screenCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) );
 
 	if ( m_isScreenShaking )
@@ -185,7 +170,7 @@ void Game::Update()
 			m_screenShakeIntensity = 0.f;
 			m_screenShakeDuration = 0.f;
 			m_screenShakeStartTime = 0.f;
-			m_worldCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( WORLD_SIZE_X, WORLD_SIZE_Y ) );
+			m_player->m_playerCamera->SetPerspectiveView( g_engine->m_window->m_config.m_clientAspect, 60.f, 0.1f, 100.f );
 		}
 	}
 }
@@ -194,13 +179,13 @@ void Game::Update()
 //-----------------------------------------------------------------------------------------------
 void Game::ScreenShake( float intensity )
 {
-	if ( m_worldCamera == nullptr || intensity <= 0.f )
+	if ( m_player->m_playerCamera == nullptr || intensity <= 0.f )
 		return;
 
 	RandomNumberGenerator rng;
 	float offsetX = rng.RollRandomFloatInRange( -intensity, intensity );
 	float offsetY = rng.RollRandomFloatInRange( -intensity, intensity );
-	m_worldCamera->Translate2D( Vec2( offsetX, offsetY ) );
+	m_player->m_playerCamera->Translate2D( Vec2( offsetX, offsetY ) );
 }
 
 
@@ -321,11 +306,11 @@ void Game::UpdateEntities()
 //-----------------------------------------------------------------------------------------------
 void Game::DebugDraw() const
 {
-	g_engine->m_renderer->BeginCamera( *m_worldCamera );
+	g_engine->m_renderer->BeginCamera( *m_player->m_playerCamera );
 
 	// #ToDo: Draw debug information about entities, collisions, etc.
 
-	g_engine->m_renderer->EndCamera( *m_worldCamera );
+	g_engine->m_renderer->EndCamera( *m_player->m_playerCamera );
 }
 
 
@@ -335,14 +320,13 @@ void Game::Render() const
 	if ( m_currentGameState == GameState::ATTRACT_MODE )
 	{
 		RenderAttractMode();
-		RenderDevConsole();
 		return;
 	};
 
 	// Clear screen
 	g_engine->m_renderer->ClearScreen( Rgba8( 50, 50, 50 ) );
 
-	g_engine->m_renderer->BeginCamera( *m_worldCamera );
+	g_engine->m_renderer->BeginCamera( *m_player->m_playerCamera );
 
 	RenderEntities();
 	RenderHUD();
@@ -352,7 +336,7 @@ void Game::Render() const
 		DebugDraw();
 	}
 
-	g_engine->m_renderer->EndCamera( *m_worldCamera );
+	g_engine->m_renderer->EndCamera( *m_player->m_playerCamera );
 }
 
 
@@ -360,7 +344,7 @@ void Game::Render() const
 void Game::RenderAttractMode() const
 {
 	// Clear screen
-	g_engine->m_renderer->ClearScreen( Rgba8::BLACK );
+	g_engine->m_renderer->ClearScreen( Rgba8::CYAN );
 
 	g_engine->m_renderer->BeginCamera( *m_screenCamera );
 
@@ -373,14 +357,14 @@ void Game::RenderAttractMode() const
 //-----------------------------------------------------------------------------------------------
 void Game::RenderEntities() const
 {
-	g_engine->m_renderer->BeginCamera( *m_worldCamera );
+	g_engine->m_renderer->BeginCamera( *m_player->m_playerCamera );
 
 	for ( Entity* entity : m_entities )
 	{
 		entity->Render();
 	}
 
-	g_engine->m_renderer->EndCamera( *m_worldCamera );
+	g_engine->m_renderer->EndCamera( *m_player->m_playerCamera );
 }
 
 
@@ -412,51 +396,23 @@ void Game::RenderHUD() const
 
 
 //-----------------------------------------------------------------------------------------------
-void Game::RenderDevConsole() const
-{
-	g_engine->m_renderer->BeginCamera( *m_screenCamera );
-
-	float screenWidth = g_gameConfigBlackboard.GetValue( "windowWidth", 1600.f );
-	float screenHeight = g_gameConfigBlackboard.GetValue( "windowHeight", 800.f );
-	AABB2 devConsoleBounds = AABB2( 0.f, 0.f, screenWidth, screenHeight );
-	g_engine->m_devConsole->Render( devConsoleBounds );
-
-	g_engine->m_renderer->EndCamera( *m_screenCamera );
-}
-
-
-//-----------------------------------------------------------------------------------------------
 Vec3 Game::TransformWorldToScreen( Vec3 const& worldPosition ) const
 {
-	Vec2 worldBottomLeft = m_worldCamera->GetOrthoBottomLeft();
-	Vec2 worldTopRight = m_worldCamera->GetOrthoTopRight();
-
-	Vec2 screenBottomLeft = m_screenCamera->GetOrthoBottomLeft();
-	Vec2 screenTopRight = m_screenCamera->GetOrthoTopRight();
-
-	float worldWidth = worldTopRight.x - worldBottomLeft.x;
-	float worldHeight = worldTopRight.y - worldBottomLeft.y;
-	float normX = ( worldPosition.x - worldBottomLeft.x ) / worldWidth;
-	float normY = ( worldPosition.y - worldBottomLeft.y ) / worldHeight;
-
-	float screenWidth = screenTopRight.x - screenBottomLeft.x;
-	float screenHeight = screenTopRight.y - screenBottomLeft.y;
-	float screenX = screenBottomLeft.x + normX * screenWidth;
-	float screenY = screenBottomLeft.y + normY * screenHeight;
-
-	return Vec3( screenX, screenY, worldPosition.z );
+	Mat44 transform;
+	transform.Append( m_player->m_playerCamera->GetWorldToCameraTransform() );
+	transform.Append( m_player->m_playerCamera->GetCameraToRenderTransform() );
+	Vec3 screenPosition = transform.TransformPosition3D( worldPosition );
+	return screenPosition;
 }
 
 
 //-----------------------------------------------------------------------------------------------
 bool Game::IsOnScreen( Vec2 const& worldPosition, float cosmeticRadius ) const
 {
-	Vec2 worldBottomLeft = m_worldCamera->GetOrthoBottomLeft();
-	Vec2 worldTopRight = m_worldCamera->GetOrthoTopRight();
-	if ( worldPosition.x + cosmeticRadius < worldBottomLeft.x ) return false;
-	if ( worldPosition.x - cosmeticRadius > worldTopRight.x ) return false;
-	if ( worldPosition.y + cosmeticRadius < worldBottomLeft.y ) return false;
-	if ( worldPosition.y - cosmeticRadius > worldTopRight.y ) return false;
+	Vec3 screenPosition = TransformWorldToScreen( Vec3( worldPosition.x, worldPosition.y, 0.f ) );
+	if ( screenPosition.z < 0.f ) return false;
+	if ( screenPosition.x < -cosmeticRadius || screenPosition.x > SCREEN_SIZE_X + cosmeticRadius ) return false;
+	if ( screenPosition.y < -cosmeticRadius || screenPosition.y > SCREEN_SIZE_Y + cosmeticRadius ) return false;
 	return true;
 }
 
@@ -473,16 +429,16 @@ void Game::Reset()
 //-----------------------------------------------------------------------------------------------
 void Game::AddInstructionsToDevConsole() const
 {
-	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MAJOR, "Keyboard" );
-	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "" );
-
-	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "Space (Attract Mode):      Switch to Game Mode" );
-	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "P     (Attract Mode):      Switch to Game Mode" );
-	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "Esc   (Attract Mode):      Exit the game" );
-	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "" );
-
-	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "P        (Game Mode):      Pause or resume" );
-	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "O        (Game Mode):      Advance one frame, then pause" );
-	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "T        (Game Mode):      Hold to slow time to 1/10th speed" );
-	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "Esc      (Game Mode):      Switch to Attract Mode" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MAJOR, "Keyboard" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "" );
+													 
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "Space (Attract Mode):      Switch to Game Mode" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "P     (Attract Mode):      Switch to Game Mode" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "Esc   (Attract Mode):      Exit the game" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "" );
+													 
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "P        (Game Mode):      Pause or resume" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "O        (Game Mode):      Advance one frame, then pause" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "T        (Game Mode):      Hold to slow time to 1/10th speed" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "Esc      (Game Mode):      Switch to Attract Mode" );
 }

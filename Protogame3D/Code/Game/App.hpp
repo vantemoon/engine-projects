@@ -28,6 +28,7 @@ public:
 	void UpdateFromController();
 	void UpdateMouse();
 	void Render()									const;
+	void RenderDevConsole()							const;
 
 	static bool Command_Quit( EventArgs& args );
 	void SetIsQuitting();
@@ -36,6 +37,7 @@ public:
 
 public:
 	Game*			m_game = nullptr;
+	Camera*			m_devConsoleCamera = nullptr;
 
 	bool			m_isQuitting = false;
 };

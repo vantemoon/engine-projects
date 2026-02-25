@@ -3,18 +3,33 @@
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Input/InputSystem.hpp"
 #include "Engine/Math/MathUtils.hpp"
+#include "Engine/Renderer/Camera.hpp"
 
 
 //-----------------------------------------------------------------------------------------------
 Player::Player( Game* owner )
 	: Entity( owner )
 {
+	m_playerCamera = new Camera();
+
+	float values[16] =
+	{
+		 0.f, 0.f, 1.f, 0.f, // Column-major order from left to right
+		-1.f, 0.f, 0.f, 0.f,
+		 0.f, 1.f, 0.f, 0.f,
+		 0.f, 0.f, 0.f, 1.f
+	};
+	Mat44 cameraToRender( values );
+	m_playerCamera->SetCameraToRenderTransform( cameraToRender );
+	m_playerCamera->SetPerspectiveView( g_engine->m_window->m_config.m_clientAspect, 60.f, 0.1f, 100.f );
 }
 
 
 //-----------------------------------------------------------------------------------------------
 Player::~Player()
 {
+	delete m_playerCamera;
+	m_playerCamera = nullptr;
 }
 
 
@@ -22,6 +37,9 @@ Player::~Player()
 void Player::Update( float deltaSeconds )
 {
 	UNUSED( deltaSeconds );
+	m_playerCamera->SetPerspectiveView( g_engine->m_window->m_config.m_clientAspect, 60.f, 0.1f, 100.f );
+	m_playerCamera->SetPositionAndOrientation( m_position, m_orientation );
+
 	float systemDeltaSeconds = ( float ) m_game->m_gameClock->GetDeltaSeconds();
 	UpdateFromMouse();
 	UpdateFromKeyboard( systemDeltaSeconds );
@@ -118,9 +136,49 @@ void Player::UpdateFromController( float deltaSeconds )
 	XboxController const& controller = g_engine->m_inputSystem->GetController( 0 );
 	Vec2 rightStickPosition = controller.GetRightJoystick().GetPosition();
 	Vec2 leftStickPosition = controller.GetLeftJoystick().GetPosition();
+	float rightTrigger = controller.GetRightTrigger();
+	float leftTrigger = controller.GetLeftTrigger();
 
 	// Yaw (not clamped)
 	m_orientation.m_yawDegrees += rightStickPosition.x * 90.f * deltaSeconds;
+
+	// Pitch (clamped)
+	float pitch = GetClamped( m_orientation.m_pitchDegrees + rightStickPosition.y * 90.f * deltaSeconds, -85.f, 85.f );
+	m_orientation.m_pitchDegrees = pitch;
+
+	// Roll (clamped)
+	float rightTriggerRoll = rightTrigger * 90.f * deltaSeconds;
+	float leftTriggerRoll = leftTrigger * -90.f * deltaSeconds;
+	float roll = GetClamped( m_orientation.m_rollDegrees + rightTriggerRoll + leftTriggerRoll, -45.f, 45.f );
+	m_orientation.m_rollDegrees = roll;
+
+
+	float movementSpeed = 2.f;
+
+	// Increase movement speed by 10
+	if ( controller.WasButtonJustPressed( XBOX_BUTTON_A ) )
+	{
+		movementSpeed *= 10.f;
+	}
+
+	Vec3 forward, left, up;
+	m_orientation.GetAsVectors_IFwd_JLeft_KUp( forward, left, up );
+
+	// Left and right movement
+	m_position += left * leftStickPosition.x * movementSpeed * deltaSeconds;
+
+	// Forward and backward movement
+	m_position += forward * leftStickPosition.y * movementSpeed * deltaSeconds;
+
+	// Up and down movement
+	m_position += up * ( rightTrigger - leftTrigger ) * movementSpeed * deltaSeconds;
+
+	// Reset position and orientation
+	if ( controller.WasButtonJustPressed( XBOX_BUTTON_START ) )
+	{
+		m_position = Vec3::ZERO;
+		m_orientation = EulerAngles::ZERO;
+	}
 }
 
 

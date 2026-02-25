@@ -2,23 +2,16 @@
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/EngineCommon.hpp"
 #include "Engine/Renderer/BitmapFont.hpp"
+#include "Engine/Renderer/Camera.hpp"
 #include "Engine/Renderer/Renderer.hpp"
 #include "Engine/Core/Clock.hpp"
 #include "Engine/Core/VertexUtils.hpp"
 #include "Engine/Core/Timer.hpp"
+#include "Engine/Core/Rgba8.hpp"
 #include "Engine/Core/StringUtils.hpp"
 #include "Engine/Input/InputSystem.hpp"
 #include <algorithm>
 #include <math.h>
-
-
-//-----------------------------------------------------------------------------------------------
-const Rgba8 DevConsole::ERROR = Rgba8::RED;
-const Rgba8 DevConsole::WARNING = Rgba8::MAGENTA;
-const Rgba8 DevConsole::INFO_MAJOR = Rgba8::CYAN;
-const Rgba8 DevConsole::INFO_MINOR = Rgba8::YELLOW;
-const Rgba8 DevConsole::SUCCESS = Rgba8::GREEN;
-const Rgba8 DevConsole::DEFAULT_TEXT_COLOR = Rgba8::WHITE;
 
 
 //-----------------------------------------------------------------------------------------------
@@ -114,7 +107,7 @@ void DevConsole::Execute( std::string const& consoleCommandText )
 	Strings splitText = SplitStringOnDelimiter( consoleCommandText, ' ' );
 	if ( splitText.size() == 0 )
 	{
-		AddLine( INFO_MINOR, "" );
+		AddLine( Rgba8::INFO_MINOR, "" );
 	}
 	else
 	{
@@ -133,8 +126,8 @@ void DevConsole::Execute( std::string const& consoleCommandText )
 		}
 		if ( !isRegistered )
 		{
-			AddLine( ERROR, consoleCommandText );
-			AddLine( ERROR, "Unknown command: " + command );
+			AddLine( Rgba8::ERROR, consoleCommandText );
+			AddLine( Rgba8::ERROR, "Unknown command: " + command );
 			return;
 		}
 		if ( splitText.size() == 1 )
@@ -147,8 +140,8 @@ void DevConsole::Execute( std::string const& consoleCommandText )
 				{
 					requiredArgsString += requiredArg + " ";
 				}
-				AddLine( WARNING, consoleCommandText );
-				AddLine( WARNING, "Command requires arguments: " + requiredArgsString );
+				AddLine( Rgba8::WARNING, consoleCommandText );
+				AddLine( Rgba8::WARNING, "Command requires arguments: " + requiredArgsString );
 				return;
 			}
 		}
@@ -164,8 +157,8 @@ void DevConsole::Execute( std::string const& consoleCommandText )
 			}
 			else
 			{
-				AddLine( WARNING, consoleCommandText );
-				AddLine( WARNING, "Invalid argument: " + arg );
+				AddLine( Rgba8::WARNING, consoleCommandText );
+				AddLine( Rgba8::WARNING, "Invalid argument: " + arg );
 				EventRequiredArgsList requiredArgs = g_engine->m_eventSystem->GetEventRequiredArgs( command );
 				if ( !requiredArgs.empty() )
 				{
@@ -174,13 +167,13 @@ void DevConsole::Execute( std::string const& consoleCommandText )
 					{
 						requiredArgsString += requiredArg + " ";
 					}
-					AddLine( WARNING, "Command requires arguments: " + requiredArgsString );
+					AddLine( Rgba8::WARNING, "Command requires arguments: " + requiredArgsString );
 				}
 				return;
 			}
 		}
-		AddLine( SUCCESS, consoleCommandText );
-		AddLine( SUCCESS, "Executed command: " + consoleCommandText );
+		AddLine( Rgba8::SUCCESS, consoleCommandText );
+		AddLine( Rgba8::SUCCESS, "Executed command: " + consoleCommandText );
 		g_engine->m_eventSystem->FireEvent( command, args );
 	}
 }
@@ -237,8 +230,14 @@ void DevConsole::Render( AABB2 const& bound ) const
 	}
 	if ( m_mode == DevConsoleMode::OPEN_FULL )
 	{
+		g_engine->m_renderer->SetBlendMode( BlendMode::ALPHA );
+		g_engine->m_renderer->SetSamplerMode( SamplerMode::POINT_CLAMP );
+		g_engine->m_renderer->SetRasterizerMode( RasterizerMode::SOLID_CULL_BACK );
+		g_engine->m_renderer->BeginCamera( *m_config.m_camera );
 		BitmapFont* font = g_engine->m_renderer->CreateOrGetBitmapFontFromFile( m_config.m_consoleFont.c_str() );
 		Render_OpenFull( bound, *font, 1.f );
+		g_engine->m_renderer->EndCamera( *m_config.m_camera );
+		m_config.m_camera->SetOrthoView( Vec2( 0, 0 ), Vec2( 1600, 800 ) );
 	}
 }
 
@@ -329,7 +328,7 @@ void DevConsole::Render_OpenFull( AABB2 const& bound, BitmapFont& font, float fo
 	int visibleInsertionPoint = insertionPointPosition - startIndex;
 
 	Vec2 textMins = Vec2( bound.m_mins.x + 5.f, 2.f );
-	font.AddVertsForText2D( textVerts, textMins, cellHeight, visibleCommand, DEFAULT_TEXT_COLOR, fontAspect );
+	font.AddVertsForText2D( textVerts, textMins, cellHeight, visibleCommand, Rgba8::WHITE, fontAspect );
 
 	g_engine->m_renderer->BindTexture( nullptr );
 	g_engine->m_renderer->DrawVertexArray( static_cast< int >( backgroundVerts.size() ), backgroundVerts.data() );
@@ -356,7 +355,7 @@ void DevConsole::RenderInsertionPoint( float cellWidth, float cellHeight, int in
 	Vec2 mins = Vec2( offsetFromStart, 2.f );
 	Vec2 maxs = Vec2( offsetFromStart + 2.f, cellHeight + 2.f );
 	std::vector<Vertex> verts;
-	AddVertsForAABB2D( verts, AABB2( mins, maxs ), DEFAULT_TEXT_COLOR );
+	AddVertsForAABB2D( verts, AABB2( mins, maxs ), Rgba8::DEFAULT_TEXT_COLOR );
 	g_engine->m_renderer->BindTexture( nullptr );
 	g_engine->m_renderer->DrawVertexArray( static_cast< int >( verts.size() ), verts.data() );
 }
@@ -554,10 +553,10 @@ bool DevConsole::Command_Help( EventArgs& args )
 	if ( g_engine && g_engine->m_devConsole )
 	{
 		std::vector<std::string> eventNames = g_engine->m_eventSystem->GetEventNames( true );
-		g_engine->m_devConsole->AddLine( INFO_MAJOR, "Registered commands:" );
+		g_engine->m_devConsole->AddLine( Rgba8::INFO_MAJOR, "Registered commands:" );
 		for ( std::string const& eventName : eventNames )
 		{
-			g_engine->m_devConsole->AddLine( INFO_MINOR, eventName );
+			g_engine->m_devConsole->AddLine( Rgba8::INFO_MINOR, eventName );
 		}
 		return true;
 	}
@@ -587,7 +586,7 @@ bool DevConsole::Command_Test( EventArgs& args )
 		int a = args.GetValue( "a", 0 );
 		int b = args.GetValue( "b", 0 );
 		int result = g_engine->m_devConsole->AddTwoInts( a, b );
-		g_engine->m_devConsole->AddLine( INFO_MAJOR, "Result of AddTwoInts( " + std::to_string( a ) + ", " + std::to_string( b ) + " ) = " + std::to_string( result ) );
+		g_engine->m_devConsole->AddLine( Rgba8::INFO_MAJOR, "Result of AddTwoInts( " + std::to_string( a ) + ", " + std::to_string( b ) + " ) = " + std::to_string( result ) );
 	}
 	return false;
 }

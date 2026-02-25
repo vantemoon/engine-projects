@@ -8,12 +8,15 @@
 
 
 //-----------------------------------------------------------------------------------------------
+class Camera;
+class Renderer;
 class Timer;
 
 
 //-----------------------------------------------------------------------------------------------
 struct DevConsoleConfig
 {
+	Camera* m_camera = nullptr;
 	bool m_isEnabled = true;
 	std::string m_consoleFont = "Data/Fonts/SquirrelFixedFont";
 	int m_linesOnScreen = 40;
@@ -62,13 +65,6 @@ public:
 
 	static bool Command_Test( EventArgs& args );
 	int AddTwoInts( int a, int b ) const;
-
-	static const Rgba8 ERROR;
-	static const Rgba8 WARNING;
-	static const Rgba8 INFO_MAJOR;
-	static const Rgba8 INFO_MINOR;
-	static const Rgba8 SUCCESS;
-	static const Rgba8 DEFAULT_TEXT_COLOR;
 
 protected:
 	void Render_OpenFull( AABB2 const& bound, BitmapFont& font, float fontAspect = 1.f ) const;

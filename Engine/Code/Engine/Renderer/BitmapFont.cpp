@@ -37,7 +37,7 @@ float BitmapFont::GetTextWidth( float cellHeight, std::string const& text, float
 
 //------------------------------------------------------------------------------------------------
 void BitmapFont::AddVertsForText2D( std::vector<Vertex>& vertexArray, Vec2 textMins, float cellHeight,
-									std::string const& text, Rgba8 tint /*= Rgba8::WHITE*/, float cellAspectScale /*= 1.f */ )
+									std::string const& text, Rgba8 const& tint, float cellAspectScale /*= 1.f */ )
 {
 	Vec2 penPosition = textMins;
 	for ( char const& glyphChar : text )
@@ -55,8 +55,8 @@ void BitmapFont::AddVertsForText2D( std::vector<Vertex>& vertexArray, Vec2 textM
 		vertexArray.push_back( Vertex( Vec3( glyphMins.x, glyphMins.y, 0.f ), tint, Vec2( glyphUVs.m_mins.x, glyphUVs.m_mins.y ) ) );
 		vertexArray.push_back( Vertex( Vec3( glyphMaxs.x, glyphMins.y, 0.f ), tint, Vec2( glyphUVs.m_maxs.x, glyphUVs.m_mins.y ) ) );
 		vertexArray.push_back( Vertex( Vec3( glyphMaxs.x, glyphMaxs.y, 0.f ), tint, Vec2( glyphUVs.m_maxs.x, glyphUVs.m_maxs.y ) ) );
-		
-		// Triangle B
+																			  
+		// Triangle B														  
 		vertexArray.push_back( Vertex( Vec3( glyphMaxs.x, glyphMaxs.y, 0.f ), tint, Vec2( glyphUVs.m_maxs.x, glyphUVs.m_maxs.y ) ) );
 		vertexArray.push_back( Vertex( Vec3( glyphMins.x, glyphMaxs.y, 0.f ), tint, Vec2( glyphUVs.m_mins.x, glyphUVs.m_maxs.y ) ) );
 		vertexArray.push_back( Vertex( Vec3( glyphMins.x, glyphMins.y, 0.f ), tint, Vec2( glyphUVs.m_mins.x, glyphUVs.m_mins.y ) ) );

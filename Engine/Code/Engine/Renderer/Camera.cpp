@@ -151,3 +151,10 @@ void Camera::Translate2D( Vec2 const& translation )
 	m_orthoBottomLeft += translation;
 	m_orthoTopRight += translation;
 }
+
+
+//-----------------------------------------------------------------------------------------------
+Camera::Mode Camera::GetMode() const
+{
+	return m_mode;
+}

@@ -29,4 +29,11 @@ public:
 	static const Rgba8 YELLOW;
 	static const Rgba8 CYAN;
 	static const Rgba8 MAGENTA;
+
+	static const Rgba8 ERROR;
+	static const Rgba8 WARNING;
+	static const Rgba8 INFO_MAJOR;
+	static const Rgba8 INFO_MINOR;
+	static const Rgba8 SUCCESS;
+	static const Rgba8 DEFAULT_TEXT_COLOR;
 };

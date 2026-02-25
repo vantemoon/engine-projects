@@ -96,7 +96,6 @@ void AddVertsForGlyphTriangles2D( std::vector<Vertex>& verts, char glyph, const 
 void AddVertsForTextTriangles2D( std::vector<Vertex>& verts, const std::string& text, const Vec2& startMins, float cellHeight, const Rgba8& color, float cellAspect, [[maybe_unused]] bool isFlipped, float spacingFraction )
 {
 	// #ToDo: Support flipped triangle fonts (e.g. when +Y is down)
-//	UNUSED( isFlipped );
 	
 	float cellWidth = cellHeight * cellAspect;
 	float pixelWidth = cellWidth * (1.f / (float) TRITEXT_PIX_WIDE);

@@ -41,6 +41,8 @@ public:
 	Mat44 GetPerspectiveMatrix() const;
 	Mat44 GetProjectionMatrix() const;
 
+	Mode GetMode() const;
+
 private:
 	Mode m_mode = eMode_Orthographic;
 

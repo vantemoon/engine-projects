@@ -17,12 +17,15 @@ App* g_app = nullptr;
 //-----------------------------------------------------------------------------------------------
 App::App()
 {
+	m_devConsoleCamera = new Camera();
+	m_devConsoleCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) );
+
 	EngineConfig engineConfig;
 	engineConfig.m_windowConfig.m_clientAspect = 2.0f;
 	engineConfig.m_windowConfig.m_windowTitle = "Protogame3D";
+	engineConfig.m_devConsoleConfig.m_camera = m_devConsoleCamera;
 
 	g_engine = new Engine( engineConfig );
-
 	m_game = new Game();
 
 	g_engine->m_eventSystem->SubscribeEventCallbackFunction( "Quit", Command_Quit );
@@ -32,6 +35,9 @@ App::App()
 //-----------------------------------------------------------------------------------------------
 App::~App()
 {
+	delete m_devConsoleCamera;
+	m_devConsoleCamera = nullptr;
+
 	delete m_game;
 	m_game = nullptr;
 
@@ -104,6 +110,8 @@ void App::Update()
 	UpdateFromKeyboard();
 
 	m_game->Update();
+
+	m_devConsoleCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) );
 }
 
 
@@ -130,7 +138,15 @@ void App::UpdateMouse()
 void App::Render() const
 {
 	m_game->Render();
-	m_game->RenderDevConsole();
+	RenderDevConsole();
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void App::RenderDevConsole() const
+{
+	AABB2 devConsoleBounds = AABB2( 0.f, 0.f, SCREEN_SIZE_X, SCREEN_SIZE_Y );
+	g_engine->m_devConsole->Render( devConsoleBounds );
 }
 
 

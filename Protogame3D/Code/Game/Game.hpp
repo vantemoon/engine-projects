@@ -8,6 +8,7 @@
 //-----------------------------------------------------------------------------------------------
 class  Camera;     // Forward declaration
 class  Entity;     // Forward declaration
+class  Player;     // Forward declaration
 struct Vec3;       // Forward declaration
 
 
@@ -16,8 +17,8 @@ class Game
 {
 public:
 	std::vector<Entity*> m_entities;
+	Player*		m_player = nullptr;
 
-	Camera*     m_worldCamera = nullptr;
 	Camera*     m_screenCamera = nullptr;
 
 	bool        m_isScreenShaking = false;
@@ -48,7 +49,6 @@ public:
 	void RenderEntities()											  const;
 	void RenderHUD()												  const;
 	void RenderAttractMode()										  const;
-	void RenderDevConsole()											  const;
 	void Reset();
 
 private:
