@@ -1,6 +1,7 @@
 #pragma once
 #include "Game/GameCommon.hpp"
 #include "Engine/Core/Clock.hpp"
+#include "Engine/Core/EventSystem.hpp"
 #include "Engine/Core/Rgba8.hpp"
 #include <vector>
 
@@ -50,6 +51,8 @@ public:
 	void RenderHUD()												  const;
 	void RenderAttractMode()										  const;
 	void Reset();
+
+	static bool Command_Controls( EventArgs& args );
 
 private:
 	void DeleteGarbageEntities();
