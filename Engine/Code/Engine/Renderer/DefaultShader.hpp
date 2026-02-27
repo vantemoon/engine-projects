@@ -10,6 +10,12 @@ cbuffer CameraConstants : register( b2 )
 	float4x4 RenderToClipTransform;   // Projection transform
 };
 
+cbuffer ModelConstants : register( b3 )
+{
+	float4x4 ModelToCameraTransform;  // Model transform
+	float4 modelColor;
+};
+
 struct vs_input_t
 {
 	float3 modelSpacePosition : POSITION;
@@ -27,7 +33,8 @@ struct v2p_t
 v2p_t VertexMain( vs_input_t input )
 {
 	float4 modelSpacePosition = float4( input.modelSpacePosition, 1.f );
-	float4 cameraSpacePosition = mul( WorldToCameraTransform, modelSpacePosition );
+	float4 worldSpacePosition = mul( ModelToCameraTransform, modelSpacePosition );
+	float4 cameraSpacePosition = mul( WorldToCameraTransform, worldSpacePosition );
 	float4 renderSpacePosition = mul( CameraToRenderTransform, cameraSpacePosition );
 	float4 clipSpacePosition = mul( RenderToClipTransform, renderSpacePosition );
 
@@ -45,7 +52,7 @@ float4 PixelMain( v2p_t input ) : SV_Target0
 {
 	float4 textureColor = diffuseTexture.Sample( diffuseSampler, input.uv );
 	float4 vertexColor = input.color;
-	float4 color = textureColor * vertexColor;
+	float4 color = textureColor * vertexColor * modelColor;
 	clip( color.a - 0.01f );
 	return float4( color );
 }

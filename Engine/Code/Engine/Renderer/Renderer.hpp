@@ -1,5 +1,7 @@
 #pragma once
 #include "Game/EngineBuildPreferences.hpp"
+#include "Engine/Core/Rgba8.hpp"
+#include "Engine/Math/Mat44.hpp"
 #include <cstdint>
 #include <vector>
 
@@ -15,7 +17,6 @@
 
 //-----------------------------------------------------------------------------------------------
 struct IntVec2;
-struct Rgba8;
 struct Vertex;
 class BitmapFont;
 class Camera;
@@ -109,6 +110,7 @@ public:
 	ConstantBuffer* CreateConstantBuffer( unsigned int const size );
 	void CopyCPUToGPU( void const* data, unsigned int size, ConstantBuffer* cbo );
 	void BindConstantBuffer( int slot, ConstantBuffer* cbo );
+	void SetModelConstants( Mat44 const& modelToWorldTransform = Mat44(), Rgba8 const& modelColor = Rgba8::WHITE );
 	
 private:
 	Image* CreateImageFromFile( char const* imageFilePath );
@@ -137,6 +139,7 @@ protected:
 
 	VertexBuffer* m_immediateVBO = nullptr;
 	ConstantBuffer* m_cameraCBO = nullptr;
+	ConstantBuffer* m_modelCBO = nullptr;
 
 	ID3D11BlendState* m_blendState = nullptr;
 	BlendMode m_desiredBlendMode = BlendMode::ALPHA;

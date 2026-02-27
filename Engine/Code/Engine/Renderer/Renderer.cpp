@@ -54,6 +54,15 @@ static const int k_cameraConstantsSlot = 2;
 
 
 //-----------------------------------------------------------------------------------------------
+struct ModelConstants
+{
+	Mat44 ModelToCameraTransform;  // Model transform
+	float modelColor[4];
+};
+static const int k_modelConstantsSlot = 3;
+
+
+//-----------------------------------------------------------------------------------------------
 Renderer::Renderer( RenderConfig const& config )
 	: m_config( config )
 {
@@ -147,6 +156,9 @@ void Renderer::Startup()
 
 	// Create camera constant buffer
 	m_cameraCBO = CreateConstantBuffer( sizeof( CameraConstants ) );
+
+	// Create model constant buffer
+	m_modelCBO = CreateConstantBuffer( sizeof( ModelConstants ) );
 
 	// Create rasterizer states for all rasterizer modes
 	D3D11_RASTERIZER_DESC rasterizerDesc = {};
@@ -378,6 +390,9 @@ void Renderer::BeginCamera( Camera const& camera )
 	cameraData.RenderToClipTransform = camera.GetRenderToClipTransform();
 	CopyCPUToGPU( &cameraData, sizeof( CameraConstants ), m_cameraCBO );
 	BindConstantBuffer( k_cameraConstantsSlot, m_cameraCBO );
+
+	// Set model constants
+	SetModelConstants();
 }
 
 
@@ -870,4 +885,15 @@ void Renderer::BindConstantBuffer( int slot, ConstantBuffer* cbo )
 {
 	m_deviceContext->VSSetConstantBuffers( slot, 1, &cbo->m_buffer );
 	m_deviceContext->PSSetConstantBuffers( slot, 1, &cbo->m_buffer );
+}
+
+
+//------------------------------------------------------------------------------------------------
+void Renderer::SetModelConstants( Mat44 const& modelToCameraTransform, Rgba8 const& modelColor )
+{
+	ModelConstants modelData;
+	modelData.ModelToCameraTransform = modelToCameraTransform;
+	modelColor.GetAsFloats( modelData.modelColor );
+	CopyCPUToGPU( &modelData, sizeof( ModelConstants ), m_modelCBO );
+	BindConstantBuffer( k_modelConstantsSlot, m_modelCBO );
 }

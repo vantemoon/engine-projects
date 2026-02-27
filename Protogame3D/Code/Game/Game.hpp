@@ -11,6 +11,7 @@ class  Camera;     // Forward declaration
 class  Entity;     // Forward declaration
 class  Player;     // Forward declaration
 struct Vec3;       // Forward declaration
+struct Vertex;     // Forward declaration
 
 
 //-----------------------------------------------------------------------------------------------
@@ -60,4 +61,5 @@ private:
 	Vec3 TransformWorldToScreen( Vec3 const& worldPosition )		   const;
 	bool IsOnScreen( Vec2 const& worldPosition, float cosmeticRadius ) const;
 	void AddInstructionsToDevConsole()								   const;
+	void AddVertsForCube( std::vector<Vertex>& verts, Vec3 const& center, float size) const;
 };

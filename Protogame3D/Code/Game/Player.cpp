@@ -209,4 +209,5 @@ void Player::UpdateFromController( float deltaSeconds )
 //-----------------------------------------------------------------------------------------------
 void Player::Render() const
 {
+	Entity::Render();
 }

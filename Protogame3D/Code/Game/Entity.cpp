@@ -1,5 +1,6 @@
 #include "Game/Entity.hpp"
 #include "Game/Game.hpp"
+#include "Engine/Core/Engine.hpp"
 #include "Engine/Math/Mat44.hpp"
 
 
@@ -15,6 +16,12 @@ Entity::~Entity()
 {
 }
 
+
+//-----------------------------------------------------------------------------------------------
+void Entity::Render() const
+{
+	g_engine->m_renderer->SetModelConstants( GetModelToWorldTransform(), m_color );
+}
 
 //-----------------------------------------------------------------------------------------------
 Mat44 Entity::GetModelToWorldTransform() const

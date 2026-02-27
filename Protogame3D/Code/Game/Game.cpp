@@ -20,6 +20,8 @@
 #include "Engine/Math/RandomNumberGenerator.hpp"
 #include "Engine/Renderer/Camera.hpp"
 #include "Engine/Renderer/Renderer.hpp"
+#define _USE_MATH_DEFINES
+#include <math.h>
 
 
 //-----------------------------------------------------------------------------------------------
@@ -60,60 +62,15 @@ void Game::Startup()
 	m_entities.push_back( player );
 	m_player = player;
 
-	Prop* prop = new Prop( this );
-	prop->m_position = Vec3( 0.f, 0.f, 0.f );
+	Prop* cube1 = new Prop( this );
+	cube1->m_position = Vec3( 2.f, 2.f, 0.f );
+	AddVertsForCube( cube1->m_vertexes, cube1->m_position, 1.f );
+	m_entities.push_back( cube1 );
 
-	const float halfSize = 0.5f;
-
-	// +X (Red)
-	AddVertsForQuad3D( prop->m_vertexes,
-		Vec3( halfSize, -halfSize, -halfSize ),
-		Vec3( halfSize, halfSize, -halfSize ),
-		Vec3( halfSize, halfSize, halfSize ),
-		Vec3( halfSize, -halfSize, halfSize ),
-		Rgba8::RED );
-
-	// -X (Cyan)
-	AddVertsForQuad3D( prop->m_vertexes,
-		Vec3( -halfSize, halfSize, -halfSize ),
-		Vec3( -halfSize, -halfSize, -halfSize ),
-		Vec3( -halfSize, -halfSize, halfSize ),
-		Vec3( -halfSize, halfSize, halfSize ),
-		Rgba8::CYAN );
-
-	// +Y (Green)
-	AddVertsForQuad3D( prop->m_vertexes,
-		Vec3( -halfSize, halfSize, -halfSize ),
-		Vec3( -halfSize, halfSize, halfSize ),
-		Vec3( halfSize, halfSize, halfSize ),
-		Vec3( halfSize, halfSize, -halfSize ),
-		Rgba8::GREEN );
-
-	// -Y (Magenta)
-	AddVertsForQuad3D( prop->m_vertexes,
-		Vec3( -halfSize, -halfSize, -halfSize ),
-		Vec3( halfSize, -halfSize, -halfSize ),
-		Vec3( halfSize, -halfSize, halfSize ),
-		Vec3( -halfSize, -halfSize, halfSize ),
-		Rgba8::MAGENTA );
-
-	// +Z (Blue)
-	AddVertsForQuad3D( prop->m_vertexes,
-		Vec3( -halfSize, -halfSize, halfSize ),
-		Vec3( halfSize, -halfSize, halfSize ),
-		Vec3( halfSize, halfSize, halfSize ),
-		Vec3( -halfSize, halfSize, halfSize ),
-		Rgba8::BLUE );
-
-	// -Z (Yellow)
-	AddVertsForQuad3D( prop->m_vertexes,
-		Vec3( halfSize, -halfSize, -halfSize ),
-		Vec3( -halfSize, -halfSize, -halfSize ),
-		Vec3( -halfSize, halfSize, -halfSize ),
-		Vec3( halfSize, halfSize, -halfSize ),
-		Rgba8::YELLOW );
-
-	m_entities.push_back( prop );
+	Prop* cube2 = new Prop( this );
+	cube2->m_position = Vec3( -2.f, -2.f, 0.f );
+	AddVertsForCube( cube2->m_vertexes, cube2->m_position, 1.f );
+	m_entities.push_back( cube2 );
 }
 
 
@@ -301,6 +258,13 @@ void Game::UpdateFromController()
 //-----------------------------------------------------------------------------------------------
 void Game::UpdateEntities()
 {
+	if ( m_entities[2] != nullptr ) // Cube 2
+	{
+		float time = ( float ) m_gameClock->GetTotalSeconds();
+		float fraction = ( float ) ( sin( time * M_PI ) + 1.f ) / 2.f;
+		m_entities[2]->m_color = Rgba8::WHITE.Interpolate( Rgba8::WHITE, Rgba8::BLACK, fraction );
+	}
+
 	for ( Entity* entity : m_entities )
 	{
 		entity->Update( ( float ) m_gameClock->GetDeltaSeconds() );
@@ -503,4 +467,59 @@ void Game::AddInstructionsToDevConsole() const
 	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "LB / RB:                   Move camera down / up" );
 
 	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "A Button (Hold):           Increase camera movement speed x10" );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game::AddVertsForCube( std::vector<Vertex>& verts, Vec3 const& center, float size ) const
+{
+	float halfSize = size * 0.5f;
+
+	// +X (Red)
+	AddVertsForQuad3D( verts,
+		center + Vec3( halfSize, -halfSize, -halfSize ),
+		center + Vec3( halfSize, halfSize, -halfSize ),
+		center + Vec3( halfSize, halfSize, halfSize ),
+		center + Vec3( halfSize, -halfSize, halfSize ),
+		Rgba8::RED );
+
+	// -X (Cyan)
+	AddVertsForQuad3D( verts,
+		center + Vec3( -halfSize, halfSize, -halfSize ),
+		center + Vec3( -halfSize, -halfSize, -halfSize ),
+		center + Vec3( -halfSize, -halfSize, halfSize ),
+		center + Vec3( -halfSize, halfSize, halfSize ),
+		Rgba8::CYAN );
+
+	// +Y (Green)
+	AddVertsForQuad3D( verts,
+		center + Vec3( -halfSize, halfSize, -halfSize ),
+		center + Vec3( -halfSize, halfSize, halfSize ),
+		center + Vec3( halfSize, halfSize, halfSize ),
+		center + Vec3( halfSize, halfSize, -halfSize ),
+		Rgba8::GREEN );
+
+	// -Y (Magenta)
+	AddVertsForQuad3D( verts,
+		center + Vec3( -halfSize, -halfSize, -halfSize ),
+		center + Vec3( halfSize, -halfSize, -halfSize ),
+		center + Vec3( halfSize, -halfSize, halfSize ),
+		center + Vec3( -halfSize, -halfSize, halfSize ),
+		Rgba8::MAGENTA );
+
+	// +Z (Blue)
+	AddVertsForQuad3D( verts,
+		center + Vec3( -halfSize, -halfSize, halfSize ),
+		center + Vec3( halfSize, -halfSize, halfSize ),
+		center + Vec3( halfSize, halfSize, halfSize ),
+		center + Vec3( -halfSize, halfSize, halfSize ),
+		Rgba8::BLUE );
+
+	// -Z (Yellow)
+	AddVertsForQuad3D( verts,
+		center + Vec3( halfSize, -halfSize, -halfSize ),
+		center + Vec3( -halfSize, -halfSize, -halfSize ),
+		center + Vec3( -halfSize, halfSize, -halfSize ),
+		center + Vec3( halfSize, halfSize, -halfSize ),
+		Rgba8::YELLOW );
 }
