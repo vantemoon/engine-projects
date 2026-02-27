@@ -10,6 +10,7 @@
 class  Camera;     // Forward declaration
 class  Entity;     // Forward declaration
 class  Player;     // Forward declaration
+class  Prop;       // Forward declaration
 struct Vec3;       // Forward declaration
 struct Vertex;     // Forward declaration
 
@@ -20,6 +21,8 @@ class Game
 public:
 	std::vector<Entity*> m_entities;
 	Player*		m_player = nullptr;
+	Prop*		m_cube1 = nullptr;
+	Prop*		m_cube2 = nullptr;
 
 	Camera*     m_screenCamera = nullptr;
 
@@ -61,5 +64,5 @@ private:
 	Vec3 TransformWorldToScreen( Vec3 const& worldPosition )		   const;
 	bool IsOnScreen( Vec2 const& worldPosition, float cosmeticRadius ) const;
 	void AddInstructionsToDevConsole()								   const;
-	void AddVertsForCube( std::vector<Vertex>& verts, Vec3 const& center, float size) const;
+	void AddVertsForCube( std::vector<Vertex>& verts, float size) const;
 };

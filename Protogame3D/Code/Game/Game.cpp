@@ -64,13 +64,15 @@ void Game::Startup()
 
 	Prop* cube1 = new Prop( this );
 	cube1->m_position = Vec3( 2.f, 2.f, 0.f );
-	AddVertsForCube( cube1->m_vertexes, cube1->m_position, 1.f );
+	AddVertsForCube( cube1->m_vertexes, 1.f );
 	m_entities.push_back( cube1 );
+	m_cube1 = cube1;
 
 	Prop* cube2 = new Prop( this );
 	cube2->m_position = Vec3( -2.f, -2.f, 0.f );
-	AddVertsForCube( cube2->m_vertexes, cube2->m_position, 1.f );
+	AddVertsForCube( cube2->m_vertexes, 1.f );
 	m_entities.push_back( cube2 );
+	m_cube2 = cube2;
 }
 
 
@@ -258,7 +260,13 @@ void Game::UpdateFromController()
 //-----------------------------------------------------------------------------------------------
 void Game::UpdateEntities()
 {
-	if ( m_entities[2] != nullptr ) // Cube 2
+	if (m_cube1 != nullptr ) // Cube 1
+	{
+		float deltaSeconds = ( float ) m_gameClock->GetDeltaSeconds();
+		m_entities[1]->m_orientation.m_rollDegrees += 30.f * deltaSeconds;
+		m_entities[1]->m_orientation.m_pitchDegrees += 30.f * deltaSeconds;
+	}
+	if ( m_cube2 != nullptr ) // Cube 2
 	{
 		float time = ( float ) m_gameClock->GetTotalSeconds();
 		float fraction = ( float ) ( sin( time * M_PI ) + 1.f ) / 2.f;
@@ -471,55 +479,49 @@ void Game::AddInstructionsToDevConsole() const
 
 
 //-----------------------------------------------------------------------------------------------
-void Game::AddVertsForCube( std::vector<Vertex>& verts, Vec3 const& center, float size ) const
+void Game::AddVertsForCube( std::vector<Vertex>& verts, float size ) const
 {
 	float halfSize = size * 0.5f;
 
-	// +X (Red)
 	AddVertsForQuad3D( verts,
-		center + Vec3( halfSize, -halfSize, -halfSize ),
-		center + Vec3( halfSize, halfSize, -halfSize ),
-		center + Vec3( halfSize, halfSize, halfSize ),
-		center + Vec3( halfSize, -halfSize, halfSize ),
+		Vec3( halfSize, -halfSize, -halfSize ),
+		Vec3( halfSize, halfSize, -halfSize ),
+		Vec3( halfSize, halfSize, halfSize ),
+		Vec3( halfSize, -halfSize, halfSize ),
 		Rgba8::RED );
 
-	// -X (Cyan)
 	AddVertsForQuad3D( verts,
-		center + Vec3( -halfSize, halfSize, -halfSize ),
-		center + Vec3( -halfSize, -halfSize, -halfSize ),
-		center + Vec3( -halfSize, -halfSize, halfSize ),
-		center + Vec3( -halfSize, halfSize, halfSize ),
+		Vec3( -halfSize, halfSize, -halfSize ),
+		Vec3( -halfSize, -halfSize, -halfSize ),
+		Vec3( -halfSize, -halfSize, halfSize ),
+		Vec3( -halfSize, halfSize, halfSize ),
 		Rgba8::CYAN );
 
-	// +Y (Green)
 	AddVertsForQuad3D( verts,
-		center + Vec3( -halfSize, halfSize, -halfSize ),
-		center + Vec3( -halfSize, halfSize, halfSize ),
-		center + Vec3( halfSize, halfSize, halfSize ),
-		center + Vec3( halfSize, halfSize, -halfSize ),
+		Vec3( halfSize, halfSize, -halfSize ),
+		Vec3( -halfSize, halfSize, -halfSize ),
+		Vec3( -halfSize, halfSize, halfSize ),
+		Vec3( halfSize, halfSize, halfSize ),
 		Rgba8::GREEN );
 
-	// -Y (Magenta)
 	AddVertsForQuad3D( verts,
-		center + Vec3( -halfSize, -halfSize, -halfSize ),
-		center + Vec3( halfSize, -halfSize, -halfSize ),
-		center + Vec3( halfSize, -halfSize, halfSize ),
-		center + Vec3( -halfSize, -halfSize, halfSize ),
+		Vec3( -halfSize, -halfSize, -halfSize ),
+		Vec3( halfSize, -halfSize, -halfSize ),
+		Vec3( halfSize, -halfSize, halfSize ),
+		Vec3( -halfSize, -halfSize, halfSize ),
 		Rgba8::MAGENTA );
 
-	// +Z (Blue)
 	AddVertsForQuad3D( verts,
-		center + Vec3( -halfSize, -halfSize, halfSize ),
-		center + Vec3( halfSize, -halfSize, halfSize ),
-		center + Vec3( halfSize, halfSize, halfSize ),
-		center + Vec3( -halfSize, halfSize, halfSize ),
+		Vec3( -halfSize, -halfSize, halfSize ),
+		Vec3( halfSize, -halfSize, halfSize ),
+		Vec3( halfSize, halfSize, halfSize ),
+		Vec3( -halfSize, halfSize, halfSize ),
 		Rgba8::BLUE );
 
-	// -Z (Yellow)
 	AddVertsForQuad3D( verts,
-		center + Vec3( halfSize, -halfSize, -halfSize ),
-		center + Vec3( -halfSize, -halfSize, -halfSize ),
-		center + Vec3( -halfSize, halfSize, -halfSize ),
-		center + Vec3( halfSize, halfSize, -halfSize ),
+		Vec3( halfSize, -halfSize, -halfSize ),
+		Vec3( -halfSize, -halfSize, -halfSize ),
+		Vec3( -halfSize, halfSize, -halfSize ),
+		Vec3( halfSize, halfSize, -halfSize ),
 		Rgba8::YELLOW );
 }
