@@ -258,6 +258,64 @@ void Renderer::Startup()
 		ERROR_AND_DIE( "Could not create sampler state: BILINEAR_WRAP." );
 	}
 
+	// Create depth stencil texture and view
+	D3D11_TEXTURE2D_DESC depthStencilDesc = {};
+	depthStencilDesc.Width = g_engine->m_window->GetClientDimensions().x;
+	depthStencilDesc.Height = g_engine->m_window->GetClientDimensions().y;
+	depthStencilDesc.MipLevels = 1;
+	depthStencilDesc.ArraySize = 1;
+	depthStencilDesc.Usage = D3D11_USAGE_DEFAULT;
+	depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	depthStencilDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	depthStencilDesc.SampleDesc.Count = 1;
+
+	hr = m_device->CreateTexture2D( &depthStencilDesc, nullptr, &m_depthStencilTexture );
+	if ( !SUCCEEDED( hr ) )
+	{
+		ERROR_AND_DIE( "Could not create depth stencil texture." );
+	}
+
+	hr = m_device->CreateDepthStencilView( m_depthStencilTexture, nullptr, &m_depthStencilView );
+	if ( !SUCCEEDED( hr ) )
+	{
+		ERROR_AND_DIE( "Could not create depth stencil view." );
+	}
+
+	// Create depth states for all depth modes
+	D3D11_DEPTH_STENCIL_DESC depthStencilStateDesc = {};
+	hr = m_device->CreateDepthStencilState( &depthStencilStateDesc,
+		&m_depthStencilStates[( int ) DepthMode::DISABLED] );
+	if ( !SUCCEEDED( hr ) )
+	{
+		ERROR_AND_DIE( "Could not create depth stencil state: DISABLED." );
+	}
+
+	depthStencilStateDesc.DepthEnable = true;
+	depthStencilStateDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
+	depthStencilStateDesc.DepthFunc = D3D11_COMPARISON_ALWAYS;
+	hr = m_device->CreateDepthStencilState( &depthStencilStateDesc,
+		&m_depthStencilStates[( int ) DepthMode::READ_ONLY_ALWAYS] );
+	if ( !SUCCEEDED( hr ) )
+	{
+		ERROR_AND_DIE( "Could not create depth stencil state: READ_ONLY_ALWAYS." );
+	}
+
+	depthStencilStateDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+	hr = m_device->CreateDepthStencilState( &depthStencilStateDesc,
+		&m_depthStencilStates[( int ) DepthMode::READ_ONLY_LESS_EQUAL] );
+	if ( !SUCCEEDED( hr ) )
+	{
+		ERROR_AND_DIE( "Could not create depth stencil state: READ_ONLY_LESS_EQUAL." );
+	}
+
+	depthStencilStateDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	hr = m_device->CreateDepthStencilState( &depthStencilStateDesc,
+		&m_depthStencilStates[( int ) DepthMode::READ_WRITE_LESS_EQUAL] );
+	if ( !SUCCEEDED( hr ) )
+	{
+		ERROR_AND_DIE( "Could not create depth stencil state: READ_WRITE_LESS_EQUAL." );
+	}
+
 	// Create and bind the default texture (2x2 white texture)
 	m_defaultTexture = CreateTextureFromImage( "Default", Image( IntVec2( 2, 2 ), Rgba8::WHITE ) );
 	BindTexture( m_defaultTexture );
@@ -340,7 +398,7 @@ void Renderer::Shutdown()
 void Renderer::BeginFrame()
 {
 	// Set render target
-	m_deviceContext->OMSetRenderTargets( 1, &m_renderTargetView, nullptr );
+	m_deviceContext->OMSetRenderTargets( 1, &m_renderTargetView, m_depthStencilView );
 }
 
 
@@ -361,12 +419,13 @@ void Renderer::EndFrame()
 void Renderer::ClearScreen( Rgba8 const& clearColor )
 {
 	// Set render target
-	m_deviceContext->OMSetRenderTargets( 1, &m_renderTargetView, nullptr );
+	m_deviceContext->OMSetRenderTargets( 1, &m_renderTargetView, m_depthStencilView );
 
 	// Clear the screen
 	float clearColorAsFloats[4];
 	clearColor.GetAsFloats( clearColorAsFloats );
 	m_deviceContext->ClearRenderTargetView( m_renderTargetView, clearColorAsFloats );
+	m_deviceContext->ClearDepthStencilView( m_depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.f, 0 );
 }
 
 
@@ -478,6 +537,13 @@ void Renderer::SetStatesIfChanged()
 	{
 		m_rasterizerState = desiredRasterizerState;
 		m_deviceContext->RSSetState( m_rasterizerState );
+	}
+
+	ID3D11DepthStencilState* desiredDepthStencilState = m_depthStencilStates[( int ) m_desiredDepthMode];
+	if ( desiredDepthStencilState != m_depthStencilState )
+	{
+		m_depthStencilState = desiredDepthStencilState;
+		m_deviceContext->OMSetDepthStencilState( m_depthStencilState, 0 );
 	}
 }
 

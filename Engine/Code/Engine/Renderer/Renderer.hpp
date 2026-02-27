@@ -33,6 +33,9 @@ struct ID3D11DeviceContext;
 struct IDXGISwapChain;
 struct ID3D11BlendState;
 struct ID3D11SamplerState;
+struct ID3D11Texture2D;
+struct ID3D11DepthStencilView;
+struct ID3D11DepthStencilState;
 
 
 //-----------------------------------------------------------------------------------------------
@@ -68,6 +71,17 @@ enum class RasterizerMode
 	SOLID_CULL_BACK,
 	WIREFRAME_CULL_NONE,
 	WIREFRAME_CULL_BACK,
+	COUNT
+};
+
+
+//-----------------------------------------------------------------------------------------------
+enum class DepthMode
+{
+	DISABLED,
+	READ_ONLY_ALWAYS,
+	READ_ONLY_LESS_EQUAL,
+	READ_WRITE_LESS_EQUAL,
 	COUNT
 };
 
@@ -154,4 +168,10 @@ protected:
 	ID3D11RasterizerState* m_rasterizerState = nullptr;
 	RasterizerMode m_desiredRasterizerMode = RasterizerMode::SOLID_CULL_BACK;
 	ID3D11RasterizerState* m_rasterizerStates[( int ) RasterizerMode::COUNT] = {};
+
+	ID3D11Texture2D* m_depthStencilTexture = nullptr;
+	ID3D11DepthStencilView* m_depthStencilView = nullptr;
+	ID3D11DepthStencilState* m_depthStencilState = nullptr;
+	DepthMode m_desiredDepthMode = DepthMode::READ_WRITE_LESS_EQUAL;
+	ID3D11DepthStencilState* m_depthStencilStates[( int ) DepthMode::COUNT] = {};
 };
