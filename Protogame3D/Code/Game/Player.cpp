@@ -104,37 +104,41 @@ void Player::UpdateFromKeyboard( float deltaSeconds )
 	}
 
 	float movementAmount = movementSpeed * deltaSeconds;
-	Vec3 forward, left, up;
-	m_orientation.GetAsVectors_IFwd_JLeft_KUp( forward, left, up );
+	
+	Mat44 orientationMat = m_orientation.GetAsMatrix_IFwd_JLeft_KUp();
+	Vec3 forwardVector = orientationMat.GetIBasis3D();
+	Vec3 leftVector = orientationMat.GetJBasis3D();
+	Vec3 upVector = orientationMat.GetKBasis3D();
+
 
 	// Left and right movement
 	if ( g_engine->m_inputSystem->IsKeyDown( 'A' ) )
 	{
-		m_position += left * movementAmount;
+		m_position += leftVector * movementAmount;
 	}
 	if ( g_engine->m_inputSystem->IsKeyDown( 'D' ) )
 	{
-		m_position += left * -movementAmount;
+		m_position += leftVector * -movementAmount;
 	}
 
 	// Forward and backward movement
 	if ( g_engine->m_inputSystem->IsKeyDown( 'W' ) )
 	{
-		m_position += forward * movementAmount;
+		m_position += forwardVector * movementAmount;
 	}
 	if ( g_engine->m_inputSystem->IsKeyDown( 'S' ) )
 	{
-		m_position += forward * -movementAmount;
+		m_position += forwardVector * -movementAmount;
 	}
 
 	// Up and down movement
 	if ( g_engine->m_inputSystem->IsKeyDown( 'Z' ) )
 	{
-		m_position += up * -movementAmount;
+		m_position += upVector * -movementAmount;
 	}
 	if ( g_engine->m_inputSystem->IsKeyDown( 'C' ) )
 	{
-		m_position += up * movementAmount;
+		m_position += upVector * movementAmount;
 	}
 
 	// Reset position and orientation

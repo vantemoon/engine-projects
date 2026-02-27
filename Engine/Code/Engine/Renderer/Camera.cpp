@@ -62,8 +62,11 @@ EulerAngles Camera::GetOrientation() const
 //-----------------------------------------------------------------------------------------------
 Mat44 Camera::GetCameraToWorldTransform() const
 {
-	Mat44 cameraToWorld = m_orientation.GetAsMatrix_IFwd_JLeft_KUp();
-	cameraToWorld.AppendTranslation3D( m_position );
+	Mat44 cameraToWorld;
+	Mat44 orientation = m_orientation.GetAsMatrix_IFwd_JLeft_KUp();
+	Mat44 translation = Mat44::MakeTranslation3D( m_position );
+	cameraToWorld.Append( translation );
+	cameraToWorld.Append( orientation );
 	return cameraToWorld;
 }
 

@@ -73,6 +73,11 @@ void Game::Startup()
 	AddVertsForCube( cube2->m_vertexes, 1.f );
 	m_entities.push_back( cube2 );
 	m_cube2 = cube2;
+
+	Prop* sphere = new Prop( this );
+	sphere->m_position = Vec3( 10.f, -5.f, 0.f );
+	AddVertsForSphere3D( sphere->m_vertexes, Vec3::ZERO, 1.f, Rgba8::WHITE, AABB2::ZERO_TO_ONE, 32, 16 );
+	m_entities.push_back( sphere );
 }
 
 

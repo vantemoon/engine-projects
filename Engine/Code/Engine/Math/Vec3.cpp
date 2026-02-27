@@ -258,3 +258,22 @@ Vec3 const operator*( float uniformScale, Vec3 const& vecToScale )
 {
 	return vecToScale * uniformScale;
 }
+
+
+//-----------------------------------------------------------------------------------------------
+Vec3 const Vec3::MakeFromPolarRadians( float pitchRadians, float yawRadians, float length )
+{
+	float x = length * cosf( yawRadians ) * cosf( pitchRadians );
+	float y = length * sinf( yawRadians ) * cosf( pitchRadians );
+	float z = length * -sinf( pitchRadians );
+	return Vec3( x, y, z );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+Vec3 const Vec3::MakeFromPolarDegrees( float pitchDegrees, float yawDegrees, float length )
+{
+	float pitchRadians = ConvertDegreesToRadians( pitchDegrees );
+	float yawRadians = ConvertDegreesToRadians( yawDegrees );
+	return MakeFromPolarRadians( pitchRadians, yawRadians, length );
+}

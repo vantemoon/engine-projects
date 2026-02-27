@@ -219,3 +219,61 @@ void AddVertsForQuad3D( std::vector<Vertex>& verts,
 	verts.push_back( Vertex( topRight, color, Vec2( UVs.m_maxs.x, UVs.m_maxs.y ) ) );
 	verts.push_back( Vertex( topLeft, color, Vec2( UVs.m_mins.x, UVs.m_maxs.y ) ) );
 }
+
+
+//-----------------------------------------------------------------------------------------------
+void AddVertsForAABB3D( std::vector<Vertex>& verts, AABB3 const& bounds, Rgba8 const& color, AABB2 const& UVs )
+{
+	Vec3 bottomLeftFront( bounds.m_mins.x, bounds.m_mins.y, bounds.m_mins.z );
+	Vec3 bottomRightFront( bounds.m_maxs.x, bounds.m_mins.y, bounds.m_mins.z );
+	Vec3 topRightFront( bounds.m_maxs.x, bounds.m_maxs.y, bounds.m_mins.z );
+	Vec3 topLeftFront( bounds.m_mins.x, bounds.m_maxs.y, bounds.m_mins.z );
+	Vec3 bottomLeftBack( bounds.m_mins.x, bounds.m_mins.y, bounds.m_maxs.z );
+	Vec3 bottomRightBack( bounds.m_maxs.x, bounds.m_mins.y, bounds.m_maxs.z );
+	Vec3 topRightBack( bounds.m_maxs.x, bounds.m_maxs.y, bounds.m_maxs.z );
+	Vec3 topLeftBack( bounds.m_mins.x, bounds.m_maxs.y, bounds.m_maxs.z );
+
+	// Front face
+	AddVertsForQuad3D( verts, bottomLeftFront, bottomRightFront, topRightFront, topLeftFront, color, UVs );
+	// Back face
+	AddVertsForQuad3D( verts, bottomRightBack, bottomLeftBack, topLeftBack, topRightBack, color, UVs );
+	// Left face
+	AddVertsForQuad3D( verts, bottomLeftBack, bottomLeftFront, topLeftFront, topLeftBack, color, UVs );
+	// Right face
+	AddVertsForQuad3D( verts, bottomRightFront, bottomRightBack, topRightBack, topRightFront, color, UVs );
+	// Top face
+	AddVertsForQuad3D( verts, topLeftFront, topRightFront, topRightBack, topLeftBack, color, UVs );
+	// Bottom face
+	AddVertsForQuad3D( verts, bottomLeftBack, bottomRightBack, bottomRightFront, bottomLeftFront, color, UVs );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void AddVertsForSphere3D( std::vector<Vertex>& verts, Vec3 const& center, float radius, Rgba8 const& color,
+						  AABB2 const& UVs, int numSlices, int numStacks )
+{
+	float degreesPerStack = 180.f / static_cast<float>( numStacks );
+	float degreesPerSlice = 360.f / static_cast<float>( numSlices );
+	for ( int i = 0; i < numStacks; ++ i )
+	{
+		for ( int j = 0; j < numSlices; ++ j )
+		{
+			float leftdegrees = degreesPerSlice * static_cast<float>( j );
+			float rightDegrees = degreesPerSlice * static_cast<float>( ( j + 1 ) % numSlices );
+			float topDegrees = degreesPerStack * static_cast<float>( i ) - 90.f;
+			float bottomDegrees = degreesPerStack * static_cast<float>( i + 1 ) - 90.f;
+
+			Vec3 bottomLeft = center + Vec3::MakeFromPolarDegrees( bottomDegrees, leftdegrees, radius );
+			Vec3 bottomRight = center + Vec3::MakeFromPolarDegrees( bottomDegrees, rightDegrees, radius );
+			Vec3 topLeft = center + Vec3::MakeFromPolarDegrees( topDegrees, leftdegrees, radius );
+			Vec3 topRight = center + Vec3::MakeFromPolarDegrees( topDegrees, rightDegrees, radius );
+
+			float bottomV = UVs.m_mins.y + ( ( bottomDegrees / 180.f ) * ( UVs.m_maxs.y - UVs.m_mins.y ) );
+			float topV = UVs.m_mins.y + ( ( topDegrees / 180.f ) * ( UVs.m_maxs.y - UVs.m_mins.y ) );
+			float leftU = UVs.m_mins.x + ( ( leftdegrees / 360.f ) * ( UVs.m_maxs.x - UVs.m_mins.x ) );
+			float rightU = UVs.m_mins.x + ( ( rightDegrees / 360.f ) * ( UVs.m_maxs.x - UVs.m_mins.x ) );
+
+			AddVertsForQuad3D( verts, bottomLeft, bottomRight, topRight, topLeft, color, AABB2( Vec2( leftU, bottomV ), Vec2( rightU, topV ) ) );
+		}
+	}
+}
