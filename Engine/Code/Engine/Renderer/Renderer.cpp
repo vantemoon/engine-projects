@@ -325,7 +325,15 @@ void Renderer::Startup()
 //-----------------------------------------------------------------------------------------------
 void Renderer::Shutdown()
 {
+	if ( m_deviceContext )
+	{
+		m_deviceContext->ClearState();
+		m_deviceContext->Flush();
+	}
+
 	DX_SAFE_RELEASE( m_renderTargetView );
+	DX_SAFE_RELEASE( m_depthStencilView );
+	DX_SAFE_RELEASE( m_depthStencilTexture );
 
 	// Release blend states
 	for ( int blendModeIndex = 0; blendModeIndex < ( int ) BlendMode::COUNT; ++blendModeIndex )
@@ -346,32 +354,49 @@ void Renderer::Shutdown()
 	{
 		DX_SAFE_RELEASE( m_rasterizerStates[rasterizerModeIndex] );
 	}
+	m_rasterizerState = nullptr;
+
+	// Release depth stencil states
+	for ( int depthModeIndex = 0; depthModeIndex < ( int ) DepthMode::COUNT; ++depthModeIndex )
+	{
+		DX_SAFE_RELEASE( m_depthStencilStates[depthModeIndex] );
+	}
+	m_depthStencilState = nullptr;
 
 	// Release loaded textures
 	for ( Texture* texture : m_loadedTextures )
 	{
 		delete texture;
 	}
+	m_loadedTextures.clear();
+	m_defaultTexture = nullptr;
 
 	// Release loaded fonts
 	for ( BitmapFont* font : m_loadedFonts )
 	{
 		delete font;
 	}
+	m_loadedFonts.clear();
 
 	// Release loaded shaders
 	for ( Shader* shader : m_loadedShaders )
 	{
 		delete shader;
 	}
+	m_loadedShaders.clear();
+	m_defaultShader = nullptr;
+	m_currentShader = nullptr;
 
 	// Release immediate VBO
 	delete m_immediateVBO;
 	m_immediateVBO = nullptr;
 
-	// Release camera CBO
+	// Release constant buffers
 	delete m_cameraCBO;
 	m_cameraCBO = nullptr;
+
+	delete m_modelCBO;
+	m_modelCBO = nullptr;
 
 	// Release device-related objects
 	DX_SAFE_RELEASE( m_swapChain );
@@ -613,7 +638,7 @@ Texture* Renderer::CreateTextureFromData( char const* name, IntVec2 dimensions, 
 	GUARANTEE_OR_DIE( bytesPerTexel >= 3 && bytesPerTexel <= 4, Stringf( "CreateTextureFromData failed for \"%s\" - unsupported BPP=%i (must be 3 or 4)", name, bytesPerTexel ) );
 	GUARANTEE_OR_DIE( dimensions.x > 0 && dimensions.y > 0, Stringf( "CreateTextureFromData failed for \"%s\" - illegal texture dimensions (%i x %i)", name, dimensions.x, dimensions.y ) );
 
-	Image* newImage = new Image( dimensions, Rgba8::WHITE );
+	Image newImage( dimensions, Rgba8::WHITE );
 	for ( int y = 0; y < dimensions.y; ++y )
 	{
 		for ( int x = 0; x < dimensions.x; ++x )
@@ -623,10 +648,10 @@ Texture* Renderer::CreateTextureFromData( char const* name, IntVec2 dimensions, 
 			uint8_t g = texelData[texelIndex + 1];
 			uint8_t b = texelData[texelIndex + 2];
 			uint8_t a = ( bytesPerTexel == 4 ) ? texelData[texelIndex + 3] : 255;
-			newImage->SetTexelColor( IntVec2( x, y ), Rgba8( r, g, b, a ) );
+			newImage.SetTexelColor( IntVec2( x, y ), Rgba8( r, g, b, a ) );
 		}
 	}
-	Texture* newTexture = CreateTextureFromImage( name, *newImage );
+	Texture* newTexture = CreateTextureFromImage( name, newImage );
 
 	m_loadedTextures.push_back( newTexture );
 	return newTexture;
@@ -636,8 +661,8 @@ Texture* Renderer::CreateTextureFromData( char const* name, IntVec2 dimensions, 
 //------------------------------------------------------------------------------------------------
 Texture* Renderer::CreateTextureFromFile( char const* imageFilePath )
 {
-	Image* image = CreateImageFromFile( imageFilePath );
-	Texture* newTexture = CreateTextureFromImage( imageFilePath, *image );
+	Image image( imageFilePath );
+	Texture* newTexture = CreateTextureFromImage( imageFilePath, image );
 
 	return newTexture;
 }

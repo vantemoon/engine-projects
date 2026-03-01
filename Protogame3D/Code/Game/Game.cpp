@@ -59,6 +59,7 @@ Game::~Game()
 void Game::Startup()
 {
 	Player* player = new Player( this );
+	player->m_position = Vec3( -2.f, 0.f, 1.f );
 	m_entities.push_back( player );
 	m_player = player;
 
