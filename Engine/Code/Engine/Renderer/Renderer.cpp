@@ -165,13 +165,13 @@ void Renderer::Startup()
 	rasterizerDesc.FillMode = D3D11_FILL_SOLID;
 	rasterizerDesc.CullMode = D3D11_CULL_NONE;
 	rasterizerDesc.FrontCounterClockwise = true;
+	rasterizerDesc.DepthClipEnable = true;
+	rasterizerDesc.AntialiasedLineEnable = true;
 	// rasterizerDesc.DepthBias = 0;
 	// rasterizerDesc.DepthBiasClamp = 0.f;
 	// rasterizerDesc.SlopeScaledDepthBias = 0.f;
-	rasterizerDesc.DepthClipEnable = true;
 	// rasterizerDesc.ScissorEnable = false;
 	// rasterizerDesc.MultisampleEnable = false;
-	rasterizerDesc.AntialiasedLineEnable = true;
 
 	hr = m_device->CreateRasterizerState( &rasterizerDesc, 
 		&m_rasterizerStates[( int ) RasterizerMode::SOLID_CULL_NONE] );
