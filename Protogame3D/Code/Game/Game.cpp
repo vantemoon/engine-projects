@@ -76,6 +76,7 @@ void Game::Startup()
 
 	Prop* sphere = new Prop( this );
 	sphere->m_position = Vec3( 10.f, -5.f, 0.f );
+	sphere->m_texture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/TestUV.png" );
 	AddVertsForSphere3D( sphere->m_vertexes, Vec3::ZERO, 1.f, Rgba8::WHITE, AABB2::ZERO_TO_ONE, 32, 16 );
 	m_entities.push_back( sphere );
 }
