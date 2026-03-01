@@ -23,6 +23,7 @@ public:
 	Player*		m_player = nullptr;
 	Prop*		m_cube1 = nullptr;
 	Prop*		m_cube2 = nullptr;
+	Prop*		m_sphere = nullptr;
 
 	Camera*     m_screenCamera = nullptr;
 

@@ -244,18 +244,12 @@ void AddVertsForAABB3D( std::vector<Vertex>& verts, AABB3 const& bounds, Rgba8 c
 	Vec3 topRightBack( bounds.m_maxs.x, bounds.m_maxs.y, bounds.m_maxs.z );
 	Vec3 topLeftBack( bounds.m_mins.x, bounds.m_maxs.y, bounds.m_maxs.z );
 
-	// Front face
-	AddVertsForQuad3D( verts, bottomLeftFront, bottomRightFront, topRightFront, topLeftFront, color, UVs );
-	// Back face
-	AddVertsForQuad3D( verts, bottomRightBack, bottomLeftBack, topLeftBack, topRightBack, color, UVs );
-	// Left face
-	AddVertsForQuad3D( verts, bottomLeftBack, bottomLeftFront, topLeftFront, topLeftBack, color, UVs );
-	// Right face
-	AddVertsForQuad3D( verts, bottomRightFront, bottomRightBack, topRightBack, topRightFront, color, UVs );
-	// Top face
-	AddVertsForQuad3D( verts, topLeftFront, topRightFront, topRightBack, topLeftBack, color, UVs );
-	// Bottom face
-	AddVertsForQuad3D( verts, bottomLeftBack, bottomRightBack, bottomRightFront, bottomLeftFront, color, UVs );
+	AddVertsForQuad3D( verts, bottomRightFront, bottomLeftFront, topLeftFront, topRightFront, color, UVs );
+	AddVertsForQuad3D( verts, bottomLeftBack, bottomRightBack, topRightBack, topLeftBack, color, UVs );
+	AddVertsForQuad3D( verts, bottomLeftFront, bottomLeftBack, topLeftBack, topLeftFront, color, UVs );
+	AddVertsForQuad3D( verts, bottomRightBack, bottomRightFront, topRightFront, topRightBack, color, UVs );
+	AddVertsForQuad3D( verts, topLeftBack, topRightBack, topRightFront, topLeftFront, color, UVs );
+	AddVertsForQuad3D( verts, bottomLeftFront, bottomRightFront, bottomRightBack, bottomLeftBack, color, UVs );
 }
 
 
@@ -312,5 +306,115 @@ void AddVertsForSphere3D( std::vector<Vertex>& verts, Vec3 const& center, float 
 				AddVertsForQuad3D( verts, bottomLeft, bottomRight, topRight, topLeft, color, AABB2( Vec2( uMin, vMin ), Vec2( uMax, vMax ) ) );
 			}
 		}
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void AddvertsForXYGrid3D( std::vector<Vertex>& verts, Vec3 const& center, float cellSize, int numCellsX, int numCellsY )
+{
+	if ( cellSize <= 0.f || numCellsX <= 0 || numCellsY <= 0 )
+	{
+		return;
+	}
+
+	float halfSizeX = 0.5f * cellSize * static_cast< float >( numCellsX );
+	float halfSizeY = 0.5f * cellSize * static_cast< float >( numCellsY );
+
+	float thinThickness = 0.04f;
+	float majorThickness = 0.08f;
+	float axisThickness = 0.12f;
+
+	unsigned char thinBrightness = 150;
+	unsigned char majorBrightness = 200;
+	unsigned char axisBrightness = 255;
+
+	int halfCellsX = numCellsX / 2;
+	int halfCellsY = numCellsY / 2;
+
+	for ( int j = -halfCellsY; j <= halfCellsY; ++ j )
+	{
+		float y = center.y + static_cast< float >( j ) * cellSize;
+
+		float thickness;
+		unsigned char brightness;
+		bool isAxis = ( j == 0 );
+		bool isMajor = ( !isAxis && ( j % 5 == 0 ) );
+
+		if ( isAxis )
+		{
+			thickness = axisThickness;
+			brightness = axisBrightness;
+		}
+		else if ( isMajor )
+		{
+			thickness = majorThickness;
+			brightness = majorBrightness;
+		}
+		else
+		{
+			thickness = thinThickness;
+			brightness = thinBrightness;
+		}
+
+		Rgba8 color;
+		if ( isAxis || isMajor )
+		{
+			color = Rgba8( brightness, 0, 0, 255 );
+		}
+		else
+		{
+			color = Rgba8( brightness, brightness, brightness, 255 );
+		}
+
+		AABB3 line;
+		float halfThicknessZ = 0.5f * thickness;
+		line.m_mins = Vec3( center.x - halfSizeX, y - 0.5f * thickness, center.z - halfThicknessZ );
+		line.m_maxs = Vec3( center.x + halfSizeX, y + 0.5f * thickness, center.z + halfThicknessZ );
+
+		AddVertsForAABB3D( verts, line, color );
+	}
+
+	for ( int i = -halfCellsX; i <= halfCellsX; ++ i )
+	{
+		float x = center.x + static_cast< float >( i ) * cellSize;
+
+		float thickness;
+		unsigned char brightness;
+		bool isAxis = ( i == 0 );
+		bool isMajor = ( !isAxis && ( i % 5 == 0 ) );
+
+		if ( isAxis )
+		{
+			thickness = axisThickness;
+			brightness = axisBrightness;
+		}
+		else if ( isMajor )
+		{
+			thickness = majorThickness;
+			brightness = majorBrightness;
+		}
+		else
+		{
+			thickness = thinThickness;
+			brightness = thinBrightness;
+		}
+
+		Rgba8 color;
+		if ( isAxis || isMajor )
+		{
+			color = Rgba8( 0, brightness, 0, 255 );
+		}
+		else
+		{
+			color = Rgba8( brightness, brightness, brightness, 255 );
+		}
+
+		AABB3 line;
+		float halfThicknessZ = 0.5f * thickness;
+		line.m_mins = Vec3( x - 0.5f * thickness, center.y - halfSizeY, center.z - halfThicknessZ );
+		line.m_maxs = Vec3( x + 0.5f * thickness, center.y + halfSizeY, center.z + halfThicknessZ );
+
+		AddVertsForAABB3D( verts, line, color );
 	}
 }

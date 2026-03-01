@@ -31,6 +31,7 @@ void Prop::Render() const
 	Entity::Render();
 	g_engine->m_renderer->SetRasterizerMode( RasterizerMode::SOLID_CULL_BACK );
 	g_engine->m_renderer->SetBlendMode( BlendMode::OPAQUE );
+	g_engine->m_renderer->SetDepthMode( DepthMode::READ_WRITE_LESS_EQUAL );
 	g_engine->m_renderer->BindTexture( m_texture );
 	g_engine->m_renderer->DrawVertexArray( ( int ) m_vertexes.size(), m_vertexes.data() );
 }

@@ -514,6 +514,13 @@ void Renderer::SetRasterizerMode( RasterizerMode rasterizerMode )
 
 
 //------------------------------------------------------------------------------------------------
+void Renderer::SetDepthMode( DepthMode depthMode )
+{
+	m_desiredDepthMode = depthMode;
+}
+
+
+//------------------------------------------------------------------------------------------------
 void Renderer::SetStatesIfChanged()
 {
 	ID3D11BlendState* desiredBlendState = m_blendStates[( int ) m_desiredBlendMode];

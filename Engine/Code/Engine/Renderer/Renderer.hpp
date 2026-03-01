@@ -106,6 +106,7 @@ public:
 	void SetBlendMode( BlendMode mode );
 	void SetSamplerMode( SamplerMode mode );
 	void SetRasterizerMode( RasterizerMode mode );
+	void SetDepthMode( DepthMode mode );
 	void SetStatesIfChanged();
 
 	Texture* CreateOrGetTextureFromFile( char const* imageFilePath );
