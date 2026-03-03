@@ -15,8 +15,11 @@
 GameRaycastVsLineSegment::GameRaycastVsLineSegment()
 {
 	GenerateRandomLineSegments();
-	m_closestImpactResult = RaycastResult2D();
-	m_closestImpactResult.m_impactDist = FLT_MAX;
+
+	for ( int raySegmentIndex = 0; raySegmentIndex < MAX_BOUNCES + 1; ++raySegmentIndex )
+	{
+		m_raySegmentDidHit[raySegmentIndex] = -1;
+	}
 }
 
 
@@ -152,33 +155,32 @@ void GameRaycastVsLineSegment::Render() const
 
 	for ( int lineSegmentIndex = 0; lineSegmentIndex < MAX_LINE_SEGMENTS; ++lineSegmentIndex )
 	{
-		if ( lineSegmentIndex == m_closestImpactLineSegmentIndex )
-		{
-			continue;
-		}
 		TestShapeLineSegment* lineSegment = m_testLineSegments[lineSegmentIndex];
-		Rgba8 lineColor = darkBlue;
+		Rgba8 lineColor = m_lineSegmentWasImpacted[lineSegmentIndex] ? lightBlue : darkBlue;
 		AddVertsForLineSegment2D( verts, lineSegment->m_start, lineSegment->m_end, 0.3f, lineColor );
 	}
 
-	if ( m_closestImpactLineSegmentIndex != -1 )
-	{
-		TestShapeLineSegment* closestLineSegment = m_testLineSegments[m_closestImpactLineSegmentIndex];
-		Rgba8 highlightColor = lightBlue;
-		AddVertsForLineSegment2D( verts, closestLineSegment->m_start, closestLineSegment->m_end, 0.3f, highlightColor );
-	}
-
-	if ( m_closestImpactLineSegmentIndex != -1 )
-	{
-		AddVertsForArrow2D( verts, m_rayStartPos, m_rayEndPos, 0.3f, 1.f, Rgba8( 190, 190, 190 ) );
-		AddVertsForArrow2D( verts, m_rayStartPos, m_closestImpactResult.m_impactPos, 0.3f, 1.f, Rgba8::RED );
-		AddVertsForArrow2D( verts, m_closestImpactResult.m_impactPos, m_closestImpactResult.m_impactPos + m_closestImpactResult.m_impactNormal * 10.f, 0.3f, 1.f,
-			Rgba8::YELLOW );
-		AddVertsForDisc2D( verts, m_closestImpactResult.m_impactPos, 0.5f, Rgba8::WHITE, 16 );
-	}
-	else
+	if ( m_numRaySegments == 0 )
 	{
 		AddVertsForArrow2D( verts, m_rayStartPos, m_rayEndPos, 0.3f, 1.f, Rgba8::GREEN );
+	}
+
+	for ( int raySegmentIndex = 0; raySegmentIndex < m_numRaySegments; ++raySegmentIndex )
+	{
+		RaycastResult2D const& raySegment = m_raySegmentResults[raySegmentIndex];
+		Vec2 segmentMaxEndPos = raySegment.m_rayStartPos + raySegment.m_rayFwdNormal * raySegment.m_rayMaxLength;
+
+		if ( raySegment.m_didImpact )
+		{
+			AddVertsForArrow2D( verts, raySegment.m_rayStartPos, segmentMaxEndPos, 0.3f, 1.f, Rgba8( 190, 190, 190 ) );
+			AddVertsForArrow2D( verts, raySegment.m_rayStartPos, raySegment.m_impactPos, 0.3f, 1.f, Rgba8::RED );
+			AddVertsForArrow2D( verts, raySegment.m_impactPos, raySegment.m_impactPos + raySegment.m_impactNormal * 10.f, 0.3f, 1.f, Rgba8::YELLOW );
+			AddVertsForDisc2D( verts, raySegment.m_impactPos, 0.5f, Rgba8::WHITE, 16 );
+		}
+		else
+		{
+			AddVertsForArrow2D( verts, raySegment.m_rayStartPos, segmentMaxEndPos, 0.3f, 1.f, Rgba8::GREEN );
+		}
 	}
 
 	g_engine->m_renderer->BindTexture( nullptr );
@@ -209,21 +211,66 @@ void GameRaycastVsLineSegment::GenerateRandomLineSegments()
 //-----------------------------------------------------------------------------------------------
 void GameRaycastVsLineSegment::RaycastVsLineSegments()
 {
-	m_closestImpactLineSegmentIndex = -1;
-	m_closestImpactResult = RaycastResult2D();
-	m_closestImpactResult.m_impactDist = FLT_MAX;
+	m_numRaySegments = 0;
 
-	Vec2 rayForwardNormal = ( m_rayEndPos - m_rayStartPos ).GetNormalized();
-	float rayMaxDist = ( m_rayEndPos - m_rayStartPos ).GetLength();
-	for ( int lineSegmentIndex = 0; lineSegmentIndex < MAX_LINE_SEGMENTS; ++lineSegmentIndex )
+	for ( int lineSegmentIndex = 0; lineSegmentIndex < MAX_LINE_SEGMENTS; ++ lineSegmentIndex )
 	{
-		TestShapeLineSegment* lineSegment = m_testLineSegments[lineSegmentIndex];
-		RaycastResult2D result = RaycastVsLineSegment2D( m_rayStartPos, rayForwardNormal, rayMaxDist, lineSegment->m_start, lineSegment->m_end );
-		if ( result.m_didImpact && result.m_impactDist < m_closestImpactResult.m_impactDist )
+		m_lineSegmentWasImpacted[lineSegmentIndex] = false;
+	}
+
+	Vec2 initialRayVector = m_rayEndPos - m_rayStartPos;
+	float totalMaxLength = initialRayVector.GetLength();
+	if ( totalMaxLength <= 0.f )
+	{
+		return;
+	}
+
+	Vec2 currentRayStartPos = m_rayStartPos;
+	Vec2 currentRayFwdNormal = initialRayVector.GetNormalized();
+	float remainingLength = totalMaxLength;
+
+
+	for ( int bounceIndex = 0; bounceIndex < MAX_BOUNCES && remainingLength > 0.f; ++ bounceIndex )
+	{
+		int closestImpactLineSegmentIndex = -1;
+		RaycastResult2D closestImpactResult;
+		closestImpactResult.m_rayStartPos = currentRayStartPos;
+		closestImpactResult.m_rayFwdNormal = currentRayFwdNormal;
+		closestImpactResult.m_rayMaxLength = remainingLength;
+		closestImpactResult.m_didImpact = false;
+		closestImpactResult.m_impactDist = FLT_MAX;
+
+		for ( int lineSegmentIndex = 0; lineSegmentIndex < MAX_LINE_SEGMENTS; ++ lineSegmentIndex )
 		{
-			m_closestImpactLineSegmentIndex = lineSegmentIndex;
-			m_closestImpactResult = result;
+			TestShapeLineSegment* lineSegment = m_testLineSegments[lineSegmentIndex];
+			RaycastResult2D result = RaycastVsLineSegment2D( currentRayStartPos, currentRayFwdNormal, remainingLength, lineSegment->m_start, lineSegment->m_end );
+			if ( result.m_didImpact && result.m_impactDist < closestImpactResult.m_impactDist )
+			{
+				closestImpactLineSegmentIndex = lineSegmentIndex;
+				closestImpactResult = result;
+			}
 		}
+
+		m_raySegmentResults[m_numRaySegments] = closestImpactResult;
+		m_raySegmentDidHit[m_numRaySegments] = closestImpactLineSegmentIndex;
+		++ m_numRaySegments;
+
+		if ( !closestImpactResult.m_didImpact )
+		{
+			break;
+		}
+
+		m_lineSegmentWasImpacted[closestImpactLineSegmentIndex] = true;
+
+		remainingLength -= closestImpactResult.m_impactDist;
+		if ( remainingLength <= 0.f )
+		{
+			break;
+		}
+
+		Vec2 reflectedDirection = currentRayFwdNormal.GetReflected( closestImpactResult.m_impactNormal ).GetNormalized();
+		currentRayStartPos = closestImpactResult.m_impactPos - currentRayFwdNormal * RAY_BOUNCE_RESTART_OFFSET;
+		currentRayFwdNormal = reflectedDirection;
 	}
 }
 
