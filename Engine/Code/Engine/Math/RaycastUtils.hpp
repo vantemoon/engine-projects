@@ -15,3 +15,8 @@ struct RaycastResult2D
 	Vec2	m_rayFwdNormal;
 	float	m_rayMaxLength = 1.f;
 };
+
+
+//-----------------------------------------------------------------------------------------------
+RaycastResult2D RaycastVsDisc2D( Vec2 startPos, Vec2 fwdNormal, float maxDist, Vec2 discCenter, float discRadius );
+RaycastResult2D RaycastVsLineSegment2D( Vec2 startPos, Vec2 fwdNormal, float maxDist, Vec2 lineStart, Vec2 lineEnd );

@@ -1,4 +1,4 @@
-#include "Game/GameRaycastVsDiscs.hpp"
+#include "Game/GameRaycastVsLineSegment.hpp"
 #include "Game/GameCommon.hpp"
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/Vertex.hpp"
@@ -12,22 +12,22 @@
 
 
 //-----------------------------------------------------------------------------------------------
-GameRaycastVsDiscs::GameRaycastVsDiscs()
+GameRaycastVsLineSegment::GameRaycastVsLineSegment()
 {
-	GenerateRandomDiscs();
+	GenerateRandomLineSegments();
 	m_closestImpactResult = RaycastResult2D();
 	m_closestImpactResult.m_impactDist = FLT_MAX;
 }
 
 
 //-----------------------------------------------------------------------------------------------
-GameRaycastVsDiscs::~GameRaycastVsDiscs()
+GameRaycastVsLineSegment::~GameRaycastVsLineSegment()
 {
 }
 
 
 //-----------------------------------------------------------------------------------------------
-void GameRaycastVsDiscs::Update( float deltaSeconds )
+void GameRaycastVsLineSegment::Update( float deltaSeconds )
 {
 	UNUSED( deltaSeconds );
 
@@ -39,14 +39,14 @@ void GameRaycastVsDiscs::Update( float deltaSeconds )
 	m_worldCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( WORLD_SIZE_X, WORLD_SIZE_Y ) );
 	m_screenCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) );
 
-	RaycastVsDiscs();
+	RaycastVsLineSegments();
 	UpdateFromKeyboard();
 	Render();
 }
 
 
 //-----------------------------------------------------------------------------------------------
-void GameRaycastVsDiscs::UpdateFromKeyboard()
+void GameRaycastVsLineSegment::UpdateFromKeyboard()
 {
 	float moveSpeed = 0.5f;
 	if ( m_isSlowMo )
@@ -135,13 +135,13 @@ void GameRaycastVsDiscs::UpdateFromKeyboard()
 	// Randomize all shape positions with F8
 	if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_F8 ) )
 	{
-		GenerateRandomDiscs();
+		GenerateRandomLineSegments();
 	}
 }
 
 
 //-----------------------------------------------------------------------------------------------
-void GameRaycastVsDiscs::Render() const
+void GameRaycastVsLineSegment::Render() const
 {
 	g_engine->m_renderer->BeginCamera( *m_worldCamera );
 
@@ -150,29 +150,30 @@ void GameRaycastVsDiscs::Render() const
 
 	std::vector<Vertex> verts;
 
-	for ( int discIndex = 0; discIndex < MAX_DISCS; ++discIndex )
+	for ( int lineSegmentIndex = 0; lineSegmentIndex < MAX_LINE_SEGMENTS; ++lineSegmentIndex )
 	{
-		if ( discIndex == m_closestImpactDiscIndex )
+		if ( lineSegmentIndex == m_closestImpactLineSegmentIndex )
 		{
 			continue;
 		}
-		TestShapeDisc* disc = m_testDiscs[discIndex];
-		Rgba8 discColor = darkBlue;
-		AddVertsForDisc2D( verts, disc->m_center, disc->m_radius, discColor, disc->m_numSides );
+		TestShapeLineSegment* lineSegment = m_testLineSegments[lineSegmentIndex];
+		Rgba8 lineColor = darkBlue;
+		AddVertsForLineSegment2D( verts, lineSegment->m_start, lineSegment->m_end, 0.3f, lineColor );
 	}
 
-	if ( m_closestImpactDiscIndex != -1 )
+	if ( m_closestImpactLineSegmentIndex != -1 )
 	{
-		TestShapeDisc* closestDisc = m_testDiscs[m_closestImpactDiscIndex];
+		TestShapeLineSegment* closestLineSegment = m_testLineSegments[m_closestImpactLineSegmentIndex];
 		Rgba8 highlightColor = lightBlue;
-		AddVertsForDisc2D( verts, closestDisc->m_center, closestDisc->m_radius, highlightColor, closestDisc->m_numSides );
+		AddVertsForLineSegment2D( verts, closestLineSegment->m_start, closestLineSegment->m_end, 0.3f, highlightColor );
 	}
-	
-	if ( m_closestImpactDiscIndex != -1 )
+
+	if ( m_closestImpactLineSegmentIndex != -1 )
 	{
 		AddVertsForArrow2D( verts, m_rayStartPos, m_rayEndPos, 0.3f, 1.f, Rgba8( 190, 190, 190 ) );
 		AddVertsForArrow2D( verts, m_rayStartPos, m_closestImpactResult.m_impactPos, 0.3f, 1.f, Rgba8::RED );
-		AddVertsForArrow2D( verts, m_closestImpactResult.m_impactPos, m_closestImpactResult.m_impactPos + m_closestImpactResult.m_impactNormal * 10.f, 0.3f, 1.f, Rgba8::YELLOW );
+		AddVertsForArrow2D( verts, m_closestImpactResult.m_impactPos, m_closestImpactResult.m_impactPos + m_closestImpactResult.m_impactNormal * 10.f, 0.3f, 1.f,
+			Rgba8::YELLOW );
 		AddVertsForDisc2D( verts, m_closestImpactResult.m_impactPos, 0.5f, Rgba8::WHITE, 16 );
 	}
 	else
@@ -188,48 +189,47 @@ void GameRaycastVsDiscs::Render() const
 
 
 //-----------------------------------------------------------------------------------------------
-void GameRaycastVsDiscs::GenerateRandomDiscs()
+void GameRaycastVsLineSegment::GenerateRandomLineSegments()
 {
 	RandomNumberGenerator rng;
 
-	for ( int discIndex = 0; discIndex < MAX_DISCS; ++discIndex )
+	for ( int lineSegmentIndex = 0; lineSegmentIndex < MAX_LINE_SEGMENTS; ++lineSegmentIndex )
 	{
-		Vec2 discCenter = Vec2( rng.RollRandomFloatInRange( 15.f, 185.f ), rng.RollRandomFloatInRange( 15.f, 85.f ) );
-		float discRadius = rng.RollRandomFloatInRange( 5.f, 15.f );
-
-		TestShapeDisc* disc = new TestShapeDisc( discCenter, discRadius, 32 );
-		m_testDiscs[discIndex] = disc;
+		Vec2 lineStart = Vec2( rng.RollRandomFloatInRange( 15.f, 185.f ), rng.RollRandomFloatInRange( 15.f, 85.f ) );
+		float directionDegrees = rng.RollRandomFloatInRange( 0.f, 360.f );
+		Vec2 lineDirection = Vec2::MakeFromPolarDegrees( directionDegrees );
+		float lineLength = rng.RollRandomFloatInRange( 10.f, 30.f );
+		Vec2 lineEnd = lineStart + lineDirection * lineLength;
+		TestShapeLineSegment* lineSegment = new TestShapeLineSegment( lineStart, lineEnd, 0.3f, false );
+		m_testLineSegments[lineSegmentIndex] = lineSegment;
 	}
 }
 
 
 //-----------------------------------------------------------------------------------------------
-void GameRaycastVsDiscs::RaycastVsDiscs()
+void GameRaycastVsLineSegment::RaycastVsLineSegments()
 {
-	m_closestImpactDiscIndex = -1;
+	m_closestImpactLineSegmentIndex = -1;
 	m_closestImpactResult = RaycastResult2D();
 	m_closestImpactResult.m_impactDist = FLT_MAX;
 
-	Vec2 rayDirection = ( m_rayEndPos - m_rayStartPos ).GetNormalized();
-	float rayLength = ( m_rayEndPos - m_rayStartPos ).GetLength();
-	for ( int discIndex = 0; discIndex < MAX_DISCS; ++discIndex )
+	Vec2 rayForwardNormal = ( m_rayEndPos - m_rayStartPos ).GetNormalized();
+	float rayMaxDist = ( m_rayEndPos - m_rayStartPos ).GetLength();
+	for ( int lineSegmentIndex = 0; lineSegmentIndex < MAX_LINE_SEGMENTS; ++lineSegmentIndex )
 	{
-		TestShapeDisc* disc = m_testDiscs[discIndex];
-		RaycastResult2D result = RaycastVsDisc2D( m_rayStartPos, rayDirection, rayLength, disc->m_center, disc->m_radius );
-		if ( result.m_didImpact )
+		TestShapeLineSegment* lineSegment = m_testLineSegments[lineSegmentIndex];
+		RaycastResult2D result = RaycastVsLineSegment2D( m_rayStartPos, rayForwardNormal, rayMaxDist, lineSegment->m_start, lineSegment->m_end );
+		if ( result.m_didImpact && result.m_impactDist < m_closestImpactResult.m_impactDist )
 		{
-			if ( result.m_impactDist < m_closestImpactResult.m_impactDist )
-			{
-				m_closestImpactDiscIndex = discIndex;
-				m_closestImpactResult = result;
-			}
+			m_closestImpactLineSegmentIndex = lineSegmentIndex;
+			m_closestImpactResult = result;
 		}
 	}
 }
 
 
 //-----------------------------------------------------------------------------------------------
-Vec2 GameRaycastVsDiscs::GetMouseWorldPos() const
+Vec2 GameRaycastVsLineSegment::GetMouseWorldPos() const
 {
 	Vec2 mouseUV = g_engine->m_window->GetNormalizedMouseUV();
 	Vec2 cameraBottomLeft = m_worldCamera->GetOrthoBottomLeft();

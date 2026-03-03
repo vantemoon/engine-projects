@@ -30,6 +30,7 @@
     <ClCompile Include="GameCommon.cpp" />
     <ClCompile Include="GameNearestPoint.cpp" />
     <ClCompile Include="GameRaycastVsDiscs.cpp" />
+    <ClCompile Include="GameRaycastVsLineSegment.cpp" />
     <ClCompile Include="Main_Windows.cpp" />
     <ClCompile Include="TestShape.cpp" />
     <ClCompile Include="TestShapeAABB.cpp" />
@@ -47,6 +48,7 @@
     <ClInclude Include="GameCommon.hpp" />
     <ClInclude Include="GameNearestPoint.hpp" />
     <ClInclude Include="GameRaycastVsDiscs.hpp" />
+    <ClInclude Include="GameRaycastVsLineSegment.hpp" />
     <ClInclude Include="TestShape.hpp" />
     <ClInclude Include="TestShapeAABB.hpp" />
     <ClInclude Include="TestShapeCapsule.hpp" />

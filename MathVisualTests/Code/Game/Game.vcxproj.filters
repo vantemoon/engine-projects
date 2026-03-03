@@ -55,6 +55,9 @@
     <ClCompile Include="TestShapeTriangle.cpp">
       <Filter>Test Shape</Filter>
     </ClCompile>
+    <ClCompile Include="GameRaycastVsLineSegment.cpp">
+      <Filter>Gameplay</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.hpp">
@@ -95,6 +98,9 @@
     </ClInclude>
     <ClInclude Include="TestShapeOBB.hpp">
       <Filter>Test Shape</Filter>
+    </ClInclude>
+    <ClInclude Include="GameRaycastVsLineSegment.hpp">
+      <Filter>Gameplay</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

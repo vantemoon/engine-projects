@@ -2,6 +2,7 @@
 #include "Game/Game.hpp"
 #include "Game/GameNearestPoint.hpp"
 #include "Game/GameRaycastVsDiscs.hpp"
+#include "Game/GameRaycastVsLineSegment.hpp"
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/Rgba8.hpp"
 #include "Engine/Core/SimpleTriangleFont.hpp"
@@ -133,6 +134,10 @@ void App::HardReset( GameMode newGameMode )
 			m_game = new GameRaycastVsDiscs();
 			break;
 
+		case GAMEMODE_RAYCAST_VS_LINE_SEGMENTS:
+			m_game = new GameRaycastVsLineSegment();
+			break;
+
 		case NUM_GAME_MODES:
 			break;
 
@@ -177,6 +182,9 @@ void App::RenderHUD() const
 		case GAMEMODE_RAYCAST_VS_DISCS:
 			AddVertsForTextTriangles2D( verts, "Raycast Vs. Disc (2D)", Vec2( 280.f, 760.f ), 20.f, Rgba8::YELLOW );
 			break;
+		case GAMEMODE_RAYCAST_VS_LINE_SEGMENTS:
+			AddVertsForTextTriangles2D( verts, "Raycast Vs. Line Segments (2D)", Vec2( 280.f, 760.f ), 20.f, Rgba8::YELLOW );
+			break;
 		default:
 			break;
 	}
@@ -187,6 +195,9 @@ void App::RenderHUD() const
 			AddVertsForTextTriangles2D( verts, "WASD/Arrow: move reference point, hold T: slow", Vec2( 240.f, 730.f ), 20.f, Rgba8::CYAN );
 			break;
 		case GAMEMODE_RAYCAST_VS_DISCS:
+			AddVertsForTextTriangles2D( verts, "LMB/RMB set ray start/end; WASD move start, IJKL move end, arrows move ray, hold T: slow", Vec2( 240.f, 730.f ), 20.f, Rgba8::CYAN );
+			break;
+		case GAMEMODE_RAYCAST_VS_LINE_SEGMENTS:
 			AddVertsForTextTriangles2D( verts, "LMB/RMB set ray start/end; WASD move start, IJKL move end, arrows move ray, hold T: slow", Vec2( 240.f, 730.f ), 20.f, Rgba8::CYAN );
 			break;
 		default:
