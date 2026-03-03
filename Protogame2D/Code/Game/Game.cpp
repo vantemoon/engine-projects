@@ -316,8 +316,8 @@ void Game::RenderAttractMode() const
 
 	Vertex triangleVertexArray[3];
 	triangleVertexArray[0].m_position = Vec3( centerX - triSize, centerY - triSize, 0.f );
-	triangleVertexArray[1].m_position = Vec3( centerX - triSize, centerY + triSize, 0.f );
-	triangleVertexArray[2].m_position = Vec3( centerX + triSize, centerY, 0.f );
+	triangleVertexArray[1].m_position = Vec3( centerX + triSize, centerY, 0.f );
+	triangleVertexArray[2].m_position = Vec3( centerX - triSize, centerY + triSize, 0.f );
 
 	float triAlpha = 0.55f + 0.45f * SinDegrees( currentTime * 180.f );
 	Rgba8 triangleColor = Rgba8( 0, 153, 0, ( unsigned char ) ( triAlpha * 255.f ) );
@@ -330,7 +330,7 @@ void Game::RenderAttractMode() const
 	AddVertsForTextTriangles2D( verts, "PROTOGAME2D", Vec2( 10.f, SCREEN_SIZE_Y - 30.f ), 24.f, Rgba8( 255, 255, 255 ) );
 
 	// Texture
-	Texture* testTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Image/Test_StbiFlippedAndOpenGL.png" );
+	Texture* testTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/Test_StbiFlippedAndOpenGL.png" );
 	std::vector<Vertex> testTextureVerts;
 	AABB2 texturedAABB2( 300.f, 100.f, 800.f, 600.f );
 	AddVertsForAABB2D( testTextureVerts, texturedAABB2, Rgba8( 255, 255, 255, 255 ) ); // This should now set UVs on each Vertex!!
