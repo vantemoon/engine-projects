@@ -1,5 +1,6 @@
 #include "Game/App.hpp"
 #include "Game/Game.hpp"
+#include "Game/GameCommon.hpp"
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/Rgba8.hpp"
 #include "Engine/Core/Time.hpp"
@@ -39,9 +40,13 @@ void App::Startup()
 {
 	LoadGameConfigFromFile( "Data/GameConfig.xml" );
 
+	m_devConsoleCamera = new Camera();
+	m_devConsoleCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( 1600.f, 800.f ) );
+
 	EngineConfig engineConfig;
 	engineConfig.m_windowConfig.m_clientAspect = g_gameConfigBlackboard.GetValue( "windowAspect", 2.0f );
 	engineConfig.m_windowConfig.m_windowTitle = g_gameConfigBlackboard.GetValue( "windowTitle", "Libra" );
+	engineConfig.m_devConsoleConfig.m_camera = m_devConsoleCamera;
 
 	g_engine = new Engine( engineConfig );
 

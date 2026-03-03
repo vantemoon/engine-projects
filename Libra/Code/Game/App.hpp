@@ -37,6 +37,7 @@ public:
 
 public:
 	Game*			m_game = nullptr;
+	Camera*			m_devConsoleCamera = nullptr;
 
 	double			m_lastFrameStartTime = 0.0;
 	bool			m_isQuitting = false;
