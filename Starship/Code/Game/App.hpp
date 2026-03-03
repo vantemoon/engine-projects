@@ -35,5 +35,6 @@ public:
 
 public:
 	Game*			m_game = nullptr;
+	Camera*			m_devConsoleCamera = nullptr;
 	bool			m_isQuitting = false;
 };

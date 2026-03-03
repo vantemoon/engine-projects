@@ -95,6 +95,8 @@ public:
 	void Reset();
 	void KillAllEnemies(); // For testing and debugging
 
+	static bool Command_Controls( EventArgs& args );
+
 private:
 	void DeleteGarbageEntities();
 	void DebugDraw()												   const;

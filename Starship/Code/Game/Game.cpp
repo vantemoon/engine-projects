@@ -44,6 +44,9 @@ Game::Game()
 
 	g_engine->m_eventSystem->SubscribeEventCallbackFunction( "SetTimeScale", Command_SetTimeScale );
 	g_engine->m_eventSystem->SetEventRequiredArgs( "SetTimeScale", { "scale=<float>" } );
+
+	// Register console commands
+	g_engine->m_eventSystem->SubscribeEventCallbackFunction( "Controls", Command_Controls );
 }
 
 
@@ -1918,26 +1921,26 @@ int Game::FindFreeEntityIndex( Entity** entityList, int maxCount ) const
 //-----------------------------------------------------------------------------------------------
 void Game::AddInstructionsToDevConsole()
 {
-	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MAJOR, "Keyboard" );
-	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "" );
-	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "A/D:        Rotate ship left/right" );
-	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "W:          Apply thrust" );
-	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "Space:      Fire a bullet" );
-	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "T:          Enter the scan mode, time slowed to 1/10" );
-	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "Arrow Keys: Change the selected target (only in scan mode)" );
-	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "F:          Detonate/telefrag the selected target (only in scan mode)" );
-	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "N:          Respawn if dead" );
-	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "P:          Pause or resume" );
-	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "O:          Advance one frame, then pause" );
-	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "Esc:        Return to Attract mode or exit if already there" );
-	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MAJOR, "Keyboard" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "A/D:        Rotate ship left/right" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "W:          Apply thrust" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "Space:      Fire a bullet" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "T:          Enter the scan mode, time slowed to 1/10" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "Arrow Keys: Change the selected target (only in scan mode)" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "F:          Detonate/telefrag the selected target (only in scan mode)" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "N:          Respawn if dead" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "P:          Pause or resume" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "O:          Advance one frame, then pause" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "Esc:        Return to Attract mode or exit if already there" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "" );
 
-	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MAJOR, "Debug" );
-	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "" );
-	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "F1:         Toggle debug mode" );
-	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "F8:         Hard-reset the game (only in debug mode)" );
-	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "I:          Spawn an asteroid (only in debug mode)" );
-	g_engine->m_devConsole->AddLineWithoutTimestamp( DevConsole::INFO_MINOR, "K:          Kill all hostile entities in this wave (only in debug mode)" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MAJOR, "Debug" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "F1:         Toggle debug mode" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "F8:         Hard-reset the game (only in debug mode)" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "I:          Spawn an asteroid (only in debug mode)" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "K:          Kill all hostile entities in this wave (only in debug mode)" );
 }
 
 
@@ -1949,11 +1952,24 @@ bool Game::Command_SetTimeScale( EventArgs& args )
 		float timeScale = args.GetValue( "scale", 1.f );
 		if (!g_app->m_game)
 		{
-			g_engine->m_devConsole->AddLine( DevConsole::INFO_MINOR, "No game instance available to set time scale on." );
+			g_engine->m_devConsole->AddLine( Rgba8::INFO_MINOR, "No game instance available to set time scale on." );
 			return false;
 		}
 		g_app->m_game->m_gameClock->SetTimeScale( timeScale );
-		g_engine->m_devConsole->AddLine( DevConsole::INFO_MAJOR, "Game clock time scale set to " + std::to_string( timeScale ) );
+		g_engine->m_devConsole->AddLine( Rgba8::INFO_MAJOR, "Game clock time scale set to " + std::to_string( timeScale ) );
+	}
+	return false;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool Game::Command_Controls( EventArgs& args )
+{
+	UNUSED( args );
+	if ( g_engine && g_engine->m_devConsole )
+	{
+		g_app->m_game->AddInstructionsToDevConsole();
+		return true;
 	}
 	return false;
 }
