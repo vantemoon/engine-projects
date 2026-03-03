@@ -375,6 +375,7 @@ void Game::RenderEntities() const
 	squareVertexArray[4].m_color = squareColor;
 	squareVertexArray[5].m_color = squareColor;
 
+	g_engine->m_renderer->BindTexture( nullptr );
 	g_engine->m_renderer->DrawVertexArray( 6, squareVertexArray );
 
 	g_engine->m_renderer->EndCamera( *m_worldCamera );
@@ -400,14 +401,10 @@ void Game::RenderHUD() const
 //-----------------------------------------------------------------------------------------------
 void Game::RenderDevConsole() const
 {
-	g_engine->m_renderer->BeginCamera( *m_screenCamera );
-
 	float screenWidth = g_gameConfigBlackboard.GetValue( "windowWidth", 1600.f );
 	float screenHeight = g_gameConfigBlackboard.GetValue( "windowHeight", 800.f );
 	AABB2 devConsoleBounds = AABB2( 0.f, 0.f, screenWidth, screenHeight );
 	g_engine->m_devConsole->Render( devConsoleBounds );
-
-	g_engine->m_renderer->EndCamera( *m_screenCamera );
 }
 
 
