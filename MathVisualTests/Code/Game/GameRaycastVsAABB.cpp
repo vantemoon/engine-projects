@@ -1,4 +1,4 @@
-#include "Game/GameRaycastVsLineSegment.hpp"
+#include "Game/GameRaycastVsAABB.hpp"
 #include "Game/GameCommon.hpp"
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/Vertex.hpp"
@@ -12,9 +12,9 @@
 
 
 //-----------------------------------------------------------------------------------------------
-GameRaycastVsLineSegment::GameRaycastVsLineSegment()
+GameRaycastVsAABB::GameRaycastVsAABB()
 {
-	GenerateRandomLineSegments();
+	GenerateRandomAABBs();
 	for ( int raySegmentIndex = 0; raySegmentIndex < MAX_BOUNCES + 1; ++raySegmentIndex )
 	{
 		m_raySegmentDidHit[raySegmentIndex] = -1;
@@ -23,32 +23,32 @@ GameRaycastVsLineSegment::GameRaycastVsLineSegment()
 
 
 //-----------------------------------------------------------------------------------------------
-GameRaycastVsLineSegment::~GameRaycastVsLineSegment()
+GameRaycastVsAABB::~GameRaycastVsAABB()
 {
 }
 
 
 //-----------------------------------------------------------------------------------------------
-void GameRaycastVsLineSegment::Update( float deltaSeconds )
+void GameRaycastVsAABB::Update( float deltaSeconds )
 {
 	UNUSED( deltaSeconds );
-
+	
 	if ( m_isSlowMo )
 	{
 		deltaSeconds *= 0.1f;
 	}
-
+	
 	m_worldCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( WORLD_SIZE_X, WORLD_SIZE_Y ) );
 	m_screenCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) );
-
-	RaycastVsLineSegments();
+	
+	RaycastVsAABBs();
 	UpdateFromKeyboard();
 	Render();
 }
 
 
 //-----------------------------------------------------------------------------------------------
-void GameRaycastVsLineSegment::UpdateFromKeyboard()
+void GameRaycastVsAABB::UpdateFromKeyboard()
 {
 	float moveSpeed = 0.5f;
 	if ( m_isSlowMo )
@@ -137,13 +137,13 @@ void GameRaycastVsLineSegment::UpdateFromKeyboard()
 	// Randomize all shape positions with F8
 	if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_F8 ) )
 	{
-		GenerateRandomLineSegments();
+		GenerateRandomAABBs();
 	}
 }
 
 
 //-----------------------------------------------------------------------------------------------
-void GameRaycastVsLineSegment::Render() const
+void GameRaycastVsAABB::Render() const
 {
 	g_engine->m_renderer->BeginCamera( *m_worldCamera );
 
@@ -152,11 +152,11 @@ void GameRaycastVsLineSegment::Render() const
 
 	std::vector<Vertex> verts;
 
-	for ( int lineSegmentIndex = 0; lineSegmentIndex < MAX_LINE_SEGMENTS; ++lineSegmentIndex )
+	for ( int aabbIndex = 0; aabbIndex < MAX_AABBS; ++aabbIndex )
 	{
-		TestShapeLineSegment* lineSegment = m_testLineSegments[lineSegmentIndex];
-		Rgba8 lineColor = m_lineSegmentWasImpacted[lineSegmentIndex] ? lightBlue : darkBlue;
-		AddVertsForLineSegment2D( verts, lineSegment->m_start, lineSegment->m_end, 0.3f, lineColor );
+		TestShapeAABB* aabb = m_testAABBs[aabbIndex];
+		Rgba8 aabbColor = m_aabbWasImpacted[aabbIndex] ? lightBlue : darkBlue;
+		AddVertsForAABB2D( verts, aabb->m_alignedBox, aabbColor, Vec2( 0.f, 0.f ), Vec2( 1.f, 1.f ) );
 	}
 
 	if ( m_numRaySegments == 0 )
@@ -168,7 +168,6 @@ void GameRaycastVsLineSegment::Render() const
 	{
 		RaycastResult2D const& raySegment = m_raySegmentResults[raySegmentIndex];
 		Vec2 segmentMaxEndPos = raySegment.m_rayStartPos + raySegment.m_rayFwdNormal * raySegment.m_rayMaxLength;
-
 		if ( raySegment.m_didImpact )
 		{
 			AddVertsForArrow2D( verts, raySegment.m_rayStartPos, segmentMaxEndPos, 0.3f, 1.f, Rgba8( 190, 190, 190 ) );
@@ -190,31 +189,35 @@ void GameRaycastVsLineSegment::Render() const
 
 
 //-----------------------------------------------------------------------------------------------
-void GameRaycastVsLineSegment::GenerateRandomLineSegments()
+void GameRaycastVsAABB::GenerateRandomAABBs()
 {
 	RandomNumberGenerator rng;
 
-	for ( int lineSegmentIndex = 0; lineSegmentIndex < MAX_LINE_SEGMENTS; ++lineSegmentIndex )
+	for ( int aabbIndex = 0; aabbIndex < MAX_AABBS; ++aabbIndex )
 	{
-		Vec2 lineStart = Vec2( rng.RollRandomFloatInRange( 15.f, 185.f ), rng.RollRandomFloatInRange( 15.f, 85.f ) );
-		float directionDegrees = rng.RollRandomFloatInRange( 0.f, 360.f );
-		Vec2 lineDirection = Vec2::MakeFromPolarDegrees( directionDegrees );
-		float lineLength = rng.RollRandomFloatInRange( 10.f, 30.f );
-		Vec2 lineEnd = lineStart + lineDirection * lineLength;
-		TestShapeLineSegment* lineSegment = new TestShapeLineSegment( lineStart, lineEnd, 0.3f, false );
-		m_testLineSegments[lineSegmentIndex] = lineSegment;
+		float boxWidth = rng.RollRandomFloatInRange( 5.f, 20.f );
+		float boxHeight = rng.RollRandomFloatInRange( 5.f, 20.f );
+		float boxLeft = rng.RollRandomFloatInRange( 0.f, WORLD_SIZE_X - boxWidth );
+		float boxBottom = rng.RollRandomFloatInRange( 0.f, WORLD_SIZE_Y - boxHeight );
+		m_testAABBs[aabbIndex] = new TestShapeAABB( AABB2( Vec2( boxLeft, boxBottom ), Vec2( boxLeft + boxWidth, boxBottom + boxHeight ) ) );
+		m_aabbWasImpacted[aabbIndex] = false;
 	}
 }
 
 
 //-----------------------------------------------------------------------------------------------
-void GameRaycastVsLineSegment::RaycastVsLineSegments()
+void GameRaycastVsAABB::RaycastVsAABBs()
 {
 	m_numRaySegments = 0;
 
-	for ( int lineSegmentIndex = 0; lineSegmentIndex < MAX_LINE_SEGMENTS; ++ lineSegmentIndex )
+	for ( int raySegmentIndex = 0; raySegmentIndex < MAX_BOUNCES + 1; ++raySegmentIndex )
 	{
-		m_lineSegmentWasImpacted[lineSegmentIndex] = false;
+		m_raySegmentDidHit[raySegmentIndex] = -1;
+	}
+
+	for ( int aabbIndex = 0; aabbIndex < MAX_AABBS; ++aabbIndex )
+	{
+		m_aabbWasImpacted[aabbIndex] = false;
 	}
 
 	Vec2 initialRayVector = m_rayEndPos - m_rayStartPos;
@@ -225,56 +228,61 @@ void GameRaycastVsLineSegment::RaycastVsLineSegments()
 	}
 
 	Vec2 currentRayStartPos = m_rayStartPos;
-	Vec2 currentRayFwdNormal = initialRayVector.GetNormalized();
-	float remainingLength = totalMaxLength;
+	Vec2 currentRayFwdNormal = initialRayVector / totalMaxLength;
+	float remainingMaxLength = totalMaxLength;
 
-	for ( int bounceIndex = 0; bounceIndex < MAX_BOUNCES && remainingLength > 0.f; ++ bounceIndex )
+	for ( int raySegmentIndex = 0; raySegmentIndex < MAX_BOUNCES + 1; ++raySegmentIndex )
 	{
-		m_raySegmentDidHit[m_numRaySegments] = -1;
+		m_raySegmentDidHit[raySegmentIndex] = -1;
 
-		RaycastResult2D closestImpactResult;
-		closestImpactResult.m_rayStartPos = currentRayStartPos;
-		closestImpactResult.m_rayFwdNormal = currentRayFwdNormal;
-		closestImpactResult.m_rayMaxLength = remainingLength;
-		closestImpactResult.m_didImpact = false;
-		closestImpactResult.m_impactDist = FLT_MAX;
+		RaycastResult2D closestImpact;
+		closestImpact.m_rayStartPos = currentRayStartPos;
+		closestImpact.m_rayFwdNormal = currentRayFwdNormal;
+		closestImpact.m_rayMaxLength = remainingMaxLength;
+		closestImpact.m_didImpact = false;
 
-		for ( int lineSegmentIndex = 0; lineSegmentIndex < MAX_LINE_SEGMENTS; ++ lineSegmentIndex )
+		bool rayStartInside = false;
+
+		for ( int aabbIndex = 0; aabbIndex < MAX_AABBS; ++aabbIndex )
 		{
-			TestShapeLineSegment* lineSegment = m_testLineSegments[lineSegmentIndex];
-			RaycastResult2D result = RaycastVsLineSegment2D( currentRayStartPos, currentRayFwdNormal, remainingLength, lineSegment->m_start, lineSegment->m_end );
-			if ( result.m_didImpact && ( !closestImpactResult.m_didImpact || result.m_impactDist < closestImpactResult.m_impactDist ) )
+			RaycastResult2D impact = RaycastVsAABB2D( currentRayStartPos, currentRayFwdNormal, remainingMaxLength, m_testAABBs[aabbIndex]->m_alignedBox );
+
+			if ( impact.m_didImpact && ( !closestImpact.m_didImpact || impact.m_impactDist < closestImpact.m_impactDist ) )
 			{
-				closestImpactResult = result;
-				m_raySegmentDidHit[m_numRaySegments] = lineSegmentIndex;
+				closestImpact = impact;
+				m_raySegmentDidHit[raySegmentIndex] = aabbIndex;
 			}
+
+			if ( impact.m_didImpact && impact.m_impactDist <= 0.f ) rayStartInside = true;
 		}
 
-		m_raySegmentResults[m_numRaySegments] = closestImpactResult;
-		++ m_numRaySegments;
+		m_raySegmentResults[raySegmentIndex] = closestImpact;
+		m_numRaySegments = raySegmentIndex + 1;
 
-		if ( !closestImpactResult.m_didImpact )
+		if ( !closestImpact.m_didImpact )
 		{
 			break;
 		}
 
-		m_lineSegmentWasImpacted[m_raySegmentDidHit[m_numRaySegments - 1]] = true;
+		m_aabbWasImpacted[m_raySegmentDidHit[raySegmentIndex]] = true;
 
-		remainingLength -= closestImpactResult.m_impactDist;
-		if ( remainingLength <= 0.f )
+		remainingMaxLength -= closestImpact.m_impactDist + RAY_BOUNCE_RESTART_OFFSET;
+		if ( remainingMaxLength <= 0.f )
 		{
 			break;
 		}
 
-		Vec2 reflectedDirection = currentRayFwdNormal.GetReflected( closestImpactResult.m_impactNormal ).GetNormalized();
-		currentRayStartPos = closestImpactResult.m_impactPos - currentRayFwdNormal * RAY_BOUNCE_RESTART_OFFSET;
-		currentRayFwdNormal = reflectedDirection;
+		if ( !rayStartInside )
+		{
+			currentRayStartPos = closestImpact.m_impactPos + closestImpact.m_impactNormal * RAY_BOUNCE_RESTART_OFFSET;
+			currentRayFwdNormal = currentRayFwdNormal.GetReflected( closestImpact.m_impactNormal ).GetNormalized();
+		}
 	}
 }
 
 
 //-----------------------------------------------------------------------------------------------
-Vec2 GameRaycastVsLineSegment::GetMouseWorldPos() const
+Vec2 GameRaycastVsAABB::GetMouseWorldPos() const
 {
 	Vec2 mouseUV = g_engine->m_window->GetNormalizedMouseUV();
 	Vec2 cameraBottomLeft = m_worldCamera->GetOrthoBottomLeft();
