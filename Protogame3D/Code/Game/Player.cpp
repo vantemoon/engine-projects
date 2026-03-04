@@ -78,6 +78,12 @@ void Player::UpdateFromKeyboard( float deltaSeconds )
 	float movementSpeed = 2.f;
 	float rotationSpeed = 90.f;
 
+	// Increase movement speed by 10
+	if ( g_engine->m_inputSystem->IsKeyDown( KEYCODE_SHIFT ) )
+	{
+		movementSpeed *= 10.f;
+	}
+
 	// Roll (clamped)
 	if ( g_engine->m_inputSystem->IsKeyDown( 'Q' ) )
 	{
@@ -96,13 +102,6 @@ void Player::UpdateFromKeyboard( float deltaSeconds )
 	Vec3 forwardVector = orientationMat.GetIBasis3D();
 	Vec3 leftVector = orientationMat.GetJBasis3D();
 	Vec3 upVector = orientationMat.GetKBasis3D();
-
-	// Increase movement speed by 10
-	if ( g_engine->m_inputSystem->IsKeyDown( KEYCODE_SHIFT ) )
-	{
-		movementSpeed *= 10.f;
-		rotationSpeed *= 10.f;
-	}
 
 	// Left and right movement
 	if ( g_engine->m_inputSystem->IsKeyDown( 'A' ) )
@@ -155,6 +154,12 @@ void Player::UpdateFromController( float deltaSeconds )
 	float movementSpeed = 2.f;
 	float rotationSpeed = 90.f;
 
+	// Increase movement speed by 10
+	if ( controller.IsButtonDown( XBOX_BUTTON_A ) )
+	{
+		movementSpeed *= 10.f;
+	}
+
 	// Yaw (not clamped)
 	m_orientation.m_yawDegrees -= rightStickPosition.x * rotationSpeed * deltaSeconds;
 
@@ -167,13 +172,6 @@ void Player::UpdateFromController( float deltaSeconds )
 	float leftTriggerRoll = leftTrigger * rotationSpeed * deltaSeconds;
 	float roll = GetClamped( m_orientation.m_rollDegrees + rightTriggerRoll + leftTriggerRoll, -45.f, 45.f );
 	m_orientation.m_rollDegrees = roll;
-
-	// Increase movement speed by 10
-	if ( controller.IsButtonDown( XBOX_BUTTON_A ) )
-	{
-		movementSpeed *= 10.f;
-		rotationSpeed *= 10.f;
-	}
 
 	Vec3 forward, left, up;
 	m_orientation.GetAsVectors_IFwd_JLeft_KUp( forward, left, up );
