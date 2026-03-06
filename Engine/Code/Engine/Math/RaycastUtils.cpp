@@ -1,4 +1,5 @@
 #include "Engine/Math/RaycastUtils.hpp"
+#include "Engine/Math/FloatRange.hpp"
 #include "Engine/Math/MathUtils.hpp"
 #include <math.h>
 
@@ -56,6 +57,11 @@ RaycastResult2D RaycastVsLineSegment2D( Vec2 startPos, Vec2 fwdNormal, float max
 	result.m_rayMaxLength = maxDist;
 	result.m_didImpact = false;
 
+	if ( maxDist < 0.f )
+	{
+		return result;
+	}
+
 	Vec2 lineVector = lineEnd - lineStart;
 	Vec2 lineDirection = lineVector.GetNormalized();
 	Vec2 perpendicular = fwdNormal.GetRotatedBy90Degrees();
@@ -92,6 +98,118 @@ RaycastResult2D RaycastVsLineSegment2D( Vec2 startPos, Vec2 fwdNormal, float max
 	result.m_didImpact = true;
 	result.m_impactDist = impactDist;
 	result.m_impactPos = impactPos;
+	result.m_impactNormal = impactNormal;
+	return result;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+RaycastResult2D RaycastVsAABB2D( Vec2 startPos, Vec2 fwdNormal, float maxDist, AABB2 box )
+{
+	RaycastResult2D result;
+	result.m_rayStartPos = startPos;
+	result.m_rayFwdNormal = fwdNormal;
+	result.m_rayMaxLength = maxDist;
+	result.m_didImpact = false;
+
+	if ( maxDist < 0.f )
+	{
+		return result;
+	}
+
+	if ( IsPointInsideAABB2D( startPos, box ) )
+	{
+		result.m_didImpact = true;
+		result.m_impactDist = 0.f;
+		result.m_impactPos = startPos;
+		result.m_impactNormal = -fwdNormal;
+		return result;
+	}
+
+	FloatRange tRange( 0.f, maxDist );
+
+	Vec2 nearNormalX( 0.f, 0.f );
+	Vec2 nearNormalY( 0.f, 0.f );
+
+	if ( fwdNormal.x == 0.f )
+	{
+		if ( startPos.x < box.m_mins.x || startPos.x > box.m_maxs.x )
+		{
+			return result;
+		}
+	}
+	else
+	{
+		float tNear = ( box.m_mins.x - startPos.x ) / fwdNormal.x;
+		float tFar = ( box.m_maxs.x - startPos.x ) / fwdNormal.x;
+
+		Vec2 nearNormal( -1.f, 0.f );
+		Vec2 farNormal( 1.f, 0.f );
+
+		if ( tNear > tFar )
+		{
+			float tempT = tNear; tNear = tFar; tFar = tempT;
+			Vec2  tempN = nearNormal; nearNormal = farNormal; farNormal = tempN;
+		}
+
+		nearNormalX = nearNormal;
+
+		tRange.m_min = fmaxf( tRange.m_min, tNear );
+		tRange.m_max = fminf( tRange.m_max, tFar );
+		if ( tRange.m_min > tRange.m_max )
+		{
+			return result;
+		}
+	}
+
+	float tEnterX = tRange.m_min;
+
+	if ( fwdNormal.y == 0.f )
+	{
+		if ( startPos.y < box.m_mins.y || startPos.y > box.m_maxs.y )
+		{
+			return result;
+		}
+	}
+	else
+	{
+		float tNear = ( box.m_mins.y - startPos.y ) / fwdNormal.y;
+		float tFar = ( box.m_maxs.y - startPos.y ) / fwdNormal.y;
+
+		Vec2 nearNormal( 0.f, -1.f );
+		Vec2 farNormal( 0.f, 1.f );
+
+		if ( tNear > tFar )
+		{
+			float tempT = tNear; tNear = tFar; tFar = tempT;
+			Vec2  tempN = nearNormal; nearNormal = farNormal; farNormal = tempN;
+		}
+
+		nearNormalY = nearNormal;
+
+		tRange.m_min = fmaxf( tRange.m_min, tNear );
+		tRange.m_max = fminf( tRange.m_max, tFar );
+		if ( tRange.m_min > tRange.m_max )
+		{
+			return result;
+		}
+	}
+
+	float tEnter = tRange.m_min;
+	if ( tEnter > maxDist )
+	{
+		return result;
+	}
+
+	Vec2 impactNormal = nearNormalX;
+	if ( tEnter > tEnterX )
+	{
+		impactNormal = nearNormalY;
+	}
+
+	result.m_didImpact = true;
+	result.m_impactDist = tEnter;
+	result.m_impactPos = startPos + fwdNormal * tEnter;
 	result.m_impactNormal = impactNormal;
 	return result;
 }

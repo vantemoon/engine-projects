@@ -345,6 +345,15 @@ bool DoSpheresOverlap( Vec3 const& centerA, float radiusA, Vec3 const& centerB, 
 
 
 //-----------------------------------------------------------------------------------------------
+bool DoAABBsOverlap( AABB2 const& alignedBoxA, AABB2 const& alignedBoxB )
+{
+	bool doOverlap = ( alignedBoxA.m_mins.x < alignedBoxB.m_maxs.x ) && ( alignedBoxA.m_maxs.x > alignedBoxB.m_mins.x ) &&
+					 ( alignedBoxA.m_mins.y < alignedBoxB.m_maxs.y ) && ( alignedBoxA.m_maxs.y > alignedBoxB.m_mins.y );
+	return doOverlap;
+}
+
+
+//-----------------------------------------------------------------------------------------------
 bool PushDiscOutOfFixedPoint2D( Vec2& mobileDiscCenter, float mobileDiscRadius, Vec2 const& fixedPoint )
 {
 	Vec2 toMobile = mobileDiscCenter - fixedPoint;

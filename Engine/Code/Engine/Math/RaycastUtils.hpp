@@ -1,4 +1,5 @@
 #pragma once
+#include "Engine/Math/AABB2.hpp"
 #include "Engine/Math/Vec2.hpp"
 
 //-----------------------------------------------------------------------------------------------
@@ -20,3 +21,4 @@ struct RaycastResult2D
 //-----------------------------------------------------------------------------------------------
 RaycastResult2D RaycastVsDisc2D( Vec2 startPos, Vec2 fwdNormal, float maxDist, Vec2 discCenter, float discRadius );
 RaycastResult2D RaycastVsLineSegment2D( Vec2 startPos, Vec2 fwdNormal, float maxDist, Vec2 lineStart, Vec2 lineEnd );
+RaycastResult2D RaycastVsAABB2D( Vec2 startPos, Vec2 fwdNormal, float maxDist, AABB2 box );
