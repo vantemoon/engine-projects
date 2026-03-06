@@ -155,8 +155,18 @@ void GameRaycastVsLineSegment::Render() const
 	for ( int lineSegmentIndex = 0; lineSegmentIndex < MAX_LINE_SEGMENTS; ++lineSegmentIndex )
 	{
 		TestShapeLineSegment* lineSegment = m_testLineSegments[lineSegmentIndex];
-		Rgba8 lineColor = m_lineSegmentWasImpacted[lineSegmentIndex] ? lightBlue : darkBlue;
-		AddVertsForLineSegment2D( verts, lineSegment->m_start, lineSegment->m_end, 0.3f, lineColor );
+		if ( !m_lineSegmentWasImpacted[lineSegmentIndex] )
+		{
+			AddVertsForLineSegment2D( verts, lineSegment->m_start, lineSegment->m_end, 0.3f, darkBlue );
+		}
+	}
+	for ( int lineSegmentIndex = 0; lineSegmentIndex < MAX_LINE_SEGMENTS; ++lineSegmentIndex )
+	{
+		TestShapeLineSegment* lineSegment = m_testLineSegments[lineSegmentIndex];
+		if ( m_lineSegmentWasImpacted[lineSegmentIndex] )
+		{
+			AddVertsForLineSegment2D( verts, lineSegment->m_start, lineSegment->m_end, 0.3f, lightBlue );
+		}
 	}
 
 	if ( m_numRaySegments == 0 )
