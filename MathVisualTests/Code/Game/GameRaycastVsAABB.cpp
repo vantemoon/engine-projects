@@ -155,8 +155,18 @@ void GameRaycastVsAABB::Render() const
 	for ( int aabbIndex = 0; aabbIndex < MAX_AABBS; ++aabbIndex )
 	{
 		TestShapeAABB* aabb = m_testAABBs[aabbIndex];
-		Rgba8 aabbColor = m_aabbWasImpacted[aabbIndex] ? lightBlue : darkBlue;
-		AddVertsForAABB2D( verts, aabb->m_alignedBox, aabbColor, Vec2( 0.f, 0.f ), Vec2( 1.f, 1.f ) );
+		if ( !m_aabbWasImpacted[aabbIndex] )
+		{
+			AddVertsForAABB2D( verts, aabb->m_alignedBox, darkBlue, Vec2( 0.f, 0.f ), Vec2( 1.f, 1.f ) );
+		}
+	}
+	for ( int aabbIndex = 0; aabbIndex < MAX_AABBS; ++aabbIndex )
+	{
+		TestShapeAABB* aabb = m_testAABBs[aabbIndex];
+		if ( m_aabbWasImpacted[aabbIndex] )
+		{
+			AddVertsForAABB2D( verts, aabb->m_alignedBox, lightBlue, Vec2( 0.f, 0.f ), Vec2( 1.f, 1.f ) );
+		}
 	}
 
 	if ( m_numRaySegments == 0 )
@@ -195,8 +205,8 @@ void GameRaycastVsAABB::GenerateRandomAABBs()
 
 	for ( int aabbIndex = 0; aabbIndex < MAX_AABBS; ++aabbIndex )
 	{
-		float boxWidth = rng.RollRandomFloatInRange( 5.f, 20.f );
-		float boxHeight = rng.RollRandomFloatInRange( 5.f, 20.f );
+		float boxWidth = rng.RollRandomFloatInRange( 10.f, 30.f );
+		float boxHeight = rng.RollRandomFloatInRange( 10.f, 30.f );
 		float boxLeft = rng.RollRandomFloatInRange( 0.f, WORLD_SIZE_X - boxWidth );
 		float boxBottom = rng.RollRandomFloatInRange( 0.f, WORLD_SIZE_Y - boxHeight );
 		m_testAABBs[aabbIndex] = new TestShapeAABB( AABB2( Vec2( boxLeft, boxBottom ), Vec2( boxLeft + boxWidth, boxBottom + boxHeight ) ) );
