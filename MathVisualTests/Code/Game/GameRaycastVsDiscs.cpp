@@ -1,5 +1,4 @@
 #include "Game/GameRaycastVsDiscs.hpp"
-#include "Game/GameCommon.hpp"
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/Vertex.hpp"
 #include "Engine/Core/VertexUtils.hpp"
@@ -15,8 +14,10 @@
 GameRaycastVsDiscs::GameRaycastVsDiscs()
 {
 	GenerateRandomDiscs();
-	m_closestImpactResult = RaycastResult2D();
-	m_closestImpactResult.m_impactDist = FLT_MAX;
+	for ( int raySegmentIndex = 0; raySegmentIndex < MAX_BOUNCES + 1; ++raySegmentIndex )
+	{
+		m_raycastDidHit[raySegmentIndex] = -1;
+	}
 }
 
 
@@ -152,32 +153,41 @@ void GameRaycastVsDiscs::Render() const
 
 	for ( int discIndex = 0; discIndex < MAX_DISCS; ++discIndex )
 	{
-		if ( discIndex == m_closestImpactDiscIndex )
-		{
-			continue;
-		}
 		TestShapeDisc* disc = m_testDiscs[discIndex];
-		Rgba8 discColor = darkBlue;
-		AddVertsForDisc2D( verts, disc->m_center, disc->m_radius, discColor, disc->m_numSides );
+		if ( !m_discWasImpacted[discIndex] )
+		{
+			AddVertsForDisc2D( verts, disc->m_center, disc->m_radius, darkBlue, disc->m_numSides );
+		}
+	}
+	for ( int discIndex = 0; discIndex < MAX_DISCS; ++discIndex )
+	{
+		TestShapeDisc* disc = m_testDiscs[discIndex];
+		if ( m_discWasImpacted[discIndex] )
+		{
+			AddVertsForDisc2D( verts, disc->m_center, disc->m_radius, lightBlue, disc->m_numSides );
+		}
 	}
 
-	if ( m_closestImpactDiscIndex != -1 )
-	{
-		TestShapeDisc* closestDisc = m_testDiscs[m_closestImpactDiscIndex];
-		Rgba8 highlightColor = lightBlue;
-		AddVertsForDisc2D( verts, closestDisc->m_center, closestDisc->m_radius, highlightColor, closestDisc->m_numSides );
-	}
-	
-	if ( m_closestImpactDiscIndex != -1 )
-	{
-		AddVertsForArrow2D( verts, m_rayStartPos, m_rayEndPos, 0.3f, 1.f, Rgba8( 190, 190, 190 ) );
-		AddVertsForArrow2D( verts, m_rayStartPos, m_closestImpactResult.m_impactPos, 0.3f, 1.f, Rgba8::RED );
-		AddVertsForArrow2D( verts, m_closestImpactResult.m_impactPos, m_closestImpactResult.m_impactPos + m_closestImpactResult.m_impactNormal * 10.f, 0.3f, 1.f, Rgba8::YELLOW );
-		AddVertsForDisc2D( verts, m_closestImpactResult.m_impactPos, 0.5f, Rgba8::WHITE, 16 );
-	}
-	else
+	if ( m_numRaySegments == 0 )
 	{
 		AddVertsForArrow2D( verts, m_rayStartPos, m_rayEndPos, 0.3f, 1.f, Rgba8::GREEN );
+	}
+	
+	for ( int raySegmentIndex = 0; raySegmentIndex < m_numRaySegments; ++raySegmentIndex )
+	{
+		RaycastResult2D const& raySegment = m_raycastResults[raySegmentIndex];
+		Vec2 segmentMaxEndPos = raySegment.m_rayStartPos + raySegment.m_rayFwdNormal * raySegment.m_rayMaxLength;
+		if ( raySegment.m_didImpact )
+		{
+			AddVertsForArrow2D( verts, raySegment.m_rayStartPos, segmentMaxEndPos, 0.3f, 1.f, Rgba8( 190, 190, 190 ) );
+			AddVertsForArrow2D( verts, raySegment.m_rayStartPos, raySegment.m_impactPos, 0.3f, 1.f, Rgba8::RED );
+			AddVertsForArrow2D( verts, raySegment.m_impactPos, raySegment.m_impactPos + raySegment.m_impactNormal * 10.f, 0.3f, 1.f, Rgba8::YELLOW );
+			AddVertsForDisc2D( verts, raySegment.m_impactPos, 0.5f, Rgba8::WHITE, 16 );
+		}
+		else
+		{
+			AddVertsForArrow2D( verts, raySegment.m_rayStartPos, segmentMaxEndPos, 0.3f, 1.f, Rgba8::GREEN );
+		}
 	}
 
 	g_engine->m_renderer->BindTexture( nullptr );
@@ -206,23 +216,74 @@ void GameRaycastVsDiscs::GenerateRandomDiscs()
 //-----------------------------------------------------------------------------------------------
 void GameRaycastVsDiscs::RaycastVsDiscs()
 {
-	m_closestImpactDiscIndex = -1;
-	m_closestImpactResult = RaycastResult2D();
-	m_closestImpactResult.m_impactDist = FLT_MAX;
+	m_numRaySegments = 0;
 
-	Vec2 rayDirection = ( m_rayEndPos - m_rayStartPos ).GetNormalized();
-	float rayLength = ( m_rayEndPos - m_rayStartPos ).GetLength();
+	for ( int raySegmentIndex = 0; raySegmentIndex < MAX_BOUNCES + 1; ++raySegmentIndex )
+	{
+		m_raycastDidHit[raySegmentIndex] = -1;
+	}
+
 	for ( int discIndex = 0; discIndex < MAX_DISCS; ++discIndex )
 	{
-		TestShapeDisc* disc = m_testDiscs[discIndex];
-		RaycastResult2D result = RaycastVsDisc2D( m_rayStartPos, rayDirection, rayLength, disc->m_center, disc->m_radius );
-		if ( result.m_didImpact )
+		m_discWasImpacted[discIndex] = false;
+	}
+
+	Vec2 initialRayVector = m_rayEndPos - m_rayStartPos;
+	float totalMaxLength = initialRayVector.GetLength();
+	if ( totalMaxLength <= 0.f )
+	{
+		return;
+	}
+
+	Vec2 currentRayStartPos = m_rayStartPos;
+	Vec2 currentRayFwdNormal = initialRayVector / totalMaxLength;
+	float remainingMaxLength = totalMaxLength;
+
+	for ( int raySegmentIndex = 0; raySegmentIndex < MAX_BOUNCES + 1; ++raySegmentIndex )
+	{
+		m_raycastDidHit[raySegmentIndex] = -1;
+
+		RaycastResult2D closestImpact;
+		closestImpact.m_rayStartPos = currentRayStartPos;
+		closestImpact.m_rayFwdNormal = currentRayFwdNormal;
+		closestImpact.m_rayMaxLength = remainingMaxLength;
+		closestImpact.m_didImpact = false;
+
+		bool rayStartInside = false;
+
+		for ( int discIndex = 0; discIndex < MAX_DISCS; ++discIndex )
 		{
-			if ( result.m_impactDist < m_closestImpactResult.m_impactDist )
+			RaycastResult2D impact = RaycastVsDisc2D( currentRayStartPos, currentRayFwdNormal, remainingMaxLength, m_testDiscs[discIndex]->m_center, m_testDiscs[discIndex]->m_radius );
+			
+			if ( impact.m_didImpact && ( !closestImpact.m_didImpact || impact.m_impactDist < closestImpact.m_impactDist ) )
 			{
-				m_closestImpactDiscIndex = discIndex;
-				m_closestImpactResult = result;
+				closestImpact = impact;
+				m_raycastDidHit[raySegmentIndex] = discIndex;
 			}
+			
+			if ( impact.m_didImpact && impact.m_impactDist <= 0.f ) rayStartInside = true;
+		}
+
+		m_raycastResults[raySegmentIndex] = closestImpact;
+		m_numRaySegments = raySegmentIndex + 1;
+
+		if ( !closestImpact.m_didImpact )
+		{
+			break;
+		}
+
+		m_discWasImpacted[m_raycastDidHit[raySegmentIndex]] = true;
+		
+		remainingMaxLength -= closestImpact.m_impactDist + RAY_BOUNCE_RESTART_OFFSET;
+		if ( remainingMaxLength <= 0.f )
+		{
+			break;
+		}
+
+		if ( !rayStartInside )
+		{
+			currentRayStartPos = closestImpact.m_impactPos + closestImpact.m_impactNormal * RAY_BOUNCE_RESTART_OFFSET;
+			currentRayFwdNormal = currentRayFwdNormal.GetReflected( closestImpact.m_impactNormal ).GetNormalized();
 		}
 	}
 }

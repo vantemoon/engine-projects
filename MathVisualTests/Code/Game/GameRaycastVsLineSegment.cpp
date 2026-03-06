@@ -1,5 +1,4 @@
 #include "Game/GameRaycastVsLineSegment.hpp"
-#include "Game/GameCommon.hpp"
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/Vertex.hpp"
 #include "Engine/Core/VertexUtils.hpp"

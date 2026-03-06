@@ -42,5 +42,8 @@ constexpr float SCREEN_SIZE_Y = 800.f;
 constexpr float SCREEN_CENTER_X = SCREEN_SIZE_X / 2.f;
 constexpr float SCREEN_CENTER_Y = SCREEN_SIZE_Y / 2.f;
 
+constexpr int	MAX_BOUNCES = 100;
+constexpr float RAY_BOUNCE_RESTART_OFFSET = 0.01f;
+
 void DebugDrawRing( Vec2 center, float radius, float thickness, const Rgba8& color );
 void DebugDrawLine( Vec2 start, Vec2 end, float thickness, const Rgba8& startColor, const Rgba8& endColor );

@@ -1,5 +1,6 @@
 #pragma once
 #include "Game/Game.hpp"
+#include "Game/GameCommon.hpp"
 #include "Game/TestShapeAABB.hpp"
 #include "Engine/Math/RaycastUtils.hpp"
 
@@ -9,8 +10,6 @@ class GameRaycastVsAABB : public Game
 {
 	public:
 	const static int			 MAX_AABBS = 10;
-	const static int			 MAX_BOUNCES = 100;
-	inline const static float    RAY_BOUNCE_RESTART_OFFSET = 0.01f;
 
 	TestShapeAABB*			m_testAABBs[MAX_AABBS] = {};
 

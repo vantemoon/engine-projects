@@ -1,5 +1,6 @@
 #pragma once
 #include "Game/Game.hpp"
+#include "Game/GameCommon.hpp"
 #include "Game/TestShapeLineSegment.hpp"
 #include "Engine/Math/RaycastUtils.hpp"
 
@@ -9,8 +10,6 @@ class GameRaycastVsLineSegment : public Game
 {
 public:
 	const static int			 MAX_LINE_SEGMENTS = 10;
-	const static int			 MAX_BOUNCES = 100;
-	inline const static float    RAY_BOUNCE_RESTART_OFFSET = 0.01f;
 
 	TestShapeLineSegment*	m_testLineSegments[MAX_LINE_SEGMENTS] = {};
 
