@@ -2,6 +2,7 @@
 #include "Engine/Core/Vertex.hpp"
 #include "Engine/Math/AABB2.hpp"
 #include "Engine/Math/AABB3.hpp"
+#include "Engine/"
 #include <vector>
 
 
@@ -11,6 +12,11 @@ struct OBB2;
 
 //-----------------------------------------------------------------------------------------------
 void TransformVertexArrayXY3D( int numVerts, Vertex* verts, float uniformScaleXY, float rotationDegreesAboutZ, Vec2 const& translationXY );
+void TransformVertexArray3D( std::vector<Vertex>& verts, Mat44 const& transform );
+
+
+//-----------------------------------------------------------------------------------------------
+AABB2 GetVertexBounds2D( std::vector<Vertex> const& verts );
 
 
 //-----------------------------------------------------------------------------------------------

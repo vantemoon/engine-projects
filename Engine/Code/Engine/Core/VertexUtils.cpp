@@ -1,6 +1,7 @@
 #include "Engine/Core/VertexUtils.hpp"
 #include "Engine/Core/Vertex.hpp"
 #include "Engine/Math/AABB2.hpp"
+#include "Engine/Math/Mat44.hpp"
 #include "Engine/Math/MathUtils.hpp"
 #include "Engine/Math/OBB2.hpp"
 #include "Engine/Math/Vec2.hpp"
@@ -17,6 +18,54 @@ void TransformVertexArrayXY3D( int numVerts, Vertex* verts, float uniformScaleXY
 	{
 		TransformPositionXY3D( verts[vertexIndex].m_position, iBasis, jBasis, translationXY );
 	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void TransformVertexArray3D( std::vector<Vertex>& verts, Mat44 const& transform )
+{
+	for ( size_t vertexIndex = 0; vertexIndex < verts.size(); ++vertexIndex )
+	{
+		Vec3& position = verts[vertexIndex].m_position;
+		position = transform.TransformPosition3D( position );
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+AABB2 GetVertexBounds2D( std::vector<Vertex> const& verts )
+{
+	if ( verts.empty() )
+	{
+		return AABB2();
+	}
+
+	AABB2 bounds;
+	bounds.m_mins = Vec2( verts[0].m_position.x, verts[0].m_position.y );
+	bounds.m_maxs = bounds.m_mins;
+
+	for ( size_t vertexIndex = 1; vertexIndex < verts.size(); ++vertexIndex )
+	{
+		Vec3 const& position = verts[vertexIndex].m_position;
+		if ( position.x < bounds.m_mins.x )
+		{
+			bounds.m_mins.x = position.x;
+		}
+		else if ( position.x > bounds.m_maxs.x )
+		{
+			bounds.m_maxs.x = position.x;
+		}
+		if ( position.y < bounds.m_mins.y )
+		{
+			bounds.m_mins.y = position.y;
+		}
+		else if ( position.y > bounds.m_maxs.y )
+		{
+			bounds.m_maxs.y = position.y;
+		}
+	}
+
+	return bounds;
 }
 
 
