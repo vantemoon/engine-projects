@@ -249,19 +249,20 @@ void GameRaycastVsDiscs::RaycastVsDiscs()
 		closestImpact.m_rayMaxLength = remainingMaxLength;
 		closestImpact.m_didImpact = false;
 
-		bool rayStartInside = false;
-
 		for ( int discIndex = 0; discIndex < MAX_DISCS; ++discIndex )
 		{
 			RaycastResult2D impact = RaycastVsDisc2D( currentRayStartPos, currentRayFwdNormal, remainingMaxLength, m_testDiscs[discIndex]->m_center, m_testDiscs[discIndex]->m_radius );
-			
-			if ( impact.m_didImpact && ( !closestImpact.m_didImpact || impact.m_impactDist < closestImpact.m_impactDist ) )
+
+			if ( !impact.m_didImpact )
+			{
+				continue;
+			}
+
+			if ( !closestImpact.m_didImpact || impact.m_impactDist < closestImpact.m_impactDist )
 			{
 				closestImpact = impact;
 				m_raycastDidHit[raySegmentIndex] = discIndex;
 			}
-			
-			if ( impact.m_didImpact && impact.m_impactDist <= 0.f ) rayStartInside = true;
 		}
 
 		m_raycastResults[raySegmentIndex] = closestImpact;
@@ -273,18 +274,20 @@ void GameRaycastVsDiscs::RaycastVsDiscs()
 		}
 
 		m_discWasImpacted[m_raycastDidHit[raySegmentIndex]] = true;
-		
+
+		if ( closestImpact.m_impactDist <= 0.f )
+		{
+			break;
+		}
+
 		remainingMaxLength -= closestImpact.m_impactDist + RAY_BOUNCE_RESTART_OFFSET;
 		if ( remainingMaxLength <= 0.f )
 		{
 			break;
 		}
 
-		if ( !rayStartInside )
-		{
-			currentRayStartPos = closestImpact.m_impactPos + closestImpact.m_impactNormal * RAY_BOUNCE_RESTART_OFFSET;
-			currentRayFwdNormal = currentRayFwdNormal.GetReflected( closestImpact.m_impactNormal ).GetNormalized();
-		}
+		currentRayStartPos = closestImpact.m_impactPos + closestImpact.m_impactNormal * RAY_BOUNCE_RESTART_OFFSET;
+		currentRayFwdNormal = currentRayFwdNormal.GetReflected( closestImpact.m_impactNormal ).GetNormalized();
 	}
 }
 
