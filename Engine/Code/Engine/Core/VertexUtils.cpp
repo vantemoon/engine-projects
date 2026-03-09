@@ -467,3 +467,42 @@ void AddvertsForXYGrid3D( std::vector<Vertex>& verts, Vec3 const& center, float 
 		AddVertsForAABB3D( verts, line, color );
 	}
 }
+
+
+//-----------------------------------------------------------------------------------------------
+void AddVertsForCylinder3D( std::vector<Vertex>& verts, Vec3 const& start, Vec3 const& end, float radius, Rgba8 const& color,
+							AABB2 const& UVs, int numSlices )
+{
+	if ( numSlices <= 0 )
+	{
+		return;
+	}
+	
+	float degreesPerSlice = 360.f / static_cast<float>( numSlices );
+	for ( int i = 0; i < numSlices; ++i )
+	{
+		float degreesA = degreesPerSlice * static_cast<float>( i );
+		float degreesB = degreesPerSlice * static_cast<float>( i + 1 );
+
+		Vec3 offsetA = Vec3::MakeFromPolarDegrees( 0.f, degreesA, radius );
+		Vec3 offsetB = Vec3::MakeFromPolarDegrees( 0.f, degreesB, radius );
+
+		Vec3 bottomLeft = start + offsetA;
+		Vec3 bottomRight = start + offsetB;
+
+		float const uMin = UVs.m_mins.x;
+		float const uMax = UVs.m_maxs.x;
+		float const uRange = uMax - uMin;
+		float const invNumSlices = 1.f / static_cast<float>( numSlices );
+
+		float const uLeft = static_cast<float>( i ) * invNumSlices;
+		float const uRight = static_cast<float>( i + 1 ) * invNumSlices;
+		float const uCenter = ( static_cast<float>( i ) + 0.5f ) * invNumSlices;
+
+		Vec2 uvBottomLeft = Vec2( uMin + uRange * uLeft, UVs.m_mins.y );
+		Vec2 uvBottomRight = Vec2( uMin + uRange * uRight, UVs.m_mins.y );
+		Vec2 uvTop = Vec2( uMin + uRange * uCenter, UVs.m_maxs.y );
+		
+		AddVertsForTriangle3D( verts, end, bottomLeft, bottomRight, color, uvTop, uvBottomLeft, uvBottomRight );
+	}
+}
