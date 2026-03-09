@@ -506,3 +506,32 @@ void AddVertsForCylinder3D( std::vector<Vertex>& verts, Vec3 const& start, Vec3 
 		AddVertsForTriangle3D( verts, end, bottomLeft, bottomRight, color, uvTop, uvBottomLeft, uvBottomRight );
 	}
 }
+
+
+//-----------------------------------------------------------------------------------------------
+void AddVertsForCone3D( std::vector<Vertex>& verts, Vec3 const& start, Vec3 const& end, float baseRadius, Rgba8 const& color, AABB2 const& UVs, int numSlices )
+{
+	if ( numSlices <= 0 )
+	{
+		return;
+	}
+
+	float degreesPerSlice = 360.f / static_cast< float >( numSlices );
+	for ( int i = 0; i < numSlices; ++i )
+	{
+		float degreesA = degreesPerSlice * static_cast< float >( i );
+		float degreesB = degreesPerSlice * static_cast< float >( i + 1 );
+
+		Vec3 offsetA = Vec3::MakeFromPolarDegrees( 0.f, degreesA, baseRadius );
+		Vec3 offsetB = Vec3::MakeFromPolarDegrees( 0.f, degreesB, baseRadius );
+
+		Vec3 bottomLeft = end + offsetA;
+		Vec3 bottomRight = end + offsetB;
+		Vec3 topRight = start + offsetB;
+		Vec3 topLeft = start + offsetA;
+
+		AddVertsForQuad3D( verts, bottomRight, bottomLeft, topLeft, topRight, color, UVs );
+		AddVertsForTriangle3D( verts, end, bottomLeft, bottomRight, color, Vec2( 0.5f * ( UVs.m_mins.x + UVs.m_maxs.x ), UVs.m_maxs.y ), Vec2( UVs.m_mins.x, UVs.m_mins.y ), Vec2( UVs.m_maxs.x, UVs.m_mins.y ) );
+		AddVertsForTriangle3D( verts, start, topRight, topLeft, color, Vec2( 0.5f * ( UVs.m_mins.x + UVs.m_maxs.x ), UVs.m_maxs.y ), Vec2( UVs.m_maxs.x, UVs.m_mins.y ), Vec2( UVs.m_mins.x, UVs.m_mins.y ) );
+	}
+}

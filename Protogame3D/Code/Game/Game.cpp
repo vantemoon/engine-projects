@@ -92,6 +92,12 @@ void Game::Startup()
 	cylinder->m_texture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/TestUV.png" );
 	AddVertsForCylinder3D( cylinder->m_vertexes, Vec3( 0.f, 0.f, 0.f ), Vec3( 0.f, 0.f, 2.f ), 1.f );
 	m_entities.push_back( cylinder );
+
+	Prop* cone = new Prop( this );
+	cone->m_position = Vec3( -5.f, 5.f, 0.f );
+	// cone->m_texture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/TestUV.png" );
+	AddVertsForCone3D( cone->m_vertexes, Vec3( 0.f, 0.f, 0.f ), Vec3( 0.f, 0.f, 2.f ), 1.f );
+	m_entities.push_back( cone );
 }
 
 
