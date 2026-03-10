@@ -87,17 +87,20 @@ void Game::Startup()
 	AddvertsForXYGrid3D( grid->m_vertexes, Vec3::ZERO, 1.f, 100, 100 );
 	m_entities.push_back( grid );
 
-	Prop* cylinder = new Prop( this );
-	cylinder->m_position = Vec3( 5.f, 5.f, 0.f );
-	cylinder->m_texture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/TestUV.png" );
-	AddVertsForCylinder3D( cylinder->m_vertexes, Vec3( 0.f, 0.f, 0.f ), Vec3( 0.f, 0.f, 2.f ), 1.f );
-	m_entities.push_back( cylinder );
+	Prop* xAxisArrow = new Prop( this );
+	xAxisArrow->m_position = Vec3( 0.f, 0.f, 0.f );
+	AddVertsForArrow3D( xAxisArrow->m_vertexes, Vec3::ZERO, Vec3( 1.f, 0.f, 0.f ), 0.08f, Rgba8::RED, 16 );
+	m_entities.push_back( xAxisArrow );
 
-	Prop* cone = new Prop( this );
-	cone->m_position = Vec3( -5.f, 5.f, 0.f );
-	// cone->m_texture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/TestUV.png" );
-	AddVertsForCone3D( cone->m_vertexes, Vec3( 0.f, 0.f, 0.f ), Vec3( 0.f, 0.f, 2.f ), 1.f );
-	m_entities.push_back( cone );
+	Prop* yAxisArrow = new Prop( this );
+	yAxisArrow->m_position = Vec3( 0.f, 0.f, 0.f );
+	AddVertsForArrow3D( yAxisArrow->m_vertexes, Vec3::ZERO, Vec3( 0.f, 1.f, 0.f ), 0.08f, Rgba8::GREEN, 16 );
+	m_entities.push_back( yAxisArrow );
+
+	Prop* zAxisArrow = new Prop( this );
+	zAxisArrow->m_position = Vec3( 0.f, 0.f, 0.f );
+	AddVertsForArrow3D( zAxisArrow->m_vertexes, Vec3::ZERO, Vec3( 0.f, 0.f, 1.f ), 0.08f, Rgba8::BLUE, 16 );
+	m_entities.push_back( zAxisArrow );
 }
 
 

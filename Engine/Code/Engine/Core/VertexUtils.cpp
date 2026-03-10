@@ -469,69 +469,147 @@ void AddvertsForXYGrid3D( std::vector<Vertex>& verts, Vec3 const& center, float 
 }
 
 
-//-----------------------------------------------------------------------------------------------
 void AddVertsForCylinder3D( std::vector<Vertex>& verts, Vec3 const& start, Vec3 const& end, float radius, Rgba8 const& color,
 							AABB2 const& UVs, int numSlices )
 {
-	if ( numSlices <= 0 )
+	if ( numSlices <= 0 || radius <= 0.f || start == end )
 	{
 		return;
 	}
-	
-	float degreesPerSlice = 360.f / static_cast<float>( numSlices );
-	for ( int i = 0; i < numSlices; ++i )
+
+	Vec3 lookAtForwardI = ( end - start ).GetNormalized();
+	Vec3 lookAtLeftJ;
+	Vec3 lookAtUpK;
+
+	Vec3 worldZAxis( 0.f, 0.f, 1.f );
+	Vec3 worldYAxis( 0.f, 1.f, 0.f );
+
+	if ( abs( DotProduct3D( lookAtForwardI, worldZAxis ) ) < 0.99999f )
 	{
-		float degreesA = degreesPerSlice * static_cast<float>( i );
-		float degreesB = degreesPerSlice * static_cast<float>( i + 1 );
+		lookAtLeftJ = CrossProduct3D( worldZAxis, lookAtForwardI ).GetNormalized();
+		lookAtUpK = CrossProduct3D( lookAtForwardI, lookAtLeftJ ).GetNormalized();
+	}
+	else
+	{
+		lookAtUpK = CrossProduct3D( lookAtForwardI, worldYAxis ).GetNormalized();
+		lookAtLeftJ = CrossProduct3D( lookAtUpK, lookAtForwardI ).GetNormalized();
+	}
 
-		Vec3 offsetA = Vec3::MakeFromPolarDegrees( 0.f, degreesA, radius );
-		Vec3 offsetB = Vec3::MakeFromPolarDegrees( 0.f, degreesB, radius );
+	float uCenter = 0.5f * ( UVs.m_mins.x + UVs.m_maxs.x );
+	float vCenter = 0.5f * ( UVs.m_mins.y + UVs.m_maxs.y );
+	float uHalf = 0.5f * ( UVs.m_maxs.x - UVs.m_mins.x );
+	float vHalf = 0.5f * ( UVs.m_maxs.y - UVs.m_mins.y );
 
-		Vec3 bottomLeft = start + offsetA;
-		Vec3 bottomRight = start + offsetB;
+	for ( int sliceIndex = 0; sliceIndex < numSlices; ++sliceIndex )
+	{
+		float tA = static_cast< float >( sliceIndex ) / static_cast< float >( numSlices );
+		float tB = static_cast< float >( sliceIndex + 1 ) / static_cast< float >( numSlices );
+		float degreesA = 360.f * tA;
+		float degreesB = 360.f * tB;
 
-		float const uMin = UVs.m_mins.x;
-		float const uMax = UVs.m_maxs.x;
-		float const uRange = uMax - uMin;
-		float const invNumSlices = 1.f / static_cast<float>( numSlices );
+		Vec3 left = radius * CosDegrees( degreesA ) * lookAtLeftJ + radius * SinDegrees( degreesA ) * lookAtUpK;
+		Vec3 right = radius * CosDegrees( degreesB ) * lookAtLeftJ + radius * SinDegrees( degreesB ) * lookAtUpK;
 
-		float const uLeft = static_cast<float>( i ) * invNumSlices;
-		float const uRight = static_cast<float>( i + 1 ) * invNumSlices;
-		float const uCenter = ( static_cast<float>( i ) + 0.5f ) * invNumSlices;
+		Vec3 bottomLeft = start + left;
+		Vec3 bottomRight = start + right;
+		Vec3 topLeft = end + left;
+		Vec3 topRight = end + right;
 
-		Vec2 uvBottomLeft = Vec2( uMin + uRange * uLeft, UVs.m_mins.y );
-		Vec2 uvBottomRight = Vec2( uMin + uRange * uRight, UVs.m_mins.y );
-		Vec2 uvTop = Vec2( uMin + uRange * uCenter, UVs.m_maxs.y );
-		
-		AddVertsForTriangle3D( verts, end, bottomLeft, bottomRight, color, uvTop, uvBottomLeft, uvBottomRight );
+		float uMin = UVs.m_mins.x + ( UVs.m_maxs.x - UVs.m_mins.x ) * tA;
+		float uMax = UVs.m_mins.x + ( UVs.m_maxs.x - UVs.m_mins.x ) * tB;
+		float vMin = UVs.m_mins.y;
+		float vMax = UVs.m_maxs.y;
+
+		AddVertsForQuad3D( verts, bottomLeft, bottomRight, topRight, topLeft, color, AABB2( Vec2( uMin, vMin ), Vec2( uMax, vMax ) ) );
+
+		Vec2 uvLeft( uCenter + uHalf * CosDegrees( degreesA ), vCenter + vHalf * SinDegrees( degreesA ) );
+		Vec2 uvRight( uCenter + uHalf * CosDegrees( degreesB ), vCenter + vHalf * SinDegrees( degreesB ) );
+		Vec2 uvCenter( uCenter, vCenter );
+
+		AddVertsForTriangle3D( verts, start, bottomRight, bottomLeft, color, uvCenter, uvRight, uvLeft );
+		AddVertsForTriangle3D( verts, end, topLeft, topRight, color, uvCenter, uvLeft, uvRight );
 	}
 }
 
 
 //-----------------------------------------------------------------------------------------------
-void AddVertsForCone3D( std::vector<Vertex>& verts, Vec3 const& start, Vec3 const& end, float baseRadius, Rgba8 const& color, AABB2 const& UVs, int numSlices )
+void AddVertsForCone3D( std::vector<Vertex>& verts, Vec3 const& start, Vec3 const& end, float baseRadius, Rgba8 const& color,
+						AABB2 const& UVs, int numSlices )
 {
-	if ( numSlices <= 0 )
+	if ( numSlices <= 0 || baseRadius <= 0.f || start == end )
 	{
 		return;
 	}
 
-	float degreesPerSlice = 360.f / static_cast< float >( numSlices );
-	for ( int i = 0; i < numSlices; ++i )
+	Vec3 lookAtForwardI = ( end - start ).GetNormalized();
+	Vec3 lookAtLeftJ;
+	Vec3 lookAtUpK;
+
+	Vec3 worldZAxis( 0.f, 0.f, 1.f );
+	Vec3 worldYAxis( 0.f, 1.f, 0.f );
+
+	if ( abs( DotProduct3D( lookAtForwardI, worldZAxis ) ) < 0.99999f )
 	{
-		float degreesA = degreesPerSlice * static_cast< float >( i );
-		float degreesB = degreesPerSlice * static_cast< float >( i + 1 );
-
-		Vec3 offsetA = Vec3::MakeFromPolarDegrees( 0.f, degreesA, baseRadius );
-		Vec3 offsetB = Vec3::MakeFromPolarDegrees( 0.f, degreesB, baseRadius );
-
-		Vec3 bottomLeft = end + offsetA;
-		Vec3 bottomRight = end + offsetB;
-		Vec3 topRight = start + offsetB;
-		Vec3 topLeft = start + offsetA;
-
-		AddVertsForQuad3D( verts, bottomRight, bottomLeft, topLeft, topRight, color, UVs );
-		AddVertsForTriangle3D( verts, end, bottomLeft, bottomRight, color, Vec2( 0.5f * ( UVs.m_mins.x + UVs.m_maxs.x ), UVs.m_maxs.y ), Vec2( UVs.m_mins.x, UVs.m_mins.y ), Vec2( UVs.m_maxs.x, UVs.m_mins.y ) );
-		AddVertsForTriangle3D( verts, start, topRight, topLeft, color, Vec2( 0.5f * ( UVs.m_mins.x + UVs.m_maxs.x ), UVs.m_maxs.y ), Vec2( UVs.m_maxs.x, UVs.m_mins.y ), Vec2( UVs.m_mins.x, UVs.m_mins.y ) );
+		lookAtLeftJ = CrossProduct3D( worldZAxis, lookAtForwardI ).GetNormalized();
+		lookAtUpK = CrossProduct3D( lookAtForwardI, lookAtLeftJ ).GetNormalized();
 	}
+	else
+	{
+		lookAtUpK = CrossProduct3D( lookAtForwardI, worldYAxis ).GetNormalized();
+		lookAtLeftJ = CrossProduct3D( lookAtUpK, lookAtForwardI ).GetNormalized();
+	}
+
+	float uCenter = 0.5f * ( UVs.m_mins.x + UVs.m_maxs.x );
+	float vCenter = 0.5f * ( UVs.m_mins.y + UVs.m_maxs.y );
+	float uHalf = 0.5f * ( UVs.m_maxs.x - UVs.m_mins.x );
+	float vHalf = 0.5f * ( UVs.m_maxs.y - UVs.m_mins.y );
+
+	for ( int sliceIndex = 0; sliceIndex < numSlices; ++sliceIndex )
+	{
+		float tA = static_cast< float >( sliceIndex ) / static_cast< float >( numSlices );
+		float tB = static_cast< float >( sliceIndex + 1 ) / static_cast< float >( numSlices );
+		float degreesA = 360.f * tA;
+		float degreesB = 360.f * tB;
+
+		Vec3 left = baseRadius * CosDegrees( degreesA ) * lookAtLeftJ + baseRadius * SinDegrees( degreesA ) * lookAtUpK;
+		Vec3 right = baseRadius * CosDegrees( degreesB ) * lookAtLeftJ + baseRadius * SinDegrees( degreesB ) * lookAtUpK;
+
+		Vec3 baseLeft = start + left;
+		Vec3 baseRight = start + right;
+
+		float uMin = UVs.m_mins.x + ( UVs.m_maxs.x - UVs.m_mins.x ) * tA;
+		float uMax = UVs.m_mins.x + ( UVs.m_maxs.x - UVs.m_mins.x ) * tB;
+		float uTip = 0.5f * ( uMin + uMax );
+
+		AddVertsForTriangle3D( verts, end, baseLeft, baseRight, color, Vec2( uTip, UVs.m_maxs.y ), Vec2( uMin, UVs.m_mins.y ), Vec2( uMax, UVs.m_mins.y ) );
+
+		Vec2 uvLeft( uCenter + uHalf * CosDegrees( degreesA ), vCenter + vHalf * SinDegrees( degreesA ) );
+		Vec2 uvRight( uCenter + uHalf * CosDegrees( degreesB ), vCenter + vHalf * SinDegrees( degreesB ) );
+		Vec2 uvCenter( uCenter, vCenter );
+
+		AddVertsForTriangle3D( verts, start, baseRight, baseLeft, color, uvCenter, uvRight, uvLeft );
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void AddVertsForArrow3D( std::vector<Vertex>& verts, Vec3 const& start, Vec3 const& end, float radius, 
+						 Rgba8 const& color, int numSlices )
+{
+	if ( numSlices <= 0 || radius <= 0.f || start == end )
+	{
+		return;
+	}
+
+	Vec3 direction = end - start;
+	float totalLength = direction.GetLength();
+	Vec3 forward = direction / totalLength;
+
+	float headLength = 0.25f * totalLength;
+	float headRadius = 1.75f * radius;
+
+	Vec3 shaftEnd = end - ( forward * headLength );
+
+	AddVertsForCylinder3D( verts, start, shaftEnd, radius, color, AABB2::ZERO_TO_ONE, numSlices );
+	AddVertsForCone3D( verts, shaftEnd, end, headRadius, color, AABB2::ZERO_TO_ONE, numSlices );
 }
