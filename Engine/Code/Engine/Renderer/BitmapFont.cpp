@@ -192,3 +192,39 @@ float BitmapFont::GetGlyphAspect( [[maybe_unused]] int glyphUnicode ) const
 {
 	return m_fontDefaultAspect;
 }
+
+
+//------------------------------------------------------------------------------------------------
+void BitmapFont::AddVertsForText3DAtOriginXForward( std::vector<Vertex>& verts, float cellHeight, std::string const& text,
+													Rgba8 const& tint, float cellAspectScale, Vec2 alignment, int maxGlyphsToDraw )
+{
+	if ( cellHeight <= 0.f || text.empty() || maxGlyphsToDraw <= 0 )
+	{
+		return;
+	}
+
+	std::string textToDraw;
+	int glyphsDrawn = 0;
+	for ( char const& glyphChar : text )
+	{
+		if ( glyphsDrawn >= maxGlyphsToDraw )
+		{
+			break;
+		}
+
+		textToDraw.push_back( glyphChar );
+		glyphsDrawn++;
+	}
+
+	float textWidth = GetTextWidth( cellHeight, textToDraw, cellAspectScale );
+	Vec2 textMins( -textWidth * alignment.x, -cellHeight * alignment.y );
+
+	std::vector<Vertex> textVerts2D;
+	AddVertsForText2D( textVerts2D, textMins, cellHeight, textToDraw, tint, cellAspectScale );
+
+	for ( Vertex const& sourceVert : textVerts2D )
+	{
+		Vec3 const& p = sourceVert.m_position;
+		verts.push_back( Vertex( Vec3( 0.f, p.x, p.y ), sourceVert.m_color, sourceVert.m_uvTexCoords ) );
+	}
+}

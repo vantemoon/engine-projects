@@ -1,6 +1,7 @@
 #include "Engine/Math/MathUtils.hpp"
 #include "Engine/Math/AABB2.hpp"
 #include "Engine/Math/IntVec2.hpp"
+#include "Engine/Math/Mat44.hpp"
 #include "Engine/Math/OBB2.hpp"
 #include "Engine/Math/Vec2.hpp"
 #include "Engine/Math/Vec3.hpp"
@@ -800,4 +801,102 @@ unsigned char DenormalizeByte( float zeroToOne )
 	int byteValue = static_cast<int>( zeroToOne * 256.f );
 	byteValue = static_cast<int>( GetClamped( static_cast<float>( byteValue ), 0.f, 255.f ) );
 	return static_cast<unsigned char>( byteValue );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+Mat44 GetBillboardTransform( BillboardType type, Mat44 const& targetTransform, Vec3 const& billboardPosition, Vec2 billboardScale /*= Vec2::ONE*/ )
+{
+	Vec3 cameraPos = targetTransform.GetTranslation3D();
+	Vec3 cameraI = targetTransform.GetIBasis3D();
+	Vec3 cameraJ = targetTransform.GetJBasis3D();
+	Vec3 cameraK = targetTransform.GetKBasis3D();
+
+	Vec3 iBasis = Vec3::ZERO;
+	Vec3 jBasis = Vec3::ZERO;
+	Vec3 kBasis = Vec3::ZERO;
+
+	switch ( type )
+	{
+		case BillboardType::NONE:
+		{
+			iBasis = Vec3( 1.f, 0.f, 0.f );
+			jBasis = Vec3( 0.f, 1.f, 0.f );
+			kBasis = Vec3( 0.f, 0.f, 1.f );
+			break;
+		}
+
+		case BillboardType::WORLD_UP_FACING:
+		{
+			Vec3 toCamera = cameraPos - billboardPosition;
+			toCamera.z = 0.f;
+
+			if ( toCamera.GetLengthSquared() == 0.f )
+			{
+				toCamera = cameraI;
+				toCamera.z = 0.f;
+			}
+
+			iBasis = toCamera.GetNormalized();
+			kBasis = Vec3( 0.f, 0.f, 1.f );
+			jBasis = CrossProduct3D( kBasis, iBasis ).GetNormalized();
+			break;
+		}
+
+		case BillboardType::WORLD_UP_OPPOSING:
+		{
+			Vec3 flatCameraI = cameraI;
+			flatCameraI.z = 0.f;
+
+			if ( flatCameraI.GetLengthSquared() == 0.f )
+			{
+				flatCameraI = Vec3( 1.f, 0.f, 0.f );
+			}
+
+			iBasis = flatCameraI.GetNormalized();
+			kBasis = Vec3( 0.f, 0.f, 1.f );
+			jBasis = CrossProduct3D( kBasis, iBasis ).GetNormalized();
+			break;
+		}
+
+		case BillboardType::FULL_FACING:
+		{
+			iBasis = ( cameraPos - billboardPosition ).GetNormalized();
+
+			Vec3 worldUp = Vec3( 0.f, 0.f, 1.f );
+			if ( fabsf( DotProduct3D( iBasis, worldUp ) ) > 0.999f )
+			{
+				worldUp = Vec3( 0.f, 1.f, 0.f );
+			}
+
+			jBasis = CrossProduct3D( worldUp, iBasis ).GetNormalized();
+			kBasis = CrossProduct3D( iBasis, jBasis ).GetNormalized();
+			break;
+		}
+
+		case BillboardType::FULL_OPPOSING:
+		{
+			iBasis = cameraI.GetNormalized();
+			jBasis = cameraJ.GetNormalized();
+			kBasis = cameraK.GetNormalized();
+			break;
+		}
+
+		case BillboardType::COUNT:
+		default:
+		{
+			iBasis = Vec3( 1.f, 0.f, 0.f );
+			jBasis = Vec3( 0.f, 1.f, 0.f );
+			kBasis = Vec3( 0.f, 0.f, 1.f );
+			break;
+		}
+	}
+
+	iBasis *= billboardScale.x;
+	jBasis *= billboardScale.y;
+
+	Mat44 result;
+	result.SetIJK3D( iBasis, jBasis, kBasis );
+	result.SetTranslation3D( billboardPosition );
+	return result;
 }

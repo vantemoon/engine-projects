@@ -1,4 +1,5 @@
 #pragma once
+#include "Engine/Math/Vec2.hpp"
 
 
 //-----------------------------------------------------------------------------------------------
@@ -6,9 +7,22 @@
 struct AABB2;
 struct OBB2;
 struct IntVec2;
-struct Vec2;
+struct Mat44;
 struct Vec3;
 struct Vec4;
+
+
+//-----------------------------------------------------------------------------------------------
+enum class BillboardType
+{
+	NONE = -1,
+	WORLD_UP_FACING,
+	WORLD_UP_OPPOSING,
+	FULL_FACING,
+	FULL_OPPOSING,
+	COUNT
+};
+
 
 //-----------------------------------------------------------------------------------------------
 // Clamp and lerp
@@ -92,3 +106,8 @@ Vec2 GetNearestPointOnTriangle2D( Vec2 const& referencePos, Vec2 const& ccw0, Ve
 // Normalized byte conversions
 float NormalizeByte( unsigned char byteValue );
 unsigned char DenormalizeByte( float zeroToOne);
+
+
+//-----------------------------------------------------------------------------------------------
+// Billboard utilities
+Mat44 GetBillboardTransform( BillboardType type, Mat44 const& targetTransform, Vec3 const& billboardPosition, Vec2 billboardScale = Vec2::ONE );

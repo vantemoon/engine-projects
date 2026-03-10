@@ -26,7 +26,10 @@ public:
 								   std::string const& text, Rgba8 const& tint = Rgba8::WHITE, float cellAspectScale = 1.f );
 	void		AddVertsForTextInBox2D( std::vector<Vertex>& verts, std::string const& text, AABB2 const& box, float cellHeight, 
 										Rgba8 tint = Rgba8::WHITE, float cellAspectScale = 1.f, Vec2 alignment = Vec2( .5f, .5f ), 
-										TextBoxMode mode = TextBoxMode::SHRINK_TO_FIT, int maxGlyphsToDraw = 99999999 );
+										TextBoxMode mode = TextBoxMode::SHRINK_TO_FIT, int maxGlyphsToDraw = 999 );
+	void        AddVertsForText3DAtOriginXForward( std::vector<Vertex>& verts, float cellHeight, std::string const& text, 
+												   Rgba8 const& tint = Rgba8::WHITE, float cellAspectScale = 1.f, Vec2 alignment = Vec2( .5f, .5f ), 
+												   int maxGlyphsToDraw = 999 );
 
 
 protected:
