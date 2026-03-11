@@ -9,6 +9,10 @@ Timer::Timer( double period, Clock const* clock )
 	: m_period( period )
 	, m_clock( clock )
 {
+	if ( m_clock == nullptr )
+	{
+		m_clock = &Clock::GetSystemClock();
+	}
 }
 
 

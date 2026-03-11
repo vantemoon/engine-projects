@@ -1,6 +1,7 @@
 #include "Game/App.hpp"
 #include "Game/Game.hpp"
 #include "Engine/Core/Clock.hpp"
+#include "Engine/Core/DebugRender.hpp"
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/Rgba8.hpp"
 #include "Engine/Input/InputSystem.hpp"
@@ -28,6 +29,12 @@ App::App()
 	engineConfig.m_devConsoleConfig.m_camera = m_devConsoleCamera;
 
 	g_engine = new Engine( engineConfig );
+
+	DebugRenderConfig debugRenderConfig;
+	debugRenderConfig.m_fontPath = "Data/Fonts/";
+	debugRenderConfig.m_fontName = "SquirrelFixedFont";
+	DebugRenderSystemStartup( debugRenderConfig );
+
 	m_game = new Game();
 
 	g_engine->m_eventSystem->SubscribeEventCallbackFunction( "Quit", Command_Quit );
@@ -37,6 +44,8 @@ App::App()
 //-----------------------------------------------------------------------------------------------
 App::~App()
 {
+	DebugRenderSystemShutdown();
+
 	delete m_devConsoleCamera;
 	m_devConsoleCamera = nullptr;
 
@@ -64,10 +73,12 @@ void App::RunFrame()
 	Clock::TickSystemClock();
 
 	g_engine->BeginFrame();
+	DebugRenderBeginFrame();
 
 	Update();
 	Render(); // Draw the current state of the game
 
+	DebugRenderEndFrame();
 	g_engine->EndFrame(); // Allow engine subsystems to do post-frame stuff
 }
 

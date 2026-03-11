@@ -17,7 +17,7 @@ public:
 	void Render() const override;
 
 public:
-	std::vector<Vertex> m_vertexes;
+	std::vector<Vertex> m_verts;
 	Rgba8               m_color = Rgba8::WHITE;
 	Texture*			m_texture = nullptr;
 };

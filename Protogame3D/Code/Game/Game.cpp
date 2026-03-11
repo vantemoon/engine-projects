@@ -5,6 +5,7 @@
 #include "Game/Player.hpp"
 #include "Game/Prop.hpp"
 #include "Engine/Audio/AudioSystem.hpp"
+#include "Engine/Core/DebugRender.hpp"
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/EngineCommon.hpp"
 #include "Engine/Core/ErrorWarningAssert.hpp"
@@ -18,6 +19,7 @@
 #include "Engine/Math/IntVec2.hpp"
 #include "Engine/Math/MathUtils.hpp"
 #include "Engine/Math/RandomNumberGenerator.hpp"
+#include "Engine/Renderer/BitmapFont.hpp"
 #include "Engine/Renderer/Camera.hpp"
 #include "Engine/Renderer/Renderer.hpp"
 #define _USE_MATH_DEFINES
@@ -65,42 +67,44 @@ void Game::Startup()
 
 	Prop* cube1 = new Prop( this );
 	cube1->m_position = Vec3( 2.f, 2.f, 0.f );
-	AddVertsForCube( cube1->m_vertexes, 1.f );
+	AddVertsForCube( cube1->m_verts, 1.f );
 	m_entities.push_back( cube1 );
 	m_cube1 = cube1;
 
 	Prop* cube2 = new Prop( this );
 	cube2->m_position = Vec3( -2.f, -2.f, 0.f );
-	AddVertsForCube( cube2->m_vertexes, 1.f );
+	AddVertsForCube( cube2->m_verts, 1.f );
 	m_entities.push_back( cube2 );
 	m_cube2 = cube2;
 
 	Prop* sphere = new Prop( this );
 	sphere->m_position = Vec3( 10.f, -5.f, 1.f );
 	sphere->m_texture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/TestUV.png" );
-	AddVertsForSphere3D( sphere->m_vertexes, Vec3::ZERO, 1.f, Rgba8::WHITE, AABB2::ZERO_TO_ONE, 32, 16 );
+	AddVertsForSphere3D( sphere->m_verts, Vec3::ZERO, 1.f, Rgba8::WHITE, AABB2::ZERO_TO_ONE, 32, 16 );
 	m_entities.push_back( sphere );
 	m_sphere = sphere;
 
 	Prop* grid = new Prop( this );
 	grid->m_position = Vec3( 0.f, 0.f, 0.f );
-	AddvertsForXYGrid3D( grid->m_vertexes, Vec3::ZERO, 1.f, 100, 100 );
+	AddvertsForXYGrid3D( grid->m_verts, Vec3::ZERO, 1.f, 100, 100 );
 	m_entities.push_back( grid );
 
 	Prop* xAxisArrow = new Prop( this );
 	xAxisArrow->m_position = Vec3( 0.f, 0.f, 0.f );
-	AddVertsForArrow3D( xAxisArrow->m_vertexes, Vec3::ZERO, Vec3( 1.f, 0.f, 0.f ), 0.08f, Rgba8::RED, 16 );
+	AddVertsForArrow3D( xAxisArrow->m_verts, Vec3::ZERO, Vec3( 1.f, 0.f, 0.f ), 0.08f, Rgba8::RED, 16 );
 	m_entities.push_back( xAxisArrow );
 
 	Prop* yAxisArrow = new Prop( this );
 	yAxisArrow->m_position = Vec3( 0.f, 0.f, 0.f );
-	AddVertsForArrow3D( yAxisArrow->m_vertexes, Vec3::ZERO, Vec3( 0.f, 1.f, 0.f ), 0.08f, Rgba8::GREEN, 16 );
+	AddVertsForArrow3D( yAxisArrow->m_verts, Vec3::ZERO, Vec3( 0.f, 1.f, 0.f ), 0.08f, Rgba8::GREEN, 16 );
 	m_entities.push_back( yAxisArrow );
 
 	Prop* zAxisArrow = new Prop( this );
 	zAxisArrow->m_position = Vec3( 0.f, 0.f, 0.f );
-	AddVertsForArrow3D( zAxisArrow->m_vertexes, Vec3::ZERO, Vec3( 0.f, 0.f, 1.f ), 0.08f, Rgba8::BLUE, 16 );
+	AddVertsForArrow3D( zAxisArrow->m_verts, Vec3::ZERO, Vec3( 0.f, 0.f, 1.f ), 0.08f, Rgba8::BLUE, 16 );
 	m_entities.push_back( zAxisArrow );
+
+	// DebugAddWorldWireSphere( Vec3( 0.f, 0.f, 0.f ), 1.f, 0.f, Rgba8::WHITE, Rgba8::WHITE, DebugRenderMode::USE_DEPTH );
 }
 
 
@@ -209,6 +213,12 @@ void Game::UpdateFromKeyboard()
 	}
 	else
 	{
+		// 1
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( '1' ) )
+		{
+			DebugAddWorldWireSphere( Vec3( 0.f, 0.f, 0.f ), 1.f, 0.f, Rgba8::WHITE, Rgba8::WHITE, DebugRenderMode::USE_DEPTH );
+		}
+
 		// Return to attract mode
 		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_ESCAPE ) )
 		{
@@ -341,7 +351,10 @@ void Game::Render() const
 	g_engine->m_renderer->BeginCamera( *m_player->m_playerCamera );
 
 	RenderEntities();
-	RenderHUD();
+	// RenderHUD();
+
+	DebugRenderWorld( *m_player->m_playerCamera );
+	DebugRenderScreen( *m_screenCamera );
 
 	if ( m_isDebugFeaturesOn )
 	{

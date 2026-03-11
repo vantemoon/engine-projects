@@ -23,7 +23,7 @@ public:
 	Texture&	GetTexture();
 	float		GetTextWidth( float cellHeight, std::string const& text, float cellAspectScale = 1.f );
 	void		AddVertsForText2D( std::vector<Vertex>& vertexArray, Vec2 textMins, float cellHeight, 
-								   std::string const& text, Rgba8 const& tint = Rgba8::WHITE, float cellAspectScale = 1.f );
+								   std::string const& text, Rgba8 const& tint = Rgba8::WHITE, float cellAspectScale = 1.f, int maxGlyphsToDraw = 999 );
 	void		AddVertsForTextInBox2D( std::vector<Vertex>& verts, std::string const& text, AABB2 const& box, float cellHeight, 
 										Rgba8 tint = Rgba8::WHITE, float cellAspectScale = 1.f, Vec2 alignment = Vec2( .5f, .5f ), 
 										TextBoxMode mode = TextBoxMode::SHRINK_TO_FIT, int maxGlyphsToDraw = 999 );

@@ -1,5 +1,6 @@
 #include "Engine/Renderer/BitmapFont.hpp"
 #include "Engine/Renderer/SpriteDefinition.hpp"
+#include "Engine/Core/VertexUtils.hpp"
 #include "Engine/Math/AABB2.hpp"
 
 
@@ -37,10 +38,24 @@ float BitmapFont::GetTextWidth( float cellHeight, std::string const& text, float
 
 //------------------------------------------------------------------------------------------------
 void BitmapFont::AddVertsForText2D( std::vector<Vertex>& vertexArray, Vec2 textMins, float cellHeight,
-									std::string const& text, Rgba8 const& tint, float cellAspectScale /*= 1.f */ )
+									std::string const& text, Rgba8 const& tint, float cellAspectScale /*= 1.f */, int maxGlyphsToDraw /*= 999 */ )
 {
 	Vec2 penPosition = textMins;
+
+	std::string textToDraw;
+	int glyphsDrawn = 0;
 	for ( char const& glyphChar : text )
+	{
+		if ( glyphsDrawn >= maxGlyphsToDraw )
+		{
+			break;
+		}
+
+		textToDraw.push_back( glyphChar );
+		glyphsDrawn++;
+	}
+
+	for ( char const& glyphChar : textToDraw )
 	{
 		int glyphUnicode = static_cast<unsigned char>( glyphChar );
 		float glyphAspect = GetGlyphAspect( glyphUnicode );
@@ -203,28 +218,21 @@ void BitmapFont::AddVertsForText3DAtOriginXForward( std::vector<Vertex>& verts, 
 		return;
 	}
 
-	std::string textToDraw;
-	int glyphsDrawn = 0;
-	for ( char const& glyphChar : text )
-	{
-		if ( glyphsDrawn >= maxGlyphsToDraw )
-		{
-			break;
-		}
+	AddVertsForText2D( verts, Vec2::ZERO, cellHeight, text, tint, cellAspectScale, maxGlyphsToDraw );
 
-		textToDraw.push_back( glyphChar );
-		glyphsDrawn++;
-	}
+	AABB2 textBounds = GetVertexBounds2D( verts );
+	float width = textBounds.GetDimensions().x;
+	float height = textBounds.GetDimensions().y;
 
-	float textWidth = GetTextWidth( cellHeight, textToDraw, cellAspectScale );
-	Vec2 textMins( -textWidth * alignment.x, -cellHeight * alignment.y );
+	Mat44 transformMatrix;
 
-	std::vector<Vertex> textVerts2D;
-	AddVertsForText2D( textVerts2D, textMins, cellHeight, textToDraw, tint, cellAspectScale );
+	Vec3 iBasis( 0.f, 1.f, 0.f );
+	Vec3 jBasis( 0.f, 0.f, 1.f );
+	Vec3 kBasis( 1.f, 0.f, 0.f );
+	Mat44 orientationMatrix( iBasis, jBasis, kBasis, Vec3::ZERO );
 
-	for ( Vertex const& sourceVert : textVerts2D )
-	{
-		Vec3 const& p = sourceVert.m_position;
-		verts.push_back( Vertex( Vec3( 0.f, p.x, p.y ), sourceVert.m_color, sourceVert.m_uvTexCoords ) );
-	}
+	transformMatrix.Append( orientationMatrix );
+	transformMatrix.AppendTranslation3D( Vec3( -alignment.x * width, -alignment.y * height, 0.f ) );
+
+	TransformVertexArray3D( verts, transformMatrix );
 }
