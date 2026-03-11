@@ -89,22 +89,7 @@ void Game::Startup()
 	AddvertsForXYGrid3D( grid->m_verts, Vec3::ZERO, 1.f, 100, 100 );
 	m_entities.push_back( grid );
 
-	Prop* xAxisArrow = new Prop( this );
-	xAxisArrow->m_position = Vec3( 0.f, 0.f, 0.f );
-	AddVertsForArrow3D( xAxisArrow->m_verts, Vec3::ZERO, Vec3( 1.f, 0.f, 0.f ), 0.08f, Rgba8::RED, 16 );
-	m_entities.push_back( xAxisArrow );
-
-	Prop* yAxisArrow = new Prop( this );
-	yAxisArrow->m_position = Vec3( 0.f, 0.f, 0.f );
-	AddVertsForArrow3D( yAxisArrow->m_verts, Vec3::ZERO, Vec3( 0.f, 1.f, 0.f ), 0.08f, Rgba8::GREEN, 16 );
-	m_entities.push_back( yAxisArrow );
-
-	Prop* zAxisArrow = new Prop( this );
-	zAxisArrow->m_position = Vec3( 0.f, 0.f, 0.f );
-	AddVertsForArrow3D( zAxisArrow->m_verts, Vec3::ZERO, Vec3( 0.f, 0.f, 1.f ), 0.08f, Rgba8::BLUE, 16 );
-	m_entities.push_back( zAxisArrow );
-
-	// DebugAddWorldWireSphere( Vec3( 0.f, 0.f, 0.f ), 1.f, 0.f, Rgba8::WHITE, Rgba8::WHITE, DebugRenderMode::USE_DEPTH );
+	DebugAddWorldBasis( Mat44(), -1.f, DebugRenderMode::USE_DEPTH );
 }
 
 
@@ -216,7 +201,40 @@ void Game::UpdateFromKeyboard()
 		// 1
 		if ( g_engine->m_inputSystem->WasKeyJustPressed( '1' ) )
 		{
-			DebugAddWorldWireSphere( Vec3( 0.f, 0.f, 0.f ), 1.f, 0.f, Rgba8::WHITE, Rgba8::WHITE, DebugRenderMode::USE_DEPTH );
+			Vec3 start = m_player->m_position;
+			Vec3 forward = m_player->m_orientation.GetForwardDir_IFwd_JLeft_KUp();
+			Vec3 end = start + forward * 20.f;
+			DebugAddWorldCylinder( start, end, 0.0625f, 10.f, Rgba8::YELLOW, Rgba8::YELLOW, DebugRenderMode::X_RAY );
+		}
+
+		// 2
+		if ( g_engine->m_inputSystem->IsKeyDown( '2' ) )
+		{
+			Vec3 center = Vec3( m_player->m_position.x, m_player->m_position.y, 0.f );
+			DebugAddWorldSphere( center, 0.25f, 60.f, Rgba8( 150, 75, 0 ), Rgba8( 150, 75, 0 ), DebugRenderMode::USE_DEPTH );
+		}
+
+		// 3
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( '3' ) )
+		{
+			Vec3 center = m_player->m_position;
+			Vec3 forward = m_player->m_orientation.GetForwardDir_IFwd_JLeft_KUp();
+			center += forward * 2.f;
+			DebugAddWorldWireSphere( center, 1.f, 5.f, Rgba8::GREEN, Rgba8::RED, DebugRenderMode::USE_DEPTH );
+		}
+
+		// 4
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( '4' ) )
+		{
+			DebugAddBasis( m_player->GetModelToWorldTransform(), 20.f, 1.f, 0.08f, 1.f, 1.f, DebugRenderMode::USE_DEPTH );
+		}
+
+		// 6
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( '6' ) )
+		{
+			Vec3 start = m_player->m_position;
+			Vec3 end = start + Vec3( 0.f, 0.f, 1.f );
+			DebugAddWorldWireCylinder( start, end, 0.5f, 10.f, Rgba8::WHITE, Rgba8::RED, DebugRenderMode::USE_DEPTH );
 		}
 
 		// Return to attract mode
