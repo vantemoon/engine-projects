@@ -4,7 +4,9 @@
 #include "Engine/Core/Timer.hpp"
 #include "Engine/Core/Vertex.hpp"
 #include "Engine/Core/VertexUtils.hpp"
+#include "Engine/Math/MathUtils.hpp"
 #include "Engine/Renderer/BitmapFont.hpp"
+#include "Engine/Renderer/Camera.hpp"
 #include "Engine/Renderer/Renderer.hpp"
 #include <vector>
 
@@ -90,6 +92,45 @@ static void SetVertexColorForObject( DebugRenderObject* object, Rgba8 const& col
 	{
 		vert.m_color = color;
 	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+static void DrawMessage( DebugRenderObject* messageObject, Vec2 const& screenMins, Vec2 const& screenMaxs,
+						 float horizontalPadding, float verticalPadding, int& messageLineIndex )
+{
+	if ( messageObject == nullptr )
+	{
+		return;
+	}
+
+	messageObject->m_verts.clear();
+
+	float cellHeight;
+	if ( messageObject->m_textHeight > 0.f ) cellHeight = messageObject->m_textHeight;
+	else cellHeight = 20.f;
+
+	float linePadding = 2.f;
+	float lineStep = cellHeight + linePadding;
+	float topY = screenMaxs.y - verticalPadding - ( static_cast<float>( messageLineIndex ) * lineStep );
+	AABB2 lineBox(
+		Vec2( screenMins.x + horizontalPadding, topY - cellHeight ),
+		Vec2( screenMaxs.x - horizontalPadding, topY ) );
+
+	Rgba8 currentColor = GetCurrentColorForObject( messageObject );
+
+	g_debugRenderSystem.m_font->AddVertsForTextInBox2D(
+		messageObject->m_verts,
+		messageObject->m_text,
+		lineBox,
+		cellHeight,
+		currentColor,
+		1.f,
+		Vec2( 0.f, 1.f ),
+		TextBoxMode::OVERRUN );
+
+	g_engine->m_renderer->DrawVertexArray( messageObject->m_verts );
+	++messageLineIndex;
 }
 
 
@@ -233,65 +274,83 @@ void DebugRenderWorld( Camera const& camera )
 			continue;
 		}
 
+		if ( worldObject->m_isText && worldObject->m_isBillboard )
+		{
+			worldObject->m_verts.clear();
+			g_debugRenderSystem.m_font->AddVertsForText3DAtOriginXForward(
+				worldObject->m_verts,
+				worldObject->m_textHeight,
+				worldObject->m_text,
+				worldObject->m_startColor,
+				1.f,
+				worldObject->m_alignment );
+
+			Mat44 billboardTransform = GetBillboardTransform(
+				BillboardType::FULL_OPPOSING,
+				camera.GetCameraToWorldTransform(),
+				worldObject->m_billboardOrigin );
+
+			TransformVertexArray3D( worldObject->m_verts, billboardTransform );
+		}
+
 		Rgba8 currentColor = GetCurrentColorForObject( worldObject );
+		RasterizerMode rasterizerMode = worldObject->m_isWireframe ? RasterizerMode::WIREFRAME_CULL_BACK : RasterizerMode::SOLID_CULL_BACK;
+		if ( worldObject->m_isText )
+		{
+			rasterizerMode = RasterizerMode::SOLID_CULL_NONE;
+			g_engine->m_renderer->BindTexture( &g_debugRenderSystem.m_font->GetTexture() );
+		}
+		else
+		{
+			g_engine->m_renderer->BindTexture( nullptr );
+		}
 
 		switch ( worldObject->m_mode )
 		{
 			case DebugRenderMode::ALWAYS:
 			{
 				SetVertexColorForObject( worldObject, currentColor );
-				g_engine->m_renderer->SetBlendMode( BlendMode::OPAQUE );
+				g_engine->m_renderer->SetBlendMode( worldObject->m_isText ? BlendMode::ALPHA : BlendMode::OPAQUE );
 				g_engine->m_renderer->SetDepthMode( DepthMode::DISABLED );
-
-				if ( worldObject->m_isWireframe ) g_engine->m_renderer->SetRasterizerMode( RasterizerMode::WIREFRAME_CULL_BACK );
-				else g_engine->m_renderer->SetRasterizerMode( RasterizerMode::SOLID_CULL_BACK);
-
+				g_engine->m_renderer->SetRasterizerMode( rasterizerMode );
 				g_engine->m_renderer->DrawVertexArray( worldObject->m_verts );
-
 				break;
 			}
+
 			case DebugRenderMode::X_RAY:
 			{
 				Rgba8 xrayColor = GetXRayFirstPassColor( currentColor );
 				SetVertexColorForObject( worldObject, xrayColor );
 				g_engine->m_renderer->SetBlendMode( BlendMode::ALPHA );
 				g_engine->m_renderer->SetDepthMode( DepthMode::READ_ONLY_ALWAYS );
-
-				if ( worldObject->m_isWireframe ) g_engine->m_renderer->SetRasterizerMode( RasterizerMode::WIREFRAME_CULL_BACK );
-				else g_engine->m_renderer->SetRasterizerMode( RasterizerMode::SOLID_CULL_BACK );
-
+				g_engine->m_renderer->SetRasterizerMode( rasterizerMode );
 				g_engine->m_renderer->DrawVertexArray( worldObject->m_verts );
 
 				SetVertexColorForObject( worldObject, currentColor );
-				g_engine->m_renderer->SetBlendMode( BlendMode::OPAQUE );
+				g_engine->m_renderer->SetBlendMode( worldObject->m_isText ? BlendMode::ALPHA : BlendMode::OPAQUE );
 				g_engine->m_renderer->SetDepthMode( DepthMode::READ_WRITE_LESS_EQUAL );
-
-				if ( worldObject->m_isWireframe ) g_engine->m_renderer->SetRasterizerMode( RasterizerMode::WIREFRAME_CULL_BACK );
-				else g_engine->m_renderer->SetRasterizerMode( RasterizerMode::SOLID_CULL_BACK );
-
+				g_engine->m_renderer->SetRasterizerMode( rasterizerMode );
 				g_engine->m_renderer->DrawVertexArray( worldObject->m_verts );
-
 				break;
 			}
+
 			case DebugRenderMode::USE_DEPTH:
 			default:
 			{
 				SetVertexColorForObject( worldObject, currentColor );
-				g_engine->m_renderer->SetBlendMode( BlendMode::OPAQUE );
+				g_engine->m_renderer->SetBlendMode( worldObject->m_isText ? BlendMode::ALPHA : BlendMode::OPAQUE );
 				g_engine->m_renderer->SetDepthMode( DepthMode::READ_WRITE_LESS_EQUAL );
-
-				if ( worldObject->m_isWireframe ) g_engine->m_renderer->SetRasterizerMode( RasterizerMode::WIREFRAME_CULL_BACK );
-				else g_engine->m_renderer->SetRasterizerMode( RasterizerMode::SOLID_CULL_BACK );
-
+				g_engine->m_renderer->SetRasterizerMode( rasterizerMode );
 				g_engine->m_renderer->DrawVertexArray( worldObject->m_verts );
-
 				break;
 			}
 		}
 	}
 
+	g_engine->m_renderer->BindTexture( nullptr );
 	g_engine->m_renderer->SetBlendMode( BlendMode::OPAQUE );
 	g_engine->m_renderer->SetDepthMode( DepthMode::READ_WRITE_LESS_EQUAL );
+	g_engine->m_renderer->SetRasterizerMode( RasterizerMode::SOLID_CULL_BACK );
 	g_engine->m_renderer->EndCamera( camera );
 }
 
@@ -299,7 +358,86 @@ void DebugRenderWorld( Camera const& camera )
 //-----------------------------------------------------------------------------------------------
 void DebugRenderScreen( Camera const& camera )
 {
-	
+	if ( !g_debugRenderSystem.m_isVisible || g_debugRenderSystem.m_font == nullptr )
+	{
+		return;
+	}
+
+	g_engine->m_renderer->BeginCamera( camera );
+	g_engine->m_renderer->BindTexture( &g_debugRenderSystem.m_font->GetTexture() );
+	g_engine->m_renderer->SetBlendMode( BlendMode::ALPHA );
+	g_engine->m_renderer->SetDepthMode( DepthMode::DISABLED );
+	g_engine->m_renderer->SetRasterizerMode( RasterizerMode::SOLID_CULL_NONE );
+
+	for ( int index = 0; index < g_debugRenderSystem.m_screenObjects.size(); ++index )
+	{
+		DebugRenderObject* screenObject = g_debugRenderSystem.m_screenObjects[index];
+		if ( screenObject == nullptr )
+		{
+			continue;
+		}
+
+		screenObject->m_verts.clear();
+
+		float cellHeight;
+		if ( screenObject->m_textHeight > 0.f ) cellHeight = screenObject->m_textHeight;
+		else cellHeight = 20.f;
+
+		Rgba8 currentColor = GetCurrentColorForObject( screenObject );
+
+		AABB2 drawBox = screenObject->m_screenBox;
+
+		float horizontalPadding = 10.f;
+		float verticalPadding = 10.f;
+		if ( screenObject->m_alignment.x >= 0.99f && screenObject->m_alignment.y >= 0.99f )
+		{
+			drawBox.m_maxs.x -= horizontalPadding;
+			drawBox.m_maxs.y -= verticalPadding;
+		}
+
+		g_debugRenderSystem.m_font->AddVertsForTextInBox2D(
+			screenObject->m_verts,
+			screenObject->m_text,
+			drawBox,
+			cellHeight,
+			currentColor,
+			1.f,
+			screenObject->m_alignment,
+			TextBoxMode::OVERRUN );
+
+		g_engine->m_renderer->DrawVertexArray( screenObject->m_verts );
+	}
+
+	Vec2 screenMins = camera.GetOrthoBottomLeft();
+	Vec2 screenMaxs = camera.GetOrthoTopRight();
+	float horizontalPadding = 10.f;
+	float verticalPadding = 10.f;
+
+	int messageLineIndex = 0;
+
+	for ( int index = 0; index < g_debugRenderSystem.m_messages.size(); ++index )
+	{
+		DebugRenderObject* messageObject = g_debugRenderSystem.m_messages[index];
+		if ( messageObject != nullptr && messageObject->m_timer.m_period <= 0.0 )
+		{
+			DrawMessage( messageObject, screenMins, screenMaxs, horizontalPadding, verticalPadding, messageLineIndex );
+		}
+	}
+
+	for ( int index = 0; index < g_debugRenderSystem.m_messages.size(); ++index )
+	{
+		DebugRenderObject* messageObject = g_debugRenderSystem.m_messages[index];
+		if ( messageObject != nullptr && messageObject->m_timer.m_period > 0.0 )
+		{
+			DrawMessage( messageObject, screenMins, screenMaxs, horizontalPadding, verticalPadding, messageLineIndex );
+		}
+	}
+
+	g_engine->m_renderer->BindTexture( nullptr );
+	g_engine->m_renderer->SetBlendMode( BlendMode::OPAQUE );
+	g_engine->m_renderer->SetDepthMode( DepthMode::READ_WRITE_LESS_EQUAL );
+	g_engine->m_renderer->SetRasterizerMode( RasterizerMode::SOLID_CULL_BACK );
+	g_engine->m_renderer->EndCamera( camera );
 }
 
 
@@ -548,6 +686,121 @@ void DebugAddWorldBasis( Mat44 const& transform, float duration, DebugRenderMode
 		}
 	}
 	g_debugRenderSystem.m_worldObjects.push_back( object );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void DebugAddWorldText( std::string const& text, Mat44 const& transform, float textHeight, Vec2 const& alignment, float duration,
+						Rgba8 const& startColor, Rgba8 const& endColor, DebugRenderMode mode )
+{
+	DebugRenderObject* object = new DebugRenderObject();
+	object->m_timer = Timer( duration );
+	object->m_timer.Start();
+	object->m_startColor = startColor;
+	object->m_endColor = endColor;
+	object->m_mode = mode;
+	object->m_isWorld = true;
+	object->m_isText = true;
+
+	g_debugRenderSystem.m_font->AddVertsForText3DAtOriginXForward( object->m_verts, textHeight, text, startColor, 1.f, alignment );
+	TransformVertexArray3D( object->m_verts, transform );
+
+	for ( int index = 0; index < g_debugRenderSystem.m_worldObjects.size(); ++index )
+	{
+		if ( g_debugRenderSystem.m_worldObjects[index] == nullptr )
+		{
+			g_debugRenderSystem.m_worldObjects[index] = object;
+			return;
+		}
+	}
+	g_debugRenderSystem.m_worldObjects.push_back( object );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void DebugAddWorldBillboardText( std::string const& text, Vec3 const& origin, float textHeight, Vec2 const& alignment, float duration,
+								 Rgba8 const& startColor, Rgba8 const& endColor, DebugRenderMode mode )
+{
+	DebugRenderObject* object = new DebugRenderObject();
+	object->m_timer = Timer( duration );
+	object->m_timer.Start();
+	object->m_startColor = startColor;
+	object->m_endColor = endColor;
+	object->m_mode = mode;
+	object->m_isWorld = true;
+	object->m_isText = true;
+	object->m_isBillboard = true;
+	object->m_billboardOrigin = origin;
+
+	object->m_text = text;
+	object->m_textHeight = textHeight;
+	object->m_alignment = alignment;
+
+	for ( int index = 0; index < g_debugRenderSystem.m_worldObjects.size(); ++index )
+	{
+		if ( g_debugRenderSystem.m_worldObjects[index] == nullptr )
+		{
+			g_debugRenderSystem.m_worldObjects[index] = object;
+			return;
+		}
+	}
+	g_debugRenderSystem.m_worldObjects.push_back( object );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void DebugAddScreenText( std::string const& text, AABB2 const& box, float cellHeight, Vec2 const& alignment, float duration,
+						 Rgba8 const& startColor, Rgba8 const& endColor )
+{
+	DebugRenderObject* object = new DebugRenderObject();
+	object->m_timer = Timer( duration );
+	object->m_timer.Start();
+	object->m_startColor = startColor;
+	object->m_endColor = endColor;
+	object->m_mode = DebugRenderMode::ALWAYS;
+	object->m_isWorld = false;
+	object->m_isText = true;
+	object->m_screenBox = box;
+	object->m_textHeight = cellHeight;
+	object->m_alignment = alignment;
+	object->m_text = text;
+
+	for ( int index = 0; index < g_debugRenderSystem.m_screenObjects.size(); ++index )
+	{
+		if ( g_debugRenderSystem.m_screenObjects[index] == nullptr )
+		{
+			g_debugRenderSystem.m_screenObjects[index] = object;
+			return;
+		}
+	}
+	g_debugRenderSystem.m_screenObjects.push_back( object );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void DebugAddMessage( std::string const& text, float duration, Rgba8 const& startColor, Rgba8 const& endColor )
+{
+	DebugRenderObject* object = new DebugRenderObject();
+	object->m_timer = Timer( duration );
+	object->m_timer.Start();
+	object->m_startColor = startColor;
+	object->m_endColor = endColor;
+	object->m_mode = DebugRenderMode::ALWAYS;
+	object->m_isWorld = false;
+	object->m_isText = true;
+	object->m_isMessage = true;
+	object->m_text = text;
+	object->m_textHeight = 15.f;
+
+	for ( int index = 0; index < g_debugRenderSystem.m_messages.size(); ++index )
+	{
+		if ( g_debugRenderSystem.m_messages[index] == nullptr )
+		{
+			g_debugRenderSystem.m_messages[index] = object;
+			return;
+		}
+	}
+	g_debugRenderSystem.m_messages.push_back( object );
 }
 
 

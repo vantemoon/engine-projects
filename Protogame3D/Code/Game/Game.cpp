@@ -90,6 +90,33 @@ void Game::Startup()
 	m_entities.push_back( grid );
 
 	DebugAddWorldBasis( Mat44(), -1.f, DebugRenderMode::USE_DEPTH );
+
+	float offset = 0.2f;
+
+	Mat44 xLabelTransform(
+		Vec3( 0.f, -1.f, 0.f ),
+		Vec3( 1.f, 0.f, 0.f ),
+		Vec3( 0.f, 0.f, 1.f ),
+		Vec3( 0.2f, 0.f, offset )
+	);
+
+	Mat44 yLabelTransform(
+		Vec3( -1.f, 0.f, 0.f ),
+		Vec3( 0.f, -1.f, 0.f ),
+		Vec3( 0.f, 0.f, 1.f ),
+		Vec3( 0.f, 1.8f, offset )
+	);
+
+	Mat44 zLabelTransform(
+		Vec3( -1.f, 0.f, 0.f ),
+		Vec3( 0.f, 0.f, -1.f ),
+		Vec3( 0.f, -1.f, 0.f ),
+		Vec3( 0.f, -offset, 1.4f )
+	);
+
+	DebugAddWorldText( "x - forward", xLabelTransform, 0.2f, Vec2( 0.0f, 0.0f ), -1, Rgba8::RED, Rgba8::RED );
+	DebugAddWorldText( "y - left", yLabelTransform, 0.2f, Vec2( 0.0f, 0.0f ), -1, Rgba8::GREEN, Rgba8::GREEN );
+	DebugAddWorldText( "z - up", zLabelTransform, 0.2f, Vec2( 0.0f, 0.0f ), -1, Rgba8::BLUE, Rgba8::BLUE );
 }
 
 
@@ -229,12 +256,39 @@ void Game::UpdateFromKeyboard()
 			DebugAddBasis( m_player->GetModelToWorldTransform(), 20.f, 1.f, 0.08f, 1.f, 1.f, DebugRenderMode::USE_DEPTH );
 		}
 
+		// 5
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( '5' ) )
+		{
+			std::string debugText = Stringf(
+				"Position: %.2f, %.2f, %.2f\nOrientation: %.1f, %.1f, %.1f",
+				m_player->m_position.x, m_player->m_position.y, m_player->m_position.z,
+				m_player->m_orientation.m_yawDegrees, m_player->m_orientation.m_pitchDegrees, m_player->m_orientation.m_rollDegrees );
+			Vec3 textPosition = m_player->m_position + m_player->m_orientation.GetForwardDir_IFwd_JLeft_KUp() * 2.f;
+
+			DebugAddWorldBillboardText( debugText, textPosition, 0.125f, Vec2( 0.5f, 0.5f ), 10.f, Rgba8::WHITE, Rgba8::RED );
+		}
+
 		// 6
 		if ( g_engine->m_inputSystem->WasKeyJustPressed( '6' ) )
 		{
 			Vec3 start = m_player->m_position;
 			Vec3 end = start + Vec3( 0.f, 0.f, 1.f );
 			DebugAddWorldWireCylinder( start, end, 0.5f, 10.f, Rgba8::WHITE, Rgba8::RED, DebugRenderMode::USE_DEPTH );
+		}
+
+		// 7 
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( '7' ) )
+		{
+			EulerAngles cameraOrientation = m_player->m_playerCamera->GetOrientation();
+			float yaw = cameraOrientation.m_yawDegrees;
+			float pitch = cameraOrientation.m_pitchDegrees;
+			float roll = cameraOrientation.m_rollDegrees;
+
+			std::string debugText = Stringf(
+				"Camera Orientation: %.2f, %.2f, %.2f",
+				yaw, pitch, roll );
+
+			DebugAddMessage( debugText, 5.f );
 		}
 
 		// Return to attract mode
@@ -346,6 +400,11 @@ void Game::UpdateEntities()
 //-----------------------------------------------------------------------------------------------
 void Game::DebugDraw() const
 {
+	if (m_player == nullptr || m_player->m_playerCamera == nullptr)
+	{
+		return;
+	}
+
 	g_engine->m_renderer->BeginCamera( *m_player->m_playerCamera );
 
 	// #ToDo: Draw debug information about entities, collisions, etc.
@@ -363,8 +422,41 @@ void Game::Render() const
 		return;
 	};
 
+	// Per-frame screen debug text/message
+	AABB2 screenBounds( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) );
+	std::string clockText = Stringf(
+		"Time: %.2f FPS: %.1f Scale: %.2f",
+		m_gameClock->GetTotalSeconds(),
+		m_gameClock->GetFrameRate(),
+		m_gameClock->GetTimeScale() );
+
+	DebugAddScreenText(
+		clockText,
+		screenBounds,
+		15.f,
+		Vec2( 1.f, 1.f ),
+		0.f,
+		Rgba8::WHITE,
+		Rgba8::WHITE );
+
+	if ( m_player != nullptr )
+	{
+		std::string playerPosText = Stringf(
+			"Player Position: (%.2f, %.2f, %.2f)",
+			m_player->m_position.x,
+			m_player->m_position.y,
+			m_player->m_position.z );
+
+		DebugAddMessage( playerPosText, 0.f );
+	}
+
 	// Clear screen
 	g_engine->m_renderer->ClearScreen( Rgba8( 50, 50, 50 ) );
+
+	if ( m_player == nullptr || m_player->m_playerCamera == nullptr )
+	{
+		return;
+	}
 
 	g_engine->m_renderer->BeginCamera( *m_player->m_playerCamera );
 
@@ -391,7 +483,7 @@ void Game::RenderAttractMode() const
 
 	g_engine->m_renderer->BeginCamera( *m_screenCamera );
 
-	RenderHUD();
+	// RenderHUD();
 
 	g_engine->m_renderer->EndCamera( *m_screenCamera );
 }

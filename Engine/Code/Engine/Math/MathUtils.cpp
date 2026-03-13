@@ -833,7 +833,7 @@ Mat44 GetBillboardTransform( BillboardType type, Mat44 const& targetTransform, V
 
 			if ( toCamera.GetLengthSquared() == 0.f )
 			{
-				toCamera = cameraI;
+				toCamera = -cameraI;
 				toCamera.z = 0.f;
 			}
 
@@ -853,7 +853,7 @@ Mat44 GetBillboardTransform( BillboardType type, Mat44 const& targetTransform, V
 				flatCameraI = Vec3( 1.f, 0.f, 0.f );
 			}
 
-			iBasis = flatCameraI.GetNormalized();
+			iBasis = -flatCameraI.GetNormalized();
 			kBasis = Vec3( 0.f, 0.f, 1.f );
 			jBasis = CrossProduct3D( kBasis, iBasis ).GetNormalized();
 			break;
@@ -861,7 +861,13 @@ Mat44 GetBillboardTransform( BillboardType type, Mat44 const& targetTransform, V
 
 		case BillboardType::FULL_FACING:
 		{
-			iBasis = ( cameraPos - billboardPosition ).GetNormalized();
+			Vec3 toCamera = cameraPos - billboardPosition;
+			if ( toCamera.GetLengthSquared() == 0.f )
+			{
+				toCamera = -cameraI;
+			}
+
+			iBasis = toCamera.GetNormalized();
 
 			Vec3 worldUp = Vec3( 0.f, 0.f, 1.f );
 			if ( fabsf( DotProduct3D( iBasis, worldUp ) ) > 0.999f )
@@ -876,8 +882,8 @@ Mat44 GetBillboardTransform( BillboardType type, Mat44 const& targetTransform, V
 
 		case BillboardType::FULL_OPPOSING:
 		{
-			iBasis = cameraI.GetNormalized();
-			jBasis = cameraJ.GetNormalized();
+			iBasis = -cameraI.GetNormalized();
+			jBasis = -cameraJ.GetNormalized();
 			kBasis = cameraK.GetNormalized();
 			break;
 		}
