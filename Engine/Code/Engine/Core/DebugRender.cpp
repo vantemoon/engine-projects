@@ -150,7 +150,7 @@ void DebugRenderSystemShutdown()
 {
 	g_debugRenderSystem.m_font = nullptr;
 	
-	for ( int index = 0; index < g_debugRenderSystem.m_worldObjects.size(); ++ index )
+	for ( size_t index = 0; index < g_debugRenderSystem.m_worldObjects.size(); ++ index )
 	{
 		DebugRenderObject* worldObject = g_debugRenderSystem.m_worldObjects[index];
 		delete worldObject;
@@ -158,7 +158,7 @@ void DebugRenderSystemShutdown()
 	}
 	g_debugRenderSystem.m_worldObjects.clear();
 
-	for ( int index = 0; index < g_debugRenderSystem.m_screenObjects.size(); ++index )
+	for ( size_t index = 0; index < g_debugRenderSystem.m_screenObjects.size(); ++index )
 	{
 		DebugRenderObject* screenObject = g_debugRenderSystem.m_screenObjects[index];
 		delete screenObject;
@@ -166,7 +166,7 @@ void DebugRenderSystemShutdown()
 	}
 	g_debugRenderSystem.m_screenObjects.clear();
 
-	for ( int index = 0; index < g_debugRenderSystem.m_messages.size(); ++index )
+	for ( size_t index = 0; index < g_debugRenderSystem.m_messages.size(); ++index )
 	{
 		DebugRenderObject* message = g_debugRenderSystem.m_messages[index];
 		delete message;
@@ -193,7 +193,7 @@ void DebugRenderSetHidden()
 //-----------------------------------------------------------------------------------------------
 void DebugRenderClear()
 {
-	for ( int index = 0; index < g_debugRenderSystem.m_worldObjects.size(); ++index )
+	for ( size_t index = 0; index < g_debugRenderSystem.m_worldObjects.size(); ++index )
 	{
 		DebugRenderObject* worldObject = g_debugRenderSystem.m_worldObjects[index];
 		delete worldObject;
@@ -201,7 +201,7 @@ void DebugRenderClear()
 	}
 	g_debugRenderSystem.m_worldObjects.clear();
 
-	for ( int index = 0; index < g_debugRenderSystem.m_screenObjects.size(); ++index )
+	for ( size_t index = 0; index < g_debugRenderSystem.m_screenObjects.size(); ++index )
 	{
 		DebugRenderObject* screenObject = g_debugRenderSystem.m_screenObjects[index];
 		delete screenObject;
@@ -209,7 +209,7 @@ void DebugRenderClear()
 	}
 	g_debugRenderSystem.m_screenObjects.clear();
 
-	for ( int index = 0; index < g_debugRenderSystem.m_messages.size(); ++index )
+	for ( size_t index = 0; index < g_debugRenderSystem.m_messages.size(); ++index )
 	{
 		DebugRenderObject* message = g_debugRenderSystem.m_messages[index];
 		delete message;
@@ -223,7 +223,7 @@ void DebugRenderClear()
 //-----------------------------------------------------------------------------------------------
 void DebugRenderBeginFrame()
 {
-	for ( int index = 0; index < g_debugRenderSystem.m_worldObjects.size(); ++index )
+	for ( size_t index = 0; index < g_debugRenderSystem.m_worldObjects.size(); ++index )
 	{
 		DebugRenderObject* worldObject = g_debugRenderSystem.m_worldObjects[index];
 		if ( worldObject != nullptr && worldObject->m_timer.m_period > 0.0 && worldObject->m_timer.HasPeriodElapsed() )
@@ -233,7 +233,7 @@ void DebugRenderBeginFrame()
 		}
 	}
 
-	for ( int index = 0; index < g_debugRenderSystem.m_screenObjects.size(); ++index )
+	for ( size_t index = 0; index < g_debugRenderSystem.m_screenObjects.size(); ++index )
 	{
 		DebugRenderObject* screenObject = g_debugRenderSystem.m_screenObjects[index];
 		if ( screenObject != nullptr && screenObject->m_timer.m_period > 0.0 && screenObject->m_timer.HasPeriodElapsed() )
@@ -243,7 +243,7 @@ void DebugRenderBeginFrame()
 		}
 	}
 
-	for ( int index = 0; index < g_debugRenderSystem.m_messages.size(); ++index )
+	for ( size_t index = 0; index < g_debugRenderSystem.m_messages.size(); ++index )
 	{
 		DebugRenderObject* message = g_debugRenderSystem.m_messages[index];
 		if ( message != nullptr && message->m_timer.m_period > 0.0 && message->m_timer.HasPeriodElapsed() )
@@ -265,7 +265,7 @@ void DebugRenderWorld( Camera const& camera )
 
 	g_engine->m_renderer->BeginCamera( camera );
 
-	for ( int index = 0; index < g_debugRenderSystem.m_worldObjects.size(); ++index )
+	for ( size_t index = 0; index < g_debugRenderSystem.m_worldObjects.size(); ++index )
 	{
 		DebugRenderObject* worldObject = g_debugRenderSystem.m_worldObjects[index];
 
@@ -369,7 +369,7 @@ void DebugRenderScreen( Camera const& camera )
 	g_engine->m_renderer->SetDepthMode( DepthMode::DISABLED );
 	g_engine->m_renderer->SetRasterizerMode( RasterizerMode::SOLID_CULL_NONE );
 
-	for ( int index = 0; index < g_debugRenderSystem.m_screenObjects.size(); ++index )
+	for ( size_t index = 0; index < g_debugRenderSystem.m_screenObjects.size(); ++index )
 	{
 		DebugRenderObject* screenObject = g_debugRenderSystem.m_screenObjects[index];
 		if ( screenObject == nullptr )
@@ -415,7 +415,7 @@ void DebugRenderScreen( Camera const& camera )
 
 	int messageLineIndex = 0;
 
-	for ( int index = 0; index < g_debugRenderSystem.m_messages.size(); ++index )
+	for ( size_t index = 0; index < g_debugRenderSystem.m_messages.size(); ++index )
 	{
 		DebugRenderObject* messageObject = g_debugRenderSystem.m_messages[index];
 		if ( messageObject != nullptr && messageObject->m_timer.m_period <= 0.0 )
@@ -424,7 +424,7 @@ void DebugRenderScreen( Camera const& camera )
 		}
 	}
 
-	for ( int index = 0; index < g_debugRenderSystem.m_messages.size(); ++index )
+	for ( size_t index = 0; index < g_debugRenderSystem.m_messages.size(); ++index )
 	{
 		DebugRenderObject* messageObject = g_debugRenderSystem.m_messages[index];
 		if ( messageObject != nullptr && messageObject->m_timer.m_period > 0.0 )
@@ -444,7 +444,7 @@ void DebugRenderScreen( Camera const& camera )
 //-----------------------------------------------------------------------------------------------
 void DebugRenderEndFrame()
 {
-	for ( int index = 0; index < g_debugRenderSystem.m_worldObjects.size(); ++index )
+	for ( size_t index = 0; index < g_debugRenderSystem.m_worldObjects.size(); ++index )
 	{
 		DebugRenderObject* worldObject = g_debugRenderSystem.m_worldObjects[index];
 		if ( worldObject != nullptr && worldObject->m_timer.m_period == 0.0 )
@@ -454,7 +454,7 @@ void DebugRenderEndFrame()
 		}
 	}
 
-	for ( int index = 0; index < g_debugRenderSystem.m_screenObjects.size(); ++index )
+	for ( size_t index = 0; index < g_debugRenderSystem.m_screenObjects.size(); ++index )
 	{
 		DebugRenderObject* screenObject = g_debugRenderSystem.m_screenObjects[index];
 		if ( screenObject != nullptr && screenObject->m_timer.m_period == 0.0 )
@@ -464,7 +464,7 @@ void DebugRenderEndFrame()
 		}
 	}
 
-	for ( int index = 0; index < g_debugRenderSystem.m_messages.size(); ++index )
+	for ( size_t index = 0; index < g_debugRenderSystem.m_messages.size(); ++index )
 	{
 		DebugRenderObject* message = g_debugRenderSystem.m_messages[index];
 		if ( message != nullptr && message->m_timer.m_period == 0.0 )
@@ -490,7 +490,7 @@ void DebugAddWorldSphere( Vec3 const& center, float radius, float duration,
 	object->m_isWireframe = false;
 
 	AddVertsForSphere3D( object->m_verts, center, radius, startColor );
-	for ( int index = 0; index < g_debugRenderSystem.m_worldObjects.size(); ++index )
+	for ( size_t index = 0; index < g_debugRenderSystem.m_worldObjects.size(); ++index )
 	{
 		if ( g_debugRenderSystem.m_worldObjects[index] == nullptr )
 		{
@@ -516,7 +516,7 @@ void DebugAddWorldWireSphere( Vec3 const& center, float radius, float duration,
 	object->m_isWireframe = true;
 
 	AddVertsForSphere3D( object->m_verts, center, radius, startColor );
-	for ( int index = 0; index < g_debugRenderSystem.m_worldObjects.size(); ++index )
+	for ( size_t index = 0; index < g_debugRenderSystem.m_worldObjects.size(); ++index )
 	{
 		if ( g_debugRenderSystem.m_worldObjects[index] == nullptr )
 		{
@@ -542,7 +542,7 @@ void DebugAddWorldCylinder( Vec3 const& start, Vec3 const& end, float radius, fl
 	object->m_isWireframe = false;
 
 	AddVertsForCylinder3D( object->m_verts, start, end, radius, startColor );
-	for ( int index = 0; index < g_debugRenderSystem.m_worldObjects.size(); ++index )
+	for ( size_t index = 0; index < g_debugRenderSystem.m_worldObjects.size(); ++index )
 	{
 		if ( g_debugRenderSystem.m_worldObjects[index] == nullptr )
 		{
@@ -568,7 +568,7 @@ void DebugAddWorldWireCylinder( Vec3 const& start, Vec3 const& end, float radius
 	object->m_isWireframe = true;
 
 	AddVertsForCylinder3D( object->m_verts, start, end, radius, startColor );
-	for ( int index = 0; index < g_debugRenderSystem.m_worldObjects.size(); ++index )
+	for ( size_t index = 0; index < g_debugRenderSystem.m_worldObjects.size(); ++index )
 	{
 		if ( g_debugRenderSystem.m_worldObjects[index] == nullptr )
 		{
@@ -594,7 +594,7 @@ void DebugAddWorldArrow( Vec3 const& start, Vec3 const& end, float radius, float
 	object->m_isWireframe = false;
 
 	AddVertsForArrow3D( object->m_verts, start, end, radius, startColor );
-	for ( int index = 0; index < g_debugRenderSystem.m_worldObjects.size(); ++index )
+	for ( size_t index = 0; index < g_debugRenderSystem.m_worldObjects.size(); ++index )
 	{
 		if ( g_debugRenderSystem.m_worldObjects[index] == nullptr )
 		{
@@ -620,7 +620,7 @@ void DebugAddWorldWireArrow( Vec3 const& start, Vec3 const& end, float radius, f
 	object->m_isWireframe = true;
 
 	AddVertsForArrow3D( object->m_verts, start, end, radius, startColor );
-	for ( int index = 0; index < g_debugRenderSystem.m_worldObjects.size(); ++index )
+	for ( size_t index = 0; index < g_debugRenderSystem.m_worldObjects.size(); ++index )
 	{
 		if ( g_debugRenderSystem.m_worldObjects[index] == nullptr )
 		{
@@ -650,7 +650,7 @@ void DebugAddBasis( Mat44 const& transform, float duration, float length, float 
 	DebugAddWorldArrow( transform.GetTranslation3D(), transform.GetTranslation3D() + transform.GetIBasis3D().GetNormalized() * length, radius, duration, scaledRed, scaledRed, mode );
 	DebugAddWorldArrow( transform.GetTranslation3D(), transform.GetTranslation3D() + transform.GetJBasis3D().GetNormalized() * length, radius, duration, scaledGreen, scaledGreen, mode );
 	DebugAddWorldArrow( transform.GetTranslation3D(), transform.GetTranslation3D() + transform.GetKBasis3D().GetNormalized() * length, radius, duration, scaledBlue, scaledBlue, mode );
-	for ( int index = 0; index < g_debugRenderSystem.m_worldObjects.size(); ++index )
+	for ( size_t index = 0; index < g_debugRenderSystem.m_worldObjects.size(); ++index )
 	{
 		if ( g_debugRenderSystem.m_worldObjects[index] == nullptr )
 		{
@@ -677,7 +677,7 @@ void DebugAddWorldBasis( Mat44 const& transform, float duration, DebugRenderMode
 	DebugAddWorldArrow( transform.GetTranslation3D(), transform.GetTranslation3D() + Vec3( 1.f, 0.f, 0.f ), 0.08f, duration, Rgba8::RED, Rgba8::RED, mode );
 	DebugAddWorldArrow( transform.GetTranslation3D(), transform.GetTranslation3D() + Vec3( 0.f, 1.f, 0.f ), 0.08f, duration, Rgba8::GREEN, Rgba8::GREEN, mode );
 	DebugAddWorldArrow( transform.GetTranslation3D(), transform.GetTranslation3D() + Vec3( 0.f, 0.f, 1.f ), 0.08f, duration, Rgba8::BLUE, Rgba8::BLUE, mode );
-	for ( int index = 0; index < g_debugRenderSystem.m_worldObjects.size(); ++index )
+	for ( size_t index = 0; index < g_debugRenderSystem.m_worldObjects.size(); ++index )
 	{
 		if ( g_debugRenderSystem.m_worldObjects[index] == nullptr )
 		{
@@ -705,7 +705,7 @@ void DebugAddWorldText( std::string const& text, Mat44 const& transform, float t
 	g_debugRenderSystem.m_font->AddVertsForText3DAtOriginXForward( object->m_verts, textHeight, text, startColor, 1.f, alignment );
 	TransformVertexArray3D( object->m_verts, transform );
 
-	for ( int index = 0; index < g_debugRenderSystem.m_worldObjects.size(); ++index )
+	for ( size_t index = 0; index < g_debugRenderSystem.m_worldObjects.size(); ++index )
 	{
 		if ( g_debugRenderSystem.m_worldObjects[index] == nullptr )
 		{
@@ -736,7 +736,7 @@ void DebugAddWorldBillboardText( std::string const& text, Vec3 const& origin, fl
 	object->m_textHeight = textHeight;
 	object->m_alignment = alignment;
 
-	for ( int index = 0; index < g_debugRenderSystem.m_worldObjects.size(); ++index )
+	for ( size_t index = 0; index < g_debugRenderSystem.m_worldObjects.size(); ++index )
 	{
 		if ( g_debugRenderSystem.m_worldObjects[index] == nullptr )
 		{
@@ -765,7 +765,7 @@ void DebugAddScreenText( std::string const& text, AABB2 const& box, float cellHe
 	object->m_alignment = alignment;
 	object->m_text = text;
 
-	for ( int index = 0; index < g_debugRenderSystem.m_screenObjects.size(); ++index )
+	for ( size_t index = 0; index < g_debugRenderSystem.m_screenObjects.size(); ++index )
 	{
 		if ( g_debugRenderSystem.m_screenObjects[index] == nullptr )
 		{
@@ -792,7 +792,7 @@ void DebugAddMessage( std::string const& text, float duration, Rgba8 const& star
 	object->m_text = text;
 	object->m_textHeight = 15.f;
 
-	for ( int index = 0; index < g_debugRenderSystem.m_messages.size(); ++index )
+	for ( size_t index = 0; index < g_debugRenderSystem.m_messages.size(); ++index )
 	{
 		if ( g_debugRenderSystem.m_messages[index] == nullptr )
 		{
