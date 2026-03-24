@@ -3,13 +3,14 @@
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Input/InputSystem.hpp"
 #include "Engine/Math/MathUtils.hpp"
+#include "Engine/Math/Mat44.hpp"
 #include "Engine/Renderer/Camera.hpp"
 
 
 //-----------------------------------------------------------------------------------------------
 Player::Player( Game* owner )
-	: Entity( owner )
 {
+	m_game = owner;
 	m_playerCamera = new Camera();
 
 	float values[16] =
@@ -204,5 +205,17 @@ void Player::UpdateFromController( float deltaSeconds )
 //-----------------------------------------------------------------------------------------------
 void Player::Render() const
 {
-	Entity::Render();
+	g_engine->m_renderer->SetModelConstants( GetModelToWorldTransform(), m_color );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+Mat44 Player::GetModelToWorldTransform() const
+{
+	Mat44 modelToWorld;
+	Mat44 translation = Mat44::MakeTranslation3D( m_position );
+	Mat44 rotation = m_orientation.GetAsMatrix_IFwd_JLeft_KUp();
+	modelToWorld.Append( translation );
+	modelToWorld.Append( rotation );
+	return modelToWorld;
 }

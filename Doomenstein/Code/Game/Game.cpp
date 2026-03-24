@@ -1,9 +1,7 @@
 #include "Game/Game.hpp"
 #include "Game/App.hpp"
-#include "Game/Entity.hpp"
 #include "Game/GameCommon.hpp"
 #include "Game/Player.hpp"
-#include "Game/Prop.hpp"
 #include "Engine/Audio/AudioSystem.hpp"
 #include "Engine/Core/DebugRender.hpp"
 #include "Engine/Core/Engine.hpp"
@@ -50,8 +48,6 @@ Game::Game()
 //-----------------------------------------------------------------------------------------------
 Game::~Game()
 {
-	m_entities.clear();
-
 	delete m_screenCamera;
 	m_screenCamera = nullptr;
 }
@@ -62,61 +58,7 @@ void Game::Startup()
 {
 	Player* player = new Player( this );
 	player->m_position = Vec3( -2.f, 0.f, 1.f );
-	m_entities.push_back( player );
 	m_player = player;
-
-	Prop* cube1 = new Prop( this );
-	cube1->m_position = Vec3( 2.f, 2.f, 0.f );
-	AddVertsForCube( cube1->m_verts, 1.f );
-	m_entities.push_back( cube1 );
-	m_cube1 = cube1;
-
-	Prop* cube2 = new Prop( this );
-	cube2->m_position = Vec3( -2.f, -2.f, 0.f );
-	AddVertsForCube( cube2->m_verts, 1.f );
-	m_entities.push_back( cube2 );
-	m_cube2 = cube2;
-
-	Prop* sphere = new Prop( this );
-	sphere->m_position = Vec3( 10.f, -5.f, 1.f );
-	sphere->m_texture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/TestUV.png" );
-	AddVertsForSphere3D( sphere->m_verts, Vec3::ZERO, 1.f, Rgba8::WHITE, AABB2::ZERO_TO_ONE, 32, 16 );
-	m_entities.push_back( sphere );
-	m_sphere = sphere;
-
-	Prop* grid = new Prop( this );
-	grid->m_position = Vec3( 0.f, 0.f, 0.f );
-	AddvertsForXYGrid3D( grid->m_verts, Vec3::ZERO, 1.f, 100, 100 );
-	m_entities.push_back( grid );
-
-	DebugAddWorldBasis( Mat44(), -1.f, DebugRenderMode::USE_DEPTH );
-
-	float offset = 0.2f;
-
-	Mat44 xLabelTransform(
-		Vec3( 0.f, -1.f, 0.f ),
-		Vec3( 1.f, 0.f, 0.f ),
-		Vec3( 0.f, 0.f, 1.f ),
-		Vec3( 0.2f, 0.f, offset )
-	);
-
-	Mat44 yLabelTransform(
-		Vec3( -1.f, 0.f, 0.f ),
-		Vec3( 0.f, -1.f, 0.f ),
-		Vec3( 0.f, 0.f, 1.f ),
-		Vec3( 0.f, 1.8f, offset )
-	);
-
-	Mat44 zLabelTransform(
-		Vec3( -1.f, 0.f, 0.f ),
-		Vec3( 0.f, 0.f, -1.f ),
-		Vec3( 0.f, -1.f, 0.f ),
-		Vec3( 0.f, -offset, 1.4f )
-	);
-
-	DebugAddWorldText( "x - forward", xLabelTransform, 0.2f, Vec2( 0.0f, 0.0f ), -1, Rgba8::RED, Rgba8::RED );
-	DebugAddWorldText( "y - left", yLabelTransform, 0.2f, Vec2( 0.0f, 0.0f ), -1, Rgba8::GREEN, Rgba8::GREEN );
-	DebugAddWorldText( "z - up", zLabelTransform, 0.2f, Vec2( 0.0f, 0.0f ), -1, Rgba8::BLUE, Rgba8::BLUE );
 }
 
 
@@ -370,30 +312,7 @@ void Game::UpdateFromController()
 //-----------------------------------------------------------------------------------------------
 void Game::UpdateEntities()
 {
-	float deltaSeconds = ( float ) m_gameClock->GetDeltaSeconds();
-	float time = ( float ) m_gameClock->GetTotalSeconds();
-
-	if (m_cube1 != nullptr ) // Cube 1
-	{
-		m_entities[1]->m_orientation.m_rollDegrees += 30.f * deltaSeconds;
-		m_entities[1]->m_orientation.m_pitchDegrees += 30.f * deltaSeconds;
-	}
-
-	if ( m_cube2 != nullptr ) // Cube 2
-	{
-		float fraction = ( float ) ( sin( time * M_PI ) + 1.f ) / 2.f;
-		m_entities[2]->m_color = Rgba8::WHITE.Interpolate( Rgba8::WHITE, Rgba8::BLACK, fraction );
-	}
-
-	if ( m_sphere != nullptr ) // Sphere
-	{
-		m_entities[3]->m_orientation.m_yawDegrees += 45.f * deltaSeconds;
-	}
-
-	for ( Entity* entity : m_entities )
-	{
-		entity->Update( ( float ) m_gameClock->GetDeltaSeconds() );
-	}
+	m_player->Update( ( float ) m_gameClock->GetDeltaSeconds() );
 }
 
 
@@ -494,10 +413,7 @@ void Game::RenderEntities() const
 {
 	g_engine->m_renderer->BeginCamera( *m_player->m_playerCamera );
 
-	for ( Entity* entity : m_entities )
-	{
-		entity->Render();
-	}
+	m_player->Render();
 
 	g_engine->m_renderer->EndCamera( *m_player->m_playerCamera );
 }
@@ -555,7 +471,6 @@ bool Game::IsOnScreen( Vec2 const& worldPosition, float cosmeticRadius ) const
 //-----------------------------------------------------------------------------------------------
 void Game::Reset()
 {
-	m_entities.clear();
 	Startup();
 	m_isScreenShaking = false;
 	m_isDebugFeaturesOn = false;

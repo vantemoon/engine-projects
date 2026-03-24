@@ -8,9 +8,7 @@
 
 //-----------------------------------------------------------------------------------------------
 class  Camera;     // Forward declaration
-class  Entity;     // Forward declaration
 class  Player;     // Forward declaration
-class  Prop;       // Forward declaration
 struct Vec3;       // Forward declaration
 struct Vertex;     // Forward declaration
 
@@ -19,11 +17,7 @@ struct Vertex;     // Forward declaration
 class Game
 {
 public:
-	std::vector<Entity*> m_entities;
 	Player*		m_player = nullptr;
-	Prop*		m_cube1 = nullptr;
-	Prop*		m_cube2 = nullptr;
-	Prop*		m_sphere = nullptr;
 
 	Camera*     m_screenCamera = nullptr;
 
