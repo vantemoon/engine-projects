@@ -758,6 +758,23 @@ void Renderer::BindShader( Shader* shader )
 }
 
 
+
+//------------------------------------------------------------------------------------------------
+Shader* Renderer::CreateOrGetShader( char const* shaderName, VertexType vertexType )
+{
+	for ( int shaderIndex = 0; shaderIndex < ( int ) m_loadedShaders.size(); ++shaderIndex )
+	{
+		Shader* shader = m_loadedShaders[shaderIndex];
+		std::string name = shader->GetName();
+		if ( name == shaderName )
+		{
+			return shader;
+		}
+	}
+	return CreateShader( shaderName, vertexType );
+}
+
+
 //------------------------------------------------------------------------------------------------
 Shader* Renderer::CreateShader( char const* shaderName, VertexType vertexType )
 {

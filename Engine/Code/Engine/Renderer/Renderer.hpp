@@ -121,6 +121,7 @@ public:
 	Texture* CreateOrGetTextureFromFile( char const* imageFilePath );
 	BitmapFont* CreateOrGetBitmapFontFromFile( char const* fontFilePathNameWithNoExtension );
 
+	Shader* CreateOrGetShader( char const* shaderName, VertexType vertexType = VertexType::VERTEX_PCU );
 	Shader* CreateShader( char const* shaderName, VertexType vertexType = VertexType::VERTEX_PCU );
 	Shader* CreateShader( char const* shaderName, char const* shaderSource, VertexType vertexType = VertexType::VERTEX_PCU );
 	bool CompileShaderToBytecode( std::vector<unsigned char>& outBytecode, char const* name, char const* source, char const* entryPoint, char const* target );
