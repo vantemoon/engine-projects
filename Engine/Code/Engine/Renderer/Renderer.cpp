@@ -759,7 +759,7 @@ void Renderer::BindShader( Shader* shader )
 
 
 //------------------------------------------------------------------------------------------------
-Shader* Renderer::CreateShader( char const* shaderName )
+Shader* Renderer::CreateShader( char const* shaderName, VertexType vertexType )
 {
 	std::string filename = Stringf( "Data/Shaders/%s.hlsl", shaderName );
 	std::string shaderSource;
@@ -767,12 +767,12 @@ Shader* Renderer::CreateShader( char const* shaderName )
 	{
 		ERROR_AND_DIE( Stringf( "Could not read shader file \"%s\"", filename.c_str() ) );
 	}
-	return CreateShader( shaderName, shaderSource.c_str() );
+	return CreateShader( shaderName, shaderSource.c_str(), vertexType );
 }
 
 
 //------------------------------------------------------------------------------------------------
-Shader* Renderer::CreateShader( char const* shaderName, char const* shaderSource )
+Shader* Renderer::CreateShader( char const* shaderName, char const* shaderSource, VertexType vertexType )
 {
 	ShaderConfig config;
 	config.m_name = shaderName;
@@ -813,15 +813,33 @@ Shader* Renderer::CreateShader( char const* shaderName, char const* shaderSource
 		ERROR_AND_DIE( Stringf( "Could not create pixel shader." ) );
 	}
 
-	// Create input layout
-	D3D11_INPUT_ELEMENT_DESC inputElementDescs[] =
+	// Create input layout based on vertex type
+	D3D11_INPUT_ELEMENT_DESC pcuInputElementDescs[] =
 	{
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "COLOR", 0, DXGI_FORMAT_R8G8B8A8_UNORM, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 	};
 
-	UINT numElements = ARRAYSIZE( inputElementDescs );
+	D3D11_INPUT_ELEMENT_DESC pcutbnInputElementDescs[] =
+	{
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "COLOR", 0, DXGI_FORMAT_R8G8B8A8_UNORM, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "BITANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+	};
+
+	D3D11_INPUT_ELEMENT_DESC const* inputElementDescs = pcuInputElementDescs;
+	UINT numElements = ARRAYSIZE( pcuInputElementDescs );
+
+	if ( vertexType == VertexType::VERTEX_PCUTBN )
+	{
+		inputElementDescs = pcutbnInputElementDescs;
+		numElements = ARRAYSIZE( pcutbnInputElementDescs );
+	}
+
 	hr = m_device->CreateInputLayout(
 		inputElementDescs,
 		numElements,
@@ -830,9 +848,9 @@ Shader* Renderer::CreateShader( char const* shaderName, char const* shaderSource
 		&shader->m_inputLayout );
 	if ( !SUCCEEDED( hr ) )
 	{
-		ERROR_AND_DIE( Stringf( "Could not create vertex layout for PCU vertex." ) );
+		ERROR_AND_DIE( Stringf( "Could not create vertex layout for shader \"%s\".", shaderName ) );
 	}
-	
+
 	m_loadedShaders.push_back( shader );
 	return shader;
 }
