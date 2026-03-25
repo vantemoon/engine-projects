@@ -24,6 +24,7 @@ class Image;
 class Texture;
 class Shader;
 class ConstantBuffer;
+class IndexBuffer;
 class VertexBuffer;
 
 struct ID3D11RasterizerState;
@@ -135,8 +136,14 @@ public:
 	ConstantBuffer* CreateConstantBuffer( unsigned int const size );
 	void CopyCPUToGPU( void const* data, unsigned int size, ConstantBuffer* cbo );
 	void BindConstantBuffer( int slot, ConstantBuffer* cbo );
-	void SetModelConstants( Mat44 const& modelToWorldTransform = Mat44(), Rgba8 const& modelColor = Rgba8::WHITE );
+
+	IndexBuffer* CreateIndexBuffer( unsigned int size );
+	void CopyCPUToGPU( void const* data, unsigned int size, IndexBuffer* ibo );
+	void BindIndexBuffer( IndexBuffer* ibo );
+	void DrawIndexBuffer( IndexBuffer* ibo, unsigned int indexCount );
 	
+	void SetModelConstants( Mat44 const& modelToWorldTransform = Mat44(), Rgba8 const& modelColor = Rgba8::WHITE );
+
 private:
 	Image* CreateImageFromFile( char const* imageFilePath );
 	Texture* CreateTextureFromImage( char const* name, Image const& image );

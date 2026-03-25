@@ -13,6 +13,7 @@
 #include "Engine/Renderer/Camera.hpp"
 #include "Engine/Renderer/ConstantBuffer.hpp"
 #include "Engine/Renderer/DefaultShader.hpp"
+#include "Engine/Renderer/IndexBuffer.hpp"
 #include "Engine/Renderer/Shader.hpp"
 #include "Engine/Renderer/Texture.hpp"
 #include "Engine/Renderer/VertexBuffer.hpp"
@@ -1018,6 +1019,57 @@ void Renderer::BindConstantBuffer( int slot, ConstantBuffer* cbo )
 {
 	m_deviceContext->VSSetConstantBuffers( slot, 1, &cbo->m_buffer );
 	m_deviceContext->PSSetConstantBuffers( slot, 1, &cbo->m_buffer );
+}
+
+
+//------------------------------------------------------------------------------------------------
+IndexBuffer* Renderer::CreateIndexBuffer( unsigned int size )
+{
+	IndexBuffer* ibo = new IndexBuffer( size );
+
+	// Create index buffer
+	D3D11_BUFFER_DESC indexBufferDesc = {};
+	indexBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	indexBufferDesc.ByteWidth = static_cast< UINT >( ibo->m_size );
+	indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	indexBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	
+	HRESULT hr;
+	hr = m_device->CreateBuffer(
+		&indexBufferDesc,
+		nullptr,
+		&ibo->m_buffer );
+	if ( !SUCCEEDED( hr ) )
+	{
+		ERROR_AND_DIE( "Could not create index buffer." );
+	}
+
+	return ibo;
+}
+
+
+//------------------------------------------------------------------------------------------------
+void Renderer::CopyCPUToGPU( void const* data, unsigned int size, IndexBuffer* ibo )
+{
+	GUARANTEE_OR_DIE( size <= ibo->m_size, Stringf( "Data size (%u bytes) exceeds index buffer size (%zu bytes).", size, ibo->m_size ) );
+	
+	// Copy data
+	D3D11_MAPPED_SUBRESOURCE resource;
+	m_deviceContext->Map(
+		ibo->m_buffer,
+		0,
+		D3D11_MAP_WRITE_DISCARD,
+		0,
+		&resource );
+	memcpy( resource.pData, data, size );
+	m_deviceContext->Unmap( ibo->m_buffer, 0 );
+}
+
+
+//------------------------------------------------------------------------------------------------
+void Renderer::BindIndexBuffer( IndexBuffer* ibo )
+{
+	m_deviceContext->IASetIndexBuffer( ibo->m_buffer, DXGI_FORMAT_R32_UINT, 0 );
 }
 
 
