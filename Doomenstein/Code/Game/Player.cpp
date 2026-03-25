@@ -13,6 +13,9 @@ Player::Player( Game* owner )
 	m_game = owner;
 	m_playerCamera = new Camera();
 
+	m_position = Vec3( 3.f, 3.f, 10.f );
+	m_orientation = EulerAngles( 45.f, 30.f, 0.f );
+
 	float values[16] =
 	{
 		 0.f, 0.f, 1.f, 0.f, // Column-major order from left to right
@@ -48,63 +51,60 @@ void Player::UpdateCamera()
 	m_playerCamera->SetPerspectiveView( g_engine->m_window->m_config.m_clientAspect, 60.f, 0.1f, 100.f );
 	m_playerCamera->SetPositionAndOrientation( m_position, m_orientation );
 
-	float systemDeltaSeconds = ( float ) Clock::GetSystemClock().GetDeltaSeconds();
+	float deltaSeconds = ( float ) Clock::GetSystemClock().GetDeltaSeconds();
 	UpdateFromMouse();
-	UpdateFromKeyboard( systemDeltaSeconds );
-	UpdateFromController( systemDeltaSeconds );
+	UpdateFromKeyboard( deltaSeconds );
+	UpdateFromController( deltaSeconds );
 }
 
 
 //-----------------------------------------------------------------------------------------------
 void Player::UpdateFromMouse()
 {
-	float sensitivity = 0.125f;
+	float sensitivity = 0.075f;
 
 	IntVec2 mouseDelta = g_engine->m_inputSystem->GetCursorClientDelta();
 	int deltaX = mouseDelta.x;
 	int deltaY = mouseDelta.y;
 
-	// Yaw (not clamped)
+	// Yaw
 	m_orientation.m_yawDegrees -= ( float ) deltaX * sensitivity;
 
 	// Pitch (clamped)
-	float pitch = GetClamped( m_orientation.m_pitchDegrees + ( float ) deltaY * sensitivity, -85.f, 85.f );
-	m_orientation.m_pitchDegrees = pitch;
+	m_orientation.m_pitchDegrees = GetClamped( m_orientation.m_pitchDegrees + ( float ) deltaY * sensitivity, -85.f, 85.f );
 }
 
 
 //-----------------------------------------------------------------------------------------------
 void Player::UpdateFromKeyboard( float deltaSeconds )
 {
-	float movementSpeed = 2.f;
+	float movementSpeed = 1.f;
 	float rotationSpeed = 90.f;
 
-	// Increase movement speed by 10
+	// Sprint
 	if ( g_engine->m_inputSystem->IsKeyDown( KEYCODE_SHIFT ) )
 	{
-		movementSpeed *= 10.f;
+		movementSpeed = 15.f;
 	}
 
-	// Roll (clamped)
+	// Roll
 	if ( g_engine->m_inputSystem->IsKeyDown( 'Q' ) )
 	{
-		float roll = GetClamped( m_orientation.m_rollDegrees + rotationSpeed * deltaSeconds, -45.f, 45.f );
-		m_orientation.m_rollDegrees = roll;
+		m_orientation.m_rollDegrees = GetClamped( m_orientation.m_rollDegrees + rotationSpeed * deltaSeconds, -45.f, 45.f );
 	}
 	if ( g_engine->m_inputSystem->IsKeyDown( 'E' ) )
 	{
-		float roll = GetClamped( m_orientation.m_rollDegrees - rotationSpeed * deltaSeconds, -45.f, 45.f );
-		m_orientation.m_rollDegrees = roll;
+		m_orientation.m_rollDegrees = GetClamped( m_orientation.m_rollDegrees - rotationSpeed * deltaSeconds, -45.f, 45.f );
 	}
 
 	float movementAmount = movementSpeed * deltaSeconds;
-	
+
 	Mat44 orientationMat = m_orientation.GetAsMatrix_IFwd_JLeft_KUp();
 	Vec3 forwardVector = orientationMat.GetIBasis3D();
 	Vec3 leftVector = orientationMat.GetJBasis3D();
 	Vec3 upVector = orientationMat.GetKBasis3D();
 
-	// Left and right movement
+	// Left/right
 	if ( g_engine->m_inputSystem->IsKeyDown( 'A' ) )
 	{
 		m_position += leftVector * movementAmount;
@@ -114,7 +114,7 @@ void Player::UpdateFromKeyboard( float deltaSeconds )
 		m_position += leftVector * -movementAmount;
 	}
 
-	// Forward and backward movement
+	// Forward/back
 	if ( g_engine->m_inputSystem->IsKeyDown( 'W' ) )
 	{
 		m_position += forwardVector * movementAmount;
@@ -124,7 +124,7 @@ void Player::UpdateFromKeyboard( float deltaSeconds )
 		m_position += forwardVector * -movementAmount;
 	}
 
-	// Up and down movement
+	// Down/up
 	if ( g_engine->m_inputSystem->IsKeyDown( 'Z' ) )
 	{
 		m_position += upVector * -movementAmount;
@@ -152,38 +152,36 @@ void Player::UpdateFromController( float deltaSeconds )
 	float rightTrigger = controller.GetRightTrigger();
 	float leftTrigger = controller.GetLeftTrigger();
 
-	float movementSpeed = 2.f;
+	float movementSpeed = 1.f;
 	float rotationSpeed = 90.f;
 
-	// Increase movement speed by 10
+	// Sprint
 	if ( controller.IsButtonDown( XBOX_BUTTON_A ) )
 	{
-		movementSpeed *= 10.f;
+		movementSpeed = 15.f;
 	}
 
-	// Yaw (not clamped)
+	// Yaw
 	m_orientation.m_yawDegrees -= rightStickPosition.x * rotationSpeed * deltaSeconds;
 
 	// Pitch (clamped)
-	float pitch = GetClamped( m_orientation.m_pitchDegrees - rightStickPosition.y * rotationSpeed * deltaSeconds, -85.f, 85.f );
-	m_orientation.m_pitchDegrees = pitch;
+	m_orientation.m_pitchDegrees = GetClamped( m_orientation.m_pitchDegrees - rightStickPosition.y * rotationSpeed * deltaSeconds, -85.f, 85.f );
 
-	// Roll (clamped)
+	// Roll
 	float rightTriggerRoll = rightTrigger * -rotationSpeed * deltaSeconds;
 	float leftTriggerRoll = leftTrigger * rotationSpeed * deltaSeconds;
-	float roll = GetClamped( m_orientation.m_rollDegrees + rightTriggerRoll + leftTriggerRoll, -45.f, 45.f );
-	m_orientation.m_rollDegrees = roll;
+	m_orientation.m_rollDegrees = GetClamped( m_orientation.m_rollDegrees + rightTriggerRoll + leftTriggerRoll, -45.f, 45.f );
 
 	Vec3 forward, left, up;
 	m_orientation.GetAsVectors_IFwd_JLeft_KUp( forward, left, up );
 
-	// Left and right movement
+	// Left/right
 	m_position += left * leftStickPosition.x * movementSpeed * deltaSeconds;
 
-	// Forward and backward movement
+	// Forward/back
 	m_position += forward * leftStickPosition.y * movementSpeed * deltaSeconds;
 
-	// Up and down movement
+	// Down/up
 	if ( controller.IsButtonDown( XBOX_BUTTON_LEFT_SHOULDER ) )
 	{
 		m_position += up * -movementSpeed * deltaSeconds;

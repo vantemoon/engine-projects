@@ -45,6 +45,16 @@ void* m_dxgiDebugModule = nullptr;
 
 
 //-----------------------------------------------------------------------------------------------
+struct LightingConstants
+{
+	float sunDirection[3] = { 2.f, 1.f, -1.f };
+	float sunIntensity = 0.85f;
+	float ambientIntensity = 0.35f;
+};
+static const int k_lightingConstantsSlot = 1;
+
+
+//-----------------------------------------------------------------------------------------------
 struct CameraConstants
 {
 	Mat44 WorldToCameraTransform;  // View transform
@@ -57,8 +67,8 @@ static const int k_cameraConstantsSlot = 2;
 //-----------------------------------------------------------------------------------------------
 struct ModelConstants
 {
-	Mat44 ModelToCameraTransform;  // Model transform
-	float modelColor[4];
+	Mat44 ModelToCameraTransform; // Model transform
+	float modelColor[4] = {};     // Model color (RGBA)
 };
 static const int k_modelConstantsSlot = 3;
 
