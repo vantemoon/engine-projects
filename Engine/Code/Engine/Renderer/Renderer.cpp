@@ -150,6 +150,7 @@ void Renderer::Startup()
 
 	// Create and bind default shader
 	m_defaultShader = CreateShader( "Default", g_shaderSource );
+	m_diffuseShader = CreateOrGetShader( "Diffuse", VertexType::VERTEX_PCUTBN );
 	BindShader( m_defaultShader );
 
 	// Create vertex buffer
@@ -1070,6 +1071,16 @@ void Renderer::CopyCPUToGPU( void const* data, unsigned int size, IndexBuffer* i
 void Renderer::BindIndexBuffer( IndexBuffer* ibo )
 {
 	m_deviceContext->IASetIndexBuffer( ibo->m_buffer, DXGI_FORMAT_R32_UINT, 0 );
+}
+
+
+//------------------------------------------------------------------------------------------------
+void Renderer::DrawIndexedVertexBuffer( VertexBuffer* vbo, IndexBuffer* ibo, unsigned int indexCount )
+{
+	BindVertexBuffer( vbo );
+	BindIndexBuffer( ibo );
+	SetStatesIfChanged();
+	m_deviceContext->DrawIndexed( indexCount, 0, 0 );
 }
 
 

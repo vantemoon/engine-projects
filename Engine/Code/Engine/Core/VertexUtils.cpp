@@ -284,7 +284,7 @@ void AddVertsForQuad3D( std::vector<Vertex>& verts,
 //-----------------------------------------------------------------------------------------------
 void AddVertsForQuad3D( std::vector<Vertex>& verts, std::vector<unsigned int>& indices,
 						Vec3 const& bottomLeft, Vec3 const& bottomRight, Vec3 const& topRight, Vec3 const& topLeft,
-						Rgba8 const& color = Rgba8::WHITE, AABB2 const& UVs )
+						Rgba8 const& color, AABB2 const& UVs )
 {
 	verts.push_back( Vertex( bottomLeft, color, Vec2( UVs.m_mins.x, UVs.m_mins.y ) ) );
 	verts.push_back( Vertex( bottomRight, color, Vec2( UVs.m_maxs.x, UVs.m_mins.y ) ) );
@@ -293,7 +293,7 @@ void AddVertsForQuad3D( std::vector<Vertex>& verts, std::vector<unsigned int>& i
 	verts.push_back( Vertex( topRight, color, Vec2( UVs.m_maxs.x, UVs.m_maxs.y ) ) );
 	verts.push_back( Vertex( topLeft, color, Vec2( UVs.m_mins.x, UVs.m_maxs.y ) ) );
 
-	unsigned int baseIndex = static_cast< unsigned int >( verts.size() ) - 4;
+	unsigned int baseIndex = static_cast<unsigned int>( verts.size() ) - 4;
 	indices.push_back( baseIndex + 0 );
 	indices.push_back( baseIndex + 1 );
 	indices.push_back( baseIndex + 2 );

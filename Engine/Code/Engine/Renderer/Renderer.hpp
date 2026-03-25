@@ -140,7 +140,7 @@ public:
 	IndexBuffer* CreateIndexBuffer( unsigned int size );
 	void CopyCPUToGPU( void const* data, unsigned int size, IndexBuffer* ibo );
 	void BindIndexBuffer( IndexBuffer* ibo );
-	void DrawIndexBuffer( IndexBuffer* ibo, unsigned int indexCount );
+	void DrawIndexedVertexBuffer( VertexBuffer* vbo, IndexBuffer* ibo, unsigned int indexCount );
 	
 	void SetModelConstants( Mat44 const& modelToWorldTransform = Mat44(), Rgba8 const& modelColor = Rgba8::WHITE );
 
@@ -167,6 +167,7 @@ protected:
 
 	std::vector<Shader*> m_loadedShaders;
 	Shader* m_defaultShader = nullptr;
+	Shader* m_diffuseShader = nullptr;
 	Shader* m_currentShader = nullptr;
 
 	VertexBuffer* m_immediateVBO = nullptr;
