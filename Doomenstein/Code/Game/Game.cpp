@@ -1,6 +1,7 @@
 #include "Game/Game.hpp"
 #include "Game/App.hpp"
 #include "Game/GameCommon.hpp"
+#include "Game/Map.hpp"
 #include "Game/Player.hpp"
 #include "Engine/Audio/AudioSystem.hpp"
 #include "Engine/Core/DebugRender.hpp"

@@ -8,6 +8,7 @@
 
 //-----------------------------------------------------------------------------------------------
 class  Camera;     // Forward declaration
+class  Map;        // Forward declaration
 class  Player;     // Forward declaration
 struct Vec3;       // Forward declaration
 struct Vertex;     // Forward declaration
@@ -17,22 +18,21 @@ struct Vertex;     // Forward declaration
 class Game
 {
 public:
-	Player*		m_player = nullptr;
+	std::vector<Map*>	m_maps;
+	Map*				m_currentMap = nullptr;
 
-	Camera*     m_screenCamera = nullptr;
+	Player*				m_player = nullptr;
+	Camera*				m_screenCamera = nullptr;
 
-	bool        m_isScreenShaking = false;
-	float	    m_screenShakeIntensity = 0.f;
-	float       m_screenShakeDuration = 0.f;
-	float       m_screenShakeStartTime = 0.f;
+	bool				m_isScreenShaking = false;
+	float				m_screenShakeIntensity = 0.f;
+	float				m_screenShakeDuration = 0.f;
+	float				m_screenShakeStartTime = 0.f;
 
-	GameState   m_currentGameState;
-
-	bool        m_isDebugFeaturesOn = false;
-
-	Clock*		m_gameClock = nullptr;
-
-	bool        m_hasControlsBeenShown = false;
+	GameState			m_currentGameState;
+	bool				m_isDebugFeaturesOn = false;
+	Clock*				m_gameClock = nullptr;
+	bool				m_hasControlsBeenShown = false;
 
 public:
 	Game();
