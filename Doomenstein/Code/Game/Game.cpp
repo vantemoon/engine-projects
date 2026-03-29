@@ -2,7 +2,9 @@
 #include "Game/App.hpp"
 #include "Game/GameCommon.hpp"
 #include "Game/Map.hpp"
+#include "Game/MapDefinition.hpp"
 #include "Game/Player.hpp"
+#include "Game/TileDefinition.hpp"
 #include "Engine/Audio/AudioSystem.hpp"
 #include "Engine/Core/DebugRender.hpp"
 #include "Engine/Core/Engine.hpp"
@@ -59,6 +61,10 @@ void Game::Startup()
 {
 	Player* player = new Player( this );
 	m_player = player;
+
+	// Load all definitions
+	MapDefinition::InitializeDefinitions();
+	TileDefinition::InitializeDefinitions();
 }
 
 
