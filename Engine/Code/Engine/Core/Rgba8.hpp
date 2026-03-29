@@ -21,6 +21,8 @@ public:
 	void  SetFromText( const char* text );
 	void  GetAsFloats( float* colorAsFloats ) const;
 
+	bool  operator==( Rgba8 const& compare ) const;
+
 	static const Rgba8 WHITE;
 	static const Rgba8 BLACK;
 	static const Rgba8 RED;

@@ -65,6 +65,7 @@ void Game::Startup()
 	// Load all definitions
 	MapDefinition::InitializeDefinitions();
 	TileDefinition::InitializeDefinitions();
+
 }
 
 
@@ -74,7 +75,7 @@ void Game::DeleteGarbageEntities()
 	if ( g_app->m_game == nullptr )
 		return;
 
-	// #ToDo: Delete entities that are marked as garbage
+	// Delete entities that are marked as garbage
 }
 
 

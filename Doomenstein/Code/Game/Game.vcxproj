@@ -32,6 +32,7 @@
     <ClCompile Include="Map.cpp" />
     <ClCompile Include="MapDefinition.cpp" />
     <ClCompile Include="Player.cpp" />
+    <ClCompile Include="Tile.cpp" />
     <ClCompile Include="TileDefinition.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -43,6 +44,7 @@
     <ClInclude Include="Map.hpp" />
     <ClInclude Include="MapDefinition.hpp" />
     <ClInclude Include="Player.hpp" />
+    <ClInclude Include="Tile.hpp" />
     <ClInclude Include="TileDefinition.hpp" />
   </ItemGroup>
   <ItemGroup>
@@ -51,6 +53,7 @@
     <Xml Include="..\..\Run\Data\Definitions\ProjectileActorDefinitions.xml" />
     <Xml Include="..\..\Run\Data\Definitions\TileDefinitions.xml" />
     <Xml Include="..\..\Run\Data\Definitions\WeaponDefinitions.xml" />
+    <Xml Include="GameConfig.xml" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

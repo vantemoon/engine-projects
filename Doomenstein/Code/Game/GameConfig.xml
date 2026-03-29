@@ -1,0 +1,10 @@
+<GameConfig
+    windowTitle="Doomenstein"
+    windowAspect="2.0"
+    windowWidth="1600"
+    windowHeight="800"
+    worldWidth="200"
+    worldHeight="100"
+    numOfMaps="2"
+	defaultMapName ="TestMap"
+/>

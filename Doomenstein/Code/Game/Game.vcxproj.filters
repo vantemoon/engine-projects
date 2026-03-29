@@ -8,7 +8,7 @@
     <Filter Include="Gameplay">
       <UniqueIdentifier>{7b6b75cb-8cd0-43ff-8c38-ebc826d155b4}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Definitions">
+    <Filter Include="Config">
       <UniqueIdentifier>{44c7d93b-64cb-4440-909f-87a88b417f95}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -40,6 +40,9 @@
     <ClCompile Include="TileDefinition.cpp">
       <Filter>Gameplay</Filter>
     </ClCompile>
+    <ClCompile Include="Tile.cpp">
+      <Filter>Gameplay</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.hpp">
@@ -69,22 +72,28 @@
     <ClInclude Include="TileDefinition.hpp">
       <Filter>Gameplay</Filter>
     </ClInclude>
+    <ClInclude Include="Tile.hpp">
+      <Filter>Gameplay</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Xml Include="..\..\Run\Data\Definitions\ActorDefinitions.xml">
-      <Filter>Definitions</Filter>
+      <Filter>Config</Filter>
     </Xml>
     <Xml Include="..\..\Run\Data\Definitions\MapDefinitions.xml">
-      <Filter>Definitions</Filter>
+      <Filter>Config</Filter>
     </Xml>
     <Xml Include="..\..\Run\Data\Definitions\ProjectileActorDefinitions.xml">
-      <Filter>Definitions</Filter>
+      <Filter>Config</Filter>
     </Xml>
     <Xml Include="..\..\Run\Data\Definitions\TileDefinitions.xml">
-      <Filter>Definitions</Filter>
+      <Filter>Config</Filter>
     </Xml>
     <Xml Include="..\..\Run\Data\Definitions\WeaponDefinitions.xml">
-      <Filter>Definitions</Filter>
+      <Filter>Config</Filter>
+    </Xml>
+    <Xml Include="GameConfig.xml">
+      <Filter>Config</Filter>
     </Xml>
   </ItemGroup>
 </Project>

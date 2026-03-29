@@ -13,10 +13,12 @@ public:
 	bool m_isSolid;
 	Rgba8 m_mapImagePixelColor;
 	IntVec2 m_floorSpriteCoords;
+	IntVec2 m_wallSpriteCoords;
 	IntVec2 m_ceilingSpriteCoords;
 
 	static std::map<std::string, TileDefinition*> s_definitions;
 
 public:
 	static void InitializeDefinitions();
+	static TileDefinition const* GetTileDefinitionFromColor( Rgba8 const& color );
 };

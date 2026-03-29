@@ -74,3 +74,10 @@ Rgba8 Rgba8::Interpolate( Rgba8 const& start, Rgba8 const& end, float fractionOf
 	float newA = ::Interpolate( NormalizeByte( start.a ), NormalizeByte( end.a ), fractionOfEnd );
 	return Rgba8( DenormalizeByte( newR ), DenormalizeByte( newG ), DenormalizeByte( newB ), DenormalizeByte( newA ) );
 }
+
+
+//-----------------------------------------------------------------------------------------------
+bool Rgba8::operator==( Rgba8 const& compare ) const
+{
+	return ( r == compare.r ) && ( g == compare.g ) && ( b == compare.b ) && ( a == compare.a );
+}

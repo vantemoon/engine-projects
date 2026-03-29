@@ -4,6 +4,7 @@
 #include "Engine/Core/ErrorWarningAssert.hpp"
 
 
+//-----------------------------------------------------------------------------------------------
 Tile::Tile( IntVec2 tileCoords, TileDefinition const* definition )
 	: m_tileCoords( tileCoords )
 	, m_definition( definition )

@@ -42,6 +42,11 @@ void TileDefinition::InitializeDefinitions()
 		{
 			newTileDef.m_floorSpriteCoords.SetFromText( floorSpriteCoordsText );
 		}
+		const char* wallSpriteCoordsText = tileDefElement->Attribute( "wallSpriteCoords" );
+		if ( wallSpriteCoordsText != nullptr )
+		{
+			newTileDef.m_wallSpriteCoords.SetFromText( wallSpriteCoordsText );
+		}
 		const char* ceilingSpriteCoordsText = tileDefElement->Attribute( "ceilingSpriteCoords" );
 		if ( ceilingSpriteCoordsText != nullptr )
 		{
@@ -51,4 +56,19 @@ void TileDefinition::InitializeDefinitions()
 		s_definitions[newTileDef.m_name] = new TileDefinition( newTileDef );
 		tileDefElement = tileDefElement->NextSiblingElement( "TileDefinition" );
 	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+TileDefinition const* GetTileDefinitionFromColor( Rgba8 const& color )
+{
+	for ( auto& defPair : TileDefinition::s_definitions )
+	{
+		TileDefinition const* tileDef = defPair.second;
+		if ( tileDef != nullptr && tileDef->m_mapImagePixelColor == color )
+		{
+			return tileDef;
+		}
+	}
+	return nullptr;
 }
