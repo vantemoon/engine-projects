@@ -86,13 +86,13 @@ void App::RunFrame()
 //-----------------------------------------------------------------------------------------------
 void App::UpdateFromKeyboard()
 {
-	if ( !m_game->m_currentGameState == GameState::ATTRACT_MODE )
+	/*if ( !m_game->m_currentGameState == GameState::ATTRACT_MODE )
 	{
 		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_F8 ) )
 		{
 			HardReset();
 		}
-	}
+	}*/
 }
 
 

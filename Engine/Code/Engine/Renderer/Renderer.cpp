@@ -47,9 +47,9 @@ void* m_dxgiDebugModule = nullptr;
 //-----------------------------------------------------------------------------------------------
 struct LightingConstants
 {
-	float sunDirection[3] = { 2.f, 1.f, -1.f };
-	float sunIntensity = 0.85f;
-	float ambientIntensity = 0.35f;
+	float sunDirection[3];
+	float sunIntensity;
+	float ambientIntensity;
 	float padding[3] = { 0.f, 0.f, 0.f };
 };
 static const int k_lightingConstantsSlot = 1;
@@ -175,9 +175,6 @@ void Renderer::Startup()
 
 	// Create lighting constant buffer
 	m_lightingCBO = CreateConstantBuffer( sizeof( LightingConstants ) );
-	LightingConstants defaultLighting;
-	Vec3 sunDirection = Vec3( defaultLighting.sunDirection[0], defaultLighting.sunDirection[1], defaultLighting.sunDirection[2] ).GetNormalized();
-	SetLightingConstants( sunDirection, defaultLighting.sunIntensity, defaultLighting.ambientIntensity );
 
 	// Create rasterizer states for all rasterizer modes
 	D3D11_RASTERIZER_DESC rasterizerDesc = {};

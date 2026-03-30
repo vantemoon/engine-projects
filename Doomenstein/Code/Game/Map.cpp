@@ -6,8 +6,10 @@
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/Image.hpp"
 #include "Engine/Core/VertexUtils.hpp"
+#include "Engine/Renderer/Renderer.hpp"
 #include "Engine/Renderer/SpriteSheet.hpp"
 #include "Engine/Renderer/Texture.hpp"
+#include "Engine/Math/MathUtils.hpp"
 
 
 //-----------------------------------------------------------------------------------------------
@@ -215,6 +217,10 @@ void Map::Render() const
 	}
 
 	g_engine->m_renderer->SetModelConstants();
+
+	Vec3 const normalizedSunDirection = Vec3( m_sunDirection[0], m_sunDirection[1], m_sunDirection[2] ).GetNormalized();
+	g_engine->m_renderer->SetLightingConstants( normalizedSunDirection, m_sunIntensity, m_ambientIntensity );
+
 	g_engine->m_renderer->BindShader( m_shader );
 	g_engine->m_renderer->BindTexture( m_texture );
 
@@ -224,8 +230,58 @@ void Map::Render() const
 	g_engine->m_renderer->DrawIndexedVertexBuffer(
 		m_vertexBuffer,
 		m_indexBuffer,
-		static_cast<unsigned int>( m_indices.size() ) );
+		static_cast< unsigned int >( m_indices.size() ) );
 
 	g_engine->m_renderer->BindShader( nullptr );
 	g_engine->m_renderer->BindTexture( nullptr );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+Vec3 Map::GetSunDirection() const
+{
+	return Vec3( m_sunDirection[0], m_sunDirection[1], m_sunDirection[2] );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+float Map::GetSunIntensity() const
+{
+	return m_sunIntensity;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+float Map::GetAmbientIntensity() const
+{
+	return m_ambientIntensity;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Map::AddToSunDirectionX( float delta )
+{
+	m_sunDirection[0] += delta;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Map::AddToSunDirectionY( float delta )
+{
+	m_sunDirection[1] += delta;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Map::AddToSunIntensity( float delta )
+{
+	float newIntensity = m_sunIntensity + delta;
+	m_sunIntensity = GetClamped( newIntensity, 0.f, 1.f );
+}
+
+//-----------------------------------------------------------------------------------------------
+void Map::AddToAmbientIntensity( float delta )
+{
+	float newIntensity = m_ambientIntensity + delta;
+	m_ambientIntensity = GetClamped( newIntensity, 0.f, 1.f );
 }

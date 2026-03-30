@@ -319,6 +319,102 @@ void Game::UpdateFromKeyboard()
 			DebugAddMessage( debugText, 5.f );
 		}
 
+		// F2
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_F2 ) )
+		{
+			if ( m_currentMap != nullptr )
+			{
+				m_currentMap->AddToSunDirectionX( -1.f );
+				float sunDirectionX = m_currentMap->GetSunDirection().x;
+				std::string debugText = Stringf( "Sun Direction X: %.2f", sunDirectionX );
+				DebugAddMessage( debugText, 2.f );
+			}
+		}
+
+		// F3
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_F3 ) )
+		{
+			if ( m_currentMap != nullptr )
+			{
+				m_currentMap->AddToSunDirectionX( 1.f );
+				float sunDirectionX = m_currentMap->GetSunDirection().x;
+				std::string debugText = Stringf( "Sun Direction X: %.2f", sunDirectionX );
+				DebugAddMessage( debugText, 2.f );
+			}
+		}
+
+		// F4
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_F4 ) )
+		{
+			if ( m_currentMap != nullptr )
+			{
+				m_currentMap->AddToSunDirectionY( -1.f );
+				float sunDirectionY = m_currentMap->GetSunDirection().y;
+				std::string debugText = Stringf( "Sun Direction Y: %.2f", sunDirectionY );
+				DebugAddMessage( debugText, 2.f );
+			}
+		}
+
+		// F5
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_F5 ) )
+		{
+			if ( m_currentMap != nullptr )
+			{
+				m_currentMap->AddToSunDirectionY( 1.f );
+				float sunDirectionY = m_currentMap->GetSunDirection().y;
+				std::string debugText = Stringf( "Sun Direction Y: %.2f", sunDirectionY );
+				DebugAddMessage( debugText, 2.f );
+			}
+		}
+
+		// F6
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_F6 ) )
+		{
+			if ( m_currentMap != nullptr )
+			{
+				m_currentMap->AddToSunIntensity( -0.05f );
+				float sunIntensity = m_currentMap->GetSunIntensity();
+				std::string debugText = Stringf( "Sun Intensity: %.2f", sunIntensity );
+				DebugAddMessage( debugText, 2.f );
+			}
+		}
+
+		// F7
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_F7 ) )
+		{
+			if ( m_currentMap != nullptr )
+			{
+				m_currentMap->AddToSunIntensity( 0.05f );
+				float sunIntensity = m_currentMap->GetSunIntensity();
+				std::string debugText = Stringf( "Sun Intensity: %.2f", sunIntensity );
+				DebugAddMessage( debugText, 2.f );
+			}
+		}
+
+		// F8
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_F8 ) )
+		{
+			if ( m_currentMap != nullptr )
+			{
+				m_currentMap->AddToAmbientIntensity( -0.05f );
+				float ambientIntensity = m_currentMap->GetAmbientIntensity();
+				std::string debugText = Stringf( "Ambient Intensity: %.2f", ambientIntensity );
+				DebugAddMessage( debugText, 2.f );
+			}
+		}
+
+		// F9
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_F9 ) )
+		{
+			if ( m_currentMap != nullptr )
+			{
+				m_currentMap->AddToAmbientIntensity( 0.05f );
+				float ambientIntensity = m_currentMap->GetAmbientIntensity();
+				std::string debugText = Stringf( "Ambient Intensity: %.2f", ambientIntensity );
+				DebugAddMessage( debugText, 2.f );
+			}
+		}
+
 		// Return to attract mode
 		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_ESCAPE ) )
 		{
@@ -519,6 +615,31 @@ void Game::RenderHUD() const
 			m_player->m_position.z );
 
 		DebugAddMessage( playerPosText, 0.f );
+	}
+
+	if ( m_currentMap != nullptr )
+	{
+		Vec3 sunDirection = m_currentMap->GetSunDirection();
+		float sunDirectionX = sunDirection.x;
+		float sunDirectionY = sunDirection.y;
+		float sunIntensity = m_currentMap->GetSunIntensity();
+		float ambientIntensity = m_currentMap->GetAmbientIntensity();
+
+		std::string lightingText = Stringf(
+			"\n\nSun Direction X: %.2f\nSun Direction Y: %.2f\nSun Intensity: %.2f\nAmbient Intensity: %.2f",
+			sunDirectionX,
+			sunDirectionY,
+			sunIntensity,
+			ambientIntensity );
+
+		DebugAddScreenText(
+			lightingText,
+			screenBounds,
+			15.f,
+			Vec2( 1.f, 1.f ),
+			0.f,
+			Rgba8::WHITE,
+			Rgba8::WHITE );
 	}
 
 	g_engine->m_renderer->EndCamera( *m_screenCamera );

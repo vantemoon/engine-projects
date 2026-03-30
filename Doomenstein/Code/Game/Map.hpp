@@ -41,6 +41,13 @@ public:
 	void CollideActorWithMap( Actor* actor );
 
 	void Render() const;
+	Vec3 GetSunDirection() const;
+	float GetSunIntensity() const;
+	float GetAmbientIntensity() const;
+	void AddToSunDirectionX( float delta );
+	void AddToSunDirectionY( float delta );
+	void AddToSunIntensity( float delta );
+	void AddToAmbientIntensity( float delta );
 
 	Game* m_game = nullptr;
 
@@ -55,4 +62,8 @@ protected:
 	Shader* m_shader = nullptr;
 	VertexBuffer* m_vertexBuffer = nullptr;
 	IndexBuffer* m_indexBuffer = nullptr;
+
+	float m_sunDirection[3] = { 2.f, 1.f, -1.f };
+	float m_sunIntensity = 0.85f;
+	float m_ambientIntensity = 0.35f;
 };
