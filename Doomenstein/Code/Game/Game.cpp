@@ -44,6 +44,7 @@ Game::Game()
 	// Register console commands
 	g_engine->m_eventSystem->SubscribeEventCallbackFunction( "Controls", Command_Controls );
 
+	LoadGameConfigFromFile( "Data/GameConfig.xml" );
 	Startup();
 }
 
@@ -51,6 +52,10 @@ Game::Game()
 //-----------------------------------------------------------------------------------------------
 Game::~Game()
 {
+	// Clear definitions
+	MapDefinition::ClearDefinitions();
+	TileDefinition::ClearDefinitions();
+
 	delete m_screenCamera;
 	m_screenCamera = nullptr;
 }
@@ -66,6 +71,51 @@ void Game::Startup()
 	MapDefinition::InitializeDefinitions();
 	TileDefinition::InitializeDefinitions();
 
+	int numMapsToLoad = g_gameConfigBlackboard.GetValue( "numOfMaps", 2 );
+	std::string defaultMapName = g_gameConfigBlackboard.GetValue( "defaultMapName", "TestMap" );
+	for ( int mapIndex = 0; mapIndex < numMapsToLoad; ++mapIndex )
+	{
+		MapDefinition const* mapDef = MapDefinition::GetMapDefinitionByIndex( mapIndex );
+		if ( mapDef != nullptr )
+		{
+			Map* newMap = new Map( this, *mapDef );
+			m_maps.push_back( newMap );
+
+			std::string mapName = mapDef->m_name;
+			if ( mapName == defaultMapName )
+			{
+				m_currentMap = newMap;
+			}
+		}
+	}
+
+	if ( m_currentMap == nullptr && !m_maps.empty() )
+	{
+		m_currentMap = m_maps[0];
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game::LoadGameConfigFromFile( char const* filepath )
+{
+	tinyxml2::XMLDocument xmlDocument;
+	XmlResult loadResult = xmlDocument.LoadFile( filepath );
+
+	if ( loadResult != tinyxml2::XML_SUCCESS )
+	{
+		GUARANTEE_OR_DIE( false, Stringf( "Failed to load game config XML file '%s'", filepath ) );
+		return;
+	}
+
+	XmlElement* rootElement = xmlDocument.RootElement();
+	if ( rootElement == nullptr )
+	{
+		GUARANTEE_OR_DIE( false, Stringf( "Failed to find root element in game config XML file '%s'", filepath ) );
+		return;
+	}
+
+	g_gameConfigBlackboard.PopulateFromXmlElementAttributes( *rootElement );
 }
 
 
@@ -348,7 +398,70 @@ void Game::Render() const
 		return;
 	};
 
-	// Per-frame screen debug text/message
+	// Clear screen
+	g_engine->m_renderer->ClearScreen( Rgba8( 50, 50, 50 ) );
+
+	if ( m_player == nullptr || m_player->m_playerCamera == nullptr )
+	{
+		return;
+	}
+
+	g_engine->m_renderer->BeginCamera( *m_player->m_playerCamera );
+
+	RenderMap();
+	RenderEntities();
+	RenderHUD();
+
+	DebugRenderWorld( *m_player->m_playerCamera );
+	DebugRenderScreen( *m_screenCamera );
+
+	if ( m_isDebugFeaturesOn )
+	{
+		DebugDraw();
+	}
+
+	g_engine->m_renderer->EndCamera( *m_player->m_playerCamera );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game::RenderMap() const
+{
+	if ( m_currentMap != nullptr )
+	{
+		m_currentMap->Render();
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game::RenderAttractMode() const
+{
+	// Clear screen
+	g_engine->m_renderer->ClearScreen( Rgba8( 150, 150, 150 ) );
+
+	g_engine->m_renderer->BeginCamera( *m_screenCamera );
+
+	g_engine->m_renderer->EndCamera( *m_screenCamera );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game::RenderEntities() const
+{
+	g_engine->m_renderer->BeginCamera( *m_player->m_playerCamera );
+
+	m_player->Render();
+
+	g_engine->m_renderer->EndCamera( *m_player->m_playerCamera );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game::RenderHUD() const
+{
+	g_engine->m_renderer->BeginCamera( *m_screenCamera );
+	
 	AABB2 screenBounds( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) );
 	std::string clockText = Stringf(
 		"Time: %.2f FPS: %.1f Scale: %.2f",
@@ -375,79 +488,6 @@ void Game::Render() const
 
 		DebugAddMessage( playerPosText, 0.f );
 	}
-
-	// Clear screen
-	g_engine->m_renderer->ClearScreen( Rgba8( 50, 50, 50 ) );
-
-	if ( m_player == nullptr || m_player->m_playerCamera == nullptr )
-	{
-		return;
-	}
-
-	g_engine->m_renderer->BeginCamera( *m_player->m_playerCamera );
-
-	RenderEntities();
-	// RenderHUD();
-
-	DebugRenderWorld( *m_player->m_playerCamera );
-	DebugRenderScreen( *m_screenCamera );
-
-	if ( m_isDebugFeaturesOn )
-	{
-		DebugDraw();
-	}
-
-	g_engine->m_renderer->EndCamera( *m_player->m_playerCamera );
-}
-
-
-//-----------------------------------------------------------------------------------------------
-void Game::RenderAttractMode() const
-{
-	// Clear screen
-	g_engine->m_renderer->ClearScreen( Rgba8( 150, 150, 150 ) );
-
-	g_engine->m_renderer->BeginCamera( *m_screenCamera );
-
-	// RenderHUD();
-
-	g_engine->m_renderer->EndCamera( *m_screenCamera );
-}
-
-
-//-----------------------------------------------------------------------------------------------
-void Game::RenderEntities() const
-{
-	g_engine->m_renderer->BeginCamera( *m_player->m_playerCamera );
-
-	m_player->Render();
-
-	g_engine->m_renderer->EndCamera( *m_player->m_playerCamera );
-}
-
-
-//-----------------------------------------------------------------------------------------------
-void Game::RenderHUD() const
-{
-	g_engine->m_renderer->BeginCamera( *m_screenCamera );
-
-	// Text
-	std::vector<Vertex> verts;
-	
-	if ( m_currentGameState == GameState::ATTRACT_MODE )
-	{
-		AddVertsForTextTriangles2D( verts, "ATTRACT MODE", Vec2( 10.f, SCREEN_SIZE_Y - 30.f ), 24.f, Rgba8( 255, 255, 255 ) );
-	}
-	else if ( m_currentGameState == GameState::PAUSED )
-	{
-		AddVertsForTextTriangles2D( verts, "PAUSED", Vec2( 10.f, SCREEN_SIZE_Y - 30.f ), 24.f, Rgba8( 255, 255, 255 ) );
-	}
-	else if ( m_currentGameState == GameState::PLAYING )
-	{
-		AddVertsForTextTriangles2D( verts, "GAME MODE", Vec2( 10.f, SCREEN_SIZE_Y - 30.f ), 24.f, Rgba8( 255, 255, 255 ) );
-	}
-	g_engine->m_renderer->BindTexture( nullptr );
-	g_engine->m_renderer->DrawVertexArray( verts );
 
 	g_engine->m_renderer->EndCamera( *m_screenCamera );
 }

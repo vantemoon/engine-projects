@@ -132,3 +132,10 @@ bool IntVec2::operator==( const IntVec2& compare ) const
 {
 	return ( x == compare.x && y == compare.y );
 }
+
+
+//-----------------------------------------------------------------------------------------------
+bool IntVec2::operator!=( const IntVec2& compare ) const
+{
+	return ( x != compare.x || y != compare.y );
+}

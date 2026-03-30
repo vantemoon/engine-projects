@@ -143,6 +143,7 @@ public:
 	void DrawIndexedVertexBuffer( VertexBuffer* vbo, IndexBuffer* ibo, unsigned int indexCount );
 	
 	void SetModelConstants( Mat44 const& modelToWorldTransform = Mat44(), Rgba8 const& modelColor = Rgba8::WHITE );
+	void SetLightingConstants( Vec3 const& sunDirection, float sunIntensity, float ambientIntensity );
 
 private:
 	Image* CreateImageFromFile( char const* imageFilePath );
@@ -173,6 +174,7 @@ protected:
 	VertexBuffer* m_immediateVBO = nullptr;
 	ConstantBuffer* m_cameraCBO = nullptr;
 	ConstantBuffer* m_modelCBO = nullptr;
+	ConstantBuffer* m_lightingCBO = nullptr;
 
 	ID3D11BlendState* m_blendState = nullptr;
 	BlendMode m_desiredBlendMode = BlendMode::ALPHA;

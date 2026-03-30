@@ -1,19 +1,25 @@
 #include "Game/Map.hpp"
 #include "Game/Actor.hpp"
+#include "Game/Game.hpp"
 #include "Game/MapDefinition.hpp"
 #include "Game/TileDefinition.hpp"
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/Image.hpp"
+#include "Engine/Core/VertexUtils.hpp"
 #include "Engine/Renderer/SpriteSheet.hpp"
 #include "Engine/Renderer/Texture.hpp"
 
 
 //-----------------------------------------------------------------------------------------------
-Map::Map( MapDefinition const& mapDefinition, int mapIndex )
-	: m_definition( &mapDefinition )
-	, m_index( mapIndex )
+Map::Map( Game* game, MapDefinition const& mapDef )
+	: m_game( game )
+	, m_definition( &mapDef )
 {
-	InitializeActors();
+	m_shader = m_definition->m_shader;
+	m_texture = m_definition->m_spriteSheetTexture;
+
+	CreateTiles();
+	CreateBuffers();
 }
 
 
@@ -25,201 +31,191 @@ Map::~Map()
 		delete tile;
 	}
 	m_tiles.clear();
+}
 
-	for ( Actor* actor : m_actors )
+
+//-----------------------------------------------------------------------------------------------
+void Map::CreateTiles()
+{
+	Image const& mapImage = m_definition->m_image;
+	m_dimensions = mapImage.GetDimensions();
+
+	for ( int y = 0; y < m_dimensions.y; y++ )
 	{
-		delete actor;
+		for ( int x = 0; x < m_dimensions.x; x++ )
+		{
+			Rgba8 pixelColor = mapImage.GetTexelColor( IntVec2( x, y ) );
+			TileDefinition const* tileDef = TileDefinition::GetTileDefinitionFromColor( pixelColor );
+			if ( tileDef != nullptr )
+			{
+				AABB3 tileBounds = AABB3( Vec3( ( float ) x, ( float ) y, 0.f ), Vec3( ( float ) ( x + 1 ), ( float ) ( y + 1 ), 1.f ) );
+				Tile* newTile = new Tile( tileBounds, tileDef );
+				m_tiles.push_back( newTile );
+			}
+		}
 	}
-	m_actors.clear();
 
-	delete m_tileVertexBuffer;
-	m_tileVertexBuffer = nullptr;
+	CreateGeometry();
+}
 
-	delete m_tileIndexBuffer;
-	m_tileIndexBuffer = nullptr;
 
-	delete m_actorVertexBuffer;
-	m_actorVertexBuffer = nullptr;
+//-----------------------------------------------------------------------------------------------
+void Map::CreateGeometry()
+{
+	for ( Tile* tile : m_tiles )
+	{
+		AABB3 const& bounds = tile->m_bounds;
+		TileDefinition const& def = tile->GetDefinition();
+		IntVec2 const& cellCount = m_definition->m_spriteSheetCellCount;
 
-	delete m_actorIndexBuffer;
-	m_actorIndexBuffer = nullptr;
+		float uvCellWidth = 1.f / ( float ) cellCount.x;
+		float uvCellHeight = 1.f / ( float ) cellCount.y;
+
+		auto GetUvBoundsFromSpriteCoords = [&]( IntVec2 const& spriteCoords ) -> AABB2 {
+			float uvMinX = ( float ) spriteCoords.x * uvCellWidth;
+			float uvMinY = ( float ) ( ( cellCount.y - 1 ) - spriteCoords.y ) * uvCellHeight;
+			float uvMaxX = uvMinX + uvCellWidth;
+			float uvMaxY = uvMinY + uvCellHeight;
+			return AABB2( Vec2( uvMinX, uvMinY ), Vec2( uvMaxX, uvMaxY ) );
+			};
+
+		if ( def.m_wallSpriteCoords != IntVec2::ZERO )
+		{
+			AddGeometryForWall( bounds, GetUvBoundsFromSpriteCoords( def.m_wallSpriteCoords ) );
+		}
+
+		if ( def.m_floorSpriteCoords != IntVec2::ZERO )
+		{
+			AddGeometryForFloor( bounds, GetUvBoundsFromSpriteCoords( def.m_floorSpriteCoords ) );
+		}
+
+		if ( def.m_ceilingSpriteCoords != IntVec2::ZERO )
+		{
+			AddGeometryForCeiling( bounds, GetUvBoundsFromSpriteCoords( def.m_ceilingSpriteCoords ) );
+		}
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Map::AddGeometryForWall( AABB3 const& bounds, AABB2 const& uvCoords )
+{
+	// Y min face
+	AddVertsForQuad3D( m_verts, m_indices,
+		Vec3( bounds.m_mins.x, bounds.m_mins.y, bounds.m_mins.z ),
+		Vec3( bounds.m_maxs.x, bounds.m_mins.y, bounds.m_mins.z ),
+		Vec3( bounds.m_maxs.x, bounds.m_mins.y, bounds.m_maxs.z ),
+		Vec3( bounds.m_mins.x, bounds.m_mins.y, bounds.m_maxs.z ),
+		Rgba8::WHITE, uvCoords );
+
+	// Y max face
+	AddVertsForQuad3D( m_verts, m_indices,
+		Vec3( bounds.m_maxs.x, bounds.m_maxs.y, bounds.m_mins.z ),
+		Vec3( bounds.m_mins.x, bounds.m_maxs.y, bounds.m_mins.z ),
+		Vec3( bounds.m_mins.x, bounds.m_maxs.y, bounds.m_maxs.z ),
+		Vec3( bounds.m_maxs.x, bounds.m_maxs.y, bounds.m_maxs.z ),
+		Rgba8::WHITE, uvCoords );
+
+	// X min face
+	AddVertsForQuad3D( m_verts, m_indices,
+		Vec3( bounds.m_mins.x, bounds.m_maxs.y, bounds.m_mins.z ),
+		Vec3( bounds.m_mins.x, bounds.m_mins.y, bounds.m_mins.z ),
+		Vec3( bounds.m_mins.x, bounds.m_mins.y, bounds.m_maxs.z ),
+		Vec3( bounds.m_mins.x, bounds.m_maxs.y, bounds.m_maxs.z ),
+		Rgba8::WHITE, uvCoords );
+
+	// X max face
+	AddVertsForQuad3D( m_verts, m_indices,
+		Vec3( bounds.m_maxs.x, bounds.m_mins.y, bounds.m_mins.z ),
+		Vec3( bounds.m_maxs.x, bounds.m_maxs.y, bounds.m_mins.z ),
+		Vec3( bounds.m_maxs.x, bounds.m_maxs.y, bounds.m_maxs.z ),
+		Vec3( bounds.m_maxs.x, bounds.m_mins.y, bounds.m_maxs.z ),
+		Rgba8::WHITE, uvCoords );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Map::AddGeometryForFloor( AABB3 const& bounds, AABB2 const& uvCoords )
+{
+	AddVertsForQuad3D( m_verts, m_indices,
+		Vec3( bounds.m_mins.x, bounds.m_mins.y, bounds.m_mins.z ),
+		Vec3( bounds.m_maxs.x, bounds.m_mins.y, bounds.m_mins.z ),
+		Vec3( bounds.m_maxs.x, bounds.m_maxs.y, bounds.m_mins.z ),
+		Vec3( bounds.m_mins.x, bounds.m_maxs.y, bounds.m_mins.z ),
+		Rgba8::WHITE, uvCoords );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Map::AddGeometryForCeiling( AABB3 const& bounds, AABB2 const& uvCoords )
+{
+	AddVertsForQuad3D( m_verts, m_indices,
+		Vec3( bounds.m_mins.x, bounds.m_maxs.y, bounds.m_maxs.z ),
+		Vec3( bounds.m_maxs.x, bounds.m_maxs.y, bounds.m_maxs.z ),
+		Vec3( bounds.m_maxs.x, bounds.m_mins.y, bounds.m_maxs.z ),
+		Vec3( bounds.m_mins.x, bounds.m_mins.y, bounds.m_maxs.z ),
+		Rgba8::WHITE, uvCoords );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Map::CreateBuffers()
+{
+	if ( g_engine == nullptr || g_engine->m_renderer == nullptr )
+	{
+		return;
+	}
+
+	/*delete m_vertexBuffer;
+	m_vertexBuffer = nullptr;
+	delete m_indexBuffer;
+	m_indexBuffer = nullptr;*/
+
+	if ( m_verts.empty() || m_indices.empty() )
+	{
+		return;
+	}
+
+	unsigned int const vertexBufferSize = static_cast< unsigned int >( m_verts.size() * sizeof( Vertex_PCUTBN ) );
+	unsigned int const indexBufferSize = static_cast< unsigned int >( m_indices.size() * sizeof( unsigned int ) );
+
+	m_vertexBuffer = g_engine->m_renderer->CreateVertexBuffer( vertexBufferSize, sizeof( Vertex_PCUTBN ) );
+	g_engine->m_renderer->CopyCPUToGPU( m_verts.data(), vertexBufferSize, m_vertexBuffer );
+
+	m_indexBuffer = g_engine->m_renderer->CreateIndexBuffer( indexBufferSize );
+	g_engine->m_renderer->CopyCPUToGPU( m_indices.data(), indexBufferSize, m_indexBuffer );
+
 }
 
 
 //-----------------------------------------------------------------------------------------------
 void Map::Update()
 {
-	for ( Actor* actor : m_actors )
-	{
-		actor->Update();
-	}
 }
 
 
 //-----------------------------------------------------------------------------------------------
 void Map::Render() const
 {
-	for ( Actor* actor : m_actors )
-	{
-		actor->Render();
-	}
-}
-
-
-//-----------------------------------------------------------------------------------------------
-void Map::InitializeActors()
-{
-	Actor* enemyActorA = new Actor();
-	enemyActorA->m_physicsRadius = 0.35f;
-	enemyActorA->m_physicsHeight = 0.75f;
-	enemyActorA->m_color = Rgba8::RED;
-	enemyActorA->m_isStatic = true;
-	enemyActorA->m_position = Vec3( 7.5f, 8.5f, 0.25f );
-	m_actors.push_back( enemyActorA );
-
-	Actor* enemyActorB = new Actor();
-	enemyActorB->m_physicsRadius = 0.35f;
-	enemyActorB->m_physicsHeight = 0.75f;
-	enemyActorB->m_color = Rgba8::RED;
-	enemyActorB->m_isStatic = true;
-	enemyActorB->m_position = Vec3( 8.5f, 8.5f, 0.125f );
-	m_actors.push_back( enemyActorB );
-
-	Actor* enemyActorC = new Actor();
-	enemyActorC->m_physicsRadius = 0.35f;
-	enemyActorC->m_physicsHeight = 0.75f;
-	enemyActorC->m_color = Rgba8::RED;
-	enemyActorC->m_isStatic = true;
-	enemyActorC->m_position = Vec3( 9.5f, 8.5f, 0.0f );
-	m_actors.push_back( enemyActorC );
-
-	Actor* projectileActor = new Actor();
-	projectileActor->m_physicsRadius = 0.0625f;
-	projectileActor->m_physicsHeight = 0.125f;
-	projectileActor->m_color = Rgba8::BLUE;
-	projectileActor->m_isStatic = false;
-	projectileActor->m_position = Vec3( 5.5f, 8.5f, 0.0f );
-	m_actors.push_back( projectileActor );
-}
-
-
-//-----------------------------------------------------------------------------------------------
-void Map::PopulateMap()
-{
-	if ( m_definition == nullptr )
+	if ( g_engine == nullptr || g_engine->m_renderer == nullptr )
 	{
 		return;
 	}
 
-	for ( Tile* tile : m_tiles )
-	{
-		delete tile;
-	}
-	m_tiles.clear();
-
-	Image mapImage( m_definition->m_imagePath.c_str() );
-	m_dimensions = mapImage.GetDimensions();
-	if ( m_dimensions.x <= 0 || m_dimensions.y <= 0 )
+	if ( m_vertexBuffer == nullptr || m_indexBuffer == nullptr || m_indices.empty() )
 	{
 		return;
 	}
 
-	m_tiles.reserve( m_dimensions.x * m_dimensions.y );
+	g_engine->m_renderer->SetModelConstants();
+	g_engine->m_renderer->BindShader( m_shader );
+	g_engine->m_renderer->BindTexture( m_texture );
 
-	for ( int tileY = 0; tileY < m_dimensions.y; ++tileY )
-	{
-		for ( int tileX = 0; tileX < m_dimensions.x; ++tileX )
-		{
-			IntVec2 tileCoords( tileX, tileY );
-			Rgba8 pixelColor = mapImage.GetTexelColor( tileCoords );
+	g_engine->m_renderer->SetDepthMode( DepthMode::READ_WRITE_LESS_EQUAL );
+	g_engine->m_renderer->SetRasterizerMode( RasterizerMode::SOLID_CULL_BACK );
 
-			TileDefinition const* tileDef = TileDefinition::GetTileDefinitionFromColor( pixelColor );
-			if ( tileDef == nullptr )
-			{
-				for ( auto const& defPair : TileDefinition::s_definitions )
-				{
-					if ( defPair.second != nullptr )
-					{
-						tileDef = defPair.second;
-						break;
-					}
-				}
-			}
-
-			Tile* newTile = new Tile( tileCoords, tileDef );
-			m_tiles.push_back( newTile );
-		}
-	}
-}
-
-
-//-----------------------------------------------------------------------------------------------
-void Map::AddVertsForTiles( std::vector<Vertex>& verts )
-{
-	if ( m_tileVertexBuffer != nullptr )
-	{
-		delete m_tileVertexBuffer;
-		m_tileVertexBuffer = nullptr;
-	}
-	if ( m_tileIndexBuffer != nullptr )
-	{
-		delete m_tileIndexBuffer;
-		m_tileIndexBuffer = nullptr;
-	}
-	m_tileVertexCount = 0;
-
-	if ( g_engine == nullptr || g_engine->m_renderer == nullptr || m_definition == nullptr || m_tiles.empty() )
-	{
-		return;
-	}
-
-	m_spriteTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( m_definition->m_spriteSheetTexturePath.c_str() );
-	if ( m_spriteTexture == nullptr )
-	{
-		return;
-	}
-	SpriteSheet spriteSheet( *m_spriteTexture, m_definition->m_spriteSheetCellCount );
-	std::vector<Vertex_PCUTBN> tileVerts;
-	std::vector<unsigned int> tileIndices;
-
-	for ( Tile* tile : m_tiles )
-	{
-		if ( tile == nullptr || tile->m_definition == nullptr )
-		{
-			continue;
-		}
-		
-		float minX = ( float ) tile->m_tileCoords.x;
-		float minY = ( float ) tile->m_tileCoords.y;
-		float maxX = minX + 1.f;
-		float maxY = minY + 1.f;
-		float floorZ = 0.f;
-		float ceilingZ = 1.f;
-
-		TileDefinition const& tileDef = tile->GetDefinition();
-	}
-}
-
-
-//-----------------------------------------------------------------------------------------------
-Tile* Map::GetTileAtTileCoords( IntVec2 const& tileCoords ) const
-{
-	int tileIndex = tileCoords.y * m_definition->m_spriteSheetCellCount.x + tileCoords.x;
-	if ( tileIndex < 0 || tileIndex >= (int)m_tiles.size() )
-	{
-		return nullptr;
-	}
-	return m_tiles[tileIndex];
-}
-
-
-//-----------------------------------------------------------------------------------------------
-bool Map::IsTileSolidAtTileCoords( IntVec2 const& tileCoords ) const
-{
-	Tile* tile = GetTileAtTileCoords( tileCoords );
-	if ( tile == nullptr )
-	{
-		return false;
-	}
-	return tile->IsSolid();
+	g_engine->m_renderer->DrawIndexedVertexBuffer(
+		m_vertexBuffer,
+		m_indexBuffer,
+		static_cast<unsigned int>( m_indices.size() ) );
 }

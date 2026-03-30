@@ -1,9 +1,15 @@
 #pragma once
 #include "Engine/Math/IntVec2.hpp"
 #include "Engine/Math/Vec3.hpp"
+#include "Engine/Core/Image.hpp"
 #include <map>
 #include <string>
 #include <vector>
+
+
+//-----------------------------------------------------------------------------------------------
+class Shader;
+class Texture;
 
 
 //-----------------------------------------------------------------------------------------------
@@ -21,9 +27,9 @@ class MapDefinition
 {
 public:
 	std::string m_name;
-	std::string m_imagePath;
-	std::string m_shaderPath;
-	std::string m_spriteSheetTexturePath;
+	Image m_image;
+	Shader* m_shader = nullptr;
+	Texture* m_spriteSheetTexture = nullptr;
 	IntVec2 m_spriteSheetCellCount;
 	std::vector<MapSpawnInfo> m_spawnInfos;
 
@@ -31,4 +37,7 @@ public:
 
 public:
 	static void InitializeDefinitions();
+	static void ClearDefinitions();
+	static MapDefinition const* GetMapDefinitionByName( std::string const& name );
+	static MapDefinition const* GetMapDefinitionByIndex( int index );
 };

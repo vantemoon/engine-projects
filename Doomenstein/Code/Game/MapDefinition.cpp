@@ -1,4 +1,7 @@
 #include "Game/MapDefinition.hpp"
+#include "Engine/Core/Engine.hpp"
+#include "Engine/Renderer/Shader.hpp"
+#include "Engine/Renderer/Texture.hpp"
 #include "Engine/Core/XmlUtils.hpp"
 
 
@@ -32,19 +35,19 @@ void MapDefinition::InitializeDefinitions()
 		char const* imageText = mapDefElement->Attribute( "image" );
 		if ( imageText != nullptr )
 		{
-			newMapDef.m_imagePath = imageText;
+			newMapDef.m_image = Image( imageText );
 		}
 
 		char const* shaderText = mapDefElement->Attribute( "shader" );
 		if ( shaderText != nullptr )
 		{
-			newMapDef.m_shaderPath = shaderText;
+			newMapDef.m_shader = g_engine->m_renderer->CreateOrGetShader( shaderText );
 		}
 
 		char const* spriteSheetTextureText = mapDefElement->Attribute( "spriteSheetTexture" );
 		if ( spriteSheetTextureText != nullptr )
 		{
-			newMapDef.m_spriteSheetTexturePath = spriteSheetTextureText;
+			newMapDef.m_spriteSheetTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( spriteSheetTextureText );
 		}
 
 		char const* spriteSheetCellCountText = mapDefElement->Attribute( "spriteSheetCellCount" );
@@ -93,4 +96,40 @@ void MapDefinition::InitializeDefinitions()
 		s_definitions[newMapDef.m_name] = new MapDefinition( newMapDef );
 		mapDefElement = mapDefElement->NextSiblingElement( "MapDefinition" );
 	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void MapDefinition::ClearDefinitions()
+{
+	for ( auto& defPair : s_definitions )
+	{
+		delete defPair.second;
+	}
+	s_definitions.clear();
+}
+
+
+//-----------------------------------------------------------------------------------------------
+MapDefinition const* MapDefinition::GetMapDefinitionByName( std::string const& name )
+{
+	auto defIter = s_definitions.find( name );
+	if ( defIter != s_definitions.end() )
+	{
+		return defIter->second;
+	}
+	return nullptr;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+MapDefinition const* MapDefinition::GetMapDefinitionByIndex( int index )
+{
+	if ( index < 0 || index >= ( int ) s_definitions.size() )
+	{
+		return nullptr;
+	}
+	auto defIter = s_definitions.begin();
+	std::advance( defIter, index );
+	return defIter->second;
 }

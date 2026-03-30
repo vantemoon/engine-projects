@@ -36,4 +36,5 @@ public:
 	IntVec2 operator+( const IntVec2& vecToAdd )	  const;	 // IntVec2 + IntVec2
 	IntVec2 operator-( const IntVec2& vecToSubtract ) const;	 // IntVec2 - IntVec2
 	bool    operator==( const IntVec2& compare )	  const;	 // IntVec2 == IntVec2
+	bool    operator!=( const IntVec2& compare )	  const;	 // IntVec2 != IntVec2
 };

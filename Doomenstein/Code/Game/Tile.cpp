@@ -3,8 +3,8 @@
 
 
 //-----------------------------------------------------------------------------------------------
-Tile::Tile( IntVec2 tileCoords, TileDefinition const* definition )
-	: m_tileCoords( tileCoords )
+Tile::Tile( AABB3 bounds, TileDefinition const* definition )
+	: m_bounds( bounds )
 	, m_definition( definition )
 {
 }

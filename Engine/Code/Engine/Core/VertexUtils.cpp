@@ -282,18 +282,21 @@ void AddVertsForQuad3D( std::vector<Vertex>& verts,
 
 
 //-----------------------------------------------------------------------------------------------
-void AddVertsForQuad3D( std::vector<Vertex>& verts, std::vector<unsigned int>& indices,
+void AddVertsForQuad3D( std::vector<Vertex_PCUTBN>& verts, std::vector<unsigned int>& indices,
 						Vec3 const& bottomLeft, Vec3 const& bottomRight, Vec3 const& topRight, Vec3 const& topLeft,
 						Rgba8 const& color, AABB2 const& UVs )
 {
-	verts.push_back( Vertex( bottomLeft, color, Vec2( UVs.m_mins.x, UVs.m_mins.y ) ) );
-	verts.push_back( Vertex( bottomRight, color, Vec2( UVs.m_maxs.x, UVs.m_mins.y ) ) );
-	verts.push_back( Vertex( topRight, color, Vec2( UVs.m_maxs.x, UVs.m_maxs.y ) ) );
-	verts.push_back( Vertex( bottomLeft, color, Vec2( UVs.m_mins.x, UVs.m_mins.y ) ) );
-	verts.push_back( Vertex( topRight, color, Vec2( UVs.m_maxs.x, UVs.m_maxs.y ) ) );
-	verts.push_back( Vertex( topLeft, color, Vec2( UVs.m_mins.x, UVs.m_maxs.y ) ) );
+	Vec3 uBottom = bottomRight - bottomLeft;
+	Vec3 vRight = topLeft - bottomLeft;
+	Vec3 normal = CrossProduct3D( uBottom, vRight ).GetNormalized();
 
-	unsigned int baseIndex = static_cast<unsigned int>( verts.size() ) - 4;
+	unsigned int baseIndex = static_cast<unsigned int>( verts.size() );
+
+	verts.push_back( Vertex_PCUTBN( bottomLeft,  color, Vec2( UVs.m_mins.x, UVs.m_mins.y ), Vec3::ZERO, Vec3::ZERO, normal ) );
+	verts.push_back( Vertex_PCUTBN( bottomRight, color, Vec2( UVs.m_maxs.x, UVs.m_mins.y ), Vec3::ZERO, Vec3::ZERO, normal ) );
+	verts.push_back( Vertex_PCUTBN( topRight,    color, Vec2( UVs.m_maxs.x, UVs.m_maxs.y ), Vec3::ZERO, Vec3::ZERO, normal ) );
+	verts.push_back( Vertex_PCUTBN( topLeft,     color, Vec2( UVs.m_mins.x, UVs.m_maxs.y ), Vec3::ZERO, Vec3::ZERO, normal ) );
+
 	indices.push_back( baseIndex + 0 );
 	indices.push_back( baseIndex + 1 );
 	indices.push_back( baseIndex + 2 );

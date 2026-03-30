@@ -60,7 +60,18 @@ void TileDefinition::InitializeDefinitions()
 
 
 //-----------------------------------------------------------------------------------------------
-TileDefinition const* GetTileDefinitionFromColor( Rgba8 const& color )
+void TileDefinition::ClearDefinitions()
+{
+	for ( auto& defPair : s_definitions )
+	{
+		delete defPair.second;
+	}
+	s_definitions.clear();
+}
+
+
+//-----------------------------------------------------------------------------------------------
+TileDefinition const* TileDefinition::GetTileDefinitionFromColor( Rgba8 const& color )
 {
 	for ( auto& defPair : TileDefinition::s_definitions )
 	{

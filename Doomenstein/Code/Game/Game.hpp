@@ -39,16 +39,21 @@ public:
 	~Game();
 
 	void Startup();
+	void LoadGameConfigFromFile( char const* filepath );
+
 	void Update();
 	void UpdateAttractMode();
 	void UpdateEntities();
 	void UpdateFromKeyboard();
 	void UpdateFromController();
-	void ScreenShake( float intensity );
+
 	void Render()													  const;
+	void RenderMap()												  const;
 	void RenderEntities()											  const;
 	void RenderHUD()												  const;
 	void RenderAttractMode()										  const;
+	
+	void ScreenShake( float intensity );
 	void Reset();
 
 	static bool Command_Controls( EventArgs& args );

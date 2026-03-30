@@ -1,23 +1,23 @@
 #pragma once
 #include "Engine/Core/Rgba8.hpp"
-#include "Engine/Math/AABB2.hpp"
+#include "Engine/Math/AABB3.hpp"
 #include "Engine/Math/IntVec2.hpp"
 #include <vector>
 
 
 //-----------------------------------------------------------------------------------------------
-struct TileDefinition;
+class TileDefinition;
 
 
 //-----------------------------------------------------------------------------------------------
 class Tile
 {
 public:
-	IntVec2					m_tileCoords;
+	AABB3					m_bounds;
 	TileDefinition const*	m_definition = nullptr;
 
 public:
-	Tile( IntVec2 tileCoords, TileDefinition const* definition );
+	Tile( AABB3 bounds, TileDefinition const* definition );
 	~Tile();
 
 	TileDefinition const&	GetDefinition() const;

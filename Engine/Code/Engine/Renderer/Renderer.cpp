@@ -50,6 +50,7 @@ struct LightingConstants
 	float sunDirection[3] = { 2.f, 1.f, -1.f };
 	float sunIntensity = 0.85f;
 	float ambientIntensity = 0.35f;
+	float padding[3] = { 0.f, 0.f, 0.f };
 };
 static const int k_lightingConstantsSlot = 1;
 
@@ -160,7 +161,7 @@ void Renderer::Startup()
 
 	// Create and bind default shader
 	m_defaultShader = CreateShader( "Default", g_shaderSource );
-	m_diffuseShader = CreateOrGetShader( "Diffuse", VertexType::VERTEX_PCUTBN );
+	m_diffuseShader = CreateOrGetShader( "Data/Shaders/Diffuse", VertexType::VERTEX_PCUTBN );
 	BindShader( m_defaultShader );
 
 	// Create vertex buffer
@@ -171,6 +172,12 @@ void Renderer::Startup()
 
 	// Create model constant buffer
 	m_modelCBO = CreateConstantBuffer( sizeof( ModelConstants ) );
+
+	// Create lighting constant buffer
+	m_lightingCBO = CreateConstantBuffer( sizeof( LightingConstants ) );
+	LightingConstants defaultLighting;
+	Vec3 sunDirection = Vec3( defaultLighting.sunDirection[0], defaultLighting.sunDirection[1], defaultLighting.sunDirection[2] ).GetNormalized();
+	SetLightingConstants( sunDirection, defaultLighting.sunIntensity, defaultLighting.ambientIntensity );
 
 	// Create rasterizer states for all rasterizer modes
 	D3D11_RASTERIZER_DESC rasterizerDesc = {};
@@ -487,6 +494,9 @@ void Renderer::BeginCamera( Camera const& camera )
 	CopyCPUToGPU( &cameraData, sizeof( CameraConstants ), m_cameraCBO );
 	BindConstantBuffer( k_cameraConstantsSlot, m_cameraCBO );
 
+	// Update lighting constant buffer
+	BindConstantBuffer( k_lightingConstantsSlot, m_lightingCBO );
+
 	// Set model constants
 	SetModelConstants();
 }
@@ -790,7 +800,7 @@ Shader* Renderer::CreateOrGetShader( char const* shaderName, VertexType vertexTy
 //------------------------------------------------------------------------------------------------
 Shader* Renderer::CreateShader( char const* shaderName, VertexType vertexType )
 {
-	std::string filename = Stringf( "Data/Shaders/%s.hlsl", shaderName );
+	std::string filename = Stringf( "%s.hlsl", shaderName );
 	std::string shaderSource;
 	if ( ::FileReadToString( shaderSource, filename ) != 0 )
 	{
@@ -1102,4 +1112,22 @@ void Renderer::SetModelConstants( Mat44 const& modelToCameraTransform, Rgba8 con
 	modelColor.GetAsFloats( modelData.modelColor );
 	CopyCPUToGPU( &modelData, sizeof( ModelConstants ), m_modelCBO );
 	BindConstantBuffer( k_modelConstantsSlot, m_modelCBO );
+}
+
+
+//------------------------------------------------------------------------------------------------
+void Renderer::SetLightingConstants( Vec3 const& sunDirection, float sunIntensity, float ambientIntensity )
+{
+	Vec3 dir = sunDirection.GetNormalized();
+
+	LightingConstants lightingData;
+	lightingData.sunDirection[0] = dir.x;
+	lightingData.sunDirection[1] = dir.y;
+	lightingData.sunDirection[2] = dir.z;
+	lightingData.sunIntensity = sunIntensity;
+	lightingData.ambientIntensity = ambientIntensity;
+
+	CopyCPUToGPU( &lightingData, sizeof( LightingConstants ), m_lightingCBO );
+	BindConstantBuffer( k_lightingConstantsSlot, m_lightingCBO );
+
 }
