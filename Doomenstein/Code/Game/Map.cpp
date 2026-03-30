@@ -71,27 +71,34 @@ void Map::CreateGeometry()
 		float uvCellWidth = 1.f / ( float ) cellCount.x;
 		float uvCellHeight = 1.f / ( float ) cellCount.y;
 
-		auto GetUvBoundsFromSpriteCoords = [&]( IntVec2 const& spriteCoords ) -> AABB2 {
-			float uvMinX = ( float ) spriteCoords.x * uvCellWidth;
-			float uvMinY = ( float ) ( ( cellCount.y - 1 ) - spriteCoords.y ) * uvCellHeight;
-			float uvMaxX = uvMinX + uvCellWidth;
-			float uvMaxY = uvMinY + uvCellHeight;
-			return AABB2( Vec2( uvMinX, uvMinY ), Vec2( uvMaxX, uvMaxY ) );
-			};
-
 		if ( def.m_wallSpriteCoords != IntVec2::ZERO )
 		{
-			AddGeometryForWall( bounds, GetUvBoundsFromSpriteCoords( def.m_wallSpriteCoords ) );
+			float uvMinX = ( float ) def.m_wallSpriteCoords.x * uvCellWidth;
+			float uvMinY = ( float ) ( ( cellCount.y - 1 ) - def.m_wallSpriteCoords.y ) * uvCellHeight;
+			float uvMaxX = uvMinX + uvCellWidth;
+			float uvMaxY = uvMinY + uvCellHeight;
+
+			AddGeometryForWall( bounds, AABB2( Vec2( uvMinX, uvMinY ), Vec2( uvMaxX, uvMaxY ) ) );
 		}
 
 		if ( def.m_floorSpriteCoords != IntVec2::ZERO )
 		{
-			AddGeometryForFloor( bounds, GetUvBoundsFromSpriteCoords( def.m_floorSpriteCoords ) );
+			float uvMinX = ( float ) def.m_floorSpriteCoords.x * uvCellWidth;
+			float uvMinY = ( float ) ( ( cellCount.y - 1 ) - def.m_floorSpriteCoords.y ) * uvCellHeight;
+			float uvMaxX = uvMinX + uvCellWidth;
+			float uvMaxY = uvMinY + uvCellHeight;
+
+			AddGeometryForFloor( bounds, AABB2( Vec2( uvMinX, uvMinY ), Vec2( uvMaxX, uvMaxY ) ) );
 		}
 
 		if ( def.m_ceilingSpriteCoords != IntVec2::ZERO )
 		{
-			AddGeometryForCeiling( bounds, GetUvBoundsFromSpriteCoords( def.m_ceilingSpriteCoords ) );
+			float uvMinX = ( float ) def.m_ceilingSpriteCoords.x * uvCellWidth;
+			float uvMinY = ( float ) ( ( cellCount.y - 1 ) - def.m_ceilingSpriteCoords.y ) * uvCellHeight;
+			float uvMaxX = uvMinX + uvCellWidth;
+			float uvMaxY = uvMinY + uvCellHeight;
+
+			AddGeometryForCeiling( bounds, AABB2( Vec2( uvMinX, uvMinY ), Vec2( uvMaxX, uvMaxY ) ) );
 		}
 	}
 }
