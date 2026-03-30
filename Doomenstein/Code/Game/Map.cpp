@@ -21,6 +21,7 @@ Map::Map( Game* game, MapDefinition const& mapDef )
 	m_texture = m_definition->m_spriteSheetTexture;
 
 	CreateTiles();
+	CreateTestActors();
 	CreateBuffers();
 }
 
@@ -33,6 +34,12 @@ Map::~Map()
 		delete tile;
 	}
 	m_tiles.clear();
+
+	for ( Actor* actor : m_actors )
+	{
+		delete actor;
+	}
+	m_actors.clear();
 }
 
 
@@ -58,6 +65,43 @@ void Map::CreateTiles()
 	}
 
 	CreateGeometry();
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Map::CreateTestActors()
+{
+	Actor* enemyActor1 = new Actor();
+	enemyActor1->m_physicsRadius = 0.35f;
+	enemyActor1->m_physicsHeight = 0.75f;
+	enemyActor1->m_color = Rgba8::RED;
+	enemyActor1->m_isStatic = true;
+	enemyActor1->m_position = Vec3( 7.5f, 8.5f, 0.25f );
+	m_actors.push_back( enemyActor1 );
+
+	Actor* enemyActor2 = new Actor();
+	enemyActor2->m_physicsRadius = 0.35f;
+	enemyActor2->m_physicsHeight = 0.75f;
+	enemyActor2->m_color = Rgba8::RED;
+	enemyActor2->m_isStatic = true;
+	enemyActor2->m_position = Vec3( 8.5f, 8.5f, 0.125f );
+	m_actors.push_back( enemyActor2 );
+
+	Actor* enemyActor3 = new Actor();
+	enemyActor3->m_physicsRadius = 0.35f;
+	enemyActor3->m_physicsHeight = 0.75f;
+	enemyActor3->m_color = Rgba8::RED;
+	enemyActor3->m_isStatic = true;
+	enemyActor3->m_position = Vec3( 9.5f, 8.5f, 0.0f );
+	m_actors.push_back( enemyActor3 );
+
+	Actor* projectileActor = new Actor();
+	projectileActor->m_physicsRadius = 0.0625f;
+	projectileActor->m_physicsHeight = 0.125f;
+	projectileActor->m_color = Rgba8::BLUE;
+	projectileActor->m_isStatic = false;
+	projectileActor->m_position = Vec3( 5.5f, 8.5f, 0.0f );
+	m_actors.push_back( projectileActor );
 }
 
 
@@ -175,11 +219,6 @@ void Map::CreateBuffers()
 		return;
 	}
 
-	/*delete m_vertexBuffer;
-	m_vertexBuffer = nullptr;
-	delete m_indexBuffer;
-	m_indexBuffer = nullptr;*/
-
 	if ( m_verts.empty() || m_indices.empty() )
 	{
 		return;
@@ -193,13 +232,19 @@ void Map::CreateBuffers()
 
 	m_indexBuffer = g_engine->m_renderer->CreateIndexBuffer( indexBufferSize );
 	g_engine->m_renderer->CopyCPUToGPU( m_indices.data(), indexBufferSize, m_indexBuffer );
-
 }
 
 
 //-----------------------------------------------------------------------------------------------
 void Map::Update()
 {
+	for ( Actor* actor : m_actors )
+	{
+		if ( actor != nullptr )
+		{
+			actor->Update();
+		}
+	}
 }
 
 
@@ -234,6 +279,14 @@ void Map::Render() const
 
 	g_engine->m_renderer->BindShader( nullptr );
 	g_engine->m_renderer->BindTexture( nullptr );
+
+	for ( Actor* actor : m_actors )
+	{
+		if ( actor != nullptr )
+		{
+			actor->Render();
+		}
+	}
 }
 
 
@@ -275,13 +328,12 @@ void Map::AddToSunDirectionY( float delta )
 //-----------------------------------------------------------------------------------------------
 void Map::AddToSunIntensity( float delta )
 {
-	float newIntensity = m_sunIntensity + delta;
-	m_sunIntensity = GetClamped( newIntensity, 0.f, 1.f );
+	m_sunIntensity = GetClamped( m_sunIntensity + delta, 0.f, 1.f );
 }
+
 
 //-----------------------------------------------------------------------------------------------
 void Map::AddToAmbientIntensity( float delta )
 {
-	float newIntensity = m_ambientIntensity + delta;
-	m_ambientIntensity = GetClamped( newIntensity, 0.f, 1.f );
+	m_ambientIntensity = GetClamped( m_ambientIntensity + delta, 0.f, 1.f );
 }

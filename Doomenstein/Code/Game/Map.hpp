@@ -29,6 +29,7 @@ public:
 	void AddGeometryForFloor( AABB3 const& bounds, AABB2 const& uvCoords );
 	void AddGeometryForCeiling( AABB3 const& bounds, AABB2 const& uvCoords );
 	void CreateBuffers();
+	void CreateTestActors();
 
 	bool IsPositionInBounds( Vec3 const& position ) const;
 	bool AreCoordsInBounds( int x, int y ) const;
@@ -54,6 +55,7 @@ public:
 protected:
 	MapDefinition const* m_definition = nullptr;
 	std::vector<Tile*> m_tiles;
+	std::vector<Actor*> m_actors;
 	IntVec2 m_dimensions;
 	
 	std::vector<Vertex_PCUTBN> m_verts;

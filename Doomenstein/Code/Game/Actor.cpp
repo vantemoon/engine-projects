@@ -50,7 +50,11 @@ void Actor::Render() const
 	Vec3 cylinderStart = Vec3::ZERO;
 	Vec3 cylinderEnd = Vec3( 0.f, 0.f, m_physicsHeight );
 
-	Rgba8 lighterColor = Rgba8( m_color.r, m_color.g, m_color.b, m_color.a / 2 );
+	Rgba8 lighterColor = Rgba8(
+		static_cast<unsigned char>( m_color.r + ( 255 - m_color.r ) * 0.7f ),
+		static_cast<unsigned char>( m_color.g + ( 255 - m_color.g ) * 0.7f ),
+		static_cast<unsigned char>( m_color.b + ( 255 - m_color.b ) * 0.7f ),
+		255 );
 
 	AddVertsForCylinder3D( solidCylinderVerts, cylinderStart, cylinderEnd, m_physicsRadius, m_color );
 	AddVertsForCylinder3D( wireCylinderVerts, cylinderStart, cylinderEnd, m_physicsRadius, lighterColor );
