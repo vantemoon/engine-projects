@@ -52,12 +52,7 @@ Game::Game()
 //-----------------------------------------------------------------------------------------------
 Game::~Game()
 {
-	// Clear definitions
-	MapDefinition::ClearDefinitions();
-	TileDefinition::ClearDefinitions();
-
-	delete m_screenCamera;
-	m_screenCamera = nullptr;
+	Shutdown();
 }
 
 
@@ -71,6 +66,36 @@ void Game::Startup()
 	MapDefinition::InitializeDefinitions();
 	TileDefinition::InitializeDefinitions();
 
+	LoadMaps();
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game::LoadGameConfigFromFile( char const* filepath )
+{
+	tinyxml2::XMLDocument xmlDocument;
+	XmlResult loadResult = xmlDocument.LoadFile( filepath );
+
+	if ( loadResult != tinyxml2::XML_SUCCESS )
+	{
+		GUARANTEE_OR_DIE( false, Stringf( "Failed to load game config XML file '%s'", filepath ) );
+		return;
+	}
+
+	XmlElement* rootElement = xmlDocument.RootElement();
+	if ( rootElement == nullptr )
+	{
+		GUARANTEE_OR_DIE( false, Stringf( "Failed to find root element in game config XML file '%s'", filepath ) );
+		return;
+	}
+
+	g_gameConfigBlackboard.PopulateFromXmlElementAttributes( *rootElement );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game::LoadMaps()
+{
 	int numMapsToLoad = g_gameConfigBlackboard.GetValue( "numOfMaps", 2 );
 	std::string defaultMapName = g_gameConfigBlackboard.GetValue( "defaultMapName", "TestMap" );
 	for ( int mapIndex = 0; mapIndex < numMapsToLoad; ++mapIndex )
@@ -97,25 +122,28 @@ void Game::Startup()
 
 
 //-----------------------------------------------------------------------------------------------
-void Game::LoadGameConfigFromFile( char const* filepath )
+void Game::Shutdown()
 {
-	tinyxml2::XMLDocument xmlDocument;
-	XmlResult loadResult = xmlDocument.LoadFile( filepath );
+	DestroyMaps();
 
-	if ( loadResult != tinyxml2::XML_SUCCESS )
+	// Clear definitions
+	MapDefinition::ClearDefinitions();
+	TileDefinition::ClearDefinitions();
+
+	delete m_screenCamera;
+	m_screenCamera = nullptr;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game::DestroyMaps()
+{
+	for ( Map* map : m_maps )
 	{
-		GUARANTEE_OR_DIE( false, Stringf( "Failed to load game config XML file '%s'", filepath ) );
-		return;
+		delete map;
 	}
-
-	XmlElement* rootElement = xmlDocument.RootElement();
-	if ( rootElement == nullptr )
-	{
-		GUARANTEE_OR_DIE( false, Stringf( "Failed to find root element in game config XML file '%s'", filepath ) );
-		return;
-	}
-
-	g_gameConfigBlackboard.PopulateFromXmlElementAttributes( *rootElement );
+	m_maps.clear();
+	m_currentMap = nullptr;
 }
 
 
@@ -214,6 +242,7 @@ void Game::UpdateFromKeyboard()
 		{
 			Reset();
 			m_currentGameState = GameState::PLAYING;
+			LoadMaps();
 		};
 
 		// Quit the game
@@ -294,6 +323,7 @@ void Game::UpdateFromKeyboard()
 		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_ESCAPE ) )
 		{
 			m_currentGameState = GameState::ATTRACT_MODE;
+			DestroyMaps();
 		}
 
 		// Pause and resume the game
@@ -348,6 +378,7 @@ void Game::UpdateFromController()
 		{
 			// Reset();
 			m_currentGameState = GameState::PLAYING;
+			LoadMaps();
 		};
 		// Quit the game
 		if ( controller.WasButtonJustPressed( XBOX_BUTTON_BACK ) )
@@ -361,6 +392,7 @@ void Game::UpdateFromController()
 		if ( controller.WasButtonJustPressed( XBOX_BUTTON_BACK ) )
 		{
 			m_currentGameState = GameState::ATTRACT_MODE;
+			DestroyMaps();
 		}
 	}
 }

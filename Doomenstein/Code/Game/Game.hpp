@@ -40,6 +40,9 @@ public:
 
 	void Startup();
 	void LoadGameConfigFromFile( char const* filepath );
+	void LoadMaps();
+	void Shutdown();
+	void DestroyMaps();
 
 	void Update();
 	void UpdateAttractMode();
