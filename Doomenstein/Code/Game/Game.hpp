@@ -58,7 +58,7 @@ public:
 
 	static bool Command_Controls( EventArgs& args );
 
-private:
+protected:
 	void DeleteGarbageEntities();
 	void DebugDraw()												   const;
 	Vec3 TransformWorldToScreen( Vec3 const& worldPosition )		   const;
