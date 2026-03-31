@@ -59,9 +59,6 @@ Game::~Game()
 //-----------------------------------------------------------------------------------------------
 void Game::Startup()
 {
-	Player* player = new Player( this );
-	m_player = player;
-
 	// Load all definitions
 	MapDefinition::InitializeDefinitions();
 	TileDefinition::InitializeDefinitions();
@@ -126,12 +123,21 @@ void Game::Shutdown()
 {
 	DestroyMaps();
 
+	if ( m_player != nullptr )
+	{
+		delete m_player;
+		m_player = nullptr;
+	}
+
 	// Clear definitions
 	MapDefinition::ClearDefinitions();
 	TileDefinition::ClearDefinitions();
 
 	delete m_screenCamera;
 	m_screenCamera = nullptr;
+
+	delete m_gameClock;
+	m_gameClock = nullptr;
 }
 
 
@@ -178,7 +184,7 @@ void Game::Update()
 		UpdateFromKeyboard();
 		UpdateFromController();
 
-		m_player->UpdateCamera();
+		if ( m_player != nullptr )m_player->UpdateCamera();
 		return;
 	};
 
@@ -420,6 +426,12 @@ void Game::UpdateFromKeyboard()
 		{
 			m_currentGameState = GameState::ATTRACT_MODE;
 			DestroyMaps();
+
+			if ( m_player != nullptr )
+			{
+				delete m_player;
+				m_player = nullptr;
+			}
 		}
 
 		// Pause and resume the game
@@ -446,10 +458,10 @@ void Game::UpdateFromKeyboard()
 		}
 
 		// Toggle debug features
-		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_F1 ) )
+		/*if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_F1 ) )
 		{
 			m_isDebugFeaturesOn = !m_isDebugFeaturesOn;
-		}
+		}*/
 
 		// Pause the game after the next update (for debugging)
 		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'O' ) )
@@ -472,7 +484,7 @@ void Game::UpdateFromController()
 		// Start the game
 		if ( controller.WasButtonJustPressed( XBOX_BUTTON_A ) || controller.WasButtonJustPressed( XBOX_BUTTON_START ) )
 		{
-			// Reset();
+			Reset();
 			m_currentGameState = GameState::PLAYING;
 			LoadMaps();
 		};
@@ -489,6 +501,12 @@ void Game::UpdateFromController()
 		{
 			m_currentGameState = GameState::ATTRACT_MODE;
 			DestroyMaps();
+
+			if ( m_player != nullptr )
+			{
+				delete m_player;
+				m_player = nullptr;
+			}
 		}
 	}
 }
@@ -497,7 +515,7 @@ void Game::UpdateFromController()
 //-----------------------------------------------------------------------------------------------
 void Game::UpdateEntities()
 {
-	m_player->Update( ( float ) m_gameClock->GetDeltaSeconds() );
+	if ( m_player != nullptr ) m_player->Update( ( float ) m_gameClock->GetDeltaSeconds() );
 }
 
 
@@ -671,7 +689,21 @@ bool Game::IsOnScreen( Vec2 const& worldPosition, float cosmeticRadius ) const
 //-----------------------------------------------------------------------------------------------
 void Game::Reset()
 {
-	Startup();
+	DestroyMaps();
+
+	if ( m_player != nullptr )
+	{
+		delete m_player;
+		m_player = nullptr;
+	}
+
+	m_player = new Player( this );
+	m_player->m_position = Vec3( 2.5f, 8.5f, 0.5f );
+	m_player->m_orientation = EulerAngles( 0.f, 0.f, 0.f );
+	m_player->UpdateCamera();
+
+	LoadMaps();
+
 	m_isScreenShaking = false;
 	m_isDebugFeaturesOn = false;
 }

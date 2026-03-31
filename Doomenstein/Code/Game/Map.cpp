@@ -337,3 +337,32 @@ void Map::AddToAmbientIntensity( float delta )
 {
 	m_ambientIntensity = GetClamped( m_ambientIntensity + delta, 0.f, 1.f );
 }
+
+//-----------------------------------------------------------------------------------------------
+bool Map::IsPositionInBounds( Vec3 const& position ) const
+{
+	return AreCoordsInBounds( ( int ) position.x, ( int ) position.y );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool Map::AreCoordsInBounds( int x, int y ) const
+{
+	if ( x < 0 || x >= m_dimensions.x || y < 0 || y >= m_dimensions.y )
+	{
+		return false;
+	}
+	return true;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+Tile* const Map::GetTileAtCoords( int x, int y ) const
+{
+	if ( !AreCoordsInBounds( x, y ) )
+	{
+		return nullptr;
+	}
+	int tileIndex = y * m_dimensions.x + x;
+	return m_tiles[tileIndex];
+}
