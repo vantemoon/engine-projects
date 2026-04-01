@@ -253,6 +253,9 @@ void Map::Update()
 			actor->Update();
 		}
 	}
+
+	CollideActors();
+	CollideActorWithMap();
 }
 
 

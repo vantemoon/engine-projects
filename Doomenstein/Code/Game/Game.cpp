@@ -541,6 +541,11 @@ void Game::UpdateEntities()
 		m_player->m_isMovementInputEnabled = true;
 		m_player->Update( deltaSeconds );
 	}
+
+	if ( m_currentMap != nullptr )
+	{
+		m_currentMap->Update();
+	}
 }
 
 
