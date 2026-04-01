@@ -249,6 +249,173 @@ void Map::Update()
 
 
 //-----------------------------------------------------------------------------------------------
+void Map::CollideActors()
+{
+	for ( size_t i = 0; i < m_actors.size(); i++ )
+	{
+		Actor* actorA = m_actors[i];
+		if ( actorA == nullptr )
+		{
+			continue;
+		}
+
+		for ( size_t j = i + 1; j < m_actors.size(); j++ )
+		{
+			Actor* actorB = m_actors[j];
+			if ( actorB == nullptr )
+			{
+				continue;
+			}
+
+			CollideActors( actorA, actorB );
+		}
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Map::CollideActors( Actor* actorA, Actor* actorB )
+{
+	if ( actorA == nullptr || actorB == nullptr )
+	{
+		return;
+	}
+
+	float aMinZ = actorA->m_position.z;
+	float aMaxZ = actorA->m_position.z + actorA->m_physicsHeight;
+	float bMinZ = actorB->m_position.z;
+	float bMaxZ = actorB->m_position.z + actorB->m_physicsHeight;
+
+	bool zOverlaps = ( aMinZ < bMaxZ ) && ( bMinZ < aMaxZ );
+	if ( !zOverlaps )
+	{
+		return;
+	}
+
+	Vec2 centerA = Vec2( actorA->m_position.x, actorA->m_position.y );
+	Vec2 centerB = Vec2( actorB->m_position.x, actorB->m_position.y );
+
+	if ( actorA->m_isStatic && actorB->m_isStatic )
+	{
+		return;
+	}
+	else if ( actorA->m_isStatic )
+	{
+		PushDiscOutOfFixedDisc2D( centerB, actorB->m_physicsRadius, centerA, actorA->m_physicsRadius );
+	}
+	else if ( actorB->m_isStatic )
+	{
+		PushDiscOutOfFixedDisc2D( centerA, actorA->m_physicsRadius, centerB, actorB->m_physicsRadius );
+	}
+	else
+	{
+		PushDiscsOutOfEachOther2D( centerA, actorA->m_physicsRadius, centerB, actorB->m_physicsRadius );
+	}
+
+	actorA->m_position.x = centerA.x;
+	actorA->m_position.y = centerA.y;
+	actorB->m_position.x = centerB.x;
+	actorB->m_position.y = centerB.y;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Map::CollideActorWithMap()
+{
+	for ( Actor* actor : m_actors )
+	{
+		if ( actor != nullptr )
+		{
+			CollideActorWithMap( actor );
+		}
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Map::CollideActorWithMap( Actor* actor )
+{
+	if ( actor == nullptr )
+	{
+		return;
+	}
+
+	Vec2 actorCenter = Vec2( actor->m_position.x, actor->m_position.y );
+	int actorTileX = ( int ) RoundDownToInt( actorCenter.x );
+	int actorTileY = ( int ) RoundDownToInt( actorCenter.y );
+
+	Tile* currTile = GetTileAtCoords( actorTileX, actorTileY );
+	if ( currTile != nullptr && currTile->IsSolid() )
+	{
+		AABB2 tileBounds2D = AABB2(
+			Vec2( currTile->m_bounds.m_mins.x, currTile->m_bounds.m_mins.y ),
+			Vec2( currTile->m_bounds.m_maxs.x, currTile->m_bounds.m_maxs.y ) );
+
+		PushDiscOutOfFixedAABB2D( actorCenter, actor->m_physicsRadius, tileBounds2D );
+	}
+
+	IntVec2 const cardinalOffsets[4] =
+	{
+		IntVec2( 1, 0 ),
+		IntVec2( -1, 0 ),
+		IntVec2( 0, 1 ),
+		IntVec2( 0, -1 )
+	};
+
+	for ( IntVec2 const& offset : cardinalOffsets )
+	{
+		Tile* tile = GetTileAtCoords( actorTileX + offset.x, actorTileY + offset.y );
+		if ( tile == nullptr || !tile->IsSolid() )
+		{
+			continue;
+		}
+
+		AABB2 tileBounds2D = AABB2(
+			Vec2( tile->m_bounds.m_mins.x, tile->m_bounds.m_mins.y ),
+			Vec2( tile->m_bounds.m_maxs.x, tile->m_bounds.m_maxs.y ) );
+
+		PushDiscOutOfFixedAABB2D( actorCenter, actor->m_physicsRadius, tileBounds2D );
+	}
+
+	IntVec2 const diagonalOffsets[4] =
+	{
+		IntVec2( 1, 1 ),
+		IntVec2( 1, -1 ),
+		IntVec2( -1, 1 ),
+		IntVec2( -1, -1 )
+	};
+
+	for ( IntVec2 const& offset : diagonalOffsets )
+	{
+		Tile* tile = GetTileAtCoords( actorTileX + offset.x, actorTileY + offset.y );
+		if ( tile == nullptr || !tile->IsSolid() )
+		{
+			continue;
+		}
+
+		AABB2 tileBounds2D = AABB2(
+			Vec2( tile->m_bounds.m_mins.x, tile->m_bounds.m_mins.y ),
+			Vec2( tile->m_bounds.m_maxs.x, tile->m_bounds.m_maxs.y ) );
+
+		PushDiscOutOfFixedAABB2D( actorCenter, actor->m_physicsRadius, tileBounds2D );
+	}
+
+	actor->m_position.x = actorCenter.x;
+	actor->m_position.y = actorCenter.y;
+
+	float actorTopZ = actor->m_position.z + actor->m_physicsHeight;
+	if ( actorTopZ > 1.f )
+	{
+		actor->m_position.z -= ( actorTopZ - 1.f );
+	}
+	if ( actor->m_position.z < 0.f )
+	{
+		actor->m_position.z = 0.f;
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
 void Map::Render() const
 {
 	if ( g_engine == nullptr || g_engine->m_renderer == nullptr )

@@ -30,8 +30,8 @@ public:
 	float				m_screenShakeStartTime = 0.f;
 
 	GameState			m_currentGameState;
-	bool				m_isDebugFeaturesOn = false;
 	Clock*				m_gameClock = nullptr;
+	bool				m_isDebugFeaturesOn = false;
 	bool				m_hasControlsBeenShown = false;
 
 public:
