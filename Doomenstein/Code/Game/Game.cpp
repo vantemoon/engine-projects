@@ -708,6 +708,20 @@ void Game::RenderHUD() const
 		Rgba8::WHITE,
 		Rgba8::WHITE );
 
+	std::string controlText;
+	if ( m_isControllingFakeProjectile ) controlText = "[F1] Control Mode: Actor";
+	else controlText = "[F1] Control Mode: Player";
+	Rgba8 controlTextColor = m_isControllingFakeProjectile ? Rgba8::BLUE : Rgba8::WHITE;
+
+	DebugAddScreenText(
+		controlText, 
+		screenBounds,
+		15.f,
+		Vec2( 0.5f, 1.f ),
+		0.f,
+		controlTextColor,
+		controlTextColor );
+
 	if ( m_player != nullptr )
 	{
 		std::string playerPosText = Stringf(

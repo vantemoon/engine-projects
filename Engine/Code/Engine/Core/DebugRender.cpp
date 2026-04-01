@@ -389,11 +389,11 @@ void DebugRenderScreen( Camera const& camera )
 
 		float horizontalPadding = 10.f;
 		float verticalPadding = 10.f;
-		if ( screenObject->m_alignment.x >= 0.99f && screenObject->m_alignment.y >= 0.99f )
-		{
-			drawBox.m_maxs.x -= horizontalPadding;
-			drawBox.m_maxs.y -= verticalPadding;
-		}
+
+		drawBox.m_mins.x += horizontalPadding;
+		drawBox.m_mins.y += verticalPadding;
+		drawBox.m_maxs.x -= horizontalPadding;
+		drawBox.m_maxs.y -= verticalPadding;
 
 		g_debugRenderSystem.m_font->AddVertsForTextInBox2D(
 			screenObject->m_verts,
