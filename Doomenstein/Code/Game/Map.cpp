@@ -102,6 +102,14 @@ void Map::CreateTestActors()
 	projectileActor->m_isStatic = false;
 	projectileActor->m_position = Vec3( 5.5f, 8.5f, 0.0f );
 	m_actors.push_back( projectileActor );
+	m_fakeProjectileActor = projectileActor;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+Actor* Map::GetFakeProjectileActor() const
+{
+	return m_fakeProjectileActor;
 }
 
 

@@ -7,6 +7,7 @@
 
 
 //-----------------------------------------------------------------------------------------------
+class  Actor;      // Forward declaration
 class  Camera;     // Forward declaration
 class  Map;        // Forward declaration
 class  Player;     // Forward declaration
@@ -33,6 +34,7 @@ public:
 	Clock*				m_gameClock = nullptr;
 	bool				m_isDebugFeaturesOn = false;
 	bool				m_hasControlsBeenShown = false;
+	bool				m_isControllingFakeProjectile = false;
 
 public:
 	Game();
@@ -68,4 +70,5 @@ protected:
 	bool IsOnScreen( Vec2 const& worldPosition, float cosmeticRadius ) const;
 	void AddInstructionsToDevConsole()								   const;
 	void AddVertsForCube( std::vector<Vertex>& verts, float size) const;
+	void UpdateFakeProjectileFromKeyboard( float deltaSeconds );
 };

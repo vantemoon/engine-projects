@@ -21,6 +21,7 @@ public:
 	EulerAngles m_angularVelocity;
 	Rgba8 m_color = Rgba8::WHITE;
 	Camera* m_playerCamera = nullptr;
+	bool m_isMovementInputEnabled = true;
 
 public:
 	Player( Game* owner );

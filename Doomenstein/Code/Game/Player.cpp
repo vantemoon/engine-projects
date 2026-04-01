@@ -78,6 +78,11 @@ void Player::UpdateFromMouse()
 //-----------------------------------------------------------------------------------------------
 void Player::UpdateFromKeyboard( float deltaSeconds )
 {
+	if ( !m_isMovementInputEnabled )
+	{
+		return;
+	}
+
 	float movementSpeed = 1.f;
 	float rotationSpeed = 90.f;
 
@@ -146,6 +151,11 @@ void Player::UpdateFromKeyboard( float deltaSeconds )
 //-----------------------------------------------------------------------------------------------
 void Player::UpdateFromController( float deltaSeconds )
 {
+	if ( !m_isMovementInputEnabled )
+	{
+		return;
+	}
+
 	XboxController const& controller = g_engine->m_inputSystem->GetController( 0 );
 	Vec2 rightStickPosition = controller.GetRightJoystick().GetPosition();
 	Vec2 leftStickPosition = controller.GetLeftJoystick().GetPosition();

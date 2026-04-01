@@ -34,6 +34,7 @@ public:
 	bool IsPositionInBounds( Vec3 const& position ) const;
 	bool AreCoordsInBounds( int x, int y ) const;
 	Tile* const GetTileAtCoords( int x, int y ) const;
+	Actor* GetFakeProjectileActor() const;
 
 	void Update();
 	void CollideActors();
@@ -56,6 +57,7 @@ protected:
 	MapDefinition const* m_definition = nullptr;
 	std::vector<Tile*> m_tiles;
 	std::vector<Actor*> m_actors;
+	Actor* m_fakeProjectileActor = nullptr;
 	IntVec2 m_dimensions;
 	
 	std::vector<Vertex_PCUTBN> m_verts;
