@@ -168,7 +168,6 @@ protected:
 
 	std::vector<Shader*> m_loadedShaders;
 	Shader* m_defaultShader = nullptr;
-	Shader* m_diffuseShader = nullptr;
 	Shader* m_currentShader = nullptr;
 
 	VertexBuffer* m_immediateVBO = nullptr;

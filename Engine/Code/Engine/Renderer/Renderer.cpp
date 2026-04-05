@@ -161,7 +161,6 @@ void Renderer::Startup()
 
 	// Create and bind default shader
 	m_defaultShader = CreateShader( "Default", g_shaderSource );
-	m_diffuseShader = CreateOrGetShader( "Data/Shaders/Diffuse", VertexType::VERTEX_PCUTBN );
 	BindShader( m_defaultShader );
 
 	// Create vertex buffer
