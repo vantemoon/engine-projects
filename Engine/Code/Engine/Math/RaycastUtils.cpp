@@ -213,3 +213,130 @@ RaycastResult2D RaycastVsAABB2D( Vec2 startPos, Vec2 fwdNormal, float maxDist, A
 	result.m_impactNormal = impactNormal;
 	return result;
 }
+
+
+//-----------------------------------------------------------------------------------------------
+RaycastResult3D RaycastVsCylinderZ3D( Vec3 startPos, Vec3 fwdNormal, float maxDist, Vec2 cylinderBaseCenter, float cylinderMinZ, float cylinderMaxZ, float cylinderRadius )
+{
+	RaycastResult3D result;
+	result.m_rayStartPos = startPos;
+	result.m_rayFwdNormal = fwdNormal;
+	result.m_rayMaxLength = maxDist;
+	result.m_didImpact = false;
+
+	if ( maxDist < 0.f )
+	{
+		return result;
+	}
+
+	if ( IsPointInsideCylinderZ3D( startPos, cylinderBaseCenter, cylinderMinZ, cylinderMaxZ, cylinderRadius ) )
+	{
+		result.m_didImpact = true;
+		result.m_impactDist = 0.f;
+		result.m_impactPos = startPos;
+		result.m_impactNormal = -fwdNormal;
+		return result;
+	}
+
+	FloatRange tRange( 0.f, maxDist );
+
+	Vec3 nearNormalZ( 0.f, 0.f, 0.f );
+	Vec3 nearNormalXY( 0.f, 0.f, 0.f );
+
+	if ( fwdNormal.z == 0.f )
+	{
+		if ( startPos.z < cylinderMinZ || startPos.z > cylinderMaxZ )
+		{
+			return result;
+		}
+	}
+	else
+	{
+		float tNear = ( cylinderMinZ - startPos.z ) / fwdNormal.z;
+		float tFar = ( cylinderMaxZ - startPos.z ) / fwdNormal.z;
+
+		Vec3 nearNormal( 0.f, 0.f, -1.f );
+		Vec3 farNormal( 0.f, 0.f, 1.f );
+
+		if ( tNear > tFar )
+		{
+			float tempT = tNear; tNear = tFar; tFar = tempT;
+			Vec3 tempN = nearNormal; nearNormal = farNormal; farNormal = tempN;
+		}
+
+		nearNormalZ = nearNormal;
+
+		tRange.m_min = fmaxf( tRange.m_min, tNear );
+		tRange.m_max = fminf( tRange.m_max, tFar );
+		if ( tRange.m_min > tRange.m_max )
+		{
+			return result;
+		}
+	}
+
+	float tEnterZ = tRange.m_min;
+
+	Vec2 startPosXY( startPos.x, startPos.y );
+	Vec2 fwdXY( fwdNormal.x, fwdNormal.y );
+	Vec2 startToCenter = cylinderBaseCenter - startPosXY;
+
+	float fwdLengthSquared = DotProduct2D( fwdXY, fwdXY );
+	float radiusSquared = cylinderRadius * cylinderRadius;
+
+	if ( fwdLengthSquared == 0.f )
+	{
+		Vec2 startToCenterXY = startPosXY - cylinderBaseCenter;
+		if ( DotProduct2D( startToCenterXY, startToCenterXY ) > radiusSquared )
+		{
+			return result;
+		}
+	}
+	else
+	{
+		float tProjected = DotProduct2D( startToCenter, fwdXY ) / fwdLengthSquared;
+		Vec2 closestXY = startPosXY + ( fwdXY * tProjected );
+
+		Vec2 closestToCenter = cylinderBaseCenter - closestXY;
+		float closestDistSquared = DotProduct2D( closestToCenter, closestToCenter );
+		if ( closestDistSquared > radiusSquared )
+		{
+			return result;
+		}
+
+		float tOffset = sqrtf( ( radiusSquared - closestDistSquared ) / fwdLengthSquared );
+		float tNear = tProjected - tOffset;
+		float tFar = tProjected + tOffset;
+
+		tRange.m_min = fmaxf( tRange.m_min, tNear );
+		tRange.m_max = fminf( tRange.m_max, tFar );
+		if ( tRange.m_min > tRange.m_max )
+		{
+			return result;
+		}
+	}
+
+	float tEnter = tRange.m_min;
+	if ( tEnter > maxDist )
+	{
+		return result;
+	}
+
+	if ( fwdLengthSquared != 0.f )
+	{
+		Vec3 impactPos = startPos + ( fwdNormal * tEnter );
+		Vec2 impactToCenterXY( impactPos.x - cylinderBaseCenter.x, impactPos.y - cylinderBaseCenter.y );
+		nearNormalXY = Vec3( impactToCenterXY.x, impactToCenterXY.y, 0.f ).GetNormalized();
+	}
+
+	Vec3 impactNormal = nearNormalZ;
+	if ( tEnter > tEnterZ )
+	{
+		impactNormal = nearNormalXY;
+	}
+
+	result.m_didImpact = true;
+	result.m_impactDist = tEnter;
+	result.m_impactPos = startPos + ( fwdNormal * tEnter );
+	result.m_impactNormal = impactNormal;
+	return result;
+}

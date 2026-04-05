@@ -92,6 +92,8 @@ bool IsPointInsideOBB2D( Vec2 const& point, OBB2 const& orientedBox );
 bool IsPointInsideCapsule2D( Vec2 const& point, Vec2 const& boneStart, Vec2 const& boneEnd, float radius );
 bool IsPointInsideTriangle2D( Vec2 const& point, Vec2 const& ccw0, Vec2 const& ccw1, Vec2 const& ccw2 );
 
+bool IsPointInsideCylinderZ3D( Vec3 const& point, Vec2 const& cylinderBaseCenter, float cylinderMinZ, float cylinderMaxZ, float cylinderRadius );
+
 //-----------------------------------------------------------------------------------------------
 // Nearest point calculations
 Vec2 GetNearestPointOnDisc2D( Vec2 const& referencePos, Vec2 const& discCenter, float discRadius );

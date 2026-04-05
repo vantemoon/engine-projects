@@ -261,6 +261,98 @@ void Game::UpdateFromKeyboard()
 	}
 	else
 	{
+		// LMB
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_LBUTTON ) )
+		{
+			if ( m_player != nullptr && m_currentMap != nullptr )
+			{
+				Vec3 rayStartPos = m_player->m_position;
+				Vec3 rayFwdNormal = m_player->m_orientation.GetForwardDir_IFwd_JLeft_KUp();
+				float rayMaxLength = 10.f;
+
+				RaycastResult3D raycastResult = m_currentMap->RaycastAll( rayStartPos, rayFwdNormal, rayMaxLength );
+
+				Vec3 rayEndPos = rayStartPos + ( rayFwdNormal * rayMaxLength );
+
+				DebugAddWorldCylinder(
+					rayStartPos,
+					rayEndPos,
+					0.01f,
+					10.f,
+					Rgba8::WHITE,
+					Rgba8::WHITE,
+					DebugRenderMode::X_RAY );
+
+				if ( raycastResult.m_didImpact )
+				{
+					DebugAddWorldSphere(
+						raycastResult.m_impactPos,
+						0.06f,
+						10.f,
+						Rgba8::WHITE,
+						Rgba8::WHITE,
+						DebugRenderMode::USE_DEPTH );
+
+					Vec3 impactNormal = raycastResult.m_impactNormal.GetNormalized();
+					Vec3 arrowEndPos = raycastResult.m_impactPos + ( impactNormal * 0.3f );
+					DebugAddWorldArrow(
+						raycastResult.m_impactPos,
+						arrowEndPos,
+						0.03f,
+						10.f,
+						Rgba8::BLUE,
+						Rgba8::BLUE,
+						DebugRenderMode::USE_DEPTH );
+				}
+			}
+		}
+
+		// RMB
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_RBUTTON ) )
+		{
+			if ( m_player != nullptr && m_currentMap != nullptr )
+			{
+				Vec3 rayStartPos = m_player->m_position;
+				Vec3 rayFwdNormal = m_player->m_orientation.GetForwardDir_IFwd_JLeft_KUp();
+				float rayMaxLength = 0.25f;
+
+				RaycastResult3D raycastResult = m_currentMap->RaycastAll( rayStartPos, rayFwdNormal, rayMaxLength );
+
+				Vec3 rayEndPos = rayStartPos + ( rayFwdNormal * rayMaxLength );
+
+				DebugAddWorldCylinder(
+					rayStartPos,
+					rayEndPos,
+					0.01f,
+					10.f,
+					Rgba8::WHITE,
+					Rgba8::WHITE,
+					DebugRenderMode::X_RAY );
+
+				if ( raycastResult.m_didImpact )
+				{
+					DebugAddWorldSphere(
+						raycastResult.m_impactPos,
+						0.06f,
+						10.f,
+						Rgba8::WHITE,
+						Rgba8::WHITE,
+						DebugRenderMode::USE_DEPTH );
+
+					Vec3 impactNormal = raycastResult.m_impactNormal.GetNormalized();
+					Vec3 arrowEndPos = raycastResult.m_impactPos + ( impactNormal * 0.3f );
+					DebugAddWorldArrow(
+						raycastResult.m_impactPos,
+						arrowEndPos,
+						0.03f,
+						10.f,
+						Rgba8::BLUE,
+						Rgba8::BLUE,
+						DebugRenderMode::USE_DEPTH );
+				}
+			}
+		}
+
 		// 1
 		if ( g_engine->m_inputSystem->WasKeyJustPressed( '1' ) )
 		{

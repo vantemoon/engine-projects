@@ -43,6 +43,12 @@ public:
 	void CollideActorWithMap( Actor* actor );
 
 	void Render() const;
+
+	RaycastResult3D RaycastAll( Vec3 const& startPos, Vec3 const& forwardNormal, float maxLength, Actor* owner = nullptr ) const;
+	RaycastResult3D RaycastWorldXY( Vec3 const& startPos, Vec3 const& forwardNormal, float maxLength ) const;
+	RaycastResult3D RaycastWorldZ( Vec3 const& startPos, Vec3 const& forwardNormal, float maxLength ) const;
+	RaycastResult3D RaycastWorldActors( Vec3 const& startPos, Vec3 const& forwardNormal, float maxLength, Actor* owner = nullptr ) const;
+
 	Vec3 GetSunDirection() const;
 	float GetSunIntensity() const;
 	float GetAmbientIntensity() const;

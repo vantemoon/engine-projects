@@ -469,6 +469,229 @@ void Map::Render() const
 
 
 //-----------------------------------------------------------------------------------------------
+RaycastResult3D Map::RaycastAll( Vec3 const& startPos, Vec3 const& forwardNormal, float maxLength, Actor* owner ) const
+{
+	RaycastResult3D result;
+	float closestImpactDist = maxLength;
+
+	// Raycast against actors
+	RaycastResult3D actorResult = RaycastWorldActors( startPos, forwardNormal, maxLength, owner );
+	if ( actorResult.m_didImpact && actorResult.m_impactDist < closestImpactDist )
+	{
+		result = actorResult;
+		closestImpactDist = actorResult.m_impactDist;
+	}
+
+	// Raycast against floor and ceiling
+	RaycastResult3D floorCeilingResult = RaycastWorldZ( startPos, forwardNormal, maxLength );
+	if ( floorCeilingResult.m_didImpact && floorCeilingResult.m_impactDist < closestImpactDist )
+	{
+		result = floorCeilingResult;
+		closestImpactDist = floorCeilingResult.m_impactDist;
+	}
+
+	// Raycast against walls
+	RaycastResult3D wallResult = RaycastWorldXY( startPos, forwardNormal, maxLength );
+	if ( wallResult.m_didImpact && wallResult.m_impactDist < closestImpactDist )
+	{
+		result = wallResult;
+		closestImpactDist = wallResult.m_impactDist;
+	}
+
+	return result;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+RaycastResult3D Map::RaycastWorldXY( Vec3 const& startPos, Vec3 const& forwardNormal, float maxLength ) const
+{
+	RaycastResult3D result;
+	result.m_rayStartPos = startPos;
+	result.m_rayFwdNormal = forwardNormal;
+	result.m_rayMaxLength = maxLength;
+	result.m_didImpact = false;
+	result.m_impactDist = maxLength;
+	result.m_impactPos = startPos + ( forwardNormal * maxLength );
+	result.m_impactNormal = Vec3( 0.f, 0.f, 0.f );
+
+	if ( maxLength <= 0.f )
+	{
+		return result;
+	}
+
+	IntVec2 tileCoords( ( int ) RoundDownToInt( startPos.x ), ( int ) RoundDownToInt( startPos.y ) );
+	Tile* tile = GetTileAtCoords( tileCoords.x, tileCoords.y );
+	if ( tile != nullptr && tile->IsSolid() )
+	{
+		result.m_didImpact = true;
+		result.m_impactDist = 0.f;
+		result.m_impactPos = startPos;
+		result.m_impactNormal = Vec3( -forwardNormal.x, -forwardNormal.y, 0.f ).GetNormalized();
+		return result;
+	}
+
+	float fwdDistPerXCrossing = 0.f;
+	float fwdDistAtNextXCrossing = maxLength + 1.f;
+	int tileStepDirectionX = 0;
+
+	if ( forwardNormal.x > 0.f )
+	{
+		tileStepDirectionX = 1;
+		float xAtFirstXCrossing = ( float ) ( tileCoords.x + 1 );
+		fwdDistPerXCrossing = 1.f / fabsf( forwardNormal.x );
+		fwdDistAtNextXCrossing = ( xAtFirstXCrossing - startPos.x ) * fwdDistPerXCrossing;
+	}
+	else if ( forwardNormal.x < 0.f )
+	{
+		tileStepDirectionX = -1;
+		float xAtFirstXCrossing = ( float ) tileCoords.x;
+		fwdDistPerXCrossing = 1.f / fabsf( forwardNormal.x );
+		fwdDistAtNextXCrossing = ( startPos.x - xAtFirstXCrossing ) * fwdDistPerXCrossing;
+	}
+
+	float fwdDistPerYCrossing = 0.f;
+	float fwdDistAtNextYCrossing = maxLength + 1.f;
+	int tileStepDirectionY = 0;
+
+	if ( forwardNormal.y > 0.f )
+	{
+		tileStepDirectionY = 1;
+		float yAtFirstYCrossing = ( float ) ( tileCoords.y + 1 );
+		fwdDistPerYCrossing = 1.f / fabsf( forwardNormal.y );
+		fwdDistAtNextYCrossing = ( yAtFirstYCrossing - startPos.y ) * fwdDistPerYCrossing;
+	}
+	else if ( forwardNormal.y < 0.f )
+	{
+		tileStepDirectionY = -1;
+		float yAtFirstYCrossing = ( float ) tileCoords.y;
+		fwdDistPerYCrossing = 1.f / fabsf( forwardNormal.y );
+		fwdDistAtNextYCrossing = ( startPos.y - yAtFirstYCrossing ) * fwdDistPerYCrossing;
+	}
+
+	if ( tileStepDirectionX == 0 && tileStepDirectionY == 0 )
+	{
+		return result;
+	}
+
+	while ( true )
+	{
+		bool stepX = ( fwdDistAtNextXCrossing <= fwdDistAtNextYCrossing );
+
+		float distOfNextCrossing = 0.f;
+		Vec3 impactSurfaceNormal;
+
+		if ( stepX )
+		{
+			distOfNextCrossing = fwdDistAtNextXCrossing;
+			if ( distOfNextCrossing > maxLength )
+			{
+				return result;
+			}
+
+			tileCoords.x += tileStepDirectionX;
+			fwdDistAtNextXCrossing += fwdDistPerXCrossing;
+			impactSurfaceNormal = Vec3( ( float ) -tileStepDirectionX, 0.f, 0.f );
+		}
+		else
+		{
+			distOfNextCrossing = fwdDistAtNextYCrossing;
+			if ( distOfNextCrossing > maxLength )
+			{
+				return result;
+			}
+
+			tileCoords.y += tileStepDirectionY;
+			fwdDistAtNextYCrossing += fwdDistPerYCrossing;
+			impactSurfaceNormal = Vec3( 0.f, ( float ) -tileStepDirectionY, 0.f );
+		}
+
+		tile = GetTileAtCoords( tileCoords.x, tileCoords.y );
+		if ( tile != nullptr && tile->IsSolid() )
+		{
+			result.m_didImpact = true;
+			result.m_impactDist = distOfNextCrossing;
+			result.m_impactPos = startPos + ( forwardNormal * distOfNextCrossing );
+			result.m_impactNormal = impactSurfaceNormal;
+			return result;
+		}
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+RaycastResult3D Map::RaycastWorldZ( Vec3 const& startPos, Vec3 const& forwardNormal, float maxLength ) const
+{
+	RaycastResult3D result;
+	result.m_rayStartPos = startPos;
+	result.m_rayFwdNormal = forwardNormal;
+	result.m_rayMaxLength = maxLength;
+	result.m_didImpact = false;
+
+	if ( maxLength <= 0.f )
+	{
+		return result;
+	}
+
+	Vec3 rayVector = forwardNormal * maxLength;
+	float rayZ = rayVector.z;
+
+	if ( rayZ > 0.f )
+	{
+		float t = ( 1.f - startPos.z ) / rayZ;
+		if ( t >= 0.f && t <= 1.f )
+		{
+			result.m_didImpact = true;
+			result.m_impactDist = t * maxLength;
+			result.m_impactPos = startPos + rayVector * t;
+			result.m_impactNormal = Vec3( 0.f, 0.f, -1.f );
+		}
+	}
+	else if ( rayZ < 0.f )
+	{
+		float t = ( -startPos.z ) / rayZ;
+		if ( t >= 0.f && t <= 1.f )
+		{
+			result.m_didImpact = true;
+			result.m_impactDist = t * maxLength;
+			result.m_impactPos = startPos + rayVector * t;
+			result.m_impactNormal = Vec3( 0.f, 0.f, 1.f );
+		}
+	}
+
+	return result;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+RaycastResult3D Map::RaycastWorldActors( Vec3 const& startPos, Vec3 const& forwardNormal, float maxLength, Actor* owner ) const
+{
+	RaycastResult3D result;
+	float closestImpactDist = maxLength;
+
+	for ( Actor* actor : m_actors )
+	{
+		if ( actor == nullptr || actor == owner )
+		{
+			continue;
+		}
+
+		Vec2 actorCenter = Vec2( actor->m_position.x, actor->m_position.y );
+		float actorMinZ = actor->m_position.z;
+		float actorMaxZ = actor->m_position.z + actor->m_physicsHeight;
+		RaycastResult3D actorResult = RaycastVsCylinderZ3D( startPos, forwardNormal, maxLength, actorCenter, actorMinZ, actorMaxZ, actor->m_physicsRadius );
+
+		if ( actorResult.m_didImpact && actorResult.m_impactDist < closestImpactDist )
+		{
+			result = actorResult;
+			closestImpactDist = actorResult.m_impactDist;
+		}
+	}
+
+	return result;
+}
+
+
+//-----------------------------------------------------------------------------------------------
 Vec3 Map::GetSunDirection() const
 {
 	return Vec3( m_sunDirection[0], m_sunDirection[1], m_sunDirection[2] );

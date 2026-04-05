@@ -97,7 +97,7 @@ float ConvertDegreesToRadians( float degrees )
 //-----------------------------------------------------------------------------------------------
 float ConvertRadiansToDegrees( float radians )
 {
-	float degrees = radians * ( 180.f / static_cast< float > ( M_PI ) );
+	float degrees = radians * ( 180.f / static_cast<float> ( M_PI ) );
 	return degrees;
 }
 
@@ -617,6 +617,15 @@ bool IsPointInsideTriangle2D( Vec2 const& point, Vec2 const& ccw0, Vec2 const& c
 	}
 
 	return true;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool IsPointInsideCylinderZ3D( Vec3 const& point, Vec2 const& cylinderBaseCenter, float cylinderMinZ, float cylinderMaxZ, float cylinderRadius )
+{
+	bool isInsideZ = point.z > cylinderMinZ && point.z < cylinderMaxZ;
+	bool isInsideDisc = IsPointInsideDisc2D( Vec2( point.x, point.y ), cylinderBaseCenter, cylinderRadius );
+	return isInsideZ && isInsideDisc;
 }
 
 
