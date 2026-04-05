@@ -8,7 +8,7 @@
 //-----------------------------------------------------------------------------------------------
 class GameRaycastVsAABB : public Game
 {
-	public:
+public:
 	const static int			 MAX_AABBS = 10;
 
 	TestShapeAABB*			m_testAABBs[MAX_AABBS] = {};

@@ -1,5 +1,6 @@
 #include "Game/App.hpp"
 #include "Game/Game.hpp"
+#include "Game/Game3DShapes.hpp"
 #include "Game/GameNearestPoint.hpp"
 #include "Game/GameRaycastVsAABB.hpp"
 #include "Game/GameRaycastVsDiscs.hpp"
@@ -84,6 +85,21 @@ void App::UpdateFromKeyboard()
 		SetIsQuitting();
 	}
 
+	if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_F6 ) )
+	{
+		GameMode prevGameMode = static_cast< GameMode >( ( m_gameMode - 1 ) % NUM_GAME_MODES );
+		if ( prevGameMode == INVALID_MODE )
+		{
+			prevGameMode = static_cast<GameMode>( NUM_GAME_MODES - 1 );
+		}
+		else if ( prevGameMode == NUM_GAME_MODES )
+		{
+			prevGameMode = static_cast<GameMode>( NUM_GAME_MODES - 1 );
+		}
+		m_gameMode = prevGameMode;
+		HardReset( prevGameMode );
+	}
+
 	if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_F7 ) )
 	{
 		GameMode nextMode = static_cast<GameMode>( ( m_gameMode + 1 ) % NUM_GAME_MODES );
@@ -143,6 +159,10 @@ void App::HardReset( GameMode newGameMode )
 			m_game = new GameRaycastVsAABB();
 			break;
 
+		case GAMEMODE_3D_SHAPES:
+			m_game = new Game3DShapes();
+			break;
+
 		case NUM_GAME_MODES:
 			break;
 
@@ -178,20 +198,23 @@ void App::RenderHUD() const
 	g_engine->m_renderer->BeginCamera( *m_game->m_screenCamera );
 
 	std::vector<Vertex> verts;
-	AddVertsForTextTriangles2D( verts, "Mode (F7 for next): ", Vec2( 20.f, 760.f ), 20.f, Rgba8::YELLOW );
+	AddVertsForTextTriangles2D( verts, "Mode (F6/F7 for prev/next): ", Vec2( 20.f, 760.f ), 20.f, Rgba8::YELLOW );
 	switch ( m_gameMode )
 	{
 		case GAMEMODE_NEAREST_POINT:
-			AddVertsForTextTriangles2D( verts, "Nearest Point (2D)", Vec2( 280.f, 760.f ), 20.f, Rgba8::YELLOW );
+			AddVertsForTextTriangles2D( verts, "Nearest Point (2D)", Vec2( 400.f, 760.f ), 20.f, Rgba8::YELLOW );
 			break;
 		case GAMEMODE_RAYCAST_VS_DISCS:
-			AddVertsForTextTriangles2D( verts, "Raycast Vs. Disc (2D)", Vec2( 280.f, 760.f ), 20.f, Rgba8::YELLOW );
+			AddVertsForTextTriangles2D( verts, "Raycast Vs. Disc (2D)", Vec2( 400.f, 760.f ), 20.f, Rgba8::YELLOW );
 			break;
 		case GAMEMODE_RAYCAST_VS_LINE_SEGMENTS:
-			AddVertsForTextTriangles2D( verts, "Raycast Vs. Line Segments (2D)", Vec2( 280.f, 760.f ), 20.f, Rgba8::YELLOW );
+			AddVertsForTextTriangles2D( verts, "Raycast Vs. Line Segments (2D)", Vec2( 400.f, 760.f ), 20.f, Rgba8::YELLOW );
 			break;
 		case GAMEMODE_RAYCAST_VS_AABBS:
-			AddVertsForTextTriangles2D( verts, "Raycast Vs. AABBs (2D)", Vec2( 280.f, 760.f ), 20.f, Rgba8::YELLOW );
+			AddVertsForTextTriangles2D( verts, "Raycast Vs. AABBs (2D)", Vec2( 400.f, 760.f ), 20.f, Rgba8::YELLOW );
+			break;
+		case GAMEMODE_3D_SHAPES:
+			AddVertsForTextTriangles2D( verts, "Test Shapes (3D)", Vec2( 400.f, 760.f ), 20.f, Rgba8::YELLOW );
 			break;
 		default:
 			break;
@@ -203,13 +226,16 @@ void App::RenderHUD() const
 			AddVertsForTextTriangles2D( verts, "WASD/Arrow: move reference point, hold T: slow", Vec2( 240.f, 730.f ), 20.f, Rgba8::CYAN );
 			break;
 		case GAMEMODE_RAYCAST_VS_DISCS:
-			AddVertsForTextTriangles2D( verts, "LMB/RMB set ray start/end; WASD move start, IJKL move end, arrows move ray, hold T: slow", Vec2( 240.f, 730.f ), 20.f, Rgba8::CYAN );
+			AddVertsForTextTriangles2D( verts, "LMB/RMB: set ray start/end; WASD: move start, IJKL: move end, arrows move ray, hold T: slow", Vec2( 240.f, 730.f ), 20.f, Rgba8::CYAN );
 			break;
 		case GAMEMODE_RAYCAST_VS_LINE_SEGMENTS:
-			AddVertsForTextTriangles2D( verts, "LMB/RMB set ray start/end; WASD move start, IJKL move end, arrows move ray, hold T: slow", Vec2( 240.f, 730.f ), 20.f, Rgba8::CYAN );
+			AddVertsForTextTriangles2D( verts, "LMB/RMB: set ray start/end; WASD: move start, IJKL: move end, arrows move ray, hold T: slow", Vec2( 240.f, 730.f ), 20.f, Rgba8::CYAN );
 			break;
 		case GAMEMODE_RAYCAST_VS_AABBS:
-			AddVertsForTextTriangles2D( verts, "LMB/RMB set ray start/end; WASD move start, IJKL move end, arrows move ray, hold T: slow", Vec2( 240.f, 730.f ), 20.f, Rgba8::CYAN );
+			AddVertsForTextTriangles2D( verts, "LMB/RMB: set ray start/end; WASD: move start, IJKL: move end, arrows move ray, hold T: slow", Vec2( 240.f, 730.f ), 20.f, Rgba8::CYAN );
+			break;
+		case GAMEMODE_3D_SHAPES:
+			AddVertsForTextTriangles2D( verts, "WASD: fly horizontal, QE: fly vertical, space: lock raycast, hold T: slow", Vec2( 240.f, 730.f ), 20.f, Rgba8::CYAN );
 			break;
 		default:
 			break;
