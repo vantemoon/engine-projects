@@ -541,7 +541,7 @@ void DebugAddWorldCylinder( Vec3 const& start, Vec3 const& end, float radius, fl
 	object->m_isWorld = true;
 	object->m_isWireframe = false;
 
-	AddVertsForCylinder3D( object->m_verts, start, end, radius, startColor );
+	AddVertsForCylinderZ3D( object->m_verts, start, end, radius, startColor );
 	for ( size_t index = 0; index < g_debugRenderSystem.m_worldObjects.size(); ++index )
 	{
 		if ( g_debugRenderSystem.m_worldObjects[index] == nullptr )
@@ -567,7 +567,7 @@ void DebugAddWorldWireCylinder( Vec3 const& start, Vec3 const& end, float radius
 	object->m_isWorld = true;
 	object->m_isWireframe = true;
 
-	AddVertsForCylinder3D( object->m_verts, start, end, radius, startColor );
+	AddVertsForCylinderZ3D( object->m_verts, start, end, radius, startColor );
 	for ( size_t index = 0; index < g_debugRenderSystem.m_worldObjects.size(); ++index )
 	{
 		if ( g_debugRenderSystem.m_worldObjects[index] == nullptr )

@@ -169,6 +169,15 @@ void App::HardReset( GameMode newGameMode )
 		default:
 			break;
 	}
+
+	if ( newGameMode == GAMEMODE_3D_SHAPES )
+	{
+		g_engine->m_inputSystem->SetCursorMode( CursorMode::FPS );
+	}
+	else
+	{
+		g_engine->m_inputSystem->SetCursorMode( CursorMode::POINTER );
+	}
 }
 
 

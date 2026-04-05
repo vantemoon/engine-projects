@@ -328,6 +328,55 @@ void AddVertsForAABB3D( std::vector<Vertex>& verts, AABB3 const& bounds, Rgba8 c
 
 
 //-----------------------------------------------------------------------------------------------
+void AddVertsForAABBWireframe3D( std::vector<Vertex>& verts, AABB3 const& bounds, Rgba8 const& color )
+{
+	Vec3 bottomLeftFront( bounds.m_mins.x, bounds.m_mins.y, bounds.m_mins.z );
+	Vec3 bottomRightFront( bounds.m_maxs.x, bounds.m_mins.y, bounds.m_mins.z );
+	Vec3 topRightFront( bounds.m_maxs.x, bounds.m_maxs.y, bounds.m_mins.z );
+	Vec3 topLeftFront( bounds.m_mins.x, bounds.m_maxs.y, bounds.m_mins.z );
+	Vec3 bottomLeftBack( bounds.m_mins.x, bounds.m_mins.y, bounds.m_maxs.z );
+	Vec3 bottomRightBack( bounds.m_maxs.x, bounds.m_mins.y, bounds.m_maxs.z );
+	Vec3 topRightBack( bounds.m_maxs.x, bounds.m_maxs.y, bounds.m_maxs.z );
+	Vec3 topLeftBack( bounds.m_mins.x, bounds.m_maxs.y, bounds.m_maxs.z );
+
+	float sizeX = bounds.m_maxs.x - bounds.m_mins.x;
+	float sizeY = bounds.m_maxs.y - bounds.m_mins.y;
+	float sizeZ = bounds.m_maxs.z - bounds.m_mins.z;
+	float minSize = sizeX;
+	if ( sizeY < minSize ) minSize = sizeY;
+	if ( sizeZ < minSize ) minSize = sizeZ;
+
+	float thickness = minSize * 0.02f;
+	if ( thickness <= 0.f )
+	{
+		thickness = 0.02f;
+	}
+
+	AddVertsForLineSegment3D( verts, bottomLeftFront, bottomRightFront, thickness, color );
+	AddVertsForLineSegment3D( verts, bottomRightFront, topRightFront, thickness, color );
+	AddVertsForLineSegment3D( verts, topRightFront, topLeftFront, thickness, color );
+	AddVertsForLineSegment3D( verts, topLeftFront, bottomLeftFront, thickness, color );
+
+	AddVertsForLineSegment3D( verts, bottomLeftBack, bottomRightBack, thickness, color );
+	AddVertsForLineSegment3D( verts, bottomRightBack, topRightBack, thickness, color );
+	AddVertsForLineSegment3D( verts, topRightBack, topLeftBack, thickness, color );
+	AddVertsForLineSegment3D( verts, topLeftBack, bottomLeftBack, thickness, color );
+
+	AddVertsForLineSegment3D( verts, bottomLeftFront, bottomLeftBack, thickness, color );
+	AddVertsForLineSegment3D( verts, bottomRightFront, bottomRightBack, thickness, color );
+	AddVertsForLineSegment3D( verts, topRightFront, topRightBack, thickness, color );
+	AddVertsForLineSegment3D( verts, topLeftFront, topLeftBack, thickness, color );
+
+	AddVertsForLineSegment3D( verts, bottomRightFront, topLeftFront, thickness, color );
+	AddVertsForLineSegment3D( verts, bottomLeftBack, topRightBack, thickness, color );
+	AddVertsForLineSegment3D( verts, bottomLeftFront, topLeftBack, thickness, color );
+	AddVertsForLineSegment3D( verts, bottomRightBack, topRightFront, thickness, color );
+	AddVertsForLineSegment3D( verts, topLeftBack, topRightFront, thickness, color );
+	AddVertsForLineSegment3D( verts, bottomLeftFront, bottomRightBack, thickness, color );
+}
+
+
+//-----------------------------------------------------------------------------------------------
 void AddVertsForSphere3D( std::vector<Vertex>& verts, Vec3 const& center, float radius, Rgba8 const& color,
 						  AABB2 const& UVs, int numSlices, int numStacks )
 {
@@ -378,6 +427,64 @@ void AddVertsForSphere3D( std::vector<Vertex>& verts, Vec3 const& center, float 
 			else
 			{
 				AddVertsForQuad3D( verts, bottomLeft, bottomRight, topRight, topLeft, color, AABB2( Vec2( uMin, vMin ), Vec2( uMax, vMax ) ) );
+			}
+		}
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void AddVertsForSphereWireframe3D( std::vector<Vertex>& verts, Vec3 const& center, float radius, Rgba8 const& color, [[maybe_unused]] AABB2 const& UVs, int numSlices, int numStacks )
+{
+	if ( numSlices <= 0 || numStacks <= 0 || radius <= 0.f )
+	{
+		return;
+	}
+
+	float thickness = radius * 0.02f;
+	if ( thickness <= 0.f )
+	{
+		thickness = 0.02f;
+	}
+
+	float degreesPerStack = 180.f / static_cast< float >( numStacks );
+	float degreesPerSlice = 360.f / static_cast< float >( numSlices );
+
+	for ( int i = 0; i < numStacks; ++i )
+	{
+		for ( int j = 0; j < numSlices; ++j )
+		{
+			float leftDegrees = degreesPerSlice * static_cast< float >( j );
+			float rightDegrees = degreesPerSlice * static_cast< float >( j + 1 );
+			float topDegrees = degreesPerStack * static_cast< float >( i ) - 90.f;
+			float bottomDegrees = degreesPerStack * static_cast< float >( i + 1 ) - 90.f;
+
+			Vec3 bottomLeft = center + Vec3::MakeFromPolarDegrees( bottomDegrees, leftDegrees, radius );
+			Vec3 bottomRight = center + Vec3::MakeFromPolarDegrees( bottomDegrees, rightDegrees, radius );
+			Vec3 topLeft = center + Vec3::MakeFromPolarDegrees( topDegrees, leftDegrees, radius );
+			Vec3 topRight = center + Vec3::MakeFromPolarDegrees( topDegrees, rightDegrees, radius );
+
+			if ( i == 0 )
+			{
+				Vec3 pole = topLeft;
+				AddVertsForLineSegment3D( verts, pole, bottomLeft, thickness, color );
+				AddVertsForLineSegment3D( verts, bottomLeft, bottomRight, thickness, color );
+				AddVertsForLineSegment3D( verts, bottomRight, pole, thickness, color );
+			}
+			else if ( i == numStacks - 1 )
+			{
+				Vec3 pole = bottomLeft;
+				AddVertsForLineSegment3D( verts, pole, topRight, thickness, color );
+				AddVertsForLineSegment3D( verts, topRight, topLeft, thickness, color );
+				AddVertsForLineSegment3D( verts, topLeft, pole, thickness, color );
+			}
+			else
+			{
+				AddVertsForLineSegment3D( verts, bottomLeft, bottomRight, thickness, color );
+				AddVertsForLineSegment3D( verts, bottomRight, topRight, thickness, color );
+				AddVertsForLineSegment3D( verts, topRight, topLeft, thickness, color );
+				AddVertsForLineSegment3D( verts, topLeft, bottomLeft, thickness, color );
+				AddVertsForLineSegment3D( verts, bottomLeft, topRight, thickness, color );
 			}
 		}
 	}
@@ -494,7 +601,7 @@ void AddvertsForXYGrid3D( std::vector<Vertex>& verts, Vec3 const& center, float 
 }
 
 
-void AddVertsForCylinder3D( std::vector<Vertex>& verts, Vec3 const& start, Vec3 const& end, float radius, Rgba8 const& color,
+void AddVertsForCylinderZ3D( std::vector<Vertex>& verts, Vec3 const& start, Vec3 const& end, float radius, Rgba8 const& color,
 							AABB2 const& UVs, int numSlices )
 {
 	if ( numSlices <= 0 || radius <= 0.f || start == end )
@@ -553,6 +660,73 @@ void AddVertsForCylinder3D( std::vector<Vertex>& verts, Vec3 const& start, Vec3 
 
 		AddVertsForTriangle3D( verts, start, bottomRight, bottomLeft, color, uvCenter, uvRight, uvLeft );
 		AddVertsForTriangle3D( verts, end, topLeft, topRight, color, uvCenter, uvLeft, uvRight );
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void AddVertsForCylinderZWireframe3D( std::vector<Vertex>& verts, Vec3 const& start, Vec3 const& end, float radius, Rgba8 const& color,
+	[[maybe_unused]] AABB2 const& UVs, int numSlices )
+{
+	if ( numSlices <= 0 || radius <= 0.f || start == end )
+	{
+		return;
+	}
+
+	Vec3 lookAtForwardI = ( end - start ).GetNormalized();
+	Vec3 lookAtLeftJ;
+	Vec3 lookAtUpK;
+
+	Vec3 worldZAxis( 0.f, 0.f, 1.f );
+	Vec3 worldYAxis( 0.f, 1.f, 0.f );
+
+	if ( abs( DotProduct3D( lookAtForwardI, worldZAxis ) ) < 0.99999f )
+	{
+		lookAtLeftJ = CrossProduct3D( worldZAxis, lookAtForwardI ).GetNormalized();
+		lookAtUpK = CrossProduct3D( lookAtForwardI, lookAtLeftJ ).GetNormalized();
+	}
+	else
+	{
+		lookAtUpK = CrossProduct3D( lookAtForwardI, worldYAxis ).GetNormalized();
+		lookAtLeftJ = CrossProduct3D( lookAtUpK, lookAtForwardI ).GetNormalized();
+	}
+
+	float length = ( end - start ).GetLength();
+	float minSize = radius * 2.f;
+	if ( length < minSize )
+	{
+		minSize = length;
+	}
+
+	float thickness = minSize * 0.02f;
+	if ( thickness <= 0.f )
+	{
+		thickness = 0.02f;
+	}
+
+	for ( int sliceIndex = 0; sliceIndex < numSlices; ++sliceIndex )
+	{
+		float tA = static_cast< float >( sliceIndex ) / static_cast< float >( numSlices );
+		float tB = static_cast< float >( sliceIndex + 1 ) / static_cast< float >( numSlices );
+		float degreesA = 360.f * tA;
+		float degreesB = 360.f * tB;
+
+		Vec3 left = radius * CosDegrees( degreesA ) * lookAtLeftJ + radius * SinDegrees( degreesA ) * lookAtUpK;
+		Vec3 right = radius * CosDegrees( degreesB ) * lookAtLeftJ + radius * SinDegrees( degreesB ) * lookAtUpK;
+
+		Vec3 bottomLeft = start + left;
+		Vec3 bottomRight = start + right;
+		Vec3 topLeft = end + left;
+		Vec3 topRight = end + right;
+
+		AddVertsForLineSegment3D( verts, bottomLeft, bottomRight, thickness, color );
+		AddVertsForLineSegment3D( verts, topLeft, topRight, thickness, color );
+
+		AddVertsForLineSegment3D( verts, bottomLeft, topLeft, thickness, color );
+		AddVertsForLineSegment3D( verts, bottomLeft, topRight, thickness, color );
+
+		AddVertsForLineSegment3D( verts, start, bottomLeft, thickness, color );
+		AddVertsForLineSegment3D( verts, end, topLeft, thickness, color );
 	}
 }
 
@@ -635,6 +809,55 @@ void AddVertsForArrow3D( std::vector<Vertex>& verts, Vec3 const& start, Vec3 con
 
 	Vec3 shaftEnd = end - ( forward * headLength );
 
-	AddVertsForCylinder3D( verts, start, shaftEnd, radius, color, AABB2::ZERO_TO_ONE, numSlices );
+	AddVertsForCylinderZ3D( verts, start, shaftEnd, radius, color, AABB2::ZERO_TO_ONE, numSlices );
 	AddVertsForCone3D( verts, shaftEnd, end, headRadius, color, AABB2::ZERO_TO_ONE, numSlices );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void AddVertsForLineSegment3D( std::vector<Vertex>& verts, Vec3 const& start, Vec3 const& end, float thickness, Rgba8 const& color )
+{
+	if ( thickness <= 0.f || start == end )
+	{
+		return;
+	}
+
+	Vec3 forward = ( end - start ).GetNormalized();
+	Vec3 left;
+	Vec3 up;
+
+	Vec3 worldZAxis( 0.f, 0.f, 1.f );
+	Vec3 worldYAxis( 0.f, 1.f, 0.f );
+
+	if ( abs( DotProduct3D( forward, worldZAxis ) ) < 0.99999f )
+	{
+		left = CrossProduct3D( worldZAxis, forward ).GetNormalized();
+		up = CrossProduct3D( forward, left ).GetNormalized();
+	}
+	else
+	{
+		up = CrossProduct3D( forward, worldYAxis ).GetNormalized();
+		left = CrossProduct3D( up, forward ).GetNormalized();
+	}
+
+	float halfThickness = 0.5f * thickness;
+	Vec3 leftOffset = left * halfThickness;
+	Vec3 upOffset = up * halfThickness;
+
+	Vec3 startBottomLeft = start - leftOffset - upOffset;
+	Vec3 startBottomRight = start + leftOffset - upOffset;
+	Vec3 startTopRight = start + leftOffset + upOffset;
+	Vec3 startTopLeft = start - leftOffset + upOffset;
+
+	Vec3 endBottomLeft = end - leftOffset - upOffset;
+	Vec3 endBottomRight = end + leftOffset - upOffset;
+	Vec3 endTopRight = end + leftOffset + upOffset;
+	Vec3 endTopLeft = end - leftOffset + upOffset;
+
+	AddVertsForQuad3D( verts, startBottomRight, startBottomLeft, startTopLeft, startTopRight, color );
+	AddVertsForQuad3D( verts, endBottomLeft, endBottomRight, endTopRight, endTopLeft, color );
+	AddVertsForQuad3D( verts, startBottomLeft, endBottomLeft, endTopLeft, startTopLeft, color );
+	AddVertsForQuad3D( verts, endBottomRight, startBottomRight, startTopRight, endTopRight, color );
+	AddVertsForQuad3D( verts, endTopLeft, endTopRight, startTopRight, startTopLeft, color );
+	AddVertsForQuad3D( verts, startBottomLeft, startBottomRight, endBottomRight, endBottomLeft, color );
 }

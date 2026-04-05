@@ -27,27 +27,33 @@ void AddVertsForAABB2D( std::vector<Vertex>& verts, AABB2 const& alignedBox, Rgb
 void AddVertsForOBB2D( std::vector<Vertex>& verts, OBB2 const& orientedBox, Rgba8 const& color );
 void AddVertsForCapsule2D( std::vector<Vertex>& verts, Vec2 const& boneStart, Vec2 const& boneEnd, float radius, Rgba8 const& color, int numSides );
 void AddVertsForTriangle2D( std::vector<Vertex>& verts, Vec2 const& ccw0, Vec2 const& ccw1, Vec2 const& ccw2, Rgba8 const& color,
-							Vec2 const& uv0 = Vec2( 0.f, 0.f ), Vec2 const& uv1 = Vec2( 1.f, 0.f ), Vec2 const& uv2 = Vec2( 0.5f, 1.f ) );
+	Vec2 const& uv0 = Vec2( 0.f, 0.f ), Vec2 const& uv1 = Vec2( 1.f, 0.f ), Vec2 const& uv2 = Vec2( 0.5f, 1.f ) );
 void AddVertsForLineSegment2D( std::vector<Vertex>& verts, Vec2 const& start, Vec2 const& end, float thickness, Rgba8 const& color );
 void AddVertsForArrow2D( std::vector<Vertex>& verts, Vec2 const& startTail, Vec2 const& endTip, float thickness, float arrowRadius, Rgba8 const& color );
 
 
 //-----------------------------------------------------------------------------------------------
 void AddVertsForTriangle3D( std::vector<Vertex>& verts, Vec3 const& ccw0, Vec3 const& ccw1, Vec3 const& ccw2, Rgba8 const& color = Rgba8::WHITE, 
-							Vec2 const& uv0 = Vec2( 0.f, 0.f ), Vec2 const& uv1 = Vec2( 1.f, 0.f ), Vec2 const& uv2 = Vec2( 0.5f, 1.f ) );
+	Vec2 const& uv0 = Vec2( 0.f, 0.f ), Vec2 const& uv1 = Vec2( 1.f, 0.f ), Vec2 const& uv2 = Vec2( 0.5f, 1.f ) );
 void AddVertsForQuad3D( std::vector<Vertex>& verts, 
-						Vec3 const& bottomLeft, Vec3 const& bottomRight, Vec3 const& topRight, Vec3 const& topLeft, 
-	                    Rgba8 const& color = Rgba8::WHITE, AABB2 const& UVs = AABB2::ZERO_TO_ONE );
+	Vec3 const& bottomLeft, Vec3 const& bottomRight, Vec3 const& topRight, Vec3 const& topLeft, 
+	Rgba8 const& color = Rgba8::WHITE, AABB2 const& UVs = AABB2::ZERO_TO_ONE );
 void AddVertsForQuad3D( std::vector<Vertex_PCUTBN>& verts, std::vector<unsigned int>& indices,
-						Vec3 const& bottomLeft, Vec3 const& bottomRight, Vec3 const& topRight, Vec3 const& topLeft,
-						Rgba8 const& color = Rgba8::WHITE, AABB2 const& UVs = AABB2::ZERO_TO_ONE );
+	Vec3 const& bottomLeft, Vec3 const& bottomRight, Vec3 const& topRight, Vec3 const& topLeft,
+	Rgba8 const& color = Rgba8::WHITE, AABB2 const& UVs = AABB2::ZERO_TO_ONE );
 void AddVertsForAABB3D( std::vector<Vertex>& verts, AABB3 const& bounds, Rgba8 const& color = Rgba8::WHITE, AABB2 const& UVs = AABB2::ZERO_TO_ONE );
+void AddVertsForAABBWireframe3D( std::vector<Vertex>& verts, AABB3 const& bounds, Rgba8 const& color = Rgba8::WHITE );
 void AddVertsForSphere3D( std::vector<Vertex>& verts, Vec3 const& center, float radius, Rgba8 const& color = Rgba8::WHITE,
-						  AABB2 const& UVs = AABB2::ZERO_TO_ONE, int numSlices = 32, int numStacks = 16 );
+	AABB2 const& UVs = AABB2::ZERO_TO_ONE, int numSlices = 32, int numStacks = 16 );
+void AddVertsForSphereWireframe3D( std::vector<Vertex>& verts, Vec3 const& center, float radius, Rgba8 const& color = Rgba8::WHITE,
+	AABB2 const& UVs = AABB2::ZERO_TO_ONE, int numSlices = 32, int numStacks = 16 );
 void AddvertsForXYGrid3D( std::vector<Vertex>& verts, Vec3 const& center, float cellSize, int numCellsX, int numCellsY );
-void AddVertsForCylinder3D( std::vector<Vertex>& verts, Vec3 const& start, Vec3 const& end, float radius, 
-							Rgba8 const& color = Rgba8::WHITE, AABB2 const& UVs = AABB2::ZERO_TO_ONE, int numSides = 32 );
+void AddVertsForCylinderZ3D( std::vector<Vertex>& verts, Vec3 const& start, Vec3 const& end, float radius, 
+	Rgba8 const& color = Rgba8::WHITE, AABB2 const& UVs = AABB2::ZERO_TO_ONE, int numSides = 32 );
+void AddVertsForCylinderZWireframe3D( std::vector<Vertex>& verts, Vec3 const& start, Vec3 const& end, float radius,
+	Rgba8 const& color = Rgba8::WHITE, AABB2 const& UVs = AABB2::ZERO_TO_ONE, int numSides = 32 );
 void AddVertsForCone3D( std::vector<Vertex>& verts, Vec3 const& start, Vec3 const& end, float radius, 
-						Rgba8 const& color = Rgba8::WHITE, AABB2 const& UVs = AABB2::ZERO_TO_ONE, int numSides = 32 );
+	Rgba8 const& color = Rgba8::WHITE, AABB2 const& UVs = AABB2::ZERO_TO_ONE, int numSides = 32 );
 void AddVertsForArrow3D( std::vector<Vertex>& verts, Vec3 const& start, Vec3 const& end, float radius,
-						 Rgba8 const& color = Rgba8::WHITE, int numSides = 32 );
+	Rgba8 const& color = Rgba8::WHITE, int numSides = 32 );
+void AddVertsForLineSegment3D( std::vector<Vertex>& verts, Vec3 const& start, Vec3 const& end, float thickness, Rgba8 const& color = Rgba8::WHITE );
