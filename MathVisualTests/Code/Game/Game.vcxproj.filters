@@ -70,6 +70,9 @@
     <ClCompile Include="TestShapeSphere.cpp">
       <Filter>Test Shape</Filter>
     </ClCompile>
+    <ClCompile Include="TestShapeZCylinder.cpp">
+      <Filter>Test Shape</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.hpp">
@@ -124,6 +127,9 @@
       <Filter>Test Shape</Filter>
     </ClInclude>
     <ClInclude Include="TestShapeSphere.hpp">
+      <Filter>Test Shape</Filter>
+    </ClInclude>
+    <ClInclude Include="TestShapeZCylinder.hpp">
       <Filter>Test Shape</Filter>
     </ClInclude>
   </ItemGroup>

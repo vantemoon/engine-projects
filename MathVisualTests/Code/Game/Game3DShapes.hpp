@@ -3,6 +3,7 @@
 #include "Game/TestShape.hpp"
 #include "Game/TestShapeAABB3D.hpp"
 #include "Game/TestShapeSphere.hpp"
+#include "Game/TestShapeZCylinder.hpp"
 
 
 //-----------------------------------------------------------------------------------------------
@@ -14,6 +15,7 @@ public:
 
 	TestShapeAABB3D*	m_testAABBs[NUM_SHAPE_PER_TYPE] = {};
 	TestShapeSphere*	m_testSpheres[NUM_SHAPE_PER_TYPE] = {};
+	TestShapeZCylinder* m_testCylinders[NUM_SHAPE_PER_TYPE] = {};
 
 	Game3DShapes();
 	~Game3DShapes();
@@ -26,4 +28,5 @@ private:
 	void GenerateRandomShapes();
 	void GenerateRandomAABBs();
 	void GenerateRandomSpheres();
+	void GenerateRandomCylinders();
 };

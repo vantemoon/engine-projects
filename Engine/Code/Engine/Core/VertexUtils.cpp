@@ -372,15 +372,20 @@ void AddVertsForAABBWireframe3D( std::vector<Vertex>& verts, AABB3 const& bounds
 
 //-----------------------------------------------------------------------------------------------
 void AddVertsForSphere3D( std::vector<Vertex>& verts, Vec3 const& center, float radius, Rgba8 const& color,
-						  AABB2 const& UVs, int numSlices, int numStacks )
+	AABB2 const& UVs, int numSlices, int numStacks )
 {
-	if ( numSlices <= 0 || numStacks <= 0 )
+	if ( numSlices <= 0 || numStacks <= 0 || radius <= 0.f )
 	{
 		return;
 	}
 
 	float degreesPerStack = 180.f / static_cast<float>( numStacks );
 	float degreesPerSlice = 360.f / static_cast<float>( numSlices );
+
+	float uCenter = 0.5f * ( UVs.m_mins.x + UVs.m_maxs.x );
+	float vCenter = 0.5f * ( UVs.m_mins.y + UVs.m_maxs.y );
+	float uHalf = 0.5f * ( UVs.m_maxs.x - UVs.m_mins.x );
+	float vHalf = 0.5f * ( UVs.m_maxs.y - UVs.m_mins.y );
 
 	for ( int i = 0; i < numStacks; ++i )
 	{
@@ -396,31 +401,38 @@ void AddVertsForSphere3D( std::vector<Vertex>& verts, Vec3 const& center, float 
 			Vec3 topLeft = center + Vec3::MakeFromPolarDegrees( topDegrees, leftDegrees, radius );
 			Vec3 topRight = center + Vec3::MakeFromPolarDegrees( topDegrees, rightDegrees, radius );
 
-			float topV = ( float ) 1 - i / static_cast< float >( numStacks );
-			float bottomV = ( float ) 1 - ( i + 1 ) / static_cast< float >( numStacks );
-			float leftU = ( float ) j / static_cast<float>( numSlices );
-			float rightU = ( float ) ( j + 1 ) / static_cast<float>( numSlices );
+			// Side-wrap UVs (cylindrical mapping)
+			float uMin = UVs.m_mins.x + ( UVs.m_maxs.x - UVs.m_mins.x ) * ( static_cast<float>( j ) / static_cast< float >( numSlices ) );
+			float uMax = UVs.m_mins.x + ( UVs.m_maxs.x - UVs.m_mins.x ) * ( static_cast<float>( j + 1 ) / static_cast< float >( numSlices ) );
 
-			float uMin = UVs.m_mins.x + ( UVs.m_maxs.x - UVs.m_mins.x ) * leftU;
-			float uMax = UVs.m_mins.x + ( UVs.m_maxs.x - UVs.m_mins.x ) * rightU;
-			float vMin = UVs.m_mins.y + ( UVs.m_maxs.y - UVs.m_mins.y ) * bottomV;
-			float vMax = UVs.m_mins.y + ( UVs.m_maxs.y - UVs.m_mins.y ) * topV;
+			float vTop = UVs.m_mins.y + ( UVs.m_maxs.y - UVs.m_mins.y ) * ( ( topLeft.z - center.z + radius ) / ( 2.f * radius ) );
+			float vBottom = UVs.m_mins.y + ( UVs.m_maxs.y - UVs.m_mins.y ) * ( ( bottomLeft.z - center.z + radius ) / ( 2.f * radius ) );
 
-			float uPole = 0.5f * ( uMin + uMax );
+			// Cap UVs: project to the largest inscribed circle in UV rect
+			Vec3 localTopLeft = topLeft - center;
+			Vec3 localTopRight = topRight - center;
+			Vec3 localBottomLeft = bottomLeft - center;
+			Vec3 localBottomRight = bottomRight - center;
+
+			Vec2 uvPole( uCenter, vCenter );
+			Vec2 uvTopLeft( uCenter + ( localTopLeft.x / radius ) * uHalf, vCenter + ( localTopLeft.y / radius ) * vHalf );
+			Vec2 uvTopRight( uCenter + ( localTopRight.x / radius ) * uHalf, vCenter + ( localTopRight.y / radius ) * vHalf );
+			Vec2 uvBottomLeft( uCenter + ( localBottomLeft.x / radius ) * uHalf, vCenter + ( localBottomLeft.y / radius ) * vHalf );
+			Vec2 uvBottomRight( uCenter + ( localBottomRight.x / radius ) * uHalf, vCenter + ( localBottomRight.y / radius ) * vHalf );
 
 			if ( i == 0 )
 			{
 				Vec3 pole = topLeft;
-				AddVertsForTriangle3D( verts, pole, bottomLeft, bottomRight, color, Vec2( uPole, vMax ), Vec2( uMin, vMin ), Vec2( uMax, vMin ) );
+				AddVertsForTriangle3D( verts, pole, bottomLeft, bottomRight, color, uvPole, uvBottomLeft, uvBottomRight );
 			}
 			else if ( i == numStacks - 1 )
 			{
 				Vec3 pole = bottomLeft;
-				AddVertsForTriangle3D( verts, pole, topRight, topLeft, color, Vec2( uPole, vMin ), Vec2( uMax, vMax ), Vec2( uMin, vMax ) );
+				AddVertsForTriangle3D( verts, pole, topRight, topLeft, color, uvPole, uvTopRight, uvTopLeft );
 			}
 			else
 			{
-				AddVertsForQuad3D( verts, bottomLeft, bottomRight, topRight, topLeft, color, AABB2( Vec2( uMin, vMin ), Vec2( uMax, vMax ) ) );
+				AddVertsForQuad3D( verts, bottomLeft, bottomRight, topRight, topLeft, color, AABB2( Vec2( uMin, vBottom ), Vec2( uMax, vTop ) ) );
 			}
 		}
 	}

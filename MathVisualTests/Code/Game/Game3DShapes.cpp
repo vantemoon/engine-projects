@@ -166,6 +166,21 @@ void Game3DShapes::Render() const
 		}
 	}
 
+	// Cylinders
+	for ( int shapeIndex = 0; shapeIndex < NUM_SHAPE_PER_TYPE; ++shapeIndex )
+	{
+		if ( shapeIndex % 2 == 0 ) // Wireframe
+		{
+			TestShapeZCylinder* shape = m_testCylinders[shapeIndex];
+			AddVertsForCylinderZWireframe3D( wireframeVerts, shape->m_start, shape->m_end, shape->m_radius, Rgba8::WHITE, AABB2::ZERO_TO_ONE, 16 );
+		}
+		else // Solid
+		{
+			TestShapeZCylinder* shape = m_testCylinders[shapeIndex];
+			AddVertsForCylinderZ3D( solidVerts, shape->m_start, shape->m_end, shape->m_radius, Rgba8::WHITE, AABB2::ZERO_TO_ONE, 16 );
+		}
+	}
+
 	float axisRadius = 0.03f;
 	int axisSlices = 16;
 	Vec3 origin = Vec3::ZERO;
@@ -193,6 +208,7 @@ void Game3DShapes::GenerateRandomShapes()
 {
 	GenerateRandomAABBs();
 	GenerateRandomSpheres();
+	GenerateRandomCylinders();
 }
 
 
@@ -268,5 +284,38 @@ void Game3DShapes::GenerateRandomSpheres()
 
 		TestShapeSphere* shape = new TestShapeSphere( Vec3( centerX, centerY, centerZ ), radius );
 		m_testSpheres[shapeIndex] = shape;
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game3DShapes::GenerateRandomCylinders()
+{
+	RandomNumberGenerator rng;
+	float worldHalfSize = 30.f;
+	float worldMinX = -worldHalfSize;
+	float worldMaxX = worldHalfSize;
+	float worldMinY = -worldHalfSize;
+	float worldMaxY = worldHalfSize;
+	float worldMinZ = -worldHalfSize;
+	float worldMaxZ = worldHalfSize;
+	float worldSpan = worldHalfSize * 2.f;
+	float minRadius = 1.5f;
+	float maxRadius = GetClamped( 6.f, minRadius, worldSpan * 0.5f );
+	float minHeight = 3.f;
+	float maxHeight = GetClamped( 10.f, minHeight, worldSpan );
+	for ( int shapeIndex = 0; shapeIndex < NUM_SHAPE_PER_TYPE; ++shapeIndex )
+	{
+		float radius = rng.RollRandomFloatInRange( minRadius, maxRadius );
+		float height = rng.RollRandomFloatInRange( minHeight, maxHeight );
+		float centerX = rng.RollRandomFloatInRange( worldMinX + radius, worldMaxX - radius );
+		float centerY = rng.RollRandomFloatInRange( worldMinY + radius, worldMaxY - radius );
+		float centerZ = rng.RollRandomFloatInRange( worldMinZ + ( height * 0.5f ), worldMaxZ - ( height * 0.5f ) );
+		
+		Vec3 start( centerX, centerY, centerZ - ( height * 0.5f ) );
+		Vec3 end( centerX, centerY, centerZ + ( height * 0.5f ) );
+
+		TestShapeZCylinder* shape = new TestShapeZCylinder( start, end, radius );
+		m_testCylinders[shapeIndex] = shape;
 	}
 }
