@@ -56,8 +56,8 @@ void Actor::Render() const
 		static_cast<unsigned char>( m_color.b + ( 255 - m_color.b ) * 0.7f ),
 		255 );
 
-	AddVertsForCylinder3D( solidCylinderVerts, cylinderStart, cylinderEnd, m_physicsRadius, m_color );
-	AddVertsForCylinder3D( wireCylinderVerts, cylinderStart, cylinderEnd, m_physicsRadius, lighterColor );
+	AddVertsForCylinderZ3D( solidCylinderVerts, cylinderStart, cylinderEnd, m_physicsRadius, m_color );
+	AddVertsForCylinderZ3D( wireCylinderVerts, cylinderStart, cylinderEnd, m_physicsRadius, lighterColor );
 
 	Mat44 modelMatrix = GetModelMatrix();
 

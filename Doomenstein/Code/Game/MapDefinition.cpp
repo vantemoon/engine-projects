@@ -41,7 +41,7 @@ void MapDefinition::InitializeDefinitions()
 		char const* shaderText = mapDefElement->Attribute( "shader" );
 		if ( shaderText != nullptr )
 		{
-			newMapDef.m_shader = g_engine->m_renderer->CreateOrGetShader( shaderText );
+			newMapDef.m_shader = g_engine->m_renderer->CreateOrGetShader( shaderText, VertexType::VERTEX_PCUTBN );
 		}
 
 		char const* spriteSheetTextureText = mapDefElement->Attribute( "spriteSheetTexture" );
