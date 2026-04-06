@@ -181,12 +181,30 @@ void Game3DShapes::Render() const
 		}
 	}
 
+	// World axes at origin
 	float axisRadius = 0.03f;
 	int axisSlices = 16;
 	Vec3 origin = Vec3::ZERO;
 	AddVertsForArrow3D( wireframeVerts, origin, Vec3( 1.f, 0.f, 0.f ), axisRadius, Rgba8::RED, axisSlices );
 	AddVertsForArrow3D( wireframeVerts, origin, Vec3( 0.f, 1.f, 0.f ), axisRadius, Rgba8::GREEN, axisSlices );
 	AddVertsForArrow3D( wireframeVerts, origin, Vec3( 0.f, 0.f, 1.f ), axisRadius, Rgba8::BLUE, axisSlices );
+
+	// World-aligned axes in front of camera
+	Vec3 cameraPos = m_worldCamera->GetPosition();
+	Vec3 cameraFwd = m_worldCamera->GetOrientation().GetForwardDir_IFwd_JLeft_KUp();
+	if ( cameraFwd.GetLengthSquared() > 0.f )
+	{
+		cameraFwd = cameraFwd.GetNormalized();
+	}
+
+	float cameraAxesOffset = 0.2f;
+	float cameraAxesLength = 0.01f;
+	float cameraAxesRadius = 0.0008f;
+
+	Vec3 cameraAxesOrigin = cameraPos + ( cameraFwd * cameraAxesOffset );
+	AddVertsForArrow3D( wireframeVerts, cameraAxesOrigin, cameraAxesOrigin + Vec3( cameraAxesLength, 0.f, 0.f ), cameraAxesRadius, Rgba8::RED, axisSlices );
+	AddVertsForArrow3D( wireframeVerts, cameraAxesOrigin, cameraAxesOrigin + Vec3( 0.f, cameraAxesLength, 0.f ), cameraAxesRadius, Rgba8::GREEN, axisSlices );
+	AddVertsForArrow3D( wireframeVerts, cameraAxesOrigin, cameraAxesOrigin + Vec3( 0.f, 0.f, cameraAxesLength ), cameraAxesRadius, Rgba8::BLUE, axisSlices );
 
 	Texture* texture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/Test_StbiFlippedAndOpenGL.png" );
 	g_engine->m_renderer->BindTexture( texture );
