@@ -4,6 +4,7 @@
 #include "Game/TestShapeAABB3D.hpp"
 #include "Game/TestShapeSphere.hpp"
 #include "Game/TestShapeZCylinder.hpp"
+#include <vector>
 
 
 //-----------------------------------------------------------------------------------------------
@@ -17,6 +18,11 @@ public:
 	TestShapeSphere*	m_testSpheres[NUM_SHAPE_PER_TYPE] = {};
 	TestShapeZCylinder* m_testCylinders[NUM_SHAPE_PER_TYPE] = {};
 
+	bool                m_isUsingCameraAsRefPoint = true;
+	std::vector<Vec3>	m_nearestPointsToCamera;
+	std::vector<Vec3>	m_nearestPointsToRefPoint;
+	Vec3				m_nearestPoint = Vec3::ZERO;
+
 	Game3DShapes();
 	~Game3DShapes();
 
@@ -29,4 +35,8 @@ private:
 	void GenerateRandomAABBs();
 	void GenerateRandomSpheres();
 	void GenerateRandomCylinders();
+
+	void GetNearestPoints();
+	void GetNearestPointsToCamera();
+	void GetNearestPointsToRefPoint();
 };

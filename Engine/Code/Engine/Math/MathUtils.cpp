@@ -797,6 +797,45 @@ Vec2 GetNearestPointOnTriangle2D( Vec2 const& referencePos, Vec2 const& ccw0, Ve
 
 
 //-----------------------------------------------------------------------------------------------
+Vec3 GetNearestPointOnAABB3D( Vec3 const& referencePos, Vec3 const& mins, Vec3 const& maxs )
+{
+	float clampedX = GetClamped( referencePos.x, mins.x, maxs.x );
+	float clampedY = GetClamped( referencePos.y, mins.y, maxs.y );
+	float clampedZ = GetClamped( referencePos.z, mins.z, maxs.z );
+	Vec3 nearestPoint( clampedX, clampedY, clampedZ );
+	return nearestPoint;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+Vec3 GetNearestPointOnSphere3D( Vec3 const& referencePos, Vec3 const& sphereCenter, float sphereRadius )
+{
+	Vec3 toReference = referencePos - sphereCenter;
+	float distanceSquared = toReference.GetLengthSquared();
+	float radiusSquared = sphereRadius * sphereRadius;
+
+	if ( distanceSquared <= radiusSquared )
+	{
+		return referencePos;
+	}
+
+	Vec3 direction = toReference.GetNormalized();
+	Vec3 nearestPoint = sphereCenter + ( direction * sphereRadius );
+	return nearestPoint;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+Vec3 GetNearestPointOnCylinderZ3D( Vec3 const& referencePos, Vec2 const& cylinderBaseCenter, float cylinderMinZ, float cylinderMaxZ, float cylinderRadius )
+{
+	Vec2 referenceXY( referencePos.x, referencePos.y );
+	Vec2 nearestXY = GetNearestPointOnDisc2D( referenceXY, cylinderBaseCenter, cylinderRadius );
+	float nearestZ = GetClamped( referencePos.z, cylinderMinZ, cylinderMaxZ );
+	return Vec3( nearestXY.x, nearestXY.y, nearestZ );
+}
+
+
+//-----------------------------------------------------------------------------------------------
 float NormalizeByte( unsigned char byteValue )
 {
 	float normalizedValue = static_cast<float>( byteValue ) / 255.f;

@@ -45,6 +45,7 @@ void Game3DShapes::Update( float deltaSeconds )
 	m_screenCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) );
 
 	UpdateFromKeyboard( deltaSeconds );
+	GetNearestPoints();
 	Render();
 }
 
@@ -133,6 +134,7 @@ void Game3DShapes::Render() const
 	g_engine->m_renderer->SetRasterizerMode( RasterizerMode::SOLID_CULL_BACK );
 	g_engine->m_renderer->SetBlendMode( BlendMode::OPAQUE );
 
+	std::vector<Vertex> verts;
 	std::vector<Vertex> wireframeVerts;
 	std::vector<Vertex> solidVerts;
 
@@ -185,11 +187,11 @@ void Game3DShapes::Render() const
 	float axisRadius = 0.03f;
 	int axisSlices = 16;
 	Vec3 origin = Vec3::ZERO;
-	AddVertsForArrow3D( wireframeVerts, origin, Vec3( 1.f, 0.f, 0.f ), axisRadius, Rgba8::RED, axisSlices );
-	AddVertsForArrow3D( wireframeVerts, origin, Vec3( 0.f, 1.f, 0.f ), axisRadius, Rgba8::GREEN, axisSlices );
-	AddVertsForArrow3D( wireframeVerts, origin, Vec3( 0.f, 0.f, 1.f ), axisRadius, Rgba8::BLUE, axisSlices );
+	AddVertsForArrow3D( verts, origin, Vec3( 1.f, 0.f, 0.f ), axisRadius, Rgba8::RED, axisSlices );
+	AddVertsForArrow3D( verts, origin, Vec3( 0.f, 1.f, 0.f ), axisRadius, Rgba8::GREEN, axisSlices );
+	AddVertsForArrow3D( verts, origin, Vec3( 0.f, 0.f, 1.f ), axisRadius, Rgba8::BLUE, axisSlices );
 
-	// World-aligned axes in front of camera
+	// World axes in front of camera
 	Vec3 cameraPos = m_worldCamera->GetPosition();
 	Vec3 cameraFwd = m_worldCamera->GetOrientation().GetForwardDir_IFwd_JLeft_KUp();
 	if ( cameraFwd.GetLengthSquared() > 0.f )
@@ -202,16 +204,38 @@ void Game3DShapes::Render() const
 	float cameraAxesRadius = 0.0008f;
 
 	Vec3 cameraAxesOrigin = cameraPos + ( cameraFwd * cameraAxesOffset );
-	AddVertsForArrow3D( wireframeVerts, cameraAxesOrigin, cameraAxesOrigin + Vec3( cameraAxesLength, 0.f, 0.f ), cameraAxesRadius, Rgba8::RED, axisSlices );
-	AddVertsForArrow3D( wireframeVerts, cameraAxesOrigin, cameraAxesOrigin + Vec3( 0.f, cameraAxesLength, 0.f ), cameraAxesRadius, Rgba8::GREEN, axisSlices );
-	AddVertsForArrow3D( wireframeVerts, cameraAxesOrigin, cameraAxesOrigin + Vec3( 0.f, 0.f, cameraAxesLength ), cameraAxesRadius, Rgba8::BLUE, axisSlices );
+	AddVertsForArrow3D( verts, cameraAxesOrigin, cameraAxesOrigin + Vec3( cameraAxesLength, 0.f, 0.f ), cameraAxesRadius, Rgba8::RED, axisSlices );
+	AddVertsForArrow3D( verts, cameraAxesOrigin, cameraAxesOrigin + Vec3( 0.f, cameraAxesLength, 0.f ), cameraAxesRadius, Rgba8::GREEN, axisSlices );
+	AddVertsForArrow3D( verts, cameraAxesOrigin, cameraAxesOrigin + Vec3( 0.f, 0.f, cameraAxesLength ), cameraAxesRadius, Rgba8::BLUE, axisSlices );
 
+	// Nearest points
+	if ( m_isUsingCameraAsRefPoint )
+	{
+		for ( int pointIndex = 0; pointIndex < static_cast<int>( m_nearestPointsToCamera.size() ); ++pointIndex )
+		{
+			Vec3 const& nearestPoint = m_nearestPointsToCamera[pointIndex];
+			if ( nearestPoint != m_nearestPoint )
+			{
+				AddVertsForSphere3D( verts, nearestPoint, 0.2f, Rgba8( 255, 165, 0 ) );
+			}
+			else
+			{
+				AddVertsForSphere3D( verts, nearestPoint, 0.2f, Rgba8::GREEN );
+			}
+		}
+	}
+
+	// Shapes
 	Texture* texture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/Test_StbiFlippedAndOpenGL.png" );
 	g_engine->m_renderer->BindTexture( texture );
 	g_engine->m_renderer->DrawVertexArray( solidVerts );
 
 	g_engine->m_renderer->BindTexture( nullptr );
 	g_engine->m_renderer->DrawVertexArray( wireframeVerts );
+
+	// Draw debug verts
+	g_engine->m_renderer->BindTexture( nullptr );
+	g_engine->m_renderer->DrawVertexArray( verts );
 
 	g_engine->m_renderer->SetBlendMode( BlendMode::ALPHA );
 	g_engine->m_renderer->SetRasterizerMode( RasterizerMode::SOLID_CULL_NONE );
@@ -335,5 +359,58 @@ void Game3DShapes::GenerateRandomCylinders()
 
 		TestShapeZCylinder* shape = new TestShapeZCylinder( start, end, radius );
 		m_testCylinders[shapeIndex] = shape;
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game3DShapes::GetNearestPoints()
+{
+	m_nearestPointsToCamera.clear();
+	m_nearestPointsToRefPoint.clear();
+
+	GetNearestPointsToCamera();
+	// GetNearestPointsToRefPoint();
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game3DShapes::GetNearestPointsToCamera()
+{
+	Vec3 cameraPos = m_worldCamera->GetPosition();
+	float nearestPointDistanceSquared = std::numeric_limits<float>::max();
+
+	for ( int shapeIndex = 0; shapeIndex < NUM_SHAPE_PER_TYPE; ++shapeIndex )
+	{
+		TestShapeAABB3D* aabbShape = m_testAABBs[shapeIndex];
+		Vec3 nearestPointToCamera = GetNearestPointOnAABB3D( cameraPos, aabbShape->m_alignedBox.m_mins, aabbShape->m_alignedBox.m_maxs );
+		float nearestPointDistanceToCameraSquared = GetDistanceSquared3D( cameraPos, nearestPointToCamera );
+		if ( nearestPointDistanceToCameraSquared < nearestPointDistanceSquared )
+		{
+			nearestPointDistanceSquared = nearestPointDistanceToCameraSquared;
+			m_nearestPoint = nearestPointToCamera;
+		}
+		m_nearestPointsToCamera.push_back( nearestPointToCamera );
+
+		TestShapeSphere* sphereShape = m_testSpheres[shapeIndex];
+		nearestPointToCamera = GetNearestPointOnSphere3D( cameraPos, sphereShape->m_center, sphereShape->m_radius );
+		nearestPointDistanceToCameraSquared = GetDistanceSquared3D( cameraPos, nearestPointToCamera );
+		if ( nearestPointDistanceToCameraSquared < nearestPointDistanceSquared )
+		{
+			nearestPointDistanceSquared = nearestPointDistanceToCameraSquared;
+			m_nearestPoint = nearestPointToCamera;
+		}
+		m_nearestPointsToCamera.push_back( nearestPointToCamera );
+
+		TestShapeZCylinder* cylinderShape = m_testCylinders[shapeIndex];
+		Vec2 cylinderBaseCenter( cylinderShape->m_start.x, cylinderShape->m_start.y );
+		nearestPointToCamera = GetNearestPointOnCylinderZ3D( cameraPos, cylinderBaseCenter, cylinderShape->m_start.z, cylinderShape->m_end.z, cylinderShape->m_radius );
+		nearestPointDistanceToCameraSquared = GetDistanceSquared3D( cameraPos, nearestPointToCamera );
+		if ( nearestPointDistanceToCameraSquared < nearestPointDistanceSquared )
+		{
+			nearestPointDistanceSquared = nearestPointDistanceToCameraSquared;
+			m_nearestPoint = nearestPointToCamera;
+		}
+		m_nearestPointsToCamera.push_back( nearestPointToCamera );
 	}
 }

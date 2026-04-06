@@ -103,6 +103,9 @@ Vec2 GetNearestPointOnInfiniteLine2D( Vec2 const& referencePos, Vec2 const& poin
 Vec2 GetNearestPointOnLineSegment2D( Vec2 const& referencePos, Vec2 const& start, Vec2 const& end );
 Vec2 GetNearestPointOnCapsule2D( Vec2 const& referencePos, Vec2 const& boneStart, Vec2 const& boneEnd, float radius );
 Vec2 GetNearestPointOnTriangle2D( Vec2 const& referencePos, Vec2 const& ccw0, Vec2 const& ccw1, Vec2 const& ccw2 );
+Vec3 GetNearestPointOnAABB3D( Vec3 const& referencePos, Vec3 const& mins, Vec3 const& maxs );
+Vec3 GetNearestPointOnSphere3D( Vec3 const& referencePos, Vec3 const& sphereCenter, float sphereRadius );
+Vec3 GetNearestPointOnCylinderZ3D( Vec3 const& referencePos, Vec2 const& cylinderBaseCenter, float cylinderMinZ, float cylinderMaxZ, float cylinderRadius );
 
 //-----------------------------------------------------------------------------------------------
 // Normalized byte conversions
