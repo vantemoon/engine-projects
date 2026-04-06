@@ -4,6 +4,7 @@
 #include "Game/TestShapeAABB3D.hpp"
 #include "Game/TestShapeSphere.hpp"
 #include "Game/TestShapeZCylinder.hpp"
+#include "Engine/Core/Timer.hpp"
 #include <vector>
 
 
@@ -23,6 +24,8 @@ public:
 	std::vector<Vec3>	m_nearestPointsToRefPoint;
 	Vec3				m_nearestPoint = Vec3::ZERO;
 
+	Timer*				m_overlapPulseTimer = nullptr;
+
 	Game3DShapes();
 	~Game3DShapes();
 
@@ -39,4 +42,6 @@ private:
 	void GetNearestPoints();
 	void GetNearestPointsToCamera();
 	void GetNearestPointsToRefPoint();
+
+	void CheckIfShapesOverlap();
 };

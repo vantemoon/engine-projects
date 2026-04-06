@@ -1,8 +1,10 @@
 #include "Game/Game3DShapes.hpp"
 #include "Game/GameCommon.hpp"
+#include "Engine/Core/Clock.hpp"
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/Vertex.hpp"
 #include "Engine/Core/VertexUtils.hpp"
+#include "Engine/Math/FloatRange.hpp"
 #include "Engine/Math/Mat44.hpp"
 #include "Engine/Math/MathUtils.hpp"
 #include "Engine/Math/RandomNumberGenerator.hpp"
@@ -15,6 +17,9 @@
 //-----------------------------------------------------------------------------------------------
 Game3DShapes::Game3DShapes()
 {
+	m_overlapPulseTimer = new Timer( 0.6 );
+	m_overlapPulseTimer->Start();
+
 	GenerateRandomShapes();
 
 	Vec3 worldCameraPos = Vec3( -2.f, 2.f, 1.f );
@@ -26,6 +31,8 @@ Game3DShapes::Game3DShapes()
 //-----------------------------------------------------------------------------------------------
 Game3DShapes::~Game3DShapes()
 {
+	delete m_overlapPulseTimer;
+	m_overlapPulseTimer = nullptr;
 }
 
 
@@ -45,6 +52,7 @@ void Game3DShapes::Update( float deltaSeconds )
 	m_screenCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) );
 
 	UpdateFromKeyboard( deltaSeconds );
+	CheckIfShapesOverlap();
 	GetNearestPoints();
 	Render();
 }
@@ -144,12 +152,12 @@ void Game3DShapes::Render() const
 		if ( shapeIndex % 2 == 0 ) // Wireframe
 		{
 			TestShapeAABB3D* shape = m_testAABBs[shapeIndex];
-			AddVertsForAABBWireframe3D( wireframeVerts, shape->m_alignedBox, Rgba8::WHITE );
+			AddVertsForAABBWireframe3D( wireframeVerts, shape->m_alignedBox, shape->m_color );
 		}
 		else // Solid
 		{
 			TestShapeAABB3D* shape = m_testAABBs[shapeIndex];
-			AddVertsForAABB3D( solidVerts, shape->m_alignedBox, Rgba8::WHITE, AABB2::ZERO_TO_ONE );
+			AddVertsForAABB3D( solidVerts, shape->m_alignedBox, shape->m_color, AABB2::ZERO_TO_ONE );
 		}
 	}
 
@@ -159,12 +167,12 @@ void Game3DShapes::Render() const
 		if ( shapeIndex % 2 == 0 ) // Wireframe
 		{
 			TestShapeSphere* shape = m_testSpheres[shapeIndex];
-			AddVertsForSphereWireframe3D( wireframeVerts, shape->m_center, shape->m_radius, Rgba8::WHITE, AABB2::ZERO_TO_ONE, 16, 8 );
+			AddVertsForSphereWireframe3D( wireframeVerts, shape->m_center, shape->m_radius, shape->m_color, 16, 8 );
 		}
 		else // Solid
 		{
 			TestShapeSphere* shape = m_testSpheres[shapeIndex];
-			AddVertsForSphere3D( solidVerts, shape->m_center, shape->m_radius, Rgba8::WHITE, AABB2::ZERO_TO_ONE, 16, 8 );
+			AddVertsForSphere3D( solidVerts, shape->m_center, shape->m_radius, shape->m_color, AABB2::ZERO_TO_ONE, 16, 8 );
 		}
 	}
 
@@ -174,12 +182,12 @@ void Game3DShapes::Render() const
 		if ( shapeIndex % 2 == 0 ) // Wireframe
 		{
 			TestShapeZCylinder* shape = m_testCylinders[shapeIndex];
-			AddVertsForCylinderZWireframe3D( wireframeVerts, shape->m_start, shape->m_end, shape->m_radius, Rgba8::WHITE, AABB2::ZERO_TO_ONE, 16 );
+			AddVertsForCylinderZWireframe3D( wireframeVerts, shape->m_start, shape->m_end, shape->m_radius, shape->m_color, 16 );
 		}
 		else // Solid
 		{
 			TestShapeZCylinder* shape = m_testCylinders[shapeIndex];
-			AddVertsForCylinderZ3D( solidVerts, shape->m_start, shape->m_end, shape->m_radius, Rgba8::WHITE, AABB2::ZERO_TO_ONE, 16 );
+			AddVertsForCylinderZ3D( solidVerts, shape->m_start, shape->m_end, shape->m_radius, shape->m_color, AABB2::ZERO_TO_ONE, 16 );
 		}
 	}
 
@@ -334,6 +342,7 @@ void Game3DShapes::GenerateRandomSpheres()
 void Game3DShapes::GenerateRandomCylinders()
 {
 	RandomNumberGenerator rng;
+
 	float worldHalfSize = 30.f;
 	float worldMinX = -worldHalfSize;
 	float worldMaxX = worldHalfSize;
@@ -341,11 +350,15 @@ void Game3DShapes::GenerateRandomCylinders()
 	float worldMaxY = worldHalfSize;
 	float worldMinZ = -worldHalfSize;
 	float worldMaxZ = worldHalfSize;
+
 	float worldSpan = worldHalfSize * 2.f;
+
 	float minRadius = 1.5f;
 	float maxRadius = GetClamped( 6.f, minRadius, worldSpan * 0.5f );
+
 	float minHeight = 3.f;
 	float maxHeight = GetClamped( 10.f, minHeight, worldSpan );
+
 	for ( int shapeIndex = 0; shapeIndex < NUM_SHAPE_PER_TYPE; ++shapeIndex )
 	{
 		float radius = rng.RollRandomFloatInRange( minRadius, maxRadius );
@@ -369,8 +382,8 @@ void Game3DShapes::GetNearestPoints()
 	m_nearestPointsToCamera.clear();
 	m_nearestPointsToRefPoint.clear();
 
-	GetNearestPointsToCamera();
-	// GetNearestPointsToRefPoint();
+	if ( m_isUsingCameraAsRefPoint ) GetNearestPointsToCamera();
+	else GetNearestPointsToRefPoint();
 }
 
 
@@ -412,5 +425,227 @@ void Game3DShapes::GetNearestPointsToCamera()
 			m_nearestPoint = nearestPointToCamera;
 		}
 		m_nearestPointsToCamera.push_back( nearestPointToCamera );
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game3DShapes::GetNearestPointsToRefPoint()
+{
+	float nearestPointDistanceSquared = std::numeric_limits<float>::max();
+
+	for ( int shapeIndex = 0; shapeIndex < NUM_SHAPE_PER_TYPE; ++shapeIndex )
+	{
+		TestShapeAABB3D* aabbShape = m_testAABBs[shapeIndex];
+		Vec3 nearestPointToRefPoint = GetNearestPointOnAABB3D( m_nearestPoint, aabbShape->m_alignedBox.m_mins, aabbShape->m_alignedBox.m_maxs );
+		float nearestPointDistanceToRefPointSquared = GetDistanceSquared3D( m_nearestPoint, nearestPointToRefPoint );
+		if ( nearestPointDistanceToRefPointSquared < nearestPointDistanceSquared )
+		{
+			nearestPointDistanceSquared = nearestPointDistanceToRefPointSquared;
+			m_nearestPoint = nearestPointToRefPoint;
+		}
+		m_nearestPointsToRefPoint.push_back( nearestPointToRefPoint );
+
+		TestShapeSphere* sphereShape = m_testSpheres[shapeIndex];
+		nearestPointToRefPoint = GetNearestPointOnSphere3D( m_nearestPoint, sphereShape->m_center, sphereShape->m_radius );
+		nearestPointDistanceToRefPointSquared = GetDistanceSquared3D( m_nearestPoint, nearestPointToRefPoint );
+		if ( nearestPointDistanceToRefPointSquared < nearestPointDistanceSquared )
+		{
+			nearestPointDistanceSquared = nearestPointDistanceToRefPointSquared;
+			m_nearestPoint = nearestPointToRefPoint;
+		}
+		m_nearestPointsToRefPoint.push_back( nearestPointToRefPoint );
+
+		TestShapeZCylinder* cylinderShape = m_testCylinders[shapeIndex];
+		Vec2 cylinderBaseCenter( cylinderShape->m_start.x, cylinderShape->m_start.y );
+		nearestPointToRefPoint = GetNearestPointOnCylinderZ3D( m_nearestPoint, cylinderBaseCenter, cylinderShape->m_start.z, cylinderShape->m_end.z, cylinderShape->m_radius );
+		nearestPointDistanceToRefPointSquared = GetDistanceSquared3D( m_nearestPoint, nearestPointToRefPoint );
+		if ( nearestPointDistanceToRefPointSquared < nearestPointDistanceSquared )
+		{
+			nearestPointDistanceSquared = nearestPointDistanceToRefPointSquared;
+			m_nearestPoint = nearestPointToRefPoint;
+		}
+		m_nearestPointsToRefPoint.push_back( nearestPointToRefPoint );
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game3DShapes::CheckIfShapesOverlap()
+{
+	if ( m_overlapPulseTimer == nullptr )
+	{
+		return;
+	}
+
+	if ( m_overlapPulseTimer->IsStopped() )
+	{
+		m_overlapPulseTimer->Start();
+	}
+
+	m_overlapPulseTimer->DecrementPeriodIfElapsed();
+
+	float pulse = SinDegrees( static_cast<float>( m_overlapPulseTimer->GetElapsedFraction() * 360.0 ) );
+	float pulseBrightness = 0.7f + ( 0.3f * pulse );
+	Rgba8 darkBlue( 50, 80, 150, 255 );
+
+	// AABBs
+	for ( int aabbIndex = 0; aabbIndex < NUM_SHAPE_PER_TYPE; ++aabbIndex )
+	{
+		TestShapeAABB3D* aabbShape = m_testAABBs[aabbIndex];
+		bool isOverlapping = false;
+
+		for ( int otherAabbIndex = 0; otherAabbIndex < NUM_SHAPE_PER_TYPE && !isOverlapping; ++otherAabbIndex )
+		{
+			if ( otherAabbIndex == aabbIndex )
+			{
+				continue;
+			}
+
+			if ( DoAABBsOverlap3D( aabbShape->m_alignedBox, m_testAABBs[otherAabbIndex]->m_alignedBox ) )
+			{
+				isOverlapping = true;
+			}
+		}
+
+		for ( int sphereIndex = 0; sphereIndex < NUM_SHAPE_PER_TYPE && !isOverlapping; ++sphereIndex )
+		{
+			TestShapeSphere* sphere = m_testSpheres[sphereIndex];
+			if ( DoSphereAndAABBOverlap3D( sphere->m_center, sphere->m_radius, aabbShape->m_alignedBox ) )
+			{
+				isOverlapping = true;
+			}
+		}
+
+		for ( int cylinderIndex = 0; cylinderIndex < NUM_SHAPE_PER_TYPE && !isOverlapping; ++cylinderIndex )
+		{
+			TestShapeZCylinder* cylinder = m_testCylinders[cylinderIndex];
+			Vec2 cylinderCenterXY( cylinder->m_start.x, cylinder->m_start.y );
+			float minZ = ( cylinder->m_start.z < cylinder->m_end.z ) ? cylinder->m_start.z : cylinder->m_end.z;
+			float maxZ = ( cylinder->m_start.z > cylinder->m_end.z ) ? cylinder->m_start.z : cylinder->m_end.z;
+			FloatRange cylinderMinZMaxZ( minZ, maxZ );
+
+			if ( DoZCylinderAndAABBOverlap3D( cylinderCenterXY, cylinder->m_radius, cylinderMinZMaxZ, aabbShape->m_alignedBox ) )
+			{
+				isOverlapping = true;
+			}
+		}
+
+		Rgba8 defaultColor = ( ( aabbIndex % 2 ) == 0 ) ? darkBlue : Rgba8::WHITE;
+		Rgba8 overlapColor(
+			static_cast<unsigned char>( static_cast<float>( defaultColor.r ) * pulseBrightness ),
+			static_cast<unsigned char>( static_cast<float>( defaultColor.g ) * pulseBrightness ),
+			static_cast<unsigned char>( static_cast<float>( defaultColor.b ) * pulseBrightness ),
+			defaultColor.a );
+		aabbShape->m_color = isOverlapping ? overlapColor : defaultColor;
+
+	}
+
+	// Spheres
+	for ( int sphereIndex = 0; sphereIndex < NUM_SHAPE_PER_TYPE; ++sphereIndex )
+	{
+		TestShapeSphere* sphere = m_testSpheres[sphereIndex];
+		bool isOverlapping = false;
+
+		for ( int otherSphereIndex = 0; otherSphereIndex < NUM_SHAPE_PER_TYPE && !isOverlapping; ++otherSphereIndex )
+		{
+			if ( otherSphereIndex == sphereIndex )
+			{
+				continue;
+			}
+
+			TestShapeSphere* otherSphere = m_testSpheres[otherSphereIndex];
+			if ( DoSpheresOverlap3D( sphere->m_center, sphere->m_radius, otherSphere->m_center, otherSphere->m_radius ) )
+			{
+				isOverlapping = true;
+			}
+		}
+
+		for ( int aabbIndex = 0; aabbIndex < NUM_SHAPE_PER_TYPE && !isOverlapping; ++aabbIndex )
+		{
+			if ( DoSphereAndAABBOverlap3D( sphere->m_center, sphere->m_radius, m_testAABBs[aabbIndex]->m_alignedBox ) )
+			{
+				isOverlapping = true;
+			}
+		}
+
+		for ( int cylinderIndex = 0; cylinderIndex < NUM_SHAPE_PER_TYPE && !isOverlapping; ++cylinderIndex )
+		{
+			TestShapeZCylinder* cylinder = m_testCylinders[cylinderIndex];
+			Vec2 cylinderCenterXY( cylinder->m_start.x, cylinder->m_start.y );
+			float minZ = ( cylinder->m_start.z < cylinder->m_end.z ) ? cylinder->m_start.z : cylinder->m_end.z;
+			float maxZ = ( cylinder->m_start.z > cylinder->m_end.z ) ? cylinder->m_start.z : cylinder->m_end.z;
+			FloatRange cylinderMinZMaxZ( minZ, maxZ );
+
+			if ( DoZCylinderAndSphereOverlap3D( cylinderCenterXY, cylinder->m_radius, cylinderMinZMaxZ, sphere->m_center, sphere->m_radius ) )
+			{
+				isOverlapping = true;
+			}
+		}
+
+		Rgba8 defaultColor = ( ( sphereIndex % 2 ) == 0 ) ? darkBlue : Rgba8::WHITE;
+		Rgba8 overlapColor(
+			static_cast<unsigned char>( static_cast<float>( defaultColor.r ) * pulseBrightness ),
+			static_cast<unsigned char>( static_cast<float>( defaultColor.g ) * pulseBrightness ),
+			static_cast<unsigned char>( static_cast<float>( defaultColor.b ) * pulseBrightness ),
+			defaultColor.a );
+		sphere->m_color = isOverlapping ? overlapColor : defaultColor;
+
+	}
+
+	// Cylinders
+	for ( int cylinderIndex = 0; cylinderIndex < NUM_SHAPE_PER_TYPE; ++cylinderIndex )
+	{
+		TestShapeZCylinder* cylinder = m_testCylinders[cylinderIndex];
+		Vec2 cylinderCenterXY( cylinder->m_start.x, cylinder->m_start.y );
+		float minZ = ( cylinder->m_start.z < cylinder->m_end.z ) ? cylinder->m_start.z : cylinder->m_end.z;
+		float maxZ = ( cylinder->m_start.z > cylinder->m_end.z ) ? cylinder->m_start.z : cylinder->m_end.z;
+		FloatRange cylinderMinZMaxZ( minZ, maxZ );
+
+		bool isOverlapping = false;
+
+		for ( int otherCylinderIndex = 0; otherCylinderIndex < NUM_SHAPE_PER_TYPE && !isOverlapping; ++otherCylinderIndex )
+		{
+			if ( otherCylinderIndex == cylinderIndex )
+			{
+				continue;
+			}
+
+			TestShapeZCylinder* otherCylinder = m_testCylinders[otherCylinderIndex];
+			Vec2 otherCenterXY( otherCylinder->m_start.x, otherCylinder->m_start.y );
+			float otherMinZ = ( otherCylinder->m_start.z < otherCylinder->m_end.z ) ? otherCylinder->m_start.z : otherCylinder->m_end.z;
+			float otherMaxZ = ( otherCylinder->m_start.z > otherCylinder->m_end.z ) ? otherCylinder->m_start.z : otherCylinder->m_end.z;
+			FloatRange otherMinZMaxZ( otherMinZ, otherMaxZ );
+
+			if ( DoZCylindersOverlap3D( cylinderCenterXY, cylinder->m_radius, cylinderMinZMaxZ, otherCenterXY, otherCylinder->m_radius, otherMinZMaxZ ) )
+			{
+				isOverlapping = true;
+			}
+		}
+
+		for ( int aabbIndex = 0; aabbIndex < NUM_SHAPE_PER_TYPE && !isOverlapping; ++aabbIndex )
+		{
+			if ( DoZCylinderAndAABBOverlap3D( cylinderCenterXY, cylinder->m_radius, cylinderMinZMaxZ, m_testAABBs[aabbIndex]->m_alignedBox ) )
+			{
+				isOverlapping = true;
+			}
+		}
+
+		for ( int sphereIndex = 0; sphereIndex < NUM_SHAPE_PER_TYPE && !isOverlapping; ++sphereIndex )
+		{
+			TestShapeSphere* sphere = m_testSpheres[sphereIndex];
+			if ( DoZCylinderAndSphereOverlap3D( cylinderCenterXY, cylinder->m_radius, cylinderMinZMaxZ, sphere->m_center, sphere->m_radius ) )
+			{
+				isOverlapping = true;
+			}
+		}
+
+		Rgba8 defaultColor = ( ( cylinderIndex % 2 ) == 0 ) ? darkBlue : Rgba8::WHITE;
+		Rgba8 overlapColor(
+			static_cast<unsigned char>( static_cast<float>( defaultColor.r ) * pulseBrightness ),
+			static_cast<unsigned char>( static_cast<float>( defaultColor.g ) * pulseBrightness ),
+			static_cast<unsigned char>( static_cast<float>( defaultColor.b ) * pulseBrightness ),
+			defaultColor.a );
+		cylinder->m_color = isOverlapping ? overlapColor : defaultColor;
 	}
 }

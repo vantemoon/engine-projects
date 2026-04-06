@@ -5,6 +5,8 @@
 //-----------------------------------------------------------------------------------------------
 // Forward type declarations
 struct AABB2;
+struct AABB3;
+struct FloatRange;
 struct OBB2;
 struct IntVec2;
 struct Mat44;
@@ -70,6 +72,12 @@ Vec2 const GetProjectedVector2D( Vec2 const& vectorToProject, Vec2 const& vector
 bool DoDiscsOverlap( Vec2 const& centerA, float radiusA, Vec2 const& centerB, float radiusB );
 bool DoSpheresOverlap( Vec3 const& centerA, float radiusA, Vec3 const& centerB, float radiusB );
 bool DoAABBsOverlap( AABB2 const& alignedBoxA, AABB2 const& alignedBoxB );
+bool DoAABBsOverlap3D( AABB3 const& first, AABB3 const& second );
+bool DoSpheresOverlap3D( Vec3 const& centerA, float radiusA, Vec3 const& centerB, float radiusB );
+bool DoZCylindersOverlap3D( Vec2 cylinder1CenterXY, float cylinder1Radius, FloatRange cylinder1MinZMaxZ, Vec2 cylinder2CenterXY, float cylinder2Radius, FloatRange cylinder2MinZMaxZ );
+bool DoSphereAndAABBOverlap3D( Vec3 const& sphereCenter, float sphereRadius, AABB3 const& box);
+bool DoZCylinderAndAABBOverlap3D( Vec2 cylinderCenterXY, float cylinderRadius, FloatRange cylinderMinZMaxZ, AABB3 const& box );
+bool DoZCylinderAndSphereOverlap3D( Vec2 cylinderCenterXY, float cylinderRadius, FloatRange cylinderMinZMaxZ, Vec3 const& sphereCenter, float sphereRadius );
 bool PushDiscOutOfFixedPoint2D( Vec2& mobileDiscCenter, float mobileDiscRadius, Vec2 const& fixedPoint );
 bool PushDiscOutOfFixedDisc2D( Vec2& mobileDiscCenter, float mobileDiscRadius, Vec2 const& fixedDiscCenter, float fixedDiscRadius );
 bool PushDiscsOutOfEachOther2D( Vec2& aCenter, float aRadius, Vec2& bCenter, float bRadius );
@@ -91,7 +99,6 @@ bool IsPointInsideAABB2D( Vec2 const& point, AABB2 const& alignedBox );
 bool IsPointInsideOBB2D( Vec2 const& point, OBB2 const& orientedBox );
 bool IsPointInsideCapsule2D( Vec2 const& point, Vec2 const& boneStart, Vec2 const& boneEnd, float radius );
 bool IsPointInsideTriangle2D( Vec2 const& point, Vec2 const& ccw0, Vec2 const& ccw1, Vec2 const& ccw2 );
-
 bool IsPointInsideCylinderZ3D( Vec3 const& point, Vec2 const& cylinderBaseCenter, float cylinderMinZ, float cylinderMaxZ, float cylinderRadius );
 
 //-----------------------------------------------------------------------------------------------

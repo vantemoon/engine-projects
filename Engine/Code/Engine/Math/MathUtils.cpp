@@ -1,5 +1,7 @@
 #include "Engine/Math/MathUtils.hpp"
 #include "Engine/Math/AABB2.hpp"
+#include "Engine/Math/AABB3.hpp"
+#include "Engine/Math/FloatRange.hpp"
 #include "Engine/Math/IntVec2.hpp"
 #include "Engine/Math/Mat44.hpp"
 #include "Engine/Math/OBB2.hpp"
@@ -350,6 +352,70 @@ bool DoAABBsOverlap( AABB2 const& alignedBoxA, AABB2 const& alignedBoxB )
 {
 	bool doOverlap = ( alignedBoxA.m_mins.x < alignedBoxB.m_maxs.x ) && ( alignedBoxA.m_maxs.x > alignedBoxB.m_mins.x ) &&
 					 ( alignedBoxA.m_mins.y < alignedBoxB.m_maxs.y ) && ( alignedBoxA.m_maxs.y > alignedBoxB.m_mins.y );
+	return doOverlap;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool DoAABBsOverlap3D( AABB3 const& first, AABB3 const& second )
+{
+	bool doOverlap = ( first.m_mins.x < second.m_maxs.x ) && ( first.m_maxs.x > second.m_mins.x ) &&
+					 ( first.m_mins.y < second.m_maxs.y ) && ( first.m_maxs.y > second.m_mins.y ) &&
+					 ( first.m_mins.z < second.m_maxs.z ) && ( first.m_maxs.z > second.m_mins.z );
+	return doOverlap;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool DoSpheresOverlap3D( Vec3 const& centerA, float radiusA, Vec3 const& centerB, float radiusB )
+{
+	float radiusSum = radiusA + radiusB;
+	bool doOverlap = GetDistanceSquared3D( centerA, centerB ) < ( radiusSum * radiusSum );
+	return doOverlap;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool DoZCylindersOverlap3D( Vec2 cylinder1CenterXY, float cylinder1Radius, FloatRange cylinder1MinZMaxZ, Vec2 cylinder2CenterXY, float cylinder2Radius, FloatRange cylinder2MinZMaxZ )
+{
+	bool doOverlap = DoDiscsOverlap( cylinder1CenterXY, cylinder1Radius, cylinder2CenterXY, cylinder2Radius ) &&
+					 cylinder1MinZMaxZ.IsOverlappingWith( cylinder2MinZMaxZ );
+	return doOverlap;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool DoSphereAndAABBOverlap3D( Vec3 const& sphereCenter, float sphereRadius, AABB3 const& box )
+{
+	float nearestX = GetClamped( sphereCenter.x, box.m_mins.x, box.m_maxs.x );
+	float nearestY = GetClamped( sphereCenter.y, box.m_mins.y, box.m_maxs.y );
+	float nearestZ = GetClamped( sphereCenter.z, box.m_mins.z, box.m_maxs.z );
+	Vec3 nearestPoint( nearestX, nearestY, nearestZ );
+	bool doOverlap = GetDistanceSquared3D( sphereCenter, nearestPoint ) < ( sphereRadius * sphereRadius );
+	return doOverlap;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool DoZCylinderAndAABBOverlap3D( Vec2 cylinderCenterXY, float cylinderRadius, FloatRange cylinderMinZMaxZ, AABB3 const& box )
+{
+	float nearestX = GetClamped( cylinderCenterXY.x, box.m_mins.x, box.m_maxs.x );
+	float nearestY = GetClamped( cylinderCenterXY.y, box.m_mins.y, box.m_maxs.y );
+	Vec2 nearestPoint( nearestX, nearestY );
+	bool doOverlap = DoDiscsOverlap( cylinderCenterXY, cylinderRadius, nearestPoint, 0.f ) &&
+					 cylinderMinZMaxZ.IsOverlappingWith( FloatRange( box.m_mins.z, box.m_maxs.z ) );
+	return doOverlap;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool DoZCylinderAndSphereOverlap3D( Vec2 cylinderCenterXY, float cylinderRadius, FloatRange cylinderMinZMaxZ, Vec3 const& sphereCenter, float sphereRadius )
+{
+	float nearestX = GetClamped( sphereCenter.x, cylinderCenterXY.x - cylinderRadius, cylinderCenterXY.x + cylinderRadius );
+	float nearestY = GetClamped( sphereCenter.y, cylinderCenterXY.y - cylinderRadius, cylinderCenterXY.y + cylinderRadius );
+	Vec2 nearestPoint( nearestX, nearestY );
+	bool doOverlap = DoDiscsOverlap( cylinderCenterXY, cylinderRadius, nearestPoint, 0.f ) &&
+					 cylinderMinZMaxZ.IsOverlappingWith( FloatRange( sphereCenter.z - sphereRadius, sphereCenter.z + sphereRadius ) );
 	return doOverlap;
 }
 

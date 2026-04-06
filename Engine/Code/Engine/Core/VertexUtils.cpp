@@ -347,10 +347,10 @@ void AddVertsForAABBWireframe3D( std::vector<Vertex>& verts, AABB3 const& bounds
 	if ( sizeY < minSize ) minSize = sizeY;
 	if ( sizeZ < minSize ) minSize = sizeZ;
 
-	float thickness = minSize * 0.02f;
+	float thickness = minSize * 0.01f;
 	if ( thickness <= 0.f )
 	{
-		thickness = 0.02f;
+		thickness = 0.01f;
 	}
 
 	AddVertsForLineSegment3D( verts, bottomLeftFront, bottomRightFront, thickness, color );
@@ -440,17 +440,17 @@ void AddVertsForSphere3D( std::vector<Vertex>& verts, Vec3 const& center, float 
 
 
 //-----------------------------------------------------------------------------------------------
-void AddVertsForSphereWireframe3D( std::vector<Vertex>& verts, Vec3 const& center, float radius, Rgba8 const& color, [[maybe_unused]] AABB2 const& UVs, int numSlices, int numStacks )
+void AddVertsForSphereWireframe3D( std::vector<Vertex>& verts, Vec3 const& center, float radius, Rgba8 const& color, int numSlices, int numStacks )
 {
 	if ( numSlices <= 0 || numStacks <= 0 || radius <= 0.f )
 	{
 		return;
 	}
 
-	float thickness = radius * 0.02f;
+	float thickness = radius * 0.01f;
 	if ( thickness <= 0.f )
 	{
-		thickness = 0.02f;
+		thickness = 0.01f;
 	}
 
 	float degreesPerStack = 180.f / static_cast< float >( numStacks );
@@ -605,6 +605,7 @@ void AddvertsForXYGrid3D( std::vector<Vertex>& verts, Vec3 const& center, float 
 }
 
 
+//-----------------------------------------------------------------------------------------------
 void AddVertsForCylinderZ3D( std::vector<Vertex>& verts, Vec3 const& start, Vec3 const& end, float radius, Rgba8 const& color,
 							AABB2 const& UVs, int numSlices )
 {
@@ -670,7 +671,7 @@ void AddVertsForCylinderZ3D( std::vector<Vertex>& verts, Vec3 const& start, Vec3
 
 //-----------------------------------------------------------------------------------------------
 void AddVertsForCylinderZWireframe3D( std::vector<Vertex>& verts, Vec3 const& start, Vec3 const& end, float radius, Rgba8 const& color,
-	[[maybe_unused]] AABB2 const& UVs, int numSlices )
+	int numSlices )
 {
 	if ( numSlices <= 0 || radius <= 0.f || start == end )
 	{
@@ -702,10 +703,10 @@ void AddVertsForCylinderZWireframe3D( std::vector<Vertex>& verts, Vec3 const& st
 		minSize = length;
 	}
 
-	float thickness = minSize * 0.02f;
+	float thickness = minSize * 0.01f;
 	if ( thickness <= 0.f )
 	{
-		thickness = 0.02f;
+		thickness = 0.01f;
 	}
 
 	for ( int sliceIndex = 0; sliceIndex < numSlices; ++sliceIndex )

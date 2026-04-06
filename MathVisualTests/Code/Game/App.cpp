@@ -5,6 +5,7 @@
 #include "Game/GameRaycastVsAABB.hpp"
 #include "Game/GameRaycastVsDiscs.hpp"
 #include "Game/GameRaycastVsLineSegment.hpp"
+#include "Engine/Core/Clock.hpp"
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/Rgba8.hpp"
 #include "Engine/Core/SimpleTriangleFont.hpp"
@@ -65,8 +66,10 @@ void App::RunFrame()
 {
 	g_engine->BeginFrame();
 
+	Clock::TickSystemClock();
+
 	double currentTime = GetCurrentTimeSeconds();
-	float deltaSeconds = static_cast<float> ( currentTime - m_lastFrameStartTime );
+	float deltaSeconds = static_cast< float > ( currentTime - m_lastFrameStartTime );
 	deltaSeconds = GetClamped( deltaSeconds, 0.f, 0.1f );
 
 	m_lastFrameStartTime = currentTime;
