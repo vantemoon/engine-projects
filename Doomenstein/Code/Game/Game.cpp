@@ -839,7 +839,7 @@ void Game::RenderHUD() const
 		float ambientIntensity = m_currentMap->GetAmbientIntensity();
 
 		std::string lightingText = Stringf(
-			"\n\nSun Direction X: %.2f\nSun Direction Y: %.2f\nSun Intensity: %.2f\nAmbient Intensity: %.2f",
+			"\n\nSun Direction X: %.2f [F2/F3 to change]\nSun Direction Y: %.2f [F4/F5 to change]\nSun Intensity: %.2f [F6/F7 to change]\nAmbient Intensity: %.2f [F8/F9 to change]",
 			sunDirectionX,
 			sunDirectionY,
 			sunIntensity,
