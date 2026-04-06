@@ -36,6 +36,7 @@
     <ClCompile Include="Main_Windows.cpp" />
     <ClCompile Include="TestShape.cpp" />
     <ClCompile Include="TestShapeAABB.cpp" />
+    <ClCompile Include="TestShapeAABB3D.cpp" />
     <ClCompile Include="TestShapeCapsule.cpp" />
     <ClCompile Include="TestShapeDisc.cpp" />
     <ClCompile Include="TestShapeLineSegment.cpp" />
@@ -55,6 +56,7 @@
     <ClInclude Include="GameRaycastVsLineSegment.hpp" />
     <ClInclude Include="TestShape.hpp" />
     <ClInclude Include="TestShapeAABB.hpp" />
+    <ClInclude Include="TestShapeAABB3D.hpp" />
     <ClInclude Include="TestShapeCapsule.hpp" />
     <ClInclude Include="TestShapeDisc.hpp" />
     <ClInclude Include="TestShapeLineSegment.hpp" />

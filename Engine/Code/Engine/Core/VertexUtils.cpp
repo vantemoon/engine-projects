@@ -313,6 +313,7 @@ void AddVertsForAABB3D( std::vector<Vertex>& verts, AABB3 const& bounds, Rgba8 c
 	Vec3 bottomRightFront( bounds.m_maxs.x, bounds.m_mins.y, bounds.m_mins.z );
 	Vec3 topRightFront( bounds.m_maxs.x, bounds.m_maxs.y, bounds.m_mins.z );
 	Vec3 topLeftFront( bounds.m_mins.x, bounds.m_maxs.y, bounds.m_mins.z );
+
 	Vec3 bottomLeftBack( bounds.m_mins.x, bounds.m_mins.y, bounds.m_maxs.z );
 	Vec3 bottomRightBack( bounds.m_maxs.x, bounds.m_mins.y, bounds.m_maxs.z );
 	Vec3 topRightBack( bounds.m_maxs.x, bounds.m_maxs.y, bounds.m_maxs.z );
@@ -320,10 +321,10 @@ void AddVertsForAABB3D( std::vector<Vertex>& verts, AABB3 const& bounds, Rgba8 c
 
 	AddVertsForQuad3D( verts, bottomRightFront, bottomLeftFront, topLeftFront, topRightFront, color, UVs );
 	AddVertsForQuad3D( verts, bottomLeftBack, bottomRightBack, topRightBack, topLeftBack, color, UVs );
-	AddVertsForQuad3D( verts, bottomLeftFront, bottomLeftBack, topLeftBack, topLeftFront, color, UVs );
-	AddVertsForQuad3D( verts, bottomRightBack, bottomRightFront, topRightFront, topRightBack, color, UVs );
-	AddVertsForQuad3D( verts, topLeftBack, topRightBack, topRightFront, topLeftFront, color, UVs );
 	AddVertsForQuad3D( verts, bottomLeftFront, bottomRightFront, bottomRightBack, bottomLeftBack, color, UVs );
+	AddVertsForQuad3D( verts, topRightFront, topLeftFront, topLeftBack, topRightBack, color, UVs );
+	AddVertsForQuad3D( verts, topLeftFront, bottomLeftFront, bottomLeftBack, topLeftBack, color, UVs );
+	AddVertsForQuad3D( verts, bottomRightFront, topRightFront, topRightBack, bottomRightBack, color, UVs );
 }
 
 
@@ -366,13 +367,6 @@ void AddVertsForAABBWireframe3D( std::vector<Vertex>& verts, AABB3 const& bounds
 	AddVertsForLineSegment3D( verts, bottomRightFront, bottomRightBack, thickness, color );
 	AddVertsForLineSegment3D( verts, topRightFront, topRightBack, thickness, color );
 	AddVertsForLineSegment3D( verts, topLeftFront, topLeftBack, thickness, color );
-
-	AddVertsForLineSegment3D( verts, bottomRightFront, topLeftFront, thickness, color );
-	AddVertsForLineSegment3D( verts, bottomLeftBack, topRightBack, thickness, color );
-	AddVertsForLineSegment3D( verts, bottomLeftFront, topLeftBack, thickness, color );
-	AddVertsForLineSegment3D( verts, bottomRightBack, topRightFront, thickness, color );
-	AddVertsForLineSegment3D( verts, topLeftBack, topRightFront, thickness, color );
-	AddVertsForLineSegment3D( verts, bottomLeftFront, bottomRightBack, thickness, color );
 }
 
 
@@ -483,8 +477,6 @@ void AddVertsForSphereWireframe3D( std::vector<Vertex>& verts, Vec3 const& cente
 				AddVertsForLineSegment3D( verts, bottomLeft, bottomRight, thickness, color );
 				AddVertsForLineSegment3D( verts, bottomRight, topRight, thickness, color );
 				AddVertsForLineSegment3D( verts, topRight, topLeft, thickness, color );
-				AddVertsForLineSegment3D( verts, topLeft, bottomLeft, thickness, color );
-				AddVertsForLineSegment3D( verts, bottomLeft, topRight, thickness, color );
 			}
 		}
 	}
@@ -723,7 +715,6 @@ void AddVertsForCylinderZWireframe3D( std::vector<Vertex>& verts, Vec3 const& st
 		AddVertsForLineSegment3D( verts, topLeft, topRight, thickness, color );
 
 		AddVertsForLineSegment3D( verts, bottomLeft, topLeft, thickness, color );
-		AddVertsForLineSegment3D( verts, bottomLeft, topRight, thickness, color );
 
 		AddVertsForLineSegment3D( verts, start, bottomLeft, thickness, color );
 		AddVertsForLineSegment3D( verts, end, topLeft, thickness, color );
