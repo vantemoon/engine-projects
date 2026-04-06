@@ -136,6 +136,7 @@ void Game3DShapes::Render() const
 	std::vector<Vertex> wireframeVerts;
 	std::vector<Vertex> solidVerts;
 
+	// AABBs
 	for ( int shapeIndex = 0; shapeIndex < NUM_SHAPE_PER_TYPE; ++shapeIndex )
 	{
 		if ( shapeIndex % 2 == 0 ) // Wireframe
@@ -147,6 +148,21 @@ void Game3DShapes::Render() const
 		{
 			TestShapeAABB3D* shape = m_testAABBs[shapeIndex];
 			AddVertsForAABB3D( solidVerts, shape->m_alignedBox, Rgba8::WHITE, AABB2::ZERO_TO_ONE );
+		}
+	}
+
+	// Spheres
+	for ( int shapeIndex = 0; shapeIndex < NUM_SHAPE_PER_TYPE; ++shapeIndex )
+	{
+		if ( shapeIndex % 2 == 0 ) // Wireframe
+		{
+			TestShapeSphere* shape = m_testSpheres[shapeIndex];
+			AddVertsForSphereWireframe3D( wireframeVerts, shape->m_center, shape->m_radius, Rgba8::WHITE, AABB2::ZERO_TO_ONE, 16, 8 );
+		}
+		else // Solid
+		{
+			TestShapeSphere* shape = m_testSpheres[shapeIndex];
+			AddVertsForSphere3D( solidVerts, shape->m_center, shape->m_radius, Rgba8::WHITE, AABB2::ZERO_TO_ONE, 16, 8 );
 		}
 	}
 
@@ -176,6 +192,7 @@ void Game3DShapes::Render() const
 void Game3DShapes::GenerateRandomShapes()
 {
 	GenerateRandomAABBs();
+	GenerateRandomSpheres();
 }
 
 
@@ -190,42 +207,66 @@ void Game3DShapes::GenerateRandomAABBs()
 		m_testAABBs[shapeIndex] = nullptr;
 	}
 
-	float worldMinX = -WORLD_SIZE_X * 0.5f;
-	float worldMaxX = WORLD_SIZE_X * 0.5f;
-	float worldMinY = -WORLD_SIZE_Y * 0.5f;
-	float worldMaxY = WORLD_SIZE_Y * 0.5f;
+	float worldHalfSize = 30.f;
+	float worldMinX = -worldHalfSize;
+	float worldMaxX = worldHalfSize;
+	float worldMinY = -worldHalfSize;
+	float worldMaxY = worldHalfSize;
+	float worldMinZ = -worldHalfSize;
+	float worldMaxZ = worldHalfSize;
 
-	float cellSizeX = ( worldMaxX - worldMinX ) * 0.5f;
-	float cellSizeY = ( worldMaxY - worldMinY ) * 0.5f;
-	float cellPadding = 4.f;
+	float worldSpan = worldHalfSize * 2.f;
+
+	float minBoxWidth = 4.f;
+	float maxBoxWidth = GetClamped( 14.f, minBoxWidth, worldSpan );
+	float minBoxDepth = 4.f;
+	float maxBoxDepth = GetClamped( 14.f, minBoxDepth, worldSpan );
+	float minBoxHeight = 3.f;
+	float maxBoxHeight = GetClamped( 10.f, minBoxHeight, worldSpan );
 
 	for ( int shapeIndex = 0; shapeIndex < NUM_SHAPE_PER_TYPE; ++shapeIndex )
 	{
-		int cellX = shapeIndex % 2;
-		int cellY = shapeIndex / 2;
+		float boxWidth = rng.RollRandomFloatInRange( minBoxWidth, maxBoxWidth );
+		float boxDepth = rng.RollRandomFloatInRange( minBoxDepth, maxBoxDepth );
+		float boxHeight = rng.RollRandomFloatInRange( minBoxHeight, maxBoxHeight );
 
-		float cellMinX = worldMinX + static_cast< float >( cellX ) * cellSizeX;
-		float cellMaxX = cellMinX + cellSizeX;
-		float cellMinY = worldMinY + static_cast< float >( cellY ) * cellSizeY;
-		float cellMaxY = cellMinY + cellSizeY;
+		float boxLeft = rng.RollRandomFloatInRange( worldMinX, worldMaxX - boxWidth );
+		float boxBottom = rng.RollRandomFloatInRange( worldMinY, worldMaxY - boxDepth );
+		float boxMinZ = rng.RollRandomFloatInRange( worldMinZ, worldMaxZ - boxHeight );
 
-		float boxWidth = rng.RollRandomFloatInRange( 10.f, 28.f );
-		float boxDepth = rng.RollRandomFloatInRange( 10.f, 22.f );
-		float boxHeight = rng.RollRandomFloatInRange( 8.f, 24.f );
-
-		float boxLeftMin = cellMinX + cellPadding;
-		float boxLeftMax = cellMaxX - cellPadding - boxWidth;
-		float boxBottomMin = cellMinY + cellPadding;
-		float boxBottomMax = cellMaxY - cellPadding - boxDepth;
-
-		float boxLeft = rng.RollRandomFloatInRange( boxLeftMin, boxLeftMax );
-		float boxBottom = rng.RollRandomFloatInRange( boxBottomMin, boxBottomMax );
-		float boxMinZ = rng.RollRandomFloatInRange( 0.f, 8.f );
-
-		AABB3 alignedBox(
-			Vec3( boxLeft, boxBottom, boxMinZ ),
-			Vec3( boxLeft + boxWidth, boxBottom + boxDepth, boxMinZ + boxHeight ) );
-
+		AABB3 alignedBox( Vec3( boxLeft, boxBottom, boxMinZ ), Vec3( boxLeft + boxWidth, boxBottom + boxDepth, boxMinZ + boxHeight ) );
 		m_testAABBs[shapeIndex] = new TestShapeAABB3D( alignedBox );
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game3DShapes::GenerateRandomSpheres()
+{
+	RandomNumberGenerator rng;
+
+	float worldHalfSize = 30.f;
+	float worldMinX = -worldHalfSize;
+	float worldMaxX = worldHalfSize;
+	float worldMinY = -worldHalfSize;
+	float worldMaxY = worldHalfSize;
+	float worldMinZ = -worldHalfSize;
+	float worldMaxZ = worldHalfSize;
+
+	float worldSpan = worldHalfSize * 2.f;
+
+	float minRadius = 1.5f;
+	float maxRadius = GetClamped( 6.f, minRadius, worldSpan * 0.5f );
+
+	for ( int shapeIndex = 0; shapeIndex < NUM_SHAPE_PER_TYPE; ++shapeIndex )
+	{
+		float radius = rng.RollRandomFloatInRange( minRadius, maxRadius );
+
+		float centerX = rng.RollRandomFloatInRange( worldMinX + radius, worldMaxX - radius );
+		float centerY = rng.RollRandomFloatInRange( worldMinY + radius, worldMaxY - radius );
+		float centerZ = rng.RollRandomFloatInRange( worldMinZ + radius, worldMaxZ - radius );
+
+		TestShapeSphere* shape = new TestShapeSphere( Vec3( centerX, centerY, centerZ ), radius );
+		m_testSpheres[shapeIndex] = shape;
 	}
 }

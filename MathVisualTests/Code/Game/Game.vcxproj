@@ -41,6 +41,7 @@
     <ClCompile Include="TestShapeDisc.cpp" />
     <ClCompile Include="TestShapeLineSegment.cpp" />
     <ClCompile Include="TestShapeOBB.cpp" />
+    <ClCompile Include="TestShapeSphere.cpp" />
     <ClCompile Include="TestShapeTriangle.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -61,6 +62,7 @@
     <ClInclude Include="TestShapeDisc.hpp" />
     <ClInclude Include="TestShapeLineSegment.hpp" />
     <ClInclude Include="TestShapeOBB.hpp" />
+    <ClInclude Include="TestShapeSphere.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="TestShapeTriangle.hpp" />

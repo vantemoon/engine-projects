@@ -2,6 +2,7 @@
 #include "Game/Game.hpp"
 #include "Game/TestShape.hpp"
 #include "Game/TestShapeAABB3D.hpp"
+#include "Game/TestShapeSphere.hpp"
 
 
 //-----------------------------------------------------------------------------------------------
@@ -12,6 +13,7 @@ public:
 	const static int	NUM_SHAPE_PER_TYPE = 4;
 
 	TestShapeAABB3D*	m_testAABBs[NUM_SHAPE_PER_TYPE] = {};
+	TestShapeSphere*	m_testSpheres[NUM_SHAPE_PER_TYPE] = {};
 
 	Game3DShapes();
 	~Game3DShapes();
@@ -23,4 +25,5 @@ public:
 private:
 	void GenerateRandomShapes();
 	void GenerateRandomAABBs();
+	void GenerateRandomSpheres();
 };
