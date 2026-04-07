@@ -66,7 +66,7 @@ protected:
 	Actor* m_fakeProjectileActor = nullptr;
 	IntVec2 m_dimensions;
 	
-	std::vector<Vertex_PCUTBN> m_verts;
+	std::vector<Vertex> m_verts;
 	std::vector<unsigned int> m_indices;
 	Texture* m_texture = nullptr;
 	Shader* m_shader = nullptr;

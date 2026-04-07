@@ -8,30 +8,20 @@
 struct Vertex
 {
 public:
+	// PCU (position, color, uv)
 	Vec3  m_position;
 	Rgba8 m_color;
 	Vec2  m_uvTexCoords;
 
-public:
-	Vertex();
-	explicit Vertex( Vec3 const& position, Rgba8 const& color, Vec2 const& uvTexCoords );
-};
-
-
-//-----------------------------------------------------------------------------------------------
-struct Vertex_PCUTBN
-{
-public:
-	Vec3  m_position;
-	Rgba8 m_color;
-	Vec2  m_uvTexCoords;
+	// TBN (tangent, bitangent, normal)
 	Vec3  m_tangent;
 	Vec3  m_bitangent;
 	Vec3  m_normal;
 
 public:
-	Vertex_PCUTBN() = default;
-	Vertex_PCUTBN( Vec3 const& position, Rgba8 const& color, Vec2 const& uvTexCoords, Vec3 const& tangent, Vec3 const& bitangent, Vec3 const& normal )
+	Vertex();
+	explicit Vertex( Vec3 const& position, Rgba8 const& color, Vec2 const& uvTexCoords );
+	Vertex( Vec3 const& position, Rgba8 const& color, Vec2 const& uvTexCoords, Vec3 const& tangent, Vec3 const& bitangent, Vec3 const& normal )
 		: m_position( position )
 		, m_color( color )
 		, m_uvTexCoords( uvTexCoords )
@@ -41,8 +31,8 @@ public:
 	{
 	}
 
-	Vertex_PCUTBN( float px, float py, float pz, 
-		unsigned char r, unsigned char g, unsigned char b, unsigned char a, float u, float v, 
+	Vertex( float px, float py, float pz,
+		unsigned char r, unsigned char g, unsigned char b, unsigned char a, float u, float v,
 		float tx, float ty, float tz, float bx, float by, float bz, float nx, float ny, float nz )
 		: m_position( px, py, pz )
 		, m_color( r, g, b, a )
