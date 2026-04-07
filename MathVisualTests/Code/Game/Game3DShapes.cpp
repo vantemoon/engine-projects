@@ -8,6 +8,7 @@
 #include "Engine/Math/Mat44.hpp"
 #include "Engine/Math/MathUtils.hpp"
 #include "Engine/Math/RandomNumberGenerator.hpp"
+#include "Engine/Math/RaycastUtils.hpp"
 #include "Engine/Math/Vec2.hpp"
 #include "Engine/Math/Vec3.hpp"
 #include "Engine/Renderer/Camera.hpp"
@@ -25,6 +26,13 @@ Game3DShapes::Game3DShapes()
 	Vec3 worldCameraPos = Vec3( -2.f, 2.f, 1.f );
 	EulerAngles worldCameraOrientation = EulerAngles( 0.f, 0.f, 0.f );
 	m_worldCamera->SetPositionAndOrientation( worldCameraPos, worldCameraOrientation );
+
+	m_refPoint = worldCameraPos;
+	m_refDirection = worldCameraOrientation.GetForwardDir_IFwd_JLeft_KUp();
+	if ( m_refDirection.GetLengthSquared() > 0.f )
+	{
+		m_refDirection = m_refDirection.GetNormalized();
+	}
 }
 
 
@@ -54,6 +62,7 @@ void Game3DShapes::Update( float deltaSeconds )
 	UpdateFromKeyboard( deltaSeconds );
 	CheckIfShapesOverlap();
 	GetNearestPoints();
+	RaycastAgainstShapes();
 	Render();
 }
 
@@ -95,37 +104,43 @@ void Game3DShapes::UpdateFromKeyboard( float deltaSeconds )
 		left = left.GetNormalized();
 	}
 
-	// Horizontal-only movement (XY only)
-	if ( g_engine->m_inputSystem->IsKeyDown( 'W' ) )
-	{
-		cameraPos += forward * moveDistance;
-	}
-	if ( g_engine->m_inputSystem->IsKeyDown( 'S' ) )
-	{
-		cameraPos -= forward * moveDistance;
-	}
-	if ( g_engine->m_inputSystem->IsKeyDown( 'A' ) )
-	{
-		cameraPos += left * moveDistance;
-	}
-	if ( g_engine->m_inputSystem->IsKeyDown( 'D' ) )
-	{
-		cameraPos -= left * moveDistance;
-	}
-
-	// Vertical-only movement (Z axis)
-	if ( g_engine->m_inputSystem->IsKeyDown( 'Q' ) )
-	{
-		cameraPos.z += moveDistance;
-	}
-	if ( g_engine->m_inputSystem->IsKeyDown( 'E' ) )
-	{
-		cameraPos.z -= moveDistance;
-	}
+	// Move camera
+	if ( g_engine->m_inputSystem->IsKeyDown( 'W' ) ) cameraPos += forward * moveDistance;
+	if ( g_engine->m_inputSystem->IsKeyDown( 'S' ) ) cameraPos -= forward * moveDistance;
+	if ( g_engine->m_inputSystem->IsKeyDown( 'A' ) ) cameraPos += left * moveDistance;
+	if ( g_engine->m_inputSystem->IsKeyDown( 'D' ) ) cameraPos -= left * moveDistance;
+	if ( g_engine->m_inputSystem->IsKeyDown( 'Q' ) ) cameraPos.z += moveDistance;
+	if ( g_engine->m_inputSystem->IsKeyDown( 'E' ) ) cameraPos.z -= moveDistance;
 
 	m_worldCamera->SetPosition( cameraPos );
 	m_worldCamera->SetOrientation( cameraOrientation );
 
+	// Lock raycast
+	if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_SPACE ) )
+	{
+		if ( m_isUsingCameraAsRefPoint )
+		{
+			m_refPoint = cameraPos;
+			m_refDirection = cameraOrientation.GetForwardDir_IFwd_JLeft_KUp();
+			if ( m_refDirection.GetLengthSquared() > 0.f )
+			{
+				m_refDirection = m_refDirection.GetNormalized();
+			}
+		}
+		m_isUsingCameraAsRefPoint = !m_isUsingCameraAsRefPoint;
+	}
+
+	if ( m_isUsingCameraAsRefPoint )
+	{
+		m_refPoint = cameraPos;
+		m_refDirection = cameraOrientation.GetForwardDir_IFwd_JLeft_KUp();
+		if ( m_refDirection.GetLengthSquared() > 0.f )
+		{
+			m_refDirection = m_refDirection.GetNormalized();
+		}
+	}
+
+	// Randomize shapes
 	if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_F8 ) )
 	{
 		GenerateRandomShapes();
@@ -146,48 +161,83 @@ void Game3DShapes::Render() const
 	std::vector<Vertex> wireframeVerts;
 	std::vector<Vertex> solidVerts;
 
+	float pulse = SinDegrees( static_cast<float>( m_overlapPulseTimer->GetElapsedFraction() * 360.0 ) );
+	float pulseBrightness = 0.7f + ( 0.3f * pulse );
+	Rgba8 pulsedLightBlue(
+		static_cast<unsigned char>( static_cast<float>( m_lightBlue.r ) * pulseBrightness ),
+		static_cast<unsigned char>( static_cast<float>( m_lightBlue.g ) * pulseBrightness ),
+		static_cast<unsigned char>( static_cast<float>( m_lightBlue.b ) * pulseBrightness ),
+		m_lightBlue.a );
+
 	// AABBs
 	for ( int shapeIndex = 0; shapeIndex < NUM_SHAPE_PER_TYPE; ++shapeIndex )
 	{
-		if ( shapeIndex % 2 == 0 ) // Wireframe
+		TestShapeAABB3D* shape = m_testAABBs[shapeIndex];
+		Rgba8 shapeColor = shape->m_color;
+		if ( m_nearestRaycastResult.m_didImpact && m_impactedShapeType == 0 && m_impactedShapeIndex == shapeIndex )
 		{
-			TestShapeAABB3D* shape = m_testAABBs[shapeIndex];
-			AddVertsForAABBWireframe3D( wireframeVerts, shape->m_alignedBox, shape->m_color );
+			shapeColor = pulsedLightBlue;
 		}
-		else // Solid
-		{
-			TestShapeAABB3D* shape = m_testAABBs[shapeIndex];
-			AddVertsForAABB3D( solidVerts, shape->m_alignedBox, shape->m_color, AABB2::ZERO_TO_ONE );
-		}
+
+		if ( shapeIndex % 2 == 0 ) AddVertsForAABBWireframe3D( wireframeVerts, shape->m_alignedBox, shapeColor );
+		else AddVertsForAABB3D( solidVerts, shape->m_alignedBox, shapeColor, AABB2::ZERO_TO_ONE );
 	}
 
 	// Spheres
 	for ( int shapeIndex = 0; shapeIndex < NUM_SHAPE_PER_TYPE; ++shapeIndex )
 	{
-		if ( shapeIndex % 2 == 0 ) // Wireframe
+		TestShapeSphere* shape = m_testSpheres[shapeIndex];
+		Rgba8 shapeColor = shape->m_color;
+		if ( m_nearestRaycastResult.m_didImpact && m_impactedShapeType == 1 && m_impactedShapeIndex == shapeIndex )
 		{
-			TestShapeSphere* shape = m_testSpheres[shapeIndex];
-			AddVertsForSphereWireframe3D( wireframeVerts, shape->m_center, shape->m_radius, shape->m_color, 16, 8 );
+			shapeColor = pulsedLightBlue;
 		}
-		else // Solid
-		{
-			TestShapeSphere* shape = m_testSpheres[shapeIndex];
-			AddVertsForSphere3D( solidVerts, shape->m_center, shape->m_radius, shape->m_color, AABB2::ZERO_TO_ONE, 16, 8 );
-		}
+
+		if ( shapeIndex % 2 == 0 ) AddVertsForSphereWireframe3D( wireframeVerts, shape->m_center, shape->m_radius, shapeColor, 16, 8 );
+		else AddVertsForSphere3D( solidVerts, shape->m_center, shape->m_radius, shapeColor, AABB2::ZERO_TO_ONE, 16, 8 );
 	}
 
 	// Cylinders
 	for ( int shapeIndex = 0; shapeIndex < NUM_SHAPE_PER_TYPE; ++shapeIndex )
 	{
-		if ( shapeIndex % 2 == 0 ) // Wireframe
+		TestShapeZCylinder* shape = m_testCylinders[shapeIndex];
+		Rgba8 shapeColor = shape->m_color;
+		if ( m_nearestRaycastResult.m_didImpact && m_impactedShapeType == 2 && m_impactedShapeIndex == shapeIndex )
 		{
-			TestShapeZCylinder* shape = m_testCylinders[shapeIndex];
-			AddVertsForCylinderZWireframe3D( wireframeVerts, shape->m_start, shape->m_end, shape->m_radius, shape->m_color, 16 );
+			shapeColor = pulsedLightBlue;
 		}
-		else // Solid
+
+		if ( shapeIndex % 2 == 0 ) AddVertsForCylinderZWireframe3D( wireframeVerts, shape->m_start, shape->m_end, shape->m_radius, shapeColor, 16 );
+		else AddVertsForCylinderZ3D( solidVerts, shape->m_start, shape->m_end, shape->m_radius, shapeColor, AABB2::ZERO_TO_ONE, 16 );
+	}
+
+	// Impact debug
+	if ( m_nearestRaycastResult.m_didImpact )
+	{
+		AddVertsForSphere3D( verts, m_nearestRaycastResult.m_impactPos, 0.05f, Rgba8::WHITE );
+		AddVertsForArrow3D(
+			verts,
+			m_nearestRaycastResult.m_impactPos,
+			m_nearestRaycastResult.m_impactPos + m_nearestRaycastResult.m_impactNormal,
+			0.03f,
+			Rgba8::YELLOW,
+			16 );
+	}
+
+	// Locked ray debug (only when locked)
+	if ( !m_isUsingCameraAsRefPoint )
+	{
+		Vec3 rayStart = m_nearestRaycastResult.m_rayStartPos;
+		Vec3 rayMaxEnd = rayStart + ( m_nearestRaycastResult.m_rayFwdNormal * m_nearestRaycastResult.m_rayMaxLength );
+
+		if ( m_nearestRaycastResult.m_didImpact )
 		{
-			TestShapeZCylinder* shape = m_testCylinders[shapeIndex];
-			AddVertsForCylinderZ3D( solidVerts, shape->m_start, shape->m_end, shape->m_radius, shape->m_color, AABB2::ZERO_TO_ONE, 16 );
+			AddVertsForArrow3D( verts, m_nearestRaycastResult.m_impactPos, rayMaxEnd, 0.03f, Rgba8( 190, 190, 190 ) );
+			AddVertsForArrow3D( verts, rayStart, m_nearestRaycastResult.m_impactPos, 0.03f, Rgba8::RED );
+		}
+		else
+		{
+			AddVertsForArrow3D( verts, rayStart, rayMaxEnd, 0.03f, Rgba8::GREEN );
 		}
 	}
 
@@ -222,6 +272,21 @@ void Game3DShapes::Render() const
 		for ( int pointIndex = 0; pointIndex < static_cast<int>( m_nearestPointsToCamera.size() ); ++pointIndex )
 		{
 			Vec3 const& nearestPoint = m_nearestPointsToCamera[pointIndex];
+			if ( nearestPoint != m_nearestPoint )
+			{
+				AddVertsForSphere3D( verts, nearestPoint, 0.2f, Rgba8( 255, 165, 0 ) );
+			}
+			else
+			{
+				AddVertsForSphere3D( verts, nearestPoint, 0.2f, Rgba8::GREEN );
+			}
+		}
+	}
+	else
+	{
+		for ( int pointIndex = 0; pointIndex < static_cast<int>( m_nearestPointsToRefPoint.size() ); ++pointIndex )
+		{
+			Vec3 const& nearestPoint = m_nearestPointsToRefPoint[pointIndex];
 			if ( nearestPoint != m_nearestPoint )
 			{
 				AddVertsForSphere3D( verts, nearestPoint, 0.2f, Rgba8( 255, 165, 0 ) );
@@ -437,8 +502,8 @@ void Game3DShapes::GetNearestPointsToRefPoint()
 	for ( int shapeIndex = 0; shapeIndex < NUM_SHAPE_PER_TYPE; ++shapeIndex )
 	{
 		TestShapeAABB3D* aabbShape = m_testAABBs[shapeIndex];
-		Vec3 nearestPointToRefPoint = GetNearestPointOnAABB3D( m_nearestPoint, aabbShape->m_alignedBox.m_mins, aabbShape->m_alignedBox.m_maxs );
-		float nearestPointDistanceToRefPointSquared = GetDistanceSquared3D( m_nearestPoint, nearestPointToRefPoint );
+		Vec3 nearestPointToRefPoint = GetNearestPointOnAABB3D( m_refPoint, aabbShape->m_alignedBox.m_mins, aabbShape->m_alignedBox.m_maxs );
+		float nearestPointDistanceToRefPointSquared = GetDistanceSquared3D( m_refPoint, nearestPointToRefPoint );
 		if ( nearestPointDistanceToRefPointSquared < nearestPointDistanceSquared )
 		{
 			nearestPointDistanceSquared = nearestPointDistanceToRefPointSquared;
@@ -447,8 +512,8 @@ void Game3DShapes::GetNearestPointsToRefPoint()
 		m_nearestPointsToRefPoint.push_back( nearestPointToRefPoint );
 
 		TestShapeSphere* sphereShape = m_testSpheres[shapeIndex];
-		nearestPointToRefPoint = GetNearestPointOnSphere3D( m_nearestPoint, sphereShape->m_center, sphereShape->m_radius );
-		nearestPointDistanceToRefPointSquared = GetDistanceSquared3D( m_nearestPoint, nearestPointToRefPoint );
+		nearestPointToRefPoint = GetNearestPointOnSphere3D( m_refPoint, sphereShape->m_center, sphereShape->m_radius );
+		nearestPointDistanceToRefPointSquared = GetDistanceSquared3D( m_refPoint, nearestPointToRefPoint );
 		if ( nearestPointDistanceToRefPointSquared < nearestPointDistanceSquared )
 		{
 			nearestPointDistanceSquared = nearestPointDistanceToRefPointSquared;
@@ -458,8 +523,8 @@ void Game3DShapes::GetNearestPointsToRefPoint()
 
 		TestShapeZCylinder* cylinderShape = m_testCylinders[shapeIndex];
 		Vec2 cylinderBaseCenter( cylinderShape->m_start.x, cylinderShape->m_start.y );
-		nearestPointToRefPoint = GetNearestPointOnCylinderZ3D( m_nearestPoint, cylinderBaseCenter, cylinderShape->m_start.z, cylinderShape->m_end.z, cylinderShape->m_radius );
-		nearestPointDistanceToRefPointSquared = GetDistanceSquared3D( m_nearestPoint, nearestPointToRefPoint );
+		nearestPointToRefPoint = GetNearestPointOnCylinderZ3D( m_refPoint, cylinderBaseCenter, cylinderShape->m_start.z, cylinderShape->m_end.z, cylinderShape->m_radius );
+		nearestPointDistanceToRefPointSquared = GetDistanceSquared3D( m_refPoint, nearestPointToRefPoint );
 		if ( nearestPointDistanceToRefPointSquared < nearestPointDistanceSquared )
 		{
 			nearestPointDistanceSquared = nearestPointDistanceToRefPointSquared;
@@ -648,4 +713,65 @@ void Game3DShapes::CheckIfShapesOverlap()
 			defaultColor.a );
 		cylinder->m_color = isOverlapping ? overlapColor : defaultColor;
 	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game3DShapes::RaycastAgainstShapes()
+{
+	Vec3 rayStart;
+	Vec3 rayDirection;
+
+	if ( m_isUsingCameraAsRefPoint )
+	{
+		rayStart = m_worldCamera->GetPosition();
+		rayDirection = m_worldCamera->GetOrientation().GetForwardDir_IFwd_JLeft_KUp();
+	}
+	else
+	{
+		rayStart = m_refPoint;
+		rayDirection = m_refDirection.GetNormalized();
+	}
+
+	m_nearestRaycastResult = RaycastResult3D();
+	m_nearestRaycastResult.m_rayStartPos = rayStart;
+	m_nearestRaycastResult.m_rayFwdNormal = rayDirection;
+	m_nearestRaycastResult.m_rayMaxLength = m_raycastMaxLength;
+	m_impactedShapeType = -1;
+	m_impactedShapeIndex = -1;
+
+	for ( int shapeIndex = 0; shapeIndex < NUM_SHAPE_PER_TYPE; ++shapeIndex )
+	{
+		RaycastResult3D aabbResult = RaycastVsAABB3D( rayStart, rayDirection, m_raycastMaxLength, m_testAABBs[shapeIndex]->m_alignedBox );
+		if ( aabbResult.m_didImpact && ( !m_nearestRaycastResult.m_didImpact || aabbResult.m_impactDist < m_nearestRaycastResult.m_impactDist ) )
+		{
+			m_nearestRaycastResult = aabbResult;
+			m_impactedShapeType = 0;
+			m_impactedShapeIndex = shapeIndex;
+		}
+
+		RaycastResult3D sphereResult = RaycastVsSphere3D( rayStart, rayDirection, m_raycastMaxLength, m_testSpheres[shapeIndex]->m_center, m_testSpheres[shapeIndex]->m_radius );
+		if ( sphereResult.m_didImpact && ( !m_nearestRaycastResult.m_didImpact || sphereResult.m_impactDist < m_nearestRaycastResult.m_impactDist ) )
+		{
+			m_nearestRaycastResult = sphereResult;
+			m_impactedShapeType = 1;
+			m_impactedShapeIndex = shapeIndex;
+		}
+
+		TestShapeZCylinder* cylinder = m_testCylinders[shapeIndex];
+		float minZ = ( cylinder->m_start.z < cylinder->m_end.z ) ? cylinder->m_start.z : cylinder->m_end.z;
+		float maxZ = ( cylinder->m_start.z > cylinder->m_end.z ) ? cylinder->m_start.z : cylinder->m_end.z;
+		Vec2 centerXY( cylinder->m_start.x, cylinder->m_start.y );
+		RaycastResult3D cylinderResult = RaycastVsCylinderZ3D( rayStart, rayDirection, m_raycastMaxLength, centerXY, minZ, maxZ, cylinder->m_radius );
+		if ( cylinderResult.m_didImpact && ( !m_nearestRaycastResult.m_didImpact || cylinderResult.m_impactDist < m_nearestRaycastResult.m_impactDist ) )
+		{
+			m_nearestRaycastResult = cylinderResult;
+			m_impactedShapeType = 2;
+			m_impactedShapeIndex = shapeIndex;
+		}
+	}
+
+	m_nearestRaycastResult.m_rayStartPos = rayStart;
+	m_nearestRaycastResult.m_rayFwdNormal = rayDirection;
+	m_nearestRaycastResult.m_rayMaxLength = m_raycastMaxLength;
 }

@@ -6,6 +6,7 @@
 #include "Game/TestShapeZCylinder.hpp"
 #include "Engine/Core/Rgba8.hpp"
 #include "Engine/Core/Timer.hpp"
+#include "Engine/Math/RaycastUtils.hpp"
 #include <vector>
 
 
@@ -20,10 +21,18 @@ public:
 	TestShapeSphere*	m_testSpheres[NUM_SHAPE_PER_TYPE] = {};
 	TestShapeZCylinder* m_testCylinders[NUM_SHAPE_PER_TYPE] = {};
 
+	Vec3				m_refPoint = Vec3::ZERO;
+	Vec3                m_refDirection = Vec3::ZERO;
 	bool                m_isUsingCameraAsRefPoint = true;
+
 	std::vector<Vec3>	m_nearestPointsToCamera;
 	std::vector<Vec3>	m_nearestPointsToRefPoint;
 	Vec3				m_nearestPoint = Vec3::ZERO;
+
+	float				m_raycastMaxLength = 10.f;
+	RaycastResult3D		m_nearestRaycastResult;
+	int					m_impactedShapeType = -1;
+	int					m_impactedShapeIndex = -1;
 
 	Timer*				m_overlapPulseTimer = nullptr;
 
@@ -48,4 +57,6 @@ private:
 	void GetNearestPointsToRefPoint();
 
 	void CheckIfShapesOverlap();
+
+	void RaycastAgainstShapes();
 };
