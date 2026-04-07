@@ -232,8 +232,8 @@ void Map::CreateBuffers()
 		return;
 	}
 
-	unsigned int const vertexBufferSize = static_cast< unsigned int >( m_verts.size() * sizeof( Vertex ) );
-	unsigned int const indexBufferSize = static_cast< unsigned int >( m_indices.size() * sizeof( unsigned int ) );
+	unsigned int const vertexBufferSize = static_cast<unsigned int>( m_verts.size() * sizeof( Vertex ) );
+	unsigned int const indexBufferSize = static_cast<unsigned int>( m_indices.size() * sizeof( unsigned int ) );
 
 	m_vertexBuffer = g_engine->m_renderer->CreateVertexBuffer( vertexBufferSize, sizeof( Vertex ) );
 	g_engine->m_renderer->CopyCPUToGPU( m_verts.data(), vertexBufferSize, m_vertexBuffer );
