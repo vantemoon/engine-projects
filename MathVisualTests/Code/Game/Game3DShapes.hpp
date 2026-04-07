@@ -34,6 +34,11 @@ public:
 	int					m_impactedShapeType = -1;
 	int					m_impactedShapeIndex = -1;
 
+	bool				m_isShapeGrabbed = false;
+	int					m_grabbedShapeType = -1;
+	int					m_grabbedShapeIndex = -1;
+	Vec3				m_grabbedShapeLocalPosition = Vec3::ZERO;
+
 	Timer*				m_overlapPulseTimer = nullptr;
 
 	Rgba8				m_darkBlue = Rgba8( 50, 80, 150, 255 );
@@ -59,4 +64,12 @@ private:
 	void CheckIfShapesOverlap();
 
 	void RaycastAgainstShapes();
+
+	void HandleShapeGrabbing();
+	void UpdateGrabbedShapeFromCamera();
+	void ClearGrabbedShape();
+
+	bool IsShapeGrabbed( int shapeType, int shapeIndex ) const;
+	Vec3 GetShapeCenterWorldPosition( int shapeType, int shapeIndex ) const;
+	void SetShapeCenterWorldPosition( int shapeType, int shapeIndex, Vec3 const& worldCenter );
 };

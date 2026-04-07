@@ -60,9 +60,13 @@ void Game3DShapes::Update( float deltaSeconds )
 	m_screenCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) );
 
 	UpdateFromKeyboard( deltaSeconds );
+	UpdateGrabbedShapeFromCamera();
 	CheckIfShapesOverlap();
 	GetNearestPoints();
 	RaycastAgainstShapes();
+	HandleShapeGrabbing();
+	UpdateGrabbedShapeFromCamera();
+
 	Render();
 }
 
@@ -174,7 +178,11 @@ void Game3DShapes::Render() const
 	{
 		TestShapeAABB3D* shape = m_testAABBs[shapeIndex];
 		Rgba8 shapeColor = shape->m_color;
-		if ( m_nearestRaycastResult.m_didImpact && m_impactedShapeType == 0 && m_impactedShapeIndex == shapeIndex )
+		if ( IsShapeGrabbed( 0, shapeIndex ) )
+		{
+			shapeColor = Rgba8::RED;
+		}
+		else if ( m_nearestRaycastResult.m_didImpact && m_impactedShapeType == 0 && m_impactedShapeIndex == shapeIndex )
 		{
 			shapeColor = pulsedLightBlue;
 		}
@@ -188,7 +196,11 @@ void Game3DShapes::Render() const
 	{
 		TestShapeSphere* shape = m_testSpheres[shapeIndex];
 		Rgba8 shapeColor = shape->m_color;
-		if ( m_nearestRaycastResult.m_didImpact && m_impactedShapeType == 1 && m_impactedShapeIndex == shapeIndex )
+		if ( IsShapeGrabbed( 1, shapeIndex ) )
+		{
+			shapeColor = Rgba8::RED;
+		}
+		else if ( m_nearestRaycastResult.m_didImpact && m_impactedShapeType == 1 && m_impactedShapeIndex == shapeIndex )
 		{
 			shapeColor = pulsedLightBlue;
 		}
@@ -202,7 +214,11 @@ void Game3DShapes::Render() const
 	{
 		TestShapeZCylinder* shape = m_testCylinders[shapeIndex];
 		Rgba8 shapeColor = shape->m_color;
-		if ( m_nearestRaycastResult.m_didImpact && m_impactedShapeType == 2 && m_impactedShapeIndex == shapeIndex )
+		if ( IsShapeGrabbed( 2, shapeIndex ) )
+		{
+			shapeColor = Rgba8::RED;
+		}
+		else if ( m_nearestRaycastResult.m_didImpact && m_impactedShapeType == 2 && m_impactedShapeIndex == shapeIndex )
 		{
 			shapeColor = pulsedLightBlue;
 		}
@@ -774,4 +790,135 @@ void Game3DShapes::RaycastAgainstShapes()
 	m_nearestRaycastResult.m_rayStartPos = rayStart;
 	m_nearestRaycastResult.m_rayFwdNormal = rayDirection;
 	m_nearestRaycastResult.m_rayMaxLength = m_raycastMaxLength;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game3DShapes::HandleShapeGrabbing()
+{
+	if ( !g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_LBUTTON ) )
+	{
+		return;
+	}
+
+	if ( !m_nearestRaycastResult.m_didImpact )
+	{
+		return;
+	}
+
+	if ( m_isShapeGrabbed && m_grabbedShapeType == m_impactedShapeType && m_grabbedShapeIndex == m_impactedShapeIndex )
+	{
+		ClearGrabbedShape();
+		return;
+	}
+
+	m_isShapeGrabbed = true;
+	m_grabbedShapeType = m_impactedShapeType;
+	m_grabbedShapeIndex = m_impactedShapeIndex;
+
+	Vec3 cameraPos = m_worldCamera->GetPosition();
+	Vec3 forward;
+	Vec3 left;
+	Vec3 up;
+	m_worldCamera->GetOrientation().GetAsVectors_IFwd_JLeft_KUp( forward, left, up );
+
+	Vec3 shapeCenter = GetShapeCenterWorldPosition( m_grabbedShapeType, m_grabbedShapeIndex );
+	Vec3 cameraToShape = shapeCenter - cameraPos;
+	m_grabbedShapeLocalPosition = Vec3(
+		DotProduct3D( cameraToShape, forward ),
+		DotProduct3D( cameraToShape, left ),
+		DotProduct3D( cameraToShape, up ) );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game3DShapes::UpdateGrabbedShapeFromCamera()
+{
+	if ( !m_isShapeGrabbed )
+	{
+		return;
+	}
+
+	Vec3 forward;
+	Vec3 left;
+	Vec3 up;
+	m_worldCamera->GetOrientation().GetAsVectors_IFwd_JLeft_KUp( forward, left, up );
+
+	Vec3 cameraPos = m_worldCamera->GetPosition();
+	Vec3 targetWorldCenter = cameraPos
+		+ ( forward * m_grabbedShapeLocalPosition.x )
+		+ ( left * m_grabbedShapeLocalPosition.y )
+		+ ( up * m_grabbedShapeLocalPosition.z );
+
+	SetShapeCenterWorldPosition( m_grabbedShapeType, m_grabbedShapeIndex, targetWorldCenter );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game3DShapes::ClearGrabbedShape()
+{
+	m_isShapeGrabbed = false;
+	m_grabbedShapeType = -1;
+	m_grabbedShapeIndex = -1;
+	m_grabbedShapeLocalPosition = Vec3::ZERO;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool Game3DShapes::IsShapeGrabbed( int shapeType, int shapeIndex ) const
+{
+	return m_isShapeGrabbed && m_grabbedShapeType == shapeType && m_grabbedShapeIndex == shapeIndex;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+Vec3 Game3DShapes::GetShapeCenterWorldPosition( int shapeType, int shapeIndex ) const
+{
+	if ( shapeType == 0 )
+	{
+		TestShapeAABB3D const* shape = m_testAABBs[shapeIndex];
+		return ( shape->m_alignedBox.m_mins + shape->m_alignedBox.m_maxs ) * 0.5f;
+	}
+	if ( shapeType == 1 )
+	{
+		return m_testSpheres[shapeIndex]->m_center;
+	}
+	if ( shapeType == 2 )
+	{
+		TestShapeZCylinder const* shape = m_testCylinders[shapeIndex];
+		return ( shape->m_start + shape->m_end ) * 0.5f;
+	}
+
+	return Vec3::ZERO;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game3DShapes::SetShapeCenterWorldPosition( int shapeType, int shapeIndex, Vec3 const& worldCenter )
+{
+	if ( shapeType == 0 )
+	{
+		TestShapeAABB3D* shape = m_testAABBs[shapeIndex];
+		Vec3 currentCenter = ( shape->m_alignedBox.m_mins + shape->m_alignedBox.m_maxs ) * 0.5f;
+		Vec3 delta = worldCenter - currentCenter;
+		shape->m_alignedBox.m_mins += delta;
+		shape->m_alignedBox.m_maxs += delta;
+		return;
+	}
+
+	if ( shapeType == 1 )
+	{
+		m_testSpheres[shapeIndex]->m_center = worldCenter;
+		return;
+	}
+
+	if ( shapeType == 2 )
+	{
+		TestShapeZCylinder* shape = m_testCylinders[shapeIndex];
+		Vec3 currentCenter = ( shape->m_start + shape->m_end ) * 0.5f;
+		Vec3 delta = worldCenter - currentCenter;
+		shape->m_start += delta;
+		shape->m_end += delta;
+		return;
+	}
 }
