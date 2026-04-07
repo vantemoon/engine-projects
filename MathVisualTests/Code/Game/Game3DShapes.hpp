@@ -4,6 +4,7 @@
 #include "Game/TestShapeAABB3D.hpp"
 #include "Game/TestShapeSphere.hpp"
 #include "Game/TestShapeZCylinder.hpp"
+#include "Engine/Core/Rgba8.hpp"
 #include "Engine/Core/Timer.hpp"
 #include <vector>
 
@@ -25,6 +26,9 @@ public:
 	Vec3				m_nearestPoint = Vec3::ZERO;
 
 	Timer*				m_overlapPulseTimer = nullptr;
+
+	Rgba8				m_darkBlue = Rgba8( 50, 80, 150, 255 );
+	Rgba8				m_lightBlue = Rgba8( 100, 150, 255, 255 );
 
 	Game3DShapes();
 	~Game3DShapes();

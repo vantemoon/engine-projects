@@ -216,6 +216,213 @@ RaycastResult2D RaycastVsAABB2D( Vec2 startPos, Vec2 fwdNormal, float maxDist, A
 
 
 //-----------------------------------------------------------------------------------------------
+RaycastResult3D RaycastVsAABB3D( Vec3 startPos, Vec3 fwdNormal, float maxDist, AABB3 box )
+{
+	RaycastResult3D result;
+	result.m_rayStartPos = startPos;
+	result.m_rayFwdNormal = fwdNormal;
+	result.m_rayMaxLength = maxDist;
+	result.m_didImpact = false;
+
+	if ( maxDist < 0.f )
+	{
+		return result;
+	}
+
+	if ( startPos.x >= box.m_mins.x && startPos.x <= box.m_maxs.x &&
+		startPos.y >= box.m_mins.y && startPos.y <= box.m_maxs.y &&
+		startPos.z >= box.m_mins.z && startPos.z <= box.m_maxs.z )
+	{
+		result.m_didImpact = true;
+		result.m_impactDist = 0.f;
+		result.m_impactPos = startPos;
+		result.m_impactNormal = -fwdNormal;
+		return result;
+	}
+
+	FloatRange tRange( 0.f, maxDist );
+
+	Vec3 nearNormalX( 0.f, 0.f, 0.f );
+	Vec3 nearNormalY( 0.f, 0.f, 0.f );
+	Vec3 nearNormalZ( 0.f, 0.f, 0.f );
+
+	if ( fwdNormal.x == 0.f )
+	{
+		if ( startPos.x < box.m_mins.x || startPos.x > box.m_maxs.x )
+		{
+			return result;
+		}
+	}
+	else
+	{
+		float tNear = ( box.m_mins.x - startPos.x ) / fwdNormal.x;
+		float tFar = ( box.m_maxs.x - startPos.x ) / fwdNormal.x;
+
+		Vec3 nearNormal( -1.f, 0.f, 0.f );
+		Vec3 farNormal( 1.f, 0.f, 0.f );
+
+		if ( tNear > tFar )
+		{
+			float tempT = tNear; tNear = tFar; tFar = tempT;
+			Vec3 tempN = nearNormal; nearNormal = farNormal; farNormal = tempN;
+		}
+
+		nearNormalX = nearNormal;
+
+		tRange.m_min = fmaxf( tRange.m_min, tNear );
+		tRange.m_max = fminf( tRange.m_max, tFar );
+		if ( tRange.m_min > tRange.m_max )
+		{
+			return result;
+		}
+	}
+
+	float tEnterX = tRange.m_min;
+
+	if ( fwdNormal.y == 0.f )
+	{
+		if ( startPos.y < box.m_mins.y || startPos.y > box.m_maxs.y )
+		{
+			return result;
+		}
+	}
+	else
+	{
+		float tNear = ( box.m_mins.y - startPos.y ) / fwdNormal.y;
+		float tFar = ( box.m_maxs.y - startPos.y ) / fwdNormal.y;
+
+		Vec3 nearNormal( 0.f, -1.f, 0.f );
+		Vec3 farNormal( 0.f, 1.f, 0.f );
+
+		if ( tNear > tFar )
+		{
+			float tempT = tNear; tNear = tFar; tFar = tempT;
+			Vec3 tempN = nearNormal; nearNormal = farNormal; farNormal = tempN;
+		}
+
+		nearNormalY = nearNormal;
+
+		tRange.m_min = fmaxf( tRange.m_min, tNear );
+		tRange.m_max = fminf( tRange.m_max, tFar );
+		if ( tRange.m_min > tRange.m_max )
+		{
+			return result;
+		}
+	}
+
+	float tEnterY = tRange.m_min;
+
+	if ( fwdNormal.z == 0.f )
+	{
+		if ( startPos.z < box.m_mins.z || startPos.z > box.m_maxs.z )
+		{
+			return result;
+		}
+	}
+	else
+	{
+		float tNear = ( box.m_mins.z - startPos.z ) / fwdNormal.z;
+		float tFar = ( box.m_maxs.z - startPos.z ) / fwdNormal.z;
+
+		Vec3 nearNormal( 0.f, 0.f, -1.f );
+		Vec3 farNormal( 0.f, 0.f, 1.f );
+
+		if ( tNear > tFar )
+		{
+			float tempT = tNear; tNear = tFar; tFar = tempT;
+			Vec3 tempN = nearNormal; nearNormal = farNormal; farNormal = tempN;
+		}
+
+		nearNormalZ = nearNormal;
+
+		tRange.m_min = fmaxf( tRange.m_min, tNear );
+		tRange.m_max = fminf( tRange.m_max, tFar );
+		if ( tRange.m_min > tRange.m_max )
+		{
+			return result;
+		}
+	}
+
+	float tEnter = tRange.m_min;
+	if ( tEnter > maxDist )
+	{
+		return result;
+	}
+
+	Vec3 impactNormal = nearNormalX;
+	if ( tEnter > tEnterX )
+	{
+		impactNormal = nearNormalY;
+	}
+	if ( tEnter > tEnterY )
+	{
+		impactNormal = nearNormalZ;
+	}
+
+	result.m_didImpact = true;
+	result.m_impactDist = tEnter;
+	result.m_impactPos = startPos + ( fwdNormal * tEnter );
+	result.m_impactNormal = impactNormal;
+	return result;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+RaycastResult3D RaycastVsSphere3D( Vec3 startPos, Vec3 fwdNormal, float maxDist, Vec3 sphereCenter, float sphereRadius )
+{
+	RaycastResult3D result;
+	result.m_rayStartPos = startPos;
+	result.m_rayFwdNormal = fwdNormal;
+	result.m_rayMaxLength = maxDist;
+	result.m_didImpact = false;
+
+	if ( maxDist < 0.f )
+	{
+		return result;
+	}
+
+	Vec3 toSphereCenter = sphereCenter - startPos;
+	float projectionLength = DotProduct3D( toSphereCenter, fwdNormal );
+
+	if ( projectionLength < -sphereRadius || projectionLength > maxDist + sphereRadius )
+	{
+		return result;
+	}
+
+	float distCenterToRaySquared = DotProduct3D( toSphereCenter, toSphereCenter ) - ( projectionLength * projectionLength );
+
+	float sphereRadiusSquared = sphereRadius * sphereRadius;
+	if ( distCenterToRaySquared > sphereRadiusSquared )
+	{
+		return result;
+	}
+
+	if ( DotProduct3D( toSphereCenter, toSphereCenter ) <= sphereRadiusSquared )
+	{
+		result.m_didImpact = true;
+		result.m_impactDist = 0.f;
+		result.m_impactPos = startPos;
+		result.m_impactNormal = -fwdNormal;
+		return result;
+	}
+
+	float adjustmentDist = sqrtf( sphereRadiusSquared - distCenterToRaySquared );
+	float impactDist = projectionLength - adjustmentDist;
+
+	if ( impactDist < 0.f || impactDist > maxDist )
+	{
+		return result;
+	}
+
+	result.m_didImpact = true;
+	result.m_impactDist = impactDist;
+	result.m_impactPos = startPos + ( fwdNormal * impactDist );
+	result.m_impactNormal = ( result.m_impactPos - sphereCenter ).GetNormalized();
+	return result;
+}
+
+
+//-----------------------------------------------------------------------------------------------
 RaycastResult3D RaycastVsCylinderZ3D( Vec3 startPos, Vec3 fwdNormal, float maxDist, Vec2 cylinderBaseCenter, float cylinderMinZ, float cylinderMaxZ, float cylinderRadius )
 {
 	RaycastResult3D result;

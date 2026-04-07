@@ -487,7 +487,7 @@ void Game3DShapes::CheckIfShapesOverlap()
 
 	float pulse = SinDegrees( static_cast<float>( m_overlapPulseTimer->GetElapsedFraction() * 360.0 ) );
 	float pulseBrightness = 0.7f + ( 0.3f * pulse );
-	Rgba8 darkBlue( 50, 80, 150, 255 );
+	
 
 	// AABBs
 	for ( int aabbIndex = 0; aabbIndex < NUM_SHAPE_PER_TYPE; ++aabbIndex )
@@ -531,7 +531,7 @@ void Game3DShapes::CheckIfShapesOverlap()
 			}
 		}
 
-		Rgba8 defaultColor = ( ( aabbIndex % 2 ) == 0 ) ? darkBlue : Rgba8::WHITE;
+		Rgba8 defaultColor = ( ( aabbIndex % 2 ) == 0 ) ? m_darkBlue : Rgba8::WHITE;
 		Rgba8 overlapColor(
 			static_cast<unsigned char>( static_cast<float>( defaultColor.r ) * pulseBrightness ),
 			static_cast<unsigned char>( static_cast<float>( defaultColor.g ) * pulseBrightness ),
@@ -583,7 +583,7 @@ void Game3DShapes::CheckIfShapesOverlap()
 			}
 		}
 
-		Rgba8 defaultColor = ( ( sphereIndex % 2 ) == 0 ) ? darkBlue : Rgba8::WHITE;
+		Rgba8 defaultColor = ( ( sphereIndex % 2 ) == 0 ) ? m_darkBlue : Rgba8::WHITE;
 		Rgba8 overlapColor(
 			static_cast<unsigned char>( static_cast<float>( defaultColor.r ) * pulseBrightness ),
 			static_cast<unsigned char>( static_cast<float>( defaultColor.g ) * pulseBrightness ),
@@ -640,7 +640,7 @@ void Game3DShapes::CheckIfShapesOverlap()
 			}
 		}
 
-		Rgba8 defaultColor = ( ( cylinderIndex % 2 ) == 0 ) ? darkBlue : Rgba8::WHITE;
+		Rgba8 defaultColor = ( ( cylinderIndex % 2 ) == 0 ) ? m_darkBlue : Rgba8::WHITE;
 		Rgba8 overlapColor(
 			static_cast<unsigned char>( static_cast<float>( defaultColor.r ) * pulseBrightness ),
 			static_cast<unsigned char>( static_cast<float>( defaultColor.g ) * pulseBrightness ),
