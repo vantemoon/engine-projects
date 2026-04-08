@@ -13,12 +13,13 @@ class Texture;
 
 
 //-----------------------------------------------------------------------------------------------
-struct MapSpawnInfo
+struct SpawnInfo
 {
-	std::string m_actor;
-	std::string m_faction;
-	Vec3 m_position;
-	Vec3 m_orientation;
+	std::string m_actor = "-";
+	// std::string m_faction;
+	Vec3 m_position = Vec3::ZERO;
+	Vec3 m_orientation = Vec3::ZERO;
+	Vec3 m_velocity = Vec3::ZERO;
 };
 
 
@@ -31,7 +32,7 @@ public:
 	Shader* m_shader = nullptr;
 	Texture* m_spriteSheetTexture = nullptr;
 	IntVec2 m_spriteSheetCellCount;
-	std::vector<MapSpawnInfo> m_spawnInfos;
+	std::vector<SpawnInfo> m_spawnInfos;
 
 	static std::map<std::string, MapDefinition*> s_definitions;
 

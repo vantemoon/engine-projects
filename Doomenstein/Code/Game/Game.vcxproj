@@ -25,6 +25,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Actor.cpp" />
+    <ClCompile Include="ActorDefinition.cpp" />
     <ClCompile Include="ActorHandler.cpp" />
     <ClCompile Include="App.cpp" />
     <ClCompile Include="Game.cpp" />
@@ -38,6 +39,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Actor.hpp" />
+    <ClInclude Include="ActorDefinition.hpp" />
     <ClInclude Include="ActorHandler.hpp" />
     <ClInclude Include="App.hpp" />
     <ClInclude Include="EngineBuildPreferences.hpp" />
@@ -55,7 +57,7 @@
     <Xml Include="..\..\Run\Data\Definitions\ProjectileActorDefinitions.xml" />
     <Xml Include="..\..\Run\Data\Definitions\TileDefinitions.xml" />
     <Xml Include="..\..\Run\Data\Definitions\WeaponDefinitions.xml" />
-    <Xml Include="GameConfig.xml" />
+    <Xml Include="..\..\Run\Data\GameConfig.xml" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

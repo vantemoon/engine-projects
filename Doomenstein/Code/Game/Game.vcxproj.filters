@@ -11,6 +11,9 @@
     <Filter Include="Config">
       <UniqueIdentifier>{44c7d93b-64cb-4440-909f-87a88b417f95}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Definitions">
+      <UniqueIdentifier>{089b4e4a-17d5-4ea2-960e-95f840c0f16b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main_Windows.cpp">
@@ -34,17 +37,20 @@
     <ClCompile Include="Map.cpp">
       <Filter>Gameplay</Filter>
     </ClCompile>
-    <ClCompile Include="MapDefinition.cpp">
-      <Filter>Gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="TileDefinition.cpp">
-      <Filter>Gameplay</Filter>
-    </ClCompile>
     <ClCompile Include="Tile.cpp">
       <Filter>Gameplay</Filter>
     </ClCompile>
     <ClCompile Include="ActorHandler.cpp">
       <Filter>Gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="TileDefinition.cpp">
+      <Filter>Definitions</Filter>
+    </ClCompile>
+    <ClCompile Include="MapDefinition.cpp">
+      <Filter>Definitions</Filter>
+    </ClCompile>
+    <ClCompile Include="ActorDefinition.cpp">
+      <Filter>Definitions</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -69,17 +75,20 @@
     <ClInclude Include="Map.hpp">
       <Filter>Gameplay</Filter>
     </ClInclude>
-    <ClInclude Include="MapDefinition.hpp">
-      <Filter>Gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="TileDefinition.hpp">
-      <Filter>Gameplay</Filter>
-    </ClInclude>
     <ClInclude Include="Tile.hpp">
       <Filter>Gameplay</Filter>
     </ClInclude>
     <ClInclude Include="ActorHandler.hpp">
       <Filter>Gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="TileDefinition.hpp">
+      <Filter>Definitions</Filter>
+    </ClInclude>
+    <ClInclude Include="MapDefinition.hpp">
+      <Filter>Definitions</Filter>
+    </ClInclude>
+    <ClInclude Include="ActorDefinition.hpp">
+      <Filter>Definitions</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -98,7 +107,7 @@
     <Xml Include="..\..\Run\Data\Definitions\WeaponDefinitions.xml">
       <Filter>Config</Filter>
     </Xml>
-    <Xml Include="GameConfig.xml">
+    <Xml Include="..\..\Run\Data\GameConfig.xml">
       <Filter>Config</Filter>
     </Xml>
   </ItemGroup>

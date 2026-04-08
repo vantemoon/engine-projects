@@ -23,4 +23,5 @@ public:
 	static const FloatRange ZERO;         // [0, 0]
 	static const FloatRange ONE;          // [1, 1]
 	static const FloatRange ZERO_TO_ONE;  // [0, 1]
+	static const FloatRange ZERO_TO_ZERO; // [0, 0]
 };

@@ -62,7 +62,7 @@ void MapDefinition::InitializeDefinitions()
 			tinyxml2::XMLElement* spawnInfoElement = spawnInfosElement->FirstChildElement( "SpawnInfo" );
 			while ( spawnInfoElement != nullptr )
 			{
-				MapSpawnInfo spawnInfo;
+				SpawnInfo spawnInfo;
 
 				char const* actorText = spawnInfoElement->Attribute( "actor" );
 				if ( actorText != nullptr )
@@ -70,11 +70,11 @@ void MapDefinition::InitializeDefinitions()
 					spawnInfo.m_actor = actorText;
 				}
 
-				char const* factionText = spawnInfoElement->Attribute( "faction" );
+				/*char const* factionText = spawnInfoElement->Attribute( "faction" );
 				if ( factionText != nullptr )
 				{
 					spawnInfo.m_faction = factionText;
-				}
+				}*/
 
 				char const* positionText = spawnInfoElement->Attribute( "position" );
 				if ( positionText != nullptr )
@@ -86,6 +86,12 @@ void MapDefinition::InitializeDefinitions()
 				if ( orientationText != nullptr )
 				{
 					spawnInfo.m_orientation.SetFromText( orientationText );
+				}
+
+				char const* velocityText = spawnInfoElement->Attribute( "velocity" );
+				if ( velocityText != nullptr )
+				{
+					spawnInfo.m_velocity.SetFromText( velocityText );
 				}
 
 				newMapDef.m_spawnInfos.push_back( spawnInfo );
