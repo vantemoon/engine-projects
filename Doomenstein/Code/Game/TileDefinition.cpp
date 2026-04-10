@@ -10,7 +10,11 @@ std::map<std::string, TileDefinition*> TileDefinition::s_definitions;
 void TileDefinition::InitializeDefinitions()
 {
 	XmlDocument tileDefDoc;
-	tileDefDoc.LoadFile( "Data/Definitions/TileDefinitions.xml" );
+	XmlResult loadResult = tileDefDoc.LoadFile( "Data/Definitions/TileDefinitions.xml" );
+	if ( loadResult != tinyxml2::XML_SUCCESS )
+	{
+		return;
+	}
 
 	tinyxml2::XMLElement* rootElement = tileDefDoc.RootElement();
 	if ( rootElement == nullptr )
@@ -22,38 +26,19 @@ void TileDefinition::InitializeDefinitions()
 	while ( tileDefElement != nullptr )
 	{
 		TileDefinition newTileDef;
-		const char* nameText = tileDefElement->Attribute( "name" );
-		if ( nameText != nullptr )
+
+		newTileDef.m_name = ParseXmlAttribute( *tileDefElement, "name", newTileDef.m_name );
+		newTileDef.m_isSolid = ParseXmlAttribute( *tileDefElement, "isSolid", false );
+		newTileDef.m_mapImagePixelColor = ParseXmlAttribute( *tileDefElement, "mapImagePixelColor", newTileDef.m_mapImagePixelColor );
+		newTileDef.m_floorSpriteCoords = ParseXmlAttribute( *tileDefElement, "floorSpriteCoords", newTileDef.m_floorSpriteCoords );
+		newTileDef.m_wallSpriteCoords = ParseXmlAttribute( *tileDefElement, "wallSpriteCoords", newTileDef.m_wallSpriteCoords );
+		newTileDef.m_ceilingSpriteCoords = ParseXmlAttribute( *tileDefElement, "ceilingSpriteCoords", newTileDef.m_ceilingSpriteCoords );
+
+		if ( !newTileDef.m_name.empty() )
 		{
-			newTileDef.m_name = nameText;
-		}
-		const char* isSolidText = tileDefElement->Attribute( "isSolid" );
-		if ( isSolidText != nullptr )
-		{
-			newTileDef.m_isSolid = ParseXmlAttribute( *tileDefElement, "isSolid", false );
-		}
-		const char* mapImagePixelColorText = tileDefElement->Attribute( "mapImagePixelColor" );
-		if ( mapImagePixelColorText != nullptr )
-		{
-			newTileDef.m_mapImagePixelColor.SetFromText( mapImagePixelColorText );
-		}
-		const char* floorSpriteCoordsText = tileDefElement->Attribute( "floorSpriteCoords" );
-		if ( floorSpriteCoordsText != nullptr )
-		{
-			newTileDef.m_floorSpriteCoords.SetFromText( floorSpriteCoordsText );
-		}
-		const char* wallSpriteCoordsText = tileDefElement->Attribute( "wallSpriteCoords" );
-		if ( wallSpriteCoordsText != nullptr )
-		{
-			newTileDef.m_wallSpriteCoords.SetFromText( wallSpriteCoordsText );
-		}
-		const char* ceilingSpriteCoordsText = tileDefElement->Attribute( "ceilingSpriteCoords" );
-		if ( ceilingSpriteCoordsText != nullptr )
-		{
-			newTileDef.m_ceilingSpriteCoords.SetFromText( ceilingSpriteCoordsText );
+			s_definitions[newTileDef.m_name] = new TileDefinition( newTileDef );
 		}
 
-		s_definitions[newTileDef.m_name] = new TileDefinition( newTileDef );
 		tileDefElement = tileDefElement->NextSiblingElement( "TileDefinition" );
 	}
 }

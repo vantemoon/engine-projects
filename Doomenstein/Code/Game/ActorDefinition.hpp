@@ -1,6 +1,8 @@
 #pragma once
 #include "Engine/Math/FloatRange.hpp"
+#include <map>
 #include <string>
+#include <vector>
 
 
 //-----------------------------------------------------------------------------------------------
@@ -28,6 +30,25 @@ public:
 	bool m_isFlying = false;
 	float m_walkSpeed = 0.f;
 	float m_runSpeed = 0.f;
-	float m_turnSpeed = 0.f;
 	float m_drag = 0.f;
+	float m_turnSpeed = 0.f;
+
+	// Camera
+	float m_eyeHeight = 0.f;
+	float m_cameraFOVDegrees = 60.f;
+
+	// AI
+	bool m_aiEnabled = false;
+	float m_sightRadius = 0.f;
+	float m_sightAngle = 0.f;
+
+	// Weapons
+	std::vector<std::string> m_weaponDefNames;
+
+public:
+	static std::map<std::string, ActorDefinition*> s_definitions;
+
+	static void InitializeDefinitions();
+	static void ClearDefinitions();
+	static ActorDefinition const* GetActorDefinitionByName( std::string const& name );
 };

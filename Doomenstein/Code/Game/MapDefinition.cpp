@@ -13,7 +13,11 @@ std::map<std::string, MapDefinition*> MapDefinition::s_definitions;
 void MapDefinition::InitializeDefinitions()
 {
 	XmlDocument mapDefDoc;
-	mapDefDoc.LoadFile( "Data/Definitions/MapDefinitions.xml" );
+	XmlResult loadResult = mapDefDoc.LoadFile( "Data/Definitions/MapDefinitions.xml" );
+	if ( loadResult != tinyxml2::XML_SUCCESS )
+	{
+		return;
+	}
 
 	tinyxml2::XMLElement* rootElement = mapDefDoc.RootElement();
 	if ( rootElement == nullptr )
@@ -26,35 +30,27 @@ void MapDefinition::InitializeDefinitions()
 	{
 		MapDefinition newMapDef;
 
-		char const* nameText = mapDefElement->Attribute( "name" );
-		if ( nameText != nullptr )
+		newMapDef.m_name = ParseXmlAttribute( *mapDefElement, "name", newMapDef.m_name );
+
+		std::string imagePath = ParseXmlAttribute( *mapDefElement, "image", "" );
+		if ( !imagePath.empty() )
 		{
-			newMapDef.m_name = nameText;
+			newMapDef.m_image = Image( imagePath.c_str() );
 		}
 
-		char const* imageText = mapDefElement->Attribute( "image" );
-		if ( imageText != nullptr )
+		std::string shaderPath = ParseXmlAttribute( *mapDefElement, "shader", "" );
+		if ( !shaderPath.empty() && g_engine != nullptr && g_engine->m_renderer != nullptr )
 		{
-			newMapDef.m_image = Image( imageText );
+			newMapDef.m_shader = g_engine->m_renderer->CreateOrGetShader( shaderPath.c_str(), VertexType::VERTEX_PCUTBN );
 		}
 
-		char const* shaderText = mapDefElement->Attribute( "shader" );
-		if ( shaderText != nullptr )
+		std::string spriteSheetTexturePath = ParseXmlAttribute( *mapDefElement, "spriteSheetTexture", "" );
+		if ( !spriteSheetTexturePath.empty() && g_engine != nullptr && g_engine->m_renderer != nullptr )
 		{
-			newMapDef.m_shader = g_engine->m_renderer->CreateOrGetShader( shaderText, VertexType::VERTEX_PCUTBN );
+			newMapDef.m_spriteSheetTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( spriteSheetTexturePath.c_str() );
 		}
 
-		char const* spriteSheetTextureText = mapDefElement->Attribute( "spriteSheetTexture" );
-		if ( spriteSheetTextureText != nullptr )
-		{
-			newMapDef.m_spriteSheetTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( spriteSheetTextureText );
-		}
-
-		char const* spriteSheetCellCountText = mapDefElement->Attribute( "spriteSheetCellCount" );
-		if ( spriteSheetCellCountText != nullptr )
-		{
-			newMapDef.m_spriteSheetCellCount.SetFromText( spriteSheetCellCountText );
-		}
+		newMapDef.m_spriteSheetCellCount = ParseXmlAttribute( *mapDefElement, "spriteSheetCellCount", newMapDef.m_spriteSheetCellCount );
 
 		tinyxml2::XMLElement* spawnInfosElement = mapDefElement->FirstChildElement( "SpawnInfos" );
 		if ( spawnInfosElement != nullptr )
@@ -64,34 +60,24 @@ void MapDefinition::InitializeDefinitions()
 			{
 				SpawnInfo spawnInfo;
 
-				char const* actorText = spawnInfoElement->Attribute( "actor" );
-				if ( actorText != nullptr )
+				spawnInfo.m_actor = ParseXmlAttribute( *spawnInfoElement, "actor", spawnInfo.m_actor );
+
+				std::string positionText = ParseXmlAttribute( *spawnInfoElement, "position", "" );
+				if ( !positionText.empty() )
 				{
-					spawnInfo.m_actor = actorText;
+					spawnInfo.m_position.SetFromText( positionText.c_str() );
 				}
 
-				/*char const* factionText = spawnInfoElement->Attribute( "faction" );
-				if ( factionText != nullptr )
+				std::string orientationText = ParseXmlAttribute( *spawnInfoElement, "orientation", "" );
+				if ( !orientationText.empty() )
 				{
-					spawnInfo.m_faction = factionText;
-				}*/
-
-				char const* positionText = spawnInfoElement->Attribute( "position" );
-				if ( positionText != nullptr )
-				{
-					spawnInfo.m_position.SetFromText( positionText );
+					spawnInfo.m_orientation.SetFromText( orientationText.c_str() );
 				}
 
-				char const* orientationText = spawnInfoElement->Attribute( "orientation" );
-				if ( orientationText != nullptr )
+				std::string velocityText = ParseXmlAttribute( *spawnInfoElement, "velocity", "" );
+				if ( !velocityText.empty() )
 				{
-					spawnInfo.m_orientation.SetFromText( orientationText );
-				}
-
-				char const* velocityText = spawnInfoElement->Attribute( "velocity" );
-				if ( velocityText != nullptr )
-				{
-					spawnInfo.m_velocity.SetFromText( velocityText );
+					spawnInfo.m_velocity.SetFromText( velocityText.c_str() );
 				}
 
 				newMapDef.m_spawnInfos.push_back( spawnInfo );
@@ -99,7 +85,17 @@ void MapDefinition::InitializeDefinitions()
 			}
 		}
 
-		s_definitions[newMapDef.m_name] = new MapDefinition( newMapDef );
+		if ( !newMapDef.m_name.empty() )
+		{
+			auto existingDefIter = s_definitions.find( newMapDef.m_name );
+			if ( existingDefIter != s_definitions.end() )
+			{
+				delete existingDefIter->second;
+				existingDefIter->second = nullptr;
+			}
+			s_definitions[newMapDef.m_name] = new MapDefinition( newMapDef );
+		}
+
 		mapDefElement = mapDefElement->NextSiblingElement( "MapDefinition" );
 	}
 }

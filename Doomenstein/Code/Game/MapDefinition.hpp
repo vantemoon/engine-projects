@@ -15,7 +15,7 @@ class Texture;
 //-----------------------------------------------------------------------------------------------
 struct SpawnInfo
 {
-	std::string m_actor = "-";
+	std::string m_actor = "";
 	// std::string m_faction;
 	Vec3 m_position = Vec3::ZERO;
 	Vec3 m_orientation = Vec3::ZERO;

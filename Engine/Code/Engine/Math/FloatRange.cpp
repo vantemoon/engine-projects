@@ -1,4 +1,5 @@
 #include "Engine/Math/FloatRange.hpp"
+#include <string>
 
 
 //-----------------------------------------------------------------------------------------------
@@ -61,4 +62,27 @@ bool FloatRange::IsOnRange( float value ) const
 bool FloatRange::IsOverlappingWith( const FloatRange& other ) const
 {
 	return ( m_min <= other.m_max && m_max >= other.m_min );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void FloatRange::SetFromText( const char* text )
+{
+	if ( text == nullptr )
+	{
+		return;
+	}
+
+	std::string textStr( text );
+	size_t commaIndex = textStr.find( ',' );
+	if ( commaIndex == std::string::npos )
+	{
+		return;
+	}
+
+	std::string minStr = textStr.substr( 0, commaIndex );
+	std::string maxStr = textStr.substr( commaIndex + 1 );
+
+	m_min = std::stof( minStr );
+	m_max = std::stof( maxStr );
 }
