@@ -48,7 +48,8 @@ public:
 
 	void Update();
 	void UpdateAttractMode();
-	void UpdateEntities();
+	void UpdatePlayer();
+	void UpdateCurrentMap();
 	void UpdateFromKeyboard();
 	void UpdateFromController();
 

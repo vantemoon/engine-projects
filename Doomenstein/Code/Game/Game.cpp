@@ -192,7 +192,8 @@ void Game::Update()
 
 	UpdateFromKeyboard();
 	UpdateFromController();
-	UpdateEntities();
+	UpdatePlayer();
+	UpdateCurrentMap();
 
 	g_app->m_game->DeleteGarbageEntities();
 
@@ -613,7 +614,7 @@ void Game::UpdateFromController()
 
 
 //-----------------------------------------------------------------------------------------------
-void Game::UpdateEntities()
+void Game::UpdatePlayer()
 {
 	if ( m_player == nullptr )
 	{
@@ -633,7 +634,12 @@ void Game::UpdateEntities()
 		m_player->m_isMovementInputEnabled = true;
 		m_player->Update( deltaSeconds );
 	}
+}
 
+
+//-----------------------------------------------------------------------------------------------
+void Game::UpdateCurrentMap()
+{
 	if ( m_currentMap != nullptr )
 	{
 		m_currentMap->Update();
