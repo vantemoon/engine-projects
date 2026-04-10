@@ -25,14 +25,9 @@ public:
 	Player*				m_player = nullptr;
 	Camera*				m_screenCamera = nullptr;
 
-	bool				m_isScreenShaking = false;
-	float				m_screenShakeIntensity = 0.f;
-	float				m_screenShakeDuration = 0.f;
-	float				m_screenShakeStartTime = 0.f;
-
 	GameState			m_currentGameState;
 	Clock*				m_gameClock = nullptr;
-	bool				m_isDebugFeaturesOn = false;
+
 	bool				m_hasControlsBeenShown = false;
 	bool				m_isControllingFakeProjectile = false;
 
@@ -66,7 +61,6 @@ public:
 
 protected:
 	void DeleteGarbageEntities();
-	void DebugDraw()												   const;
 	Vec3 TransformWorldToScreen( Vec3 const& worldPosition )		   const;
 	bool IsOnScreen( Vec2 const& worldPosition, float cosmeticRadius ) const;
 	void AddInstructionsToDevConsole()								   const;

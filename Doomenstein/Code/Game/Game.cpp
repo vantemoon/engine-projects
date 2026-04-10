@@ -198,25 +198,6 @@ void Game::Update()
 	g_app->m_game->DeleteGarbageEntities();
 
 	m_screenCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) );
-
-	if ( m_isScreenShaking )
-	{
-		float shakeElapsedTime = ( float ) m_gameClock->GetTotalSeconds() - m_screenShakeStartTime;
-		if ( shakeElapsedTime < m_screenShakeDuration )
-		{
-			float t = shakeElapsedTime / m_screenShakeDuration;
-			float currentIntensity = m_screenShakeIntensity * ( 1.f - t );
-			ScreenShake( currentIntensity );
-		}
-		else
-		{
-			m_isScreenShaking = false;
-			m_screenShakeIntensity = 0.f;
-			m_screenShakeDuration = 0.f;
-			m_screenShakeStartTime = 0.f;
-			m_player->m_playerCamera->SetPerspectiveView( g_engine->m_window->m_config.m_clientAspect, 60.f, 0.1f, 100.f );
-		}
-	}
 }
 
 
@@ -558,12 +539,6 @@ void Game::UpdateFromKeyboard()
 			m_gameClock->SetTimeScale( 1.0 );
 		}
 
-		// Toggle debug features
-		/*if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_F1 ) )
-		{
-			m_isDebugFeaturesOn = !m_isDebugFeaturesOn;
-		}*/
-
 		// Pause the game after the next update (for debugging)
 		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'O' ) )
 		{
@@ -707,22 +682,6 @@ void Game::UpdateFakeProjectileFromKeyboard( float deltaSeconds )
 
 
 //-----------------------------------------------------------------------------------------------
-void Game::DebugDraw() const
-{
-	if (m_player == nullptr || m_player->m_playerCamera == nullptr)
-	{
-		return;
-	}
-
-	g_engine->m_renderer->BeginCamera( *m_player->m_playerCamera );
-
-	// #ToDo: Draw debug information about entities, collisions, etc.
-
-	g_engine->m_renderer->EndCamera( *m_player->m_playerCamera );
-}
-
-
-//-----------------------------------------------------------------------------------------------
 void Game::Render() const
 {
 	if ( m_currentGameState == GameState::ATTRACT_MODE )
@@ -747,11 +706,6 @@ void Game::Render() const
 
 	DebugRenderWorld( *m_player->m_playerCamera );
 	DebugRenderScreen( *m_screenCamera );
-
-	if ( m_isDebugFeaturesOn )
-	{
-		DebugDraw();
-	}
 
 	g_engine->m_renderer->EndCamera( *m_player->m_playerCamera );
 }
@@ -905,8 +859,6 @@ void Game::Reset()
 
 	LoadMaps();
 
-	m_isScreenShaking = false;
-	m_isDebugFeaturesOn = false;
 	m_isControllingFakeProjectile = false;
 }
 
