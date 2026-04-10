@@ -45,9 +45,9 @@ public:
 	// Weapons
 	std::vector<std::string> m_weaponDefNames;
 
-public:
 	static std::map<std::string, ActorDefinition*> s_definitions;
 
+public:
 	static void InitializeDefinitions();
 	static void ClearDefinitions();
 	static ActorDefinition const* GetActorDefinitionByName( std::string const& name );

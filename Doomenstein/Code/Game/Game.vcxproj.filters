@@ -52,6 +52,9 @@
     <ClCompile Include="ActorDefinition.cpp">
       <Filter>Definitions</Filter>
     </ClCompile>
+    <ClCompile Include="WeaponDefinition.cpp">
+      <Filter>Definitions</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.hpp">
@@ -88,6 +91,9 @@
       <Filter>Definitions</Filter>
     </ClInclude>
     <ClInclude Include="ActorDefinition.hpp">
+      <Filter>Definitions</Filter>
+    </ClInclude>
+    <ClInclude Include="WeaponDefinition.hpp">
       <Filter>Definitions</Filter>
     </ClInclude>
   </ItemGroup>
