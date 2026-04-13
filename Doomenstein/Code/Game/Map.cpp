@@ -23,6 +23,7 @@ Map::Map( Game* game, MapDefinition const& mapDef )
 	m_texture = m_definition->m_spriteSheetTexture;
 
 	CreateTiles();
+	CreateTestActors();
 	CreateBuffers();
 }
 
@@ -260,25 +261,65 @@ void Map::CollideActors( Actor* actorA, Actor* actorB )
 		return;
 	}
 
+	if ( actorA->m_isStatic && actorB->m_isStatic )
+	{
+		return;
+	}
+
 	float aMinZ = actorA->m_position.z;
 	float aMaxZ = actorA->m_position.z + actorA->m_physicsHeight;
 	float bMinZ = actorB->m_position.z;
 	float bMaxZ = actorB->m_position.z + actorB->m_physicsHeight;
 
-	bool zOverlaps = ( aMinZ < bMaxZ ) && ( bMinZ < aMaxZ );
-	if ( !zOverlaps )
+	float overlapZ = fminf( aMaxZ, bMaxZ ) - fmaxf( aMinZ, bMinZ );
+	if ( overlapZ <= 0.f )
 	{
 		return;
 	}
 
-	Vec2 centerA = Vec2( actorA->m_position.x, actorA->m_position.y );
-	Vec2 centerB = Vec2( actorB->m_position.x, actorB->m_position.y );
+	Vec2 centerA( actorA->m_position.x, actorA->m_position.y );
+	Vec2 centerB( actorB->m_position.x, actorB->m_position.y );
 
-	if ( actorA->m_isStatic && actorB->m_isStatic )
+	Vec2 fromAToB = centerB - centerA;
+	float distSqXY = fromAToB.GetLengthSquared();
+	float radiusSum = actorA->m_physicsRadius + actorB->m_physicsRadius;
+	float radiusSumSq = radiusSum * radiusSum;
+	if ( distSqXY >= radiusSumSq )
 	{
 		return;
 	}
-	else if ( actorA->m_isStatic )
+
+	float distXY = sqrtf( distSqXY );
+	float overlapXY = radiusSum - distXY;
+
+	bool resolveAlongZ = overlapZ < overlapXY;
+
+	if ( resolveAlongZ )
+	{
+		float aCenterZ = aMinZ + ( actorA->m_physicsHeight * 0.5f );
+		float bCenterZ = bMinZ + ( actorB->m_physicsHeight * 0.5f );
+
+		float pushSignForB = ( bCenterZ >= aCenterZ ) ? 1.f : -1.f;
+
+		if ( actorA->m_isStatic )
+		{
+			actorB->m_position.z += pushSignForB * overlapZ;
+		}
+		else if ( actorB->m_isStatic )
+		{
+			actorA->m_position.z -= pushSignForB * overlapZ;
+		}
+		else
+		{
+			float halfPush = overlapZ * 0.5f;
+			actorA->m_position.z -= pushSignForB * halfPush;
+			actorB->m_position.z += pushSignForB * halfPush;
+		}
+
+		return;
+	}
+
+	if ( actorA->m_isStatic )
 	{
 		PushDiscOutOfFixedDisc2D( centerB, actorB->m_physicsRadius, centerA, actorA->m_physicsRadius );
 	}
@@ -734,4 +775,49 @@ Tile* const Map::GetTileAtCoords( int x, int y ) const
 	}
 	int tileIndex = y * m_dimensions.x + x;
 	return m_tiles[tileIndex];
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Map::CreateTestActors()
+{
+	Actor* enemyActor1 = new Actor();
+	enemyActor1->m_physicsRadius = 0.35f;
+	enemyActor1->m_physicsHeight = 0.75f;
+	enemyActor1->m_color = Rgba8::RED;
+	enemyActor1->m_isStatic = true;
+	enemyActor1->m_position = Vec3( 7.5f, 8.5f, 0.25f );
+	m_actors.push_back( enemyActor1 );
+
+	Actor* enemyActor2 = new Actor();
+	enemyActor2->m_physicsRadius = 0.35f;
+	enemyActor2->m_physicsHeight = 0.75f;
+	enemyActor2->m_color = Rgba8::RED;
+	enemyActor2->m_isStatic = true;
+	enemyActor2->m_position = Vec3( 8.5f, 8.5f, 0.125f );
+	m_actors.push_back( enemyActor2 );
+
+	Actor* enemyActor3 = new Actor();
+	enemyActor3->m_physicsRadius = 0.35f;
+	enemyActor3->m_physicsHeight = 0.75f;
+	enemyActor3->m_color = Rgba8::RED;
+	enemyActor3->m_isStatic = true;
+	enemyActor3->m_position = Vec3( 9.5f, 8.5f, 0.0f );
+	m_actors.push_back( enemyActor3 );
+
+	Actor* projectileActor = new Actor();
+	projectileActor->m_physicsRadius = 0.0625f;
+	projectileActor->m_physicsHeight = 0.125f;
+	projectileActor->m_color = Rgba8::BLUE;
+	projectileActor->m_isStatic = false;
+	projectileActor->m_position = Vec3( 5.5f, 8.5f, 0.0f );
+	m_actors.push_back( projectileActor );
+	m_fakeProjectileActor = projectileActor;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+Actor* Map::GetFakeProjectileActor() const
+{
+	return m_fakeProjectileActor;
 }
