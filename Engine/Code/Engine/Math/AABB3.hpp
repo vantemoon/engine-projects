@@ -15,4 +15,6 @@ public:
 	AABB3( AABB3 const& copyFrom );
 	explicit AABB3( float minX, float minY, float minZ, float maxX, float maxY, float maxZ );
 	explicit AABB3( Vec3 const& mins, Vec3 const& maxs );
+
+	bool IsPointInside( Vec3 const& point ) const;
 };

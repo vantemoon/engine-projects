@@ -483,9 +483,13 @@ RaycastResult3D Map::RaycastAll( Vec3 const& startPos, Vec3 const& forwardNormal
 	RaycastResult3D result;
 	float closestImpactDist = maxLength;
 
+	AABB3 mapBounds = AABB3( Vec3( 0.f, 0.f, 0.f ), Vec3( ( float ) m_dimensions.x, ( float ) m_dimensions.y, 1.f ) );
+
 	// Raycast against actors
 	RaycastResult3D actorResult = RaycastWorldActors( startPos, forwardNormal, maxLength, owner );
-	if ( actorResult.m_didImpact && actorResult.m_impactDist < closestImpactDist )
+	if ( actorResult.m_didImpact 
+		&& actorResult.m_impactDist < closestImpactDist 
+		&& mapBounds.IsPointInside( actorResult.m_impactPos ) )
 	{
 		result = actorResult;
 		closestImpactDist = actorResult.m_impactDist;
@@ -493,7 +497,9 @@ RaycastResult3D Map::RaycastAll( Vec3 const& startPos, Vec3 const& forwardNormal
 
 	// Raycast against floor and ceiling
 	RaycastResult3D floorCeilingResult = RaycastWorldZ( startPos, forwardNormal, maxLength );
-	if ( floorCeilingResult.m_didImpact && floorCeilingResult.m_impactDist < closestImpactDist )
+	if ( floorCeilingResult.m_didImpact 
+		&& floorCeilingResult.m_impactDist < closestImpactDist 
+		&& mapBounds.IsPointInside( floorCeilingResult.m_impactPos ) )
 	{
 		result = floorCeilingResult;
 		closestImpactDist = floorCeilingResult.m_impactDist;
@@ -501,7 +507,9 @@ RaycastResult3D Map::RaycastAll( Vec3 const& startPos, Vec3 const& forwardNormal
 
 	// Raycast against walls
 	RaycastResult3D wallResult = RaycastWorldXY( startPos, forwardNormal, maxLength );
-	if ( wallResult.m_didImpact && wallResult.m_impactDist < closestImpactDist )
+	if ( wallResult.m_didImpact 
+		&& wallResult.m_impactDist < closestImpactDist 
+		&& mapBounds.IsPointInside( wallResult.m_impactPos ) )
 	{
 		result = wallResult;
 		closestImpactDist = wallResult.m_impactDist;
