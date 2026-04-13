@@ -1,47 +1,47 @@
-#include "Game/ActorHandler.hpp"
+#include "Game/ActorHandle.hpp"
 
 
 //----------------------------------------------------------------------------------------------
-ActorHandler const ActorHandler::INVALID = ActorHandler();
+ActorHandle const ActorHandle::INVALID = ActorHandle();
 
 
 //-----------------------------------------------------------------------------------------------
-ActorHandler::ActorHandler()
+ActorHandle::ActorHandle()
 	: m_data( 0u )
 {
 }
 
 
 //-----------------------------------------------------------------------------------------------
-ActorHandler::ActorHandler( unsigned int uid, unsigned int index )
+ActorHandle::ActorHandle( unsigned int uid, unsigned int index )
 {
 	m_data = ( ( uid & MAX_ACTOR_UID ) << 16 ) | ( index & MAX_ACTOR_INDEX );
 }
 
 
 //-----------------------------------------------------------------------------------------------
-bool ActorHandler::IsValid() const
+bool ActorHandle::IsValid() const
 {
-	return ( m_data != ActorHandler::INVALID.m_data );
+	return ( m_data != ActorHandle::INVALID.m_data );
 }
 
 
 //-----------------------------------------------------------------------------------------------
-unsigned int ActorHandler::GetIndex() const
+unsigned int ActorHandle::GetIndex() const
 {
 	return ( m_data & MAX_ACTOR_INDEX );
 }
 
 
 //-----------------------------------------------------------------------------------------------
-bool ActorHandler::operator==( ActorHandler const& other ) const
+bool ActorHandle::operator==( ActorHandle const& other ) const
 {
 	return ( m_data == other.m_data );
 }
 
 
 //-----------------------------------------------------------------------------------------------
-bool ActorHandler::operator!=( ActorHandler const& other ) const
+bool ActorHandle::operator!=( ActorHandle const& other ) const
 {
 	return ( m_data != other.m_data );
 }

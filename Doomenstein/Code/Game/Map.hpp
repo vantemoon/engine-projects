@@ -1,4 +1,6 @@
 #pragma once
+#include "Game/ActorHandle.hpp"
+#include "Game/MapDefinition.hpp"
 #include "Game/Tile.hpp"
 #include "Engine/Core/Vertex.hpp"
 #include "Engine/Math/IntVec2.hpp"
@@ -10,7 +12,6 @@
 class Actor;
 class Game;
 class IndexBuffer;
-class MapDefinition;
 class Shader;
 class Texture;
 class VertexBuffer;
@@ -56,6 +57,9 @@ public:
 	void AddToSunDirectionY( float delta );
 	void AddToSunIntensity( float delta );
 	void AddToAmbientIntensity( float delta );
+
+	Actor* SpawnActor( SpawnInfo const& spawnInfo );
+	Actor* GetActorByHandle( ActorHandle const actorHandle ) const;
 
 protected:
 	Game* m_game = nullptr;

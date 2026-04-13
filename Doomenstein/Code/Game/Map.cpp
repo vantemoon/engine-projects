@@ -1,7 +1,7 @@
 #include "Game/Map.hpp"
 #include "Game/Actor.hpp"
+#include "Game/ActorDefinition.hpp"
 #include "Game/Game.hpp"
-#include "Game/MapDefinition.hpp"
 #include "Game/TileDefinition.hpp"
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/Image.hpp"
@@ -783,6 +783,32 @@ Tile* const Map::GetTileAtCoords( int x, int y ) const
 	}
 	int tileIndex = y * m_dimensions.x + x;
 	return m_tiles[tileIndex];
+}
+
+
+//-----------------------------------------------------------------------------------------------
+Actor* Map::SpawnActor( SpawnInfo const& spawnInfo )
+{
+	std::string const& actorName = spawnInfo.m_actor;
+	ActorDefinition const* actorDef = ActorDefinition::GetActorDefinitionByName( actorName );
+	if ( actorDef == nullptr )
+	{
+		return nullptr;
+	}
+
+	for (int index = 0; index < m_actors.size(); index++)
+	{
+		if (m_actors[index] == nullptr)
+		{
+			ActorHandle newHandle = ActorHandle( m_nextActorUID, index );
+			m_nextActorUID++;
+
+			Actor* newActor = new Actor( newHandle, actorDef, this );
+			m_actors[index] = newActor;
+			return newActor;
+		}
+	}
+	return nullptr;
 }
 
 

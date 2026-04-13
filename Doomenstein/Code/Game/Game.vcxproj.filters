@@ -40,7 +40,7 @@
     <ClCompile Include="Tile.cpp">
       <Filter>Gameplay</Filter>
     </ClCompile>
-    <ClCompile Include="ActorHandler.cpp">
+    <ClCompile Include="ActorHandle.cpp">
       <Filter>Gameplay</Filter>
     </ClCompile>
     <ClCompile Include="TileDefinition.cpp">
@@ -81,7 +81,7 @@
     <ClInclude Include="Tile.hpp">
       <Filter>Gameplay</Filter>
     </ClInclude>
-    <ClInclude Include="ActorHandler.hpp">
+    <ClInclude Include="ActorHandle.hpp">
       <Filter>Gameplay</Filter>
     </ClInclude>
     <ClInclude Include="TileDefinition.hpp">

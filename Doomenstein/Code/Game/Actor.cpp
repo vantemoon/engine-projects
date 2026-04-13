@@ -1,4 +1,5 @@
 #include "Game/Actor.hpp"
+#include "Game/Map.hpp"
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/Vertex.hpp"
 #include "Engine/Core/VertexUtils.hpp"
@@ -12,6 +13,22 @@ Actor::Actor()
 	, m_orientation( EulerAngles::ZERO )
 	, m_color( Rgba8::WHITE )
 {
+}
+
+
+//-----------------------------------------------------------------------------------------------
+Actor::Actor( ActorHandle handle, ActorDefinition const* definition, Map* map )
+	: m_handle( handle )
+	, m_definition( definition )
+	, m_map( map )
+	, m_position( Vec3::ZERO )
+	, m_orientation( EulerAngles::ZERO )
+	, m_color( Rgba8::WHITE )
+{
+	if ( m_definition != nullptr )
+	{
+		// #ToDo: Initialize properties from definition
+	}
 }
 
 
