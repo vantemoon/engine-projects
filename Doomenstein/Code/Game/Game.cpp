@@ -601,8 +601,7 @@ void Game::UpdatePlayer()
 	if ( m_isControllingFakeProjectile )
 	{
 		m_player->m_isMovementInputEnabled = false;
-		m_player->Update( deltaSeconds ); // keep mouse aiming camera
-		UpdateFakeProjectileFromKeyboard( deltaSeconds );
+		m_player->Update( deltaSeconds );
 	}
 	else
 	{
@@ -618,65 +617,6 @@ void Game::UpdateCurrentMap()
 	if ( m_currentMap != nullptr )
 	{
 		m_currentMap->Update();
-	}
-}
-
-
-//-----------------------------------------------------------------------------------------------
-void Game::UpdateFakeProjectileFromKeyboard( float deltaSeconds )
-{
-	if ( m_player == nullptr || m_currentMap == nullptr )
-	{
-		return;
-	}
-
-	Actor* projectile = m_currentMap->GetFakeProjectileActor();
-	if ( projectile == nullptr )
-	{
-		return;
-	}
-
-	float movementSpeed = 1.f;
-	if ( g_engine->m_inputSystem->IsKeyDown( KEYCODE_SHIFT ) )
-	{
-		movementSpeed = 15.f;
-	}
-
-	float movementAmount = movementSpeed * deltaSeconds;
-
-	Mat44 orientationMat = m_player->m_orientation.GetAsMatrix_IFwd_JLeft_KUp();
-	Vec3 forwardVector = orientationMat.GetIBasis3D();
-	Vec3 leftVector = orientationMat.GetJBasis3D();
-	Vec3 worldUpVector = Vec3( 0.f, 0.f, 1.f );
-
-	// Left/right
-	if ( g_engine->m_inputSystem->IsKeyDown( 'A' ) )
-	{
-		projectile->m_position += leftVector * movementAmount;
-	}
-	if ( g_engine->m_inputSystem->IsKeyDown( 'D' ) )
-	{
-		projectile->m_position += leftVector * -movementAmount;
-	}
-
-	// Forward/back
-	if ( g_engine->m_inputSystem->IsKeyDown( 'W' ) )
-	{
-		projectile->m_position += forwardVector * movementAmount;
-	}
-	if ( g_engine->m_inputSystem->IsKeyDown( 'S' ) )
-	{
-		projectile->m_position += forwardVector * -movementAmount;
-	}
-
-	// Up/down
-	if ( g_engine->m_inputSystem->IsKeyDown( 'Z' ) )
-	{
-		projectile->m_position += worldUpVector * -movementAmount;
-	}
-	if ( g_engine->m_inputSystem->IsKeyDown( 'C' ) )
-	{
-		projectile->m_position += worldUpVector * movementAmount;
 	}
 }
 

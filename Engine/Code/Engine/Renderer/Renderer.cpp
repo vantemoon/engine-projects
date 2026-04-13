@@ -413,6 +413,9 @@ void Renderer::Shutdown()
 	delete m_modelCBO;
 	m_modelCBO = nullptr;
 
+	delete m_lightingCBO;
+	m_lightingCBO = nullptr;
+
 	// Release device-related objects
 	DX_SAFE_RELEASE( m_swapChain );
 	DX_SAFE_RELEASE( m_deviceContext );

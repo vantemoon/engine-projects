@@ -29,12 +29,10 @@ public:
 	void AddGeometryForFloor( AABB3 const& bounds, AABB2 const& uvCoords );
 	void AddGeometryForCeiling( AABB3 const& bounds, AABB2 const& uvCoords );
 	void CreateBuffers();
-	void CreateTestActors();
 
 	bool IsPositionInBounds( Vec3 const& position ) const;
 	bool AreCoordsInBounds( int x, int y ) const;
 	Tile* const GetTileAtCoords( int x, int y ) const;
-	Actor* GetFakeProjectileActor() const;
 
 	void Update();
 	void CollideActors();
@@ -62,9 +60,10 @@ public:
 protected:
 	MapDefinition const* m_definition = nullptr;
 	std::vector<Tile*> m_tiles;
-	std::vector<Actor*> m_actors;
-	Actor* m_fakeProjectileActor = nullptr;
 	IntVec2 m_dimensions;
+
+	std::vector<Actor*> m_actors;
+	unsigned int m_nextActorUID = 0;
 	
 	std::vector<Vertex> m_verts;
 	std::vector<unsigned int> m_indices;

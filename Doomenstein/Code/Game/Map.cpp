@@ -7,6 +7,8 @@
 #include "Engine/Core/Image.hpp"
 #include "Engine/Core/VertexUtils.hpp"
 #include "Engine/Renderer/Renderer.hpp"
+#include "Engine/Renderer/IndexBuffer.hpp"
+#include "Engine/Renderer/VertexBuffer.hpp"
 #include "Engine/Renderer/SpriteSheet.hpp"
 #include "Engine/Renderer/Texture.hpp"
 #include "Engine/Math/MathUtils.hpp"
@@ -21,7 +23,6 @@ Map::Map( Game* game, MapDefinition const& mapDef )
 	m_texture = m_definition->m_spriteSheetTexture;
 
 	CreateTiles();
-	CreateTestActors();
 	CreateBuffers();
 }
 
@@ -40,6 +41,12 @@ Map::~Map()
 		delete actor;
 	}
 	m_actors.clear();
+
+	delete m_vertexBuffer;
+	m_vertexBuffer = nullptr;
+
+	delete m_indexBuffer;
+	m_indexBuffer = nullptr;
 }
 
 
@@ -65,51 +72,6 @@ void Map::CreateTiles()
 	}
 
 	CreateGeometry();
-}
-
-
-//-----------------------------------------------------------------------------------------------
-void Map::CreateTestActors()
-{
-	Actor* enemyActor1 = new Actor();
-	enemyActor1->m_physicsRadius = 0.35f;
-	enemyActor1->m_physicsHeight = 0.75f;
-	enemyActor1->m_color = Rgba8::RED;
-	enemyActor1->m_isStatic = true;
-	enemyActor1->m_position = Vec3( 7.5f, 8.5f, 0.25f );
-	m_actors.push_back( enemyActor1 );
-
-	Actor* enemyActor2 = new Actor();
-	enemyActor2->m_physicsRadius = 0.35f;
-	enemyActor2->m_physicsHeight = 0.75f;
-	enemyActor2->m_color = Rgba8::RED;
-	enemyActor2->m_isStatic = true;
-	enemyActor2->m_position = Vec3( 8.5f, 8.5f, 0.125f );
-	m_actors.push_back( enemyActor2 );
-
-	Actor* enemyActor3 = new Actor();
-	enemyActor3->m_physicsRadius = 0.35f;
-	enemyActor3->m_physicsHeight = 0.75f;
-	enemyActor3->m_color = Rgba8::RED;
-	enemyActor3->m_isStatic = true;
-	enemyActor3->m_position = Vec3( 9.5f, 8.5f, 0.0f );
-	m_actors.push_back( enemyActor3 );
-
-	Actor* projectileActor = new Actor();
-	projectileActor->m_physicsRadius = 0.0625f;
-	projectileActor->m_physicsHeight = 0.125f;
-	projectileActor->m_color = Rgba8::BLUE;
-	projectileActor->m_isStatic = false;
-	projectileActor->m_position = Vec3( 5.5f, 8.5f, 0.0f );
-	m_actors.push_back( projectileActor );
-	m_fakeProjectileActor = projectileActor;
-}
-
-
-//-----------------------------------------------------------------------------------------------
-Actor* Map::GetFakeProjectileActor() const
-{
-	return m_fakeProjectileActor;
 }
 
 
@@ -232,8 +194,14 @@ void Map::CreateBuffers()
 		return;
 	}
 
-	unsigned int const vertexBufferSize = static_cast<unsigned int>( m_verts.size() * sizeof( Vertex ) );
-	unsigned int const indexBufferSize = static_cast<unsigned int>( m_indices.size() * sizeof( unsigned int ) );
+	delete m_vertexBuffer;
+	m_vertexBuffer = nullptr;
+
+	delete m_indexBuffer;
+	m_indexBuffer = nullptr;
+
+	unsigned int const vertexBufferSize = static_cast< unsigned int >( m_verts.size() * sizeof( Vertex ) );
+	unsigned int const indexBufferSize = static_cast< unsigned int >( m_indices.size() * sizeof( unsigned int ) );
 
 	m_vertexBuffer = g_engine->m_renderer->CreateVertexBuffer( vertexBufferSize, sizeof( Vertex ) );
 	g_engine->m_renderer->CopyCPUToGPU( m_verts.data(), vertexBufferSize, m_vertexBuffer );
