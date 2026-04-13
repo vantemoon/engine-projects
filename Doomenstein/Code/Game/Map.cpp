@@ -25,6 +25,11 @@ Map::Map( Game* game, MapDefinition const& mapDef )
 	CreateTiles();
 	CreateTestActors();
 	CreateBuffers();
+
+	for ( SpawnInfo const& spawnInfo : m_definition->m_spawnInfos )
+	{
+		SpawnActor( spawnInfo );
+	}
 }
 
 
@@ -796,49 +801,67 @@ Actor* Map::SpawnActor( SpawnInfo const& spawnInfo )
 		return nullptr;
 	}
 
-	for (int index = 0; index < m_actors.size(); index++)
+	for ( int index = 0; index < ( int ) m_actors.size(); index++ )
 	{
-		if (m_actors[index] == nullptr)
+		if ( m_actors[index] == nullptr )
 		{
 			ActorHandle newHandle = ActorHandle( m_nextActorUID, index );
 			m_nextActorUID++;
 
 			Actor* newActor = new Actor( newHandle, actorDef, this );
+			newActor->m_position = spawnInfo.m_position;
+			newActor->m_orientation = EulerAngles( spawnInfo.m_orientation.x, spawnInfo.m_orientation.y, spawnInfo.m_orientation.z );
+			newActor->m_velocity = spawnInfo.m_velocity;
 			m_actors[index] = newActor;
 			return newActor;
 		}
 	}
-	return nullptr;
+
+	int const newIndex = ( int ) m_actors.size();
+	ActorHandle newHandle = ActorHandle( m_nextActorUID, newIndex );
+	m_nextActorUID++;
+
+	Actor* newActor = new Actor( newHandle, actorDef, this );
+	newActor->m_position = spawnInfo.m_position;
+	newActor->m_orientation = EulerAngles( spawnInfo.m_orientation.x, spawnInfo.m_orientation.y, spawnInfo.m_orientation.z );
+	newActor->m_velocity = spawnInfo.m_velocity;
+	m_actors.push_back( newActor );
+	return newActor;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+Actor* Map::GetActorByHandle( ActorHandle const actorHandle ) const
+{
+	if ( !actorHandle.IsValid() )
+	{
+		return nullptr;
+	}
+
+	unsigned int const index = actorHandle.GetIndex();
+	if ( index >= m_actors.size() )
+	{
+		return nullptr;
+	}
+
+	Actor* actor = m_actors[index];
+	if ( actor == nullptr )
+	{
+		return nullptr;
+	}
+
+	if ( actor->m_handle != actorHandle )
+	{
+		return nullptr;
+	}
+
+	return actor;
 }
 
 
 //-----------------------------------------------------------------------------------------------
 void Map::CreateTestActors()
 {
-	Actor* enemyActor1 = new Actor();
-	enemyActor1->m_physicsRadius = 0.35f;
-	enemyActor1->m_physicsHeight = 0.75f;
-	enemyActor1->m_color = Rgba8::RED;
-	enemyActor1->m_isStatic = true;
-	enemyActor1->m_position = Vec3( 7.5f, 8.5f, 0.25f );
-	m_actors.push_back( enemyActor1 );
-
-	Actor* enemyActor2 = new Actor();
-	enemyActor2->m_physicsRadius = 0.35f;
-	enemyActor2->m_physicsHeight = 0.75f;
-	enemyActor2->m_color = Rgba8::RED;
-	enemyActor2->m_isStatic = true;
-	enemyActor2->m_position = Vec3( 8.5f, 8.5f, 0.125f );
-	m_actors.push_back( enemyActor2 );
-
-	Actor* enemyActor3 = new Actor();
-	enemyActor3->m_physicsRadius = 0.35f;
-	enemyActor3->m_physicsHeight = 0.75f;
-	enemyActor3->m_color = Rgba8::RED;
-	enemyActor3->m_isStatic = true;
-	enemyActor3->m_position = Vec3( 9.5f, 8.5f, 0.0f );
-	m_actors.push_back( enemyActor3 );
-
 	Actor* projectileActor = new Actor();
 	projectileActor->m_physicsRadius = 0.0625f;
 	projectileActor->m_physicsHeight = 0.125f;

@@ -64,6 +64,7 @@ void Game::Startup()
 	// Load all definitions
 	MapDefinition::InitializeDefinitions();
 	TileDefinition::InitializeDefinitions();
+	ActorDefinition::InitializeDefinitions();
 
 	LoadMaps();
 }

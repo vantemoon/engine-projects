@@ -11,7 +11,7 @@
 Actor::Actor()
 	: m_position( Vec3::ZERO )
 	, m_orientation( EulerAngles::ZERO )
-	, m_color( Rgba8::WHITE )
+	, m_color( Rgba8::RED )
 {
 }
 
@@ -23,11 +23,14 @@ Actor::Actor( ActorHandle handle, ActorDefinition const* definition, Map* map )
 	, m_map( map )
 	, m_position( Vec3::ZERO )
 	, m_orientation( EulerAngles::ZERO )
-	, m_color( Rgba8::WHITE )
+	, m_color( Rgba8::RED )
 {
 	if ( m_definition != nullptr )
 	{
-		// #ToDo: Initialize properties from definition
+		m_health = m_definition->m_health;
+		m_physicsRadius = m_definition->m_physicsRadius;
+		m_physicsHeight = m_definition->m_physicsHeight;
+		m_isStatic = !m_definition->m_isSimulated;
 	}
 }
 
