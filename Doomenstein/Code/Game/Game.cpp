@@ -135,6 +135,7 @@ void Game::Shutdown()
 	// Clear definitions
 	MapDefinition::ClearDefinitions();
 	TileDefinition::ClearDefinitions();
+	ActorDefinition::ClearDefinitions();
 
 	delete m_screenCamera;
 	m_screenCamera = nullptr;

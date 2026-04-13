@@ -55,6 +55,9 @@
     <ClCompile Include="WeaponDefinition.cpp">
       <Filter>Definitions</Filter>
     </ClCompile>
+    <ClCompile Include="Weapon.cpp">
+      <Filter>Gameplay</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.hpp">
@@ -95,6 +98,9 @@
     </ClInclude>
     <ClInclude Include="WeaponDefinition.hpp">
       <Filter>Definitions</Filter>
+    </ClInclude>
+    <ClInclude Include="Weapon.hpp">
+      <Filter>Gameplay</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

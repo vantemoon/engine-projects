@@ -1,4 +1,5 @@
 #include "Game/ActorDefinition.hpp"
+#include "Game/WeaponDefinition.hpp"
 #include "Engine/Core/XmlUtils.hpp"
 
 
@@ -9,8 +10,17 @@ std::map<std::string, ActorDefinition*> ActorDefinition::s_definitions;
 //-----------------------------------------------------------------------------------------------
 void ActorDefinition::InitializeDefinitions()
 {
+	LoadDefinitionsFromFile( "Data/Definitions/ProjectileActorDefinitions.xml" );
+	WeaponDefinition::InitializeDefinitions();
+	LoadDefinitionsFromFile( "Data/Definitions/ActorDefinitions.xml" );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void ActorDefinition::LoadDefinitionsFromFile( char const* filepath )
+{
 	XmlDocument actorDefDoc;
-	XmlResult loadResult = actorDefDoc.LoadFile( "Data/Definitions/ActorDefinitions.xml" );
+	XmlResult loadResult = actorDefDoc.LoadFile( filepath );
 	if ( loadResult != tinyxml2::XML_SUCCESS )
 	{
 		return;
@@ -22,7 +32,16 @@ void ActorDefinition::InitializeDefinitions()
 		return;
 	}
 
-	tinyxml2::XMLElement* actorDefElement = rootElement->FirstChildElement( "ActorDefinition" );
+	tinyxml2::XMLElement* actorDefElement = nullptr;
+	if ( std::string( rootElement->Name() ) == "ActorDefinition" )
+	{
+		actorDefElement = rootElement;
+	}
+	else
+	{
+		actorDefElement = rootElement->FirstChildElement( "ActorDefinition" );
+	}
+
 	while ( actorDefElement != nullptr )
 	{
 		ActorDefinition newActorDef;
@@ -58,7 +77,7 @@ void ActorDefinition::InitializeDefinitions()
 		if ( physicsElement != nullptr )
 		{
 			newActorDef.m_isSimulated = ParseXmlAttribute( *physicsElement, "simulated", newActorDef.m_isSimulated );
-			newActorDef.m_isFlying = ParseXmlAttribute( *physicsElement, "isFlying", newActorDef.m_isFlying );
+			newActorDef.m_isFlying = ParseXmlAttribute( *physicsElement, "flying", newActorDef.m_isFlying ); // fixed
 			newActorDef.m_walkSpeed = ParseXmlAttribute( *physicsElement, "walkSpeed", newActorDef.m_walkSpeed );
 			newActorDef.m_runSpeed = ParseXmlAttribute( *physicsElement, "runSpeed", newActorDef.m_runSpeed );
 			newActorDef.m_drag = ParseXmlAttribute( *physicsElement, "drag", newActorDef.m_drag );
@@ -100,6 +119,12 @@ void ActorDefinition::InitializeDefinitions()
 
 		if ( !actorName.empty() )
 		{
+			auto existingDefIter = s_definitions.find( actorName );
+			if ( existingDefIter != s_definitions.end() )
+			{
+				delete existingDefIter->second;
+				existingDefIter->second = nullptr;
+			}
 			s_definitions[actorName] = new ActorDefinition( newActorDef );
 		}
 
@@ -116,6 +141,8 @@ void ActorDefinition::ClearDefinitions()
 		delete defPair.second;
 	}
 	s_definitions.clear();
+
+	WeaponDefinition::ClearDefinitions();
 }
 
 

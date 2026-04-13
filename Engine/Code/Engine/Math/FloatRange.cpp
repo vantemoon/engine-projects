@@ -74,7 +74,7 @@ void FloatRange::SetFromText( const char* text )
 	}
 
 	std::string textStr( text );
-	size_t commaIndex = textStr.find( ',' );
+	size_t commaIndex = textStr.find( '~' );
 	if ( commaIndex == std::string::npos )
 	{
 		return;

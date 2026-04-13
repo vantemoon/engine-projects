@@ -51,4 +51,7 @@ public:
 	static void InitializeDefinitions();
 	static void ClearDefinitions();
 	static ActorDefinition const* GetActorDefinitionByName( std::string const& name );
+
+private:
+	static void LoadDefinitionsFromFile( char const* filepath );
 };

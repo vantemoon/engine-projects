@@ -36,6 +36,7 @@
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="Tile.cpp" />
     <ClCompile Include="TileDefinition.cpp" />
+    <ClCompile Include="Weapon.cpp" />
     <ClCompile Include="WeaponDefinition.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -51,6 +52,7 @@
     <ClInclude Include="Player.hpp" />
     <ClInclude Include="Tile.hpp" />
     <ClInclude Include="TileDefinition.hpp" />
+    <ClInclude Include="Weapon.hpp" />
     <ClInclude Include="WeaponDefinition.hpp" />
   </ItemGroup>
   <ItemGroup>
