@@ -1,6 +1,7 @@
 #pragma once
 #include "Game/ActorDefinition.hpp"
 #include "Game/ActorHandle.hpp"
+#include "Game/Weapon.hpp"
 #include "Engine/Core/Rgba8.hpp"
 #include "Engine/Core/Vertex.hpp"
 #include "Engine/Math/Vec3.hpp"
@@ -38,10 +39,11 @@ public:
 	std::vector<Vertex> m_verts;
 	Rgba8 m_color;
 
-	int m_health = 1;
-
-	float m_physicsHeight = 0.f;
-	float m_physicsRadius = 0.f;
+	int m_maxHealth = 1;
+	int m_currentHealth = 1;
 
 	bool m_isStatic = false;
+
+	std::vector<Weapon> m_inventory;
+	Weapon* m_currentWeapon = nullptr;
 };

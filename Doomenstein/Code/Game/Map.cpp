@@ -23,7 +23,6 @@ Map::Map( Game* game, MapDefinition const& mapDef )
 	m_texture = m_definition->m_spriteSheetTexture;
 
 	CreateTiles();
-	CreateTestActors();
 	CreateBuffers();
 
 	for ( SpawnInfo const& spawnInfo : m_definition->m_spawnInfos )
@@ -272,9 +271,9 @@ void Map::CollideActors( Actor* actorA, Actor* actorB )
 	}
 
 	float aMinZ = actorA->m_position.z;
-	float aMaxZ = actorA->m_position.z + actorA->m_physicsHeight;
+	float aMaxZ = actorA->m_position.z + actorA->m_definition->m_physicsHeight;
 	float bMinZ = actorB->m_position.z;
-	float bMaxZ = actorB->m_position.z + actorB->m_physicsHeight;
+	float bMaxZ = actorB->m_position.z + actorB->m_definition->m_physicsHeight;
 
 	float overlapZ = fminf( aMaxZ, bMaxZ ) - fmaxf( aMinZ, bMinZ );
 	if ( overlapZ <= 0.f )
@@ -287,7 +286,7 @@ void Map::CollideActors( Actor* actorA, Actor* actorB )
 
 	Vec2 fromAToB = centerB - centerA;
 	float distSqXY = fromAToB.GetLengthSquared();
-	float radiusSum = actorA->m_physicsRadius + actorB->m_physicsRadius;
+	float radiusSum = actorA->m_definition->m_physicsRadius + actorB->m_definition->m_physicsRadius;
 	float radiusSumSq = radiusSum * radiusSum;
 	if ( distSqXY >= radiusSumSq )
 	{
@@ -301,8 +300,8 @@ void Map::CollideActors( Actor* actorA, Actor* actorB )
 
 	if ( resolveAlongZ )
 	{
-		float aCenterZ = aMinZ + ( actorA->m_physicsHeight * 0.5f );
-		float bCenterZ = bMinZ + ( actorB->m_physicsHeight * 0.5f );
+		float aCenterZ = aMinZ + ( actorA->m_definition->m_physicsHeight * 0.5f );
+		float bCenterZ = bMinZ + ( actorB->m_definition->m_physicsHeight * 0.5f );
 
 		float pushSignForB = ( bCenterZ >= aCenterZ ) ? 1.f : -1.f;
 
@@ -326,15 +325,15 @@ void Map::CollideActors( Actor* actorA, Actor* actorB )
 
 	if ( actorA->m_isStatic )
 	{
-		PushDiscOutOfFixedDisc2D( centerB, actorB->m_physicsRadius, centerA, actorA->m_physicsRadius );
+		PushDiscOutOfFixedDisc2D( centerB, actorB->m_definition->m_physicsRadius, centerA, actorA->m_definition->m_physicsRadius );
 	}
 	else if ( actorB->m_isStatic )
 	{
-		PushDiscOutOfFixedDisc2D( centerA, actorA->m_physicsRadius, centerB, actorB->m_physicsRadius );
+		PushDiscOutOfFixedDisc2D( centerA, actorA->m_definition->m_physicsRadius, centerB, actorB->m_definition->m_physicsRadius );
 	}
 	else
 	{
-		PushDiscsOutOfEachOther2D( centerA, actorA->m_physicsRadius, centerB, actorB->m_physicsRadius );
+		PushDiscsOutOfEachOther2D( centerA, actorA->m_definition->m_physicsRadius, centerB, actorB->m_definition->m_physicsRadius );
 	}
 
 	actorA->m_position.x = centerA.x;
@@ -376,7 +375,7 @@ void Map::CollideActorWithMap( Actor* actor )
 			Vec2( currTile->m_bounds.m_mins.x, currTile->m_bounds.m_mins.y ),
 			Vec2( currTile->m_bounds.m_maxs.x, currTile->m_bounds.m_maxs.y ) );
 
-		PushDiscOutOfFixedAABB2D( actorCenter, actor->m_physicsRadius, tileBounds2D );
+		PushDiscOutOfFixedAABB2D( actorCenter, actor->m_definition->m_physicsRadius, tileBounds2D );
 	}
 
 	IntVec2 const cardinalOffsets[4] =
@@ -399,7 +398,7 @@ void Map::CollideActorWithMap( Actor* actor )
 			Vec2( tile->m_bounds.m_mins.x, tile->m_bounds.m_mins.y ),
 			Vec2( tile->m_bounds.m_maxs.x, tile->m_bounds.m_maxs.y ) );
 
-		PushDiscOutOfFixedAABB2D( actorCenter, actor->m_physicsRadius, tileBounds2D );
+		PushDiscOutOfFixedAABB2D( actorCenter, actor->m_definition->m_physicsRadius, tileBounds2D );
 	}
 
 	IntVec2 const diagonalOffsets[4] =
@@ -422,13 +421,13 @@ void Map::CollideActorWithMap( Actor* actor )
 			Vec2( tile->m_bounds.m_mins.x, tile->m_bounds.m_mins.y ),
 			Vec2( tile->m_bounds.m_maxs.x, tile->m_bounds.m_maxs.y ) );
 
-		PushDiscOutOfFixedAABB2D( actorCenter, actor->m_physicsRadius, tileBounds2D );
+		PushDiscOutOfFixedAABB2D( actorCenter, actor->m_definition->m_physicsRadius, tileBounds2D );
 	}
 
 	actor->m_position.x = actorCenter.x;
 	actor->m_position.y = actorCenter.y;
 
-	float actorTopZ = actor->m_position.z + actor->m_physicsHeight;
+	float actorTopZ = actor->m_position.z + actor->m_definition->m_physicsHeight;
 	if ( actorTopZ > 1.f )
 	{
 		actor->m_position.z -= ( actorTopZ - 1.f );
@@ -699,8 +698,8 @@ RaycastResult3D Map::RaycastWorldActors( Vec3 const& startPos, Vec3 const& forwa
 
 		Vec2 actorCenter = Vec2( actor->m_position.x, actor->m_position.y );
 		float actorMinZ = actor->m_position.z;
-		float actorMaxZ = actor->m_position.z + actor->m_physicsHeight;
-		RaycastResult3D actorResult = RaycastVsCylinderZ3D( startPos, forwardNormal, maxLength, actorCenter, actorMinZ, actorMaxZ, actor->m_physicsRadius );
+		float actorMaxZ = actor->m_position.z + actor->m_definition->m_physicsHeight;
+		RaycastResult3D actorResult = RaycastVsCylinderZ3D( startPos, forwardNormal, maxLength, actorCenter, actorMinZ, actorMaxZ, actor->m_definition->m_physicsRadius );
 
 		if ( actorResult.m_didImpact && actorResult.m_impactDist < closestImpactDist )
 		{
@@ -856,20 +855,6 @@ Actor* Map::GetActorByHandle( ActorHandle const actorHandle ) const
 	}
 
 	return actor;
-}
-
-
-//-----------------------------------------------------------------------------------------------
-void Map::CreateTestActors()
-{
-	Actor* projectileActor = new Actor();
-	projectileActor->m_physicsRadius = 0.0625f;
-	projectileActor->m_physicsHeight = 0.125f;
-	projectileActor->m_color = Rgba8::BLUE;
-	projectileActor->m_isStatic = false;
-	projectileActor->m_position = Vec3( 5.5f, 8.5f, 0.0f );
-	m_actors.push_back( projectileActor );
-	m_fakeProjectileActor = projectileActor;
 }
 
 

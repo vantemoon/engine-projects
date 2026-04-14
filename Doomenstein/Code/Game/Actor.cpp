@@ -1,5 +1,6 @@
 #include "Game/Actor.hpp"
 #include "Game/Map.hpp"
+#include "Game/WeaponDefinition.hpp"
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/Vertex.hpp"
 #include "Engine/Core/VertexUtils.hpp"
@@ -27,10 +28,19 @@ Actor::Actor( ActorHandle handle, ActorDefinition const* definition, Map* map )
 {
 	if ( m_definition != nullptr )
 	{
-		m_health = m_definition->m_health;
-		m_physicsRadius = m_definition->m_physicsRadius;
-		m_physicsHeight = m_definition->m_physicsHeight;
+		m_maxHealth = m_definition->m_health;
+		m_currentHealth = m_maxHealth;
+
 		m_isStatic = !m_definition->m_isSimulated;
+
+		m_inventory.reserve( m_definition->m_weaponDefNames.size() );
+		for ( std::string const& weaponDefName : m_definition->m_weaponDefNames )
+		{
+			WeaponDefinition const* weaponDef = WeaponDefinition::GetWeaponDefinitionByName( weaponDefName );
+			Weapon newWeapon( weaponDef );
+			m_inventory.push_back( newWeapon );
+		}
+		m_currentWeapon = m_inventory.empty() ? nullptr : &m_inventory[0];
 	}
 }
 
@@ -59,7 +69,7 @@ void Actor::Render() const
 		return;
 	}
 
-	if ( m_physicsRadius <= 0.f || m_physicsHeight <= 0.f )
+	if ( m_definition->m_physicsRadius <= 0.f || m_definition->m_physicsHeight <= 0.f )
 	{
 		return;
 	}
@@ -68,7 +78,7 @@ void Actor::Render() const
 	std::vector<Vertex> wireCylinderVerts;
 
 	Vec3 cylinderStart = Vec3::ZERO;
-	Vec3 cylinderEnd = Vec3( 0.f, 0.f, m_physicsHeight );
+	Vec3 cylinderEnd = Vec3( 0.f, 0.f, m_definition->m_physicsHeight );
 
 	Rgba8 lighterColor = Rgba8(
 		static_cast<unsigned char>( m_color.r + ( 255 - m_color.r ) * 0.7f ),
@@ -76,8 +86,8 @@ void Actor::Render() const
 		static_cast<unsigned char>( m_color.b + ( 255 - m_color.b ) * 0.7f ),
 		255 );
 
-	AddVertsForCylinderZ3D( solidCylinderVerts, cylinderStart, cylinderEnd, m_physicsRadius, m_color );
-	AddVertsForCylinderZ3D( wireCylinderVerts, cylinderStart, cylinderEnd, m_physicsRadius, lighterColor );
+	AddVertsForCylinderZ3D( solidCylinderVerts, cylinderStart, cylinderEnd, m_definition->m_physicsRadius, m_color );
+	AddVertsForCylinderZ3D( wireCylinderVerts, cylinderStart, cylinderEnd, m_definition->m_physicsRadius, lighterColor );
 
 	Mat44 modelMatrix = GetModelMatrix();
 

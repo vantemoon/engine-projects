@@ -30,7 +30,6 @@ public:
 	void AddGeometryForFloor( AABB3 const& bounds, AABB2 const& uvCoords );
 	void AddGeometryForCeiling( AABB3 const& bounds, AABB2 const& uvCoords );
 	void CreateBuffers();
-	void CreateTestActors();
 
 	bool IsPositionInBounds( Vec3 const& position ) const;
 	bool AreCoordsInBounds( int x, int y ) const;
