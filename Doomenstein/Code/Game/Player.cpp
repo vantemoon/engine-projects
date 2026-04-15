@@ -41,25 +41,61 @@ Player::~Player()
 void Player::Update( float deltaSeconds )
 {
 	UNUSED( deltaSeconds );
+	UpdateInput();
 	UpdateCamera();
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Player::UpdateInput()
+{
+	float deltaSeconds = ( float ) Clock::GetSystemClock().GetDeltaSeconds();
+
+	if ( g_engine->m_inputSystem->WasKeyJustPressed( 'F' ) )
+	{
+		if ( m_cameraMode == CameraMode::FREE_FLY )
+		{
+			m_cameraMode = CameraMode::FIRST_PERSON;
+		}
+		else
+		{
+			m_cameraMode = CameraMode::FREE_FLY;
+		}
+	}
+
+	if ( m_cameraMode == CameraMode::FREE_FLY )
+	{
+		UpdateFreeFlyCameraFromMouse();
+		UpdateFreeFlyCameraFromKeyboard( deltaSeconds );
+		UpdateFreeFlyCameraFromController( deltaSeconds );
+	}
+	else if ( m_cameraMode == CameraMode::FIRST_PERSON )
+	{
+		if ( m_game != nullptr && m_game->m_currentGameState == GameState::PAUSED ) return;
+
+		// When an actor is possessed
+	}
 }
 
 
 //-----------------------------------------------------------------------------------------------
 void Player::UpdateCamera()
 {
-	m_playerCamera->SetPerspectiveView( g_engine->m_window->m_config.m_clientAspect, 60.f, 0.1f, 100.f );
-	m_playerCamera->SetPositionAndOrientation( m_position, m_orientation );
-
-	float deltaSeconds = ( float ) Clock::GetSystemClock().GetDeltaSeconds();
-	UpdateFromMouse();
-	UpdateFromKeyboard( deltaSeconds );
-	UpdateFromController( deltaSeconds );
+	if ( m_playerCamera == nullptr ) return;
+	if ( m_cameraMode == CameraMode::FREE_FLY )
+	{
+		m_playerCamera->SetPerspectiveView( g_engine->m_window->m_config.m_clientAspect, 60.f, 0.1f, 100.f );
+		m_playerCamera->SetPositionAndOrientation( m_position, m_orientation );
+	}
+	else if ( m_cameraMode == CameraMode::FIRST_PERSON )
+	{
+		// When an actor is possessed
+	}
 }
 
 
 //-----------------------------------------------------------------------------------------------
-void Player::UpdateFromMouse()
+void Player::UpdateFreeFlyCameraFromMouse()
 {
 	float sensitivity = 0.075f;
 
@@ -76,15 +112,10 @@ void Player::UpdateFromMouse()
 
 
 //-----------------------------------------------------------------------------------------------
-void Player::UpdateFromKeyboard( float deltaSeconds )
+void Player::UpdateFreeFlyCameraFromKeyboard( float deltaSeconds )
 {
-	if ( !m_isMovementInputEnabled )
-	{
-		return;
-	}
-
 	float movementSpeed = 1.f;
-	float rotationSpeed = 90.f;
+	float rotationSpeed = 180.f;
 
 	// Sprint
 	if ( g_engine->m_inputSystem->IsKeyDown( KEYCODE_SHIFT ) )
@@ -149,13 +180,8 @@ void Player::UpdateFromKeyboard( float deltaSeconds )
 
 
 //-----------------------------------------------------------------------------------------------
-void Player::UpdateFromController( float deltaSeconds )
+void Player::UpdateFreeFlyCameraFromController( float deltaSeconds )
 {
-	if ( !m_isMovementInputEnabled )
-	{
-		return;
-	}
-
 	XboxController const& controller = g_engine->m_inputSystem->GetController( 0 );
 	Vec2 rightStickPosition = controller.GetRightJoystick().GetPosition();
 	Vec2 leftStickPosition = controller.GetLeftJoystick().GetPosition();
@@ -163,7 +189,7 @@ void Player::UpdateFromController( float deltaSeconds )
 	float leftTrigger = controller.GetLeftTrigger();
 
 	float movementSpeed = 1.f;
-	float rotationSpeed = 90.f;
+	float rotationSpeed = 180.f;
 
 	// Sprint
 	if ( controller.IsButtonDown( XBOX_BUTTON_A ) )
@@ -213,7 +239,7 @@ void Player::UpdateFromController( float deltaSeconds )
 //-----------------------------------------------------------------------------------------------
 void Player::Render() const
 {
-	g_engine->m_renderer->SetModelConstants( GetModelToWorldTransform(), m_color );
+	g_engine->m_renderer->SetModelConstants( GetModelToWorldTransform() );
 }
 
 

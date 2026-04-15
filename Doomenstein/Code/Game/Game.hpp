@@ -29,7 +29,6 @@ public:
 	Clock*				m_gameClock = nullptr;
 
 	bool				m_hasControlsBeenShown = false;
-	bool				m_isControllingFakeProjectile = false;
 
 public:
 	Game();

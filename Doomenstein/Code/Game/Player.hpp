@@ -1,37 +1,48 @@
 #pragma once
+#include "Game/Controller.hpp"
 #include "Engine/Math/EulerAngles.hpp"
 #include "Engine/Core/Rgba8.hpp"
 #include "Engine/Math/Vec3.hpp"
 
 
 //-----------------------------------------------------------------------------------------------
-class Camera; // Forward declaration
-class Game; // Forward declaration
-struct Vertex; // Forward declaration
+class Camera;
+class Game;
+struct Vertex;
 
 
 //-----------------------------------------------------------------------------------------------
-class Player
+enum class CameraMode
+{ 
+	FREE_FLY,
+	FIRST_PERSON,
+	COUNT
+};
+
+
+//-----------------------------------------------------------------------------------------------
+class Player : public Controller
 {
 public:
 	Game* m_game = nullptr;
+
 	Vec3 m_position;
-	Vec3 m_velocity;
 	EulerAngles m_orientation;
-	EulerAngles m_angularVelocity;
-	Rgba8 m_color = Rgba8::WHITE;
+
 	Camera* m_playerCamera = nullptr;
-	bool m_isMovementInputEnabled = true;
+	CameraMode m_cameraMode = CameraMode::FREE_FLY;
 
 public:
 	Player( Game* owner );
 	~Player();
 
 	void Update( float deltaSeconds );
+	void UpdateInput();
 	void UpdateCamera();
-	void UpdateFromMouse();
-	void UpdateFromKeyboard( float deltaSeconds );
-	void UpdateFromController( float deltaSeconds );
+	void UpdateFreeFlyCameraFromMouse();
+	void UpdateFreeFlyCameraFromKeyboard( float deltaSeconds );
+	void UpdateFreeFlyCameraFromController( float deltaSeconds );
+
 	void Render() const;
 	Mat44 GetModelToWorldTransform() const;
 };

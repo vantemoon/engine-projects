@@ -4,6 +4,7 @@
 #include "Game/Game.hpp"
 #include "Game/TileDefinition.hpp"
 #include "Engine/Core/Engine.hpp"
+#include "Engine/Core/ErrorWarningAssert.hpp"
 #include "Engine/Core/Image.hpp"
 #include "Engine/Core/VertexUtils.hpp"
 #include "Engine/Renderer/Renderer.hpp"
@@ -265,7 +266,7 @@ void Map::CollideActors( Actor* actorA, Actor* actorB )
 		return;
 	}
 
-	if ( actorA->m_isStatic && actorB->m_isStatic )
+	if ( !actorA->m_definition->m_isSimulated && !actorB->m_definition->m_isSimulated )
 	{
 		return;
 	}
@@ -305,11 +306,11 @@ void Map::CollideActors( Actor* actorA, Actor* actorB )
 
 		float pushSignForB = ( bCenterZ >= aCenterZ ) ? 1.f : -1.f;
 
-		if ( actorA->m_isStatic )
+		if ( !actorA->m_definition->m_isSimulated )
 		{
 			actorB->m_position.z += pushSignForB * overlapZ;
 		}
-		else if ( actorB->m_isStatic )
+		else if ( !actorB->m_definition->m_isSimulated )
 		{
 			actorA->m_position.z -= pushSignForB * overlapZ;
 		}
@@ -323,11 +324,11 @@ void Map::CollideActors( Actor* actorA, Actor* actorB )
 		return;
 	}
 
-	if ( actorA->m_isStatic )
+	if ( !actorA->m_definition->m_isSimulated )
 	{
 		PushDiscOutOfFixedDisc2D( centerB, actorB->m_definition->m_physicsRadius, centerA, actorA->m_definition->m_physicsRadius );
 	}
-	else if ( actorB->m_isStatic )
+	else if ( !actorB->m_definition->m_isSimulated )
 	{
 		PushDiscOutOfFixedDisc2D( centerA, actorA->m_definition->m_physicsRadius, centerB, actorB->m_definition->m_physicsRadius );
 	}
@@ -800,31 +801,40 @@ Actor* Map::SpawnActor( SpawnInfo const& spawnInfo )
 		return nullptr;
 	}
 
+	int actorIndex = -1;
 	for ( int index = 0; index < ( int ) m_actors.size(); index++ )
 	{
 		if ( m_actors[index] == nullptr )
 		{
-			ActorHandle newHandle = ActorHandle( m_nextActorUID, index );
-			m_nextActorUID++;
-
-			Actor* newActor = new Actor( newHandle, actorDef, this );
-			newActor->m_position = spawnInfo.m_position;
-			newActor->m_orientation = EulerAngles( spawnInfo.m_orientation.x, spawnInfo.m_orientation.y, spawnInfo.m_orientation.z );
-			newActor->m_velocity = spawnInfo.m_velocity;
-			m_actors[index] = newActor;
-			return newActor;
+			actorIndex = index;
+			break;
 		}
 	}
 
-	int const newIndex = ( int ) m_actors.size();
-	ActorHandle newHandle = ActorHandle( m_nextActorUID, newIndex );
-	m_nextActorUID++;
+	if ( actorIndex < 0 )
+	{
+		unsigned int const newIndex = static_cast<unsigned int>( m_actors.size() );
+		GUARANTEE_OR_DIE(
+			newIndex <= ActorHandle::MAX_ACTOR_INDEX,
+			"Map::SpawnActor exceeded ActorHandle::MAX_ACTOR_INDEX (too many actors)." );
+
+		actorIndex = ( int ) newIndex;
+		m_actors.push_back( nullptr );
+	}
+
+	GUARANTEE_OR_DIE(
+		m_nextActorUID < ActorHandle::MAX_ACTOR_UID,
+		"Map::SpawnActor exceeded ActorHandle::MAX_ACTOR_UID (no more unique actor handles)." );
+
+	++m_nextActorUID;
+	ActorHandle const newHandle = ActorHandle( m_nextActorUID, static_cast<unsigned int>( actorIndex ) );
 
 	Actor* newActor = new Actor( newHandle, actorDef, this );
 	newActor->m_position = spawnInfo.m_position;
 	newActor->m_orientation = EulerAngles( spawnInfo.m_orientation.x, spawnInfo.m_orientation.y, spawnInfo.m_orientation.z );
 	newActor->m_velocity = spawnInfo.m_velocity;
-	m_actors.push_back( newActor );
+
+	m_actors[actorIndex] = newActor;
 	return newActor;
 }
 

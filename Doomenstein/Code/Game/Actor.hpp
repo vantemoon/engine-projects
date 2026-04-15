@@ -23,6 +23,14 @@ public:
 	~Actor();
 
 	void Update();
+	void UpdatePhysics();
+	void TakeDamage( int damageAmount );
+	void AddForce( Vec3 const& force );
+	void AddImpulse( Vec3 const& impulse );
+	void TurnInDirection( Vec3 const& turnDirection );
+	void Attack();
+	void EquipWeapon( Weapon* weapon );
+
 	void Render() const;
 	Mat44 GetModelMatrix() const;
 
@@ -41,8 +49,6 @@ public:
 
 	int m_maxHealth = 1;
 	int m_currentHealth = 1;
-
-	bool m_isStatic = false;
 
 	std::vector<Weapon> m_inventory;
 	Weapon* m_currentWeapon = nullptr;

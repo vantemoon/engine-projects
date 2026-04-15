@@ -188,7 +188,7 @@ void Game::Update()
 		UpdateFromKeyboard();
 		UpdateFromController();
 
-		if ( m_player != nullptr )m_player->UpdateCamera();
+		UpdatePlayer();
 		return;
 	};
 
@@ -403,12 +403,6 @@ void Game::UpdateFromKeyboard()
 			DebugAddMessage( debugText, 5.f );
 		}
 
-		// F1
-		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_F1 ) )
-		{
-			m_isControllingFakeProjectile = !m_isControllingFakeProjectile;
-		}
-
 		// F2
 		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_F2 ) )
 		{
@@ -600,17 +594,7 @@ void Game::UpdatePlayer()
 
 	float const deltaSeconds = ( float ) m_gameClock->GetDeltaSeconds();
 
-	if ( m_isControllingFakeProjectile )
-	{
-		m_player->m_isMovementInputEnabled = false;
-		m_player->Update( deltaSeconds );
-		UpdateFakeProjectileFromKeyboard( deltaSeconds );
-	}
-	else
-	{
-		m_player->m_isMovementInputEnabled = true;
-		m_player->Update( deltaSeconds );
-	}
+	m_player->Update( deltaSeconds );
 }
 
 
@@ -708,20 +692,6 @@ void Game::RenderHUD() const
 		Rgba8::WHITE,
 		Rgba8::WHITE );
 
-	std::string controlText;
-	if ( m_isControllingFakeProjectile ) controlText = "[F1] Control Mode: Actor";
-	else controlText = "[F1] Control Mode: Player";
-	Rgba8 controlTextColor = m_isControllingFakeProjectile ? Rgba8::BLUE : Rgba8::WHITE;
-
-	DebugAddScreenText(
-		controlText, 
-		screenBounds,
-		15.f,
-		Vec2( 0.5f, 1.f ),
-		0.f,
-		controlTextColor,
-		controlTextColor );
-
 	if ( m_player != nullptr )
 	{
 		std::string playerPosText = Stringf(
@@ -801,8 +771,6 @@ void Game::Reset()
 	m_player->UpdateCamera();
 
 	LoadMaps();
-
-	m_isControllingFakeProjectile = false;
 }
 
 
