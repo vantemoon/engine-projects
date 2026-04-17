@@ -6,6 +6,7 @@
 
 
 //-----------------------------------------------------------------------------------------------
+class Actor;
 class Camera;
 class Game;
 struct Vertex;
@@ -30,7 +31,7 @@ public:
 	EulerAngles m_orientation;
 
 	Camera* m_playerCamera = nullptr;
-	CameraMode m_cameraMode = CameraMode::FREE_FLY;
+	CameraMode m_cameraMode = CameraMode::FIRST_PERSON;
 
 public:
 	Player( Game* owner );
@@ -39,10 +40,21 @@ public:
 	void Update( float deltaSeconds );
 	void UpdateInput();
 	void UpdateCamera();
-	void UpdateFreeFlyCameraFromMouse();
-	void UpdateFreeFlyCameraFromKeyboard( float deltaSeconds );
-	void UpdateFreeFlyCameraFromController( float deltaSeconds );
+	void UpdateFreeFlyCameraControls( float deltaSeconds );
+	void UpdateFirstPersonControls( Actor* actor, float deltaSeconds );
+
+	void SelectPreviousWeapon( Actor* actor );
+	void SelectNextWeapon( Actor* actor );
+	void SelectWeaponBySlot( Actor* actor, int slotIndex );
 
 	void Render() const;
 	Mat44 GetModelToWorldTransform() const;
+
+private:
+	void UpdateFreeFlyCameraFromMouse();
+	void UpdateFreeFlyCameraFromKeyboard( float deltaSeconds );
+	void UpdateFreeFlyCameraFromController( float deltaSeconds );
+	void UpdateFirstPersonFromMouse( Actor* actor );
+	void UpdateFirstPersonFromKeyboard( Actor* actor, float deltaSeconds );
+	void UpdateFirstPersonFromController( Actor* actor, float deltaSeconds );
 };

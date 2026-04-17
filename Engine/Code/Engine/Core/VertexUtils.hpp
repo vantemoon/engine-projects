@@ -54,6 +54,8 @@ void AddVertsForCylinderZWireframe3D( std::vector<Vertex>& verts, Vec3 const& st
 	Rgba8 const& color = Rgba8::WHITE, int numSides = 32 );
 void AddVertsForCone3D( std::vector<Vertex>& verts, Vec3 const& start, Vec3 const& end, float radius, 
 	Rgba8 const& color = Rgba8::WHITE, AABB2 const& UVs = AABB2::ZERO_TO_ONE, int numSides = 32 );
+void AddVertsForConeWireframe3D( std::vector<Vertex>& verts, Vec3 const& start, Vec3 const& end, float radius,
+	Rgba8 const& color = Rgba8::WHITE, int numSides = 32 );
 void AddVertsForArrow3D( std::vector<Vertex>& verts, Vec3 const& start, Vec3 const& end, float radius,
 	Rgba8 const& color = Rgba8::WHITE, int numSides = 32 );
 void AddVertsForLineSegment3D( std::vector<Vertex>& verts, Vec3 const& start, Vec3 const& end, float thickness, Rgba8 const& color = Rgba8::WHITE );

@@ -11,6 +11,7 @@
 
 
 //-----------------------------------------------------------------------------------------------
+class Controller;
 class Map;
 
 
@@ -32,6 +33,7 @@ public:
 	void EquipWeapon( Weapon* weapon );
 
 	void Render() const;
+	void SetSolidColor( Rgba8 const& color );
 	Mat44 GetModelMatrix() const;
 
 public:
@@ -39,16 +41,22 @@ public:
 	ActorDefinition const* m_definition = nullptr;
 	Map* m_map = nullptr;
 
+	bool m_isProjectile = false;
+	bool m_isDestroyed = false;
+
 	Vec3 m_position;
 	EulerAngles m_orientation;
 	Vec3 m_velocity;
 	Vec3 m_acceleration;
 
 	std::vector<Vertex> m_verts;
+	int m_solidVertCount = 0;
 	Rgba8 m_color;
 
 	int m_maxHealth = 1;
 	int m_currentHealth = 1;
+
+	Controller* m_controller = nullptr;
 
 	std::vector<Weapon> m_inventory;
 	Weapon* m_currentWeapon = nullptr;

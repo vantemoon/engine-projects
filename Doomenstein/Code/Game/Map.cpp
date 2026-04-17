@@ -2,17 +2,19 @@
 #include "Game/Actor.hpp"
 #include "Game/ActorDefinition.hpp"
 #include "Game/Game.hpp"
+#include "Game/Player.hpp"
 #include "Game/TileDefinition.hpp"
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/ErrorWarningAssert.hpp"
 #include "Engine/Core/Image.hpp"
 #include "Engine/Core/VertexUtils.hpp"
+#include "Engine/Math/MathUtils.hpp"
+#include "Engine/Math/RandomNumberGenerator.hpp"
 #include "Engine/Renderer/Renderer.hpp"
 #include "Engine/Renderer/IndexBuffer.hpp"
 #include "Engine/Renderer/VertexBuffer.hpp"
 #include "Engine/Renderer/SpriteSheet.hpp"
 #include "Engine/Renderer/Texture.hpp"
-#include "Engine/Math/MathUtils.hpp"
 
 
 //-----------------------------------------------------------------------------------------------
@@ -472,12 +474,25 @@ void Map::Render() const
 	g_engine->m_renderer->BindShader( nullptr );
 	g_engine->m_renderer->BindTexture( nullptr );
 
+	Actor* possessedActorToHide = nullptr;
+	if ( m_game != nullptr && m_game->m_player != nullptr && m_game->m_player->m_cameraMode == CameraMode::FIRST_PERSON )
+	{
+		possessedActorToHide = m_game->m_player->GetActor();
+	}
+
 	for ( Actor* actor : m_actors )
 	{
-		if ( actor != nullptr )
+		if ( actor == nullptr )
 		{
-			actor->Render();
+			continue;
 		}
+
+		if ( actor == possessedActorToHide )
+		{
+			continue;
+		}
+
+		actor->Render();
 	}
 }
 
@@ -792,6 +807,54 @@ Tile* const Map::GetTileAtCoords( int x, int y ) const
 
 
 //-----------------------------------------------------------------------------------------------
+void Map::SpawnPlayer( Player* player )
+{
+	if ( player == nullptr || m_definition == nullptr )
+	{
+		return;
+	}
+
+	std::vector<SpawnInfo const*> spawnPoints;
+	spawnPoints.reserve( m_definition->m_spawnInfos.size() );
+
+	for ( SpawnInfo const& spawnInfo : m_definition->m_spawnInfos )
+	{
+		if ( spawnInfo.m_actor == "SpawnPoint" )
+		{
+			spawnPoints.push_back( &spawnInfo );
+		}
+	}
+
+	if ( spawnPoints.empty() )
+	{
+		return;
+	}
+
+	RandomNumberGenerator rng;
+	int const randomIndex = rng.RollRandomIntLessThan( static_cast< int >( spawnPoints.size() ) );
+
+	SpawnInfo marineSpawnInfo = *spawnPoints[randomIndex];
+	marineSpawnInfo.m_actor = "Marine";
+	marineSpawnInfo.m_velocity = Vec3::ZERO;
+
+	Actor* marineActor = SpawnActor( marineSpawnInfo );
+	if ( marineActor == nullptr )
+	{
+		return;
+	}
+
+	player->m_map = this;
+	player->Possess( marineActor->m_handle );
+
+	player->m_cameraMode = CameraMode::FIRST_PERSON;
+	player->m_orientation = marineActor->m_orientation;
+	player->m_orientation.m_rollDegrees = 0.f;
+	player->m_position = marineActor->m_position;
+	player->m_position.z += marineActor->m_definition->m_eyeHeight;
+}
+
+
+//-----------------------------------------------------------------------------------------------
 Actor* Map::SpawnActor( SpawnInfo const& spawnInfo )
 {
 	std::string const& actorName = spawnInfo.m_actor;
@@ -813,7 +876,7 @@ Actor* Map::SpawnActor( SpawnInfo const& spawnInfo )
 
 	if ( actorIndex < 0 )
 	{
-		unsigned int const newIndex = static_cast<unsigned int>( m_actors.size() );
+		unsigned int const newIndex = static_cast< unsigned int >( m_actors.size() );
 		GUARANTEE_OR_DIE(
 			newIndex <= ActorHandle::MAX_ACTOR_INDEX,
 			"Map::SpawnActor exceeded ActorHandle::MAX_ACTOR_INDEX (too many actors)." );
@@ -827,15 +890,58 @@ Actor* Map::SpawnActor( SpawnInfo const& spawnInfo )
 		"Map::SpawnActor exceeded ActorHandle::MAX_ACTOR_UID (no more unique actor handles)." );
 
 	++m_nextActorUID;
-	ActorHandle const newHandle = ActorHandle( m_nextActorUID, static_cast<unsigned int>( actorIndex ) );
+	ActorHandle const newHandle = ActorHandle( m_nextActorUID, static_cast< unsigned int >( actorIndex ) );
 
 	Actor* newActor = new Actor( newHandle, actorDef, this );
 	newActor->m_position = spawnInfo.m_position;
 	newActor->m_orientation = EulerAngles( spawnInfo.m_orientation.x, spawnInfo.m_orientation.y, spawnInfo.m_orientation.z );
 	newActor->m_velocity = spawnInfo.m_velocity;
 
+	if ( actorName == "Marine" )
+	{
+		newActor->SetSolidColor( Rgba8::GREEN );
+	}
+	else if ( actorName == "Demon" )
+	{
+		newActor->SetSolidColor( Rgba8::RED );
+	}
+
 	m_actors[actorIndex] = newActor;
 	return newActor;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+Actor* Map::GetNextPossessableActor( ActorHandle const& currentHandle ) const
+{
+	if ( m_actors.empty() )
+	{
+		return nullptr;
+	}
+
+	int startIndex = 0;
+	if ( currentHandle.IsValid() )
+	{
+		startIndex = ( int ) currentHandle.GetIndex() + 1;
+	}
+
+	int actorCount = ( int ) m_actors.size();
+	for ( int offset = 0; offset < actorCount; ++offset )
+	{
+		int actorIndex = ( startIndex + offset ) % actorCount;
+		Actor* actor = m_actors[actorIndex];
+		if ( actor == nullptr || actor->m_definition == nullptr )
+		{
+			continue;
+		}
+
+		if ( actor->m_definition->m_canBePossessed )
+		{
+			return actor;
+		}
+	}
+
+	return nullptr;
 }
 
 
@@ -869,7 +975,15 @@ Actor* Map::GetActorByHandle( ActorHandle const actorHandle ) const
 
 
 //-----------------------------------------------------------------------------------------------
-Actor* Map::GetFakeProjectileActor() const
+void Map::DeleteDestroyedActors()
 {
-	return m_fakeProjectileActor;
+	for ( int index = 0; index < ( int ) m_actors.size(); index++ )
+	{
+		Actor* actor = m_actors[index];
+		if ( actor != nullptr && actor->m_isDestroyed )
+		{
+			delete actor;
+			m_actors[index] = nullptr;
+		}
+	}
 }

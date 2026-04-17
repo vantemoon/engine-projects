@@ -796,6 +796,65 @@ void AddVertsForCone3D( std::vector<Vertex>& verts, Vec3 const& start, Vec3 cons
 
 
 //-----------------------------------------------------------------------------------------------
+void AddVertsForConeWireframe3D( std::vector<Vertex>& verts, Vec3 const& start, Vec3 const& end, float radius, Rgba8 const& color, int numSides )
+{
+	if ( numSides <= 0 || radius <= 0.f || start == end )
+	{
+		return;
+	}
+
+	Vec3 lookAtForwardI = ( end - start ).GetNormalized();
+	Vec3 lookAtLeftJ;
+	Vec3 lookAtUpK;
+
+	Vec3 worldZAxis( 0.f, 0.f, 1.f );
+	Vec3 worldYAxis( 0.f, 1.f, 0.f );
+
+	if ( abs( DotProduct3D( lookAtForwardI, worldZAxis ) ) < 0.99999f )
+	{
+		lookAtLeftJ = CrossProduct3D( worldZAxis, lookAtForwardI ).GetNormalized();
+		lookAtUpK = CrossProduct3D( lookAtForwardI, lookAtLeftJ ).GetNormalized();
+	}
+	else
+	{
+		lookAtUpK = CrossProduct3D( lookAtForwardI, worldYAxis ).GetNormalized();
+		lookAtLeftJ = CrossProduct3D( lookAtUpK, lookAtForwardI ).GetNormalized();
+	}
+
+	float length = ( end - start ).GetLength();
+	float minSize = radius * 2.f;
+	if ( length < minSize )
+	{
+		minSize = length;
+	}
+
+	float thickness = minSize * 0.01f;
+	if ( thickness <= 0.f )
+	{
+		thickness = 0.01f;
+	}
+
+	for ( int sideIndex = 0; sideIndex < numSides; ++sideIndex )
+	{
+		float tA = static_cast< float >( sideIndex ) / static_cast< float >( numSides );
+		float tB = static_cast< float >( sideIndex + 1 ) / static_cast< float >( numSides );
+		float degreesA = 360.f * tA;
+		float degreesB = 360.f * tB;
+
+		Vec3 left = radius * CosDegrees( degreesA ) * lookAtLeftJ + radius * SinDegrees( degreesA ) * lookAtUpK;
+		Vec3 right = radius * CosDegrees( degreesB ) * lookAtLeftJ + radius * SinDegrees( degreesB ) * lookAtUpK;
+
+		Vec3 baseLeft = start + left;
+		Vec3 baseRight = start + right;
+
+		AddVertsForLineSegment3D( verts, baseLeft, baseRight, thickness, color ); // base ring
+		AddVertsForLineSegment3D( verts, end, baseLeft, thickness, color );       // side edge
+		AddVertsForLineSegment3D( verts, start, baseLeft, thickness, color );     // base spoke
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
 void AddVertsForArrow3D( std::vector<Vertex>& verts, Vec3 const& start, Vec3 const& end, float radius, 
 						 Rgba8 const& color, int numSlices )
 {

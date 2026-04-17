@@ -1,5 +1,7 @@
 #include "Game/Player.hpp"
+#include "Game/Actor.hpp"
 #include "Game/Game.hpp"
+#include "Game/Map.hpp"
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Input/InputSystem.hpp"
 #include "Engine/Math/MathUtils.hpp"
@@ -56,6 +58,13 @@ void Player::UpdateInput()
 		if ( m_cameraMode == CameraMode::FREE_FLY )
 		{
 			m_cameraMode = CameraMode::FIRST_PERSON;
+
+			Actor* actor = GetActor();
+			if ( actor != nullptr )
+			{
+				m_orientation = actor->m_orientation;
+				m_orientation.m_rollDegrees = 0.f;
+			}
 		}
 		else
 		{
@@ -65,15 +74,33 @@ void Player::UpdateInput()
 
 	if ( m_cameraMode == CameraMode::FREE_FLY )
 	{
-		UpdateFreeFlyCameraFromMouse();
-		UpdateFreeFlyCameraFromKeyboard( deltaSeconds );
-		UpdateFreeFlyCameraFromController( deltaSeconds );
+		UpdateFreeFlyCameraControls( deltaSeconds );
 	}
 	else if ( m_cameraMode == CameraMode::FIRST_PERSON )
 	{
-		if ( m_game != nullptr && m_game->m_currentGameState == GameState::PAUSED ) return;
+		if ( m_game != nullptr && m_game->m_currentGameState == GameState::PAUSED )
+		{
+			return;
+		}
 
-		// When an actor is possessed
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'N' ) && m_map != nullptr )
+		{
+			Actor* nextPossessableActor = m_map->GetNextPossessableActor( m_possessedActor );
+			if ( nextPossessableActor != nullptr )
+			{
+				Possess( nextPossessableActor->m_handle );
+				m_orientation = nextPossessableActor->m_orientation;
+				m_orientation.m_rollDegrees = 0.f;
+			}
+		}
+
+		Actor* actor = GetActor();
+		if ( actor == nullptr || actor->m_definition == nullptr )
+		{
+			return;
+		}
+
+		UpdateFirstPersonControls( actor, deltaSeconds );
 	}
 }
 
@@ -82,6 +109,7 @@ void Player::UpdateInput()
 void Player::UpdateCamera()
 {
 	if ( m_playerCamera == nullptr ) return;
+
 	if ( m_cameraMode == CameraMode::FREE_FLY )
 	{
 		m_playerCamera->SetPerspectiveView( g_engine->m_window->m_config.m_clientAspect, 60.f, 0.1f, 100.f );
@@ -89,8 +117,35 @@ void Player::UpdateCamera()
 	}
 	else if ( m_cameraMode == CameraMode::FIRST_PERSON )
 	{
-		// When an actor is possessed
+		Actor* actor = GetActor();
+		if ( actor == nullptr || actor->m_definition == nullptr )
+		{
+			return;
+		}
+
+		Vec3 eyePos = actor->m_position;
+		eyePos.z += actor->m_definition->m_eyeHeight;
+
+		m_position = eyePos;
+		m_orientation.m_rollDegrees = 0.f;
+
+		m_playerCamera->SetPerspectiveView(
+			g_engine->m_window->m_config.m_clientAspect,
+			actor->m_definition->m_cameraFOVDegrees,
+			0.1f,
+			100.f );
+
+		m_playerCamera->SetPositionAndOrientation( eyePos, m_orientation );
 	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Player::UpdateFreeFlyCameraControls( float deltaSeconds )
+{
+	UpdateFreeFlyCameraFromMouse();
+	UpdateFreeFlyCameraFromKeyboard( deltaSeconds );
+	UpdateFreeFlyCameraFromController( deltaSeconds );
 }
 
 
@@ -252,4 +307,236 @@ Mat44 Player::GetModelToWorldTransform() const
 	modelToWorld.Append( translation );
 	modelToWorld.Append( rotation );
 	return modelToWorld;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Player::UpdateFirstPersonControls( Actor* actor, float deltaSeconds )
+{
+	if ( actor == nullptr || actor->m_definition == nullptr )
+	{
+		return;
+	}
+
+	actor->m_velocity.x = 0.f;
+	actor->m_velocity.y = 0.f;
+
+	UpdateFirstPersonFromMouse( actor );
+	UpdateFirstPersonFromKeyboard( actor, deltaSeconds );
+	UpdateFirstPersonFromController( actor, deltaSeconds );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Player::UpdateFirstPersonFromMouse( Actor* actor )
+{
+	if ( actor == nullptr )
+	{
+		return;
+	}
+
+	float mouseSensitivity = 0.075f;
+	IntVec2 mouseDelta = g_engine->m_inputSystem->GetCursorClientDelta();
+
+	m_orientation.m_yawDegrees -= ( float ) mouseDelta.x * mouseSensitivity;
+	m_orientation.m_pitchDegrees = GetClamped( m_orientation.m_pitchDegrees + ( float ) mouseDelta.y * mouseSensitivity, -85.f, 85.f );
+	m_orientation.m_rollDegrees = 0.f;
+
+	if ( g_engine->m_inputSystem->IsKeyDown( KEYCODE_LBUTTON ) )
+	{
+		actor->Attack();
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Player::UpdateFirstPersonFromKeyboard( Actor* actor, float deltaSeconds )
+{
+	UNUSED( deltaSeconds );
+
+	if ( actor == nullptr || actor->m_definition == nullptr )
+	{
+		return;
+	}
+
+	float moveX = 0.f;
+	float moveY = 0.f;
+
+	if ( g_engine->m_inputSystem->IsKeyDown( 'A' ) ) moveX += 1.f;
+	if ( g_engine->m_inputSystem->IsKeyDown( 'D' ) ) moveX -= 1.f;
+	if ( g_engine->m_inputSystem->IsKeyDown( 'W' ) ) moveY += 1.f;
+	if ( g_engine->m_inputSystem->IsKeyDown( 'S' ) ) moveY -= 1.f;
+
+	bool isSprinting = g_engine->m_inputSystem->IsKeyDown( KEYCODE_SHIFT );
+	float moveSpeed = isSprinting ? actor->m_definition->m_runSpeed : actor->m_definition->m_walkSpeed;
+
+	Mat44 orientationMat = m_orientation.GetAsMatrix_IFwd_JLeft_KUp();
+	Vec3 forwardVector = orientationMat.GetIBasis3D();
+	Vec3 leftVector = orientationMat.GetJBasis3D();
+
+	forwardVector.z = 0.f;
+	leftVector.z = 0.f;
+	forwardVector = forwardVector.GetNormalized();
+	leftVector = leftVector.GetNormalized();
+
+	Vec3 moveDirection = ( forwardVector * moveY ) + ( leftVector * moveX );
+	if ( moveDirection.GetLengthSquared() > 0.f )
+	{
+		moveDirection = moveDirection.GetNormalized();
+	}
+
+	Vec3 desiredVelocity = moveDirection * moveSpeed;
+	actor->m_velocity.x += desiredVelocity.x;
+	actor->m_velocity.y += desiredVelocity.y;
+
+	if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_LEFTARROW ) )
+	{
+		SelectPreviousWeapon( actor );
+	}
+	if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_RIGHTARROW ) )
+	{
+		SelectNextWeapon( actor );
+	}
+
+	if ( g_engine->m_inputSystem->WasKeyJustPressed( '1' ) )
+	{
+		SelectWeaponBySlot( actor, 0 );
+	}
+	if ( g_engine->m_inputSystem->WasKeyJustPressed( '2' ) )
+	{
+		SelectWeaponBySlot( actor, 1 );
+	}
+}
+
+
+///-----------------------------------------------------------------------------------------------
+void Player::UpdateFirstPersonFromController( Actor* actor, float deltaSeconds )
+{
+	if ( actor == nullptr || actor->m_definition == nullptr )
+	{
+		return;
+	}
+
+	XboxController const& controller = g_engine->m_inputSystem->GetController( 0 );
+
+	float turnSpeed = actor->m_definition->m_turnSpeed;
+	Vec2 rightStick = controller.GetRightJoystick().GetPosition();
+	m_orientation.m_yawDegrees -= rightStick.x * turnSpeed * deltaSeconds;
+	m_orientation.m_pitchDegrees = GetClamped( m_orientation.m_pitchDegrees - rightStick.y * turnSpeed * deltaSeconds, -85.f, 85.f );
+	m_orientation.m_rollDegrees = 0.f;
+
+	Vec2 leftStick = controller.GetLeftJoystick().GetPosition();
+
+	bool isSprinting = controller.IsButtonDown( XBOX_BUTTON_A );
+	float moveSpeed = isSprinting ? actor->m_definition->m_runSpeed : actor->m_definition->m_walkSpeed;
+
+	Mat44 orientationMat = m_orientation.GetAsMatrix_IFwd_JLeft_KUp();
+	Vec3 forwardVector = orientationMat.GetIBasis3D();
+	Vec3 leftVector = orientationMat.GetJBasis3D();
+
+	forwardVector.z = 0.f;
+	leftVector.z = 0.f;
+	forwardVector = forwardVector.GetNormalized();
+	leftVector = leftVector.GetNormalized();
+
+	Vec3 moveDirection = ( forwardVector * leftStick.y ) + ( leftVector * leftStick.x );
+	if ( moveDirection.GetLengthSquared() > 0.f )
+	{
+		moveDirection = moveDirection.GetNormalized();
+	}
+
+	Vec3 desiredVelocity = moveDirection * moveSpeed;
+	actor->m_velocity.x += desiredVelocity.x;
+	actor->m_velocity.y += desiredVelocity.y;
+
+	if ( controller.GetRightTrigger() > 0.1f )
+	{
+		actor->Attack();
+	}
+
+	if ( controller.WasButtonJustPressed( XBOX_BUTTON_DOWN ) )
+	{
+		SelectPreviousWeapon( actor );
+	}
+	if ( controller.WasButtonJustPressed( XBOX_BUTTON_UP ) )
+	{
+		SelectNextWeapon( actor );
+	}
+
+	if ( controller.WasButtonJustPressed( XBOX_BUTTON_X ) )
+	{
+		SelectWeaponBySlot( actor, 0 );
+	}
+	if ( controller.WasButtonJustPressed( XBOX_BUTTON_Y ) )
+	{
+		SelectWeaponBySlot( actor, 1 );
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Player::SelectPreviousWeapon( Actor* actor )
+{
+	if ( actor == nullptr || actor->m_inventory.empty() )
+	{
+		return;
+	}
+
+	int currentIndex = 0;
+	for ( int index = 0; index < ( int ) actor->m_inventory.size(); ++index )
+	{
+		if ( &actor->m_inventory[index] == actor->m_currentWeapon )
+		{
+			currentIndex = index;
+			break;
+		}
+	}
+
+	int previousIndex = currentIndex - 1;
+	if ( previousIndex < 0 )
+	{
+		previousIndex = ( int ) actor->m_inventory.size() - 1;
+	}
+
+	actor->EquipWeapon( &actor->m_inventory[previousIndex] );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Player::SelectNextWeapon( Actor* actor )
+{
+	if ( actor == nullptr || actor->m_inventory.empty() )
+	{
+		return;
+	}
+
+	int currentIndex = 0;
+	for ( int index = 0; index < ( int ) actor->m_inventory.size(); ++index )
+	{
+		if ( &actor->m_inventory[index] == actor->m_currentWeapon )
+		{
+			currentIndex = index;
+			break;
+		}
+	}
+
+	int nextIndex = ( currentIndex + 1 ) % ( int ) actor->m_inventory.size();
+	actor->EquipWeapon( &actor->m_inventory[nextIndex] );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Player::SelectWeaponBySlot( Actor* actor, int slotIndex )
+{
+	if ( actor == nullptr )
+	{
+		return;
+	}
+
+	if ( slotIndex < 0 || slotIndex >= ( int ) actor->m_inventory.size() )
+	{
+		return;
+	}
+
+	actor->EquipWeapon( &actor->m_inventory[slotIndex] );
 }

@@ -17,7 +17,7 @@ public:
 	void Possess( ActorHandle actorHandle );
 	Actor* GetActor() const;
 
-protected:
+public:
 	ActorHandle m_possessedActor = ActorHandle::INVALID;
 	Map* m_map = nullptr;
 };

@@ -1,4 +1,5 @@
 #include "Game/Actor.hpp"
+#include "Game/Controller.hpp"
 #include "Game/Map.hpp"
 #include "Game/WeaponDefinition.hpp"
 #include "Engine/Core/Clock.hpp"
@@ -49,7 +50,27 @@ Actor::Actor( ActorHandle handle, ActorDefinition const* definition, Map* map )
 			if ( m_definition->m_physicsRadius > 0.f && m_definition->m_physicsHeight > 0.f )
 			{
 				AddVertsForCylinderZ3D( m_verts, Vec3::ZERO, Vec3( 0.f, 0.f, m_definition->m_physicsHeight ), m_definition->m_physicsRadius, m_color );
+
+				float eyeHeight = m_definition->m_eyeHeight - 0.1f;
+				float eyeConeLength = 0.1f;
+				float eyeConeRadius = 0.15f;
+
+				float eyeOffsetFromCenter = m_definition->m_physicsRadius;
+				Vec3 eyeBase( eyeOffsetFromCenter, 0.f, eyeHeight );
+				Vec3 eyeTip( eyeOffsetFromCenter + eyeConeLength, 0.f, eyeHeight );
+
+				if ( !m_isProjectile )
+				{
+					AddVertsForCone3D( m_verts, eyeBase, eyeTip, eyeConeRadius, m_color );
+				}
+
+				m_solidVertCount = ( int ) m_verts.size();
 				AddVertsForCylinderZWireframe3D( m_verts, Vec3::ZERO, Vec3( 0.f, 0.f, m_definition->m_physicsHeight ), m_definition->m_physicsRadius, Rgba8::WHITE );
+
+				if ( !m_isProjectile )
+				{
+					AddVertsForConeWireframe3D( m_verts, eyeBase, eyeTip, eyeConeRadius, Rgba8::WHITE );
+				}
 			}
 		}
 	}
@@ -216,6 +237,24 @@ void Actor::Render() const
 	g_engine->m_renderer->DrawVertexArray( m_verts );
 
 	g_engine->m_renderer->SetRasterizerMode( RasterizerMode::SOLID_CULL_BACK );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Actor::SetSolidColor( Rgba8 const& color )
+{
+	m_color = color;
+
+	int endIndex = m_solidVertCount;
+	if ( endIndex > ( int ) m_verts.size() )
+	{
+		endIndex = ( int ) m_verts.size();
+	}
+
+	for ( int index = 0; index < endIndex; ++index )
+	{
+		m_verts[index].m_color = color;
+	}
 }
 
 

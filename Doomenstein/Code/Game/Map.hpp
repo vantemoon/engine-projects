@@ -12,6 +12,7 @@
 class Actor;
 class Game;
 class IndexBuffer;
+class Player;
 class Shader;
 class Texture;
 class VertexBuffer;
@@ -34,7 +35,6 @@ public:
 	bool IsPositionInBounds( Vec3 const& position ) const;
 	bool AreCoordsInBounds( int x, int y ) const;
 	Tile* const GetTileAtCoords( int x, int y ) const;
-	Actor* GetFakeProjectileActor() const;
 
 	void Update();
 	void CollideActors();
@@ -57,8 +57,11 @@ public:
 	void AddToSunIntensity( float delta );
 	void AddToAmbientIntensity( float delta );
 
+	void SpawnPlayer( Player* player );
 	Actor* SpawnActor( SpawnInfo const& spawnInfo );
+	Actor* GetNextPossessableActor( ActorHandle const& currentHandle ) const;
 	Actor* GetActorByHandle( ActorHandle const actorHandle ) const;
+	void DeleteDestroyedActors();
 
 protected:
 	Game* m_game = nullptr;
