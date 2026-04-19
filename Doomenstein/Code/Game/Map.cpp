@@ -232,6 +232,7 @@ void Map::Update()
 
 	CollideActors();
 	CollideActorWithMap();
+	DeleteDestroyedActors();
 }
 
 
@@ -241,7 +242,7 @@ void Map::CollideActors()
 	for ( size_t i = 0; i < m_actors.size(); i++ )
 	{
 		Actor* actorA = m_actors[i];
-		if ( actorA == nullptr )
+		if ( actorA == nullptr || actorA->m_isDead || actorA->m_isDestroyed )
 		{
 			continue;
 		}
@@ -249,7 +250,7 @@ void Map::CollideActors()
 		for ( size_t j = i + 1; j < m_actors.size(); j++ )
 		{
 			Actor* actorB = m_actors[j];
-			if ( actorB == nullptr )
+			if ( actorB == nullptr || actorB->m_isDead || actorB->m_isDestroyed )
 			{
 				continue;
 			}
@@ -351,7 +352,7 @@ void Map::CollideActorWithMap()
 {
 	for ( Actor* actor : m_actors )
 	{
-		if ( actor != nullptr )
+		if ( actor != nullptr && !actor->m_isDead && !actor->m_isDestroyed )
 		{
 			CollideActorWithMap( actor );
 		}
@@ -707,7 +708,7 @@ RaycastResult3D Map::RaycastWorldActors( Vec3 const& startPos, Vec3 const& forwa
 
 	for ( Actor* actor : m_actors )
 	{
-		if ( actor == nullptr || actor == owner )
+		if ( actor == nullptr || actor == owner || actor->m_isDead || actor->m_isDestroyed )
 		{
 			continue;
 		}
@@ -904,6 +905,10 @@ Actor* Map::SpawnActor( SpawnInfo const& spawnInfo )
 	else if ( actorName == "Demon" )
 	{
 		newActor->SetSolidColor( Rgba8::RED );
+	}
+	else
+	{
+		newActor->SetSolidColor( Rgba8::BLUE );
 	}
 
 	m_actors[actorIndex] = newActor;

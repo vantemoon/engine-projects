@@ -10,14 +10,14 @@ std::map<std::string, ActorDefinition*> ActorDefinition::s_definitions;
 //-----------------------------------------------------------------------------------------------
 void ActorDefinition::InitializeDefinitions()
 {
-	LoadDefinitionsFromFile( "Data/Definitions/ProjectileActorDefinitions.xml" );
+	LoadDefinitionsFromFile( "Data/Definitions/ProjectileActorDefinitions.xml", true );
 	WeaponDefinition::InitializeDefinitions();
-	LoadDefinitionsFromFile( "Data/Definitions/ActorDefinitions.xml" );
+	LoadDefinitionsFromFile( "Data/Definitions/ActorDefinitions.xml", false );
 }
 
 
 //-----------------------------------------------------------------------------------------------
-void ActorDefinition::LoadDefinitionsFromFile( char const* filepath )
+void ActorDefinition::LoadDefinitionsFromFile( char const* filepath, bool isProjectile )
 {
 	XmlDocument actorDefDoc;
 	XmlResult loadResult = actorDefDoc.LoadFile( filepath );
@@ -45,6 +45,7 @@ void ActorDefinition::LoadDefinitionsFromFile( char const* filepath )
 	while ( actorDefElement != nullptr )
 	{
 		ActorDefinition newActorDef;
+		newActorDef.m_isProjectile = isProjectile;
 
 		std::string actorName = ParseXmlAttribute( *actorDefElement, "name", "" );
 		newActorDef.m_isVisible = ParseXmlAttribute( *actorDefElement, "visible", newActorDef.m_isVisible );

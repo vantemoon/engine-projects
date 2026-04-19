@@ -11,6 +11,7 @@ class ActorDefinition
 public:
 	// Base
 	bool m_isVisible = false;
+	bool m_isProjectile = false;
 	int m_health = 1;
 	float corpseLifetime = 0.f;
 	std::string m_faction = "NEUTRAL";
@@ -53,5 +54,5 @@ public:
 	static ActorDefinition const* GetActorDefinitionByName( std::string const& name );
 
 private:
-	static void LoadDefinitionsFromFile( char const* filepath );
+	static void LoadDefinitionsFromFile( char const* filepath, bool isProjectile );
 };

@@ -318,12 +318,19 @@ void Player::UpdateFirstPersonControls( Actor* actor, float deltaSeconds )
 		return;
 	}
 
-	actor->m_velocity.x = 0.f;
-	actor->m_velocity.y = 0.f;
-
 	UpdateFirstPersonFromMouse( actor );
 	UpdateFirstPersonFromKeyboard( actor, deltaSeconds );
 	UpdateFirstPersonFromController( actor, deltaSeconds );
+
+	EulerAngles desiredYawOnly( m_orientation.m_yawDegrees, 0.f, 0.f );
+	Mat44 orientationMat = desiredYawOnly.GetAsMatrix_IFwd_JLeft_KUp();
+	Vec3 desiredForward = orientationMat.GetIBasis3D();
+
+	float maxTurnDegrees = actor->m_definition->m_turnSpeed * deltaSeconds;
+	actor->TurnInDirection( desiredForward, maxTurnDegrees );
+
+	m_orientation.m_yawDegrees = actor->m_orientation.m_yawDegrees;
+	m_orientation.m_rollDegrees = 0.f;
 }
 
 
@@ -382,12 +389,8 @@ void Player::UpdateFirstPersonFromKeyboard( Actor* actor, float deltaSeconds )
 	Vec3 moveDirection = ( forwardVector * moveY ) + ( leftVector * moveX );
 	if ( moveDirection.GetLengthSquared() > 0.f )
 	{
-		moveDirection = moveDirection.GetNormalized();
+		actor->MoveInDirection( moveDirection, moveSpeed );
 	}
-
-	Vec3 desiredVelocity = moveDirection * moveSpeed;
-	actor->m_velocity.x += desiredVelocity.x;
-	actor->m_velocity.y += desiredVelocity.y;
 
 	if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_LEFTARROW ) )
 	{
@@ -442,12 +445,8 @@ void Player::UpdateFirstPersonFromController( Actor* actor, float deltaSeconds )
 	Vec3 moveDirection = ( forwardVector * leftStick.y ) + ( leftVector * leftStick.x );
 	if ( moveDirection.GetLengthSquared() > 0.f )
 	{
-		moveDirection = moveDirection.GetNormalized();
+		actor->MoveInDirection( moveDirection, moveSpeed );
 	}
-
-	Vec3 desiredVelocity = moveDirection * moveSpeed;
-	actor->m_velocity.x += desiredVelocity.x;
-	actor->m_velocity.y += desiredVelocity.y;
 
 	if ( controller.GetRightTrigger() > 0.1f )
 	{
