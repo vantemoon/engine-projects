@@ -14,7 +14,7 @@ Game2DCurves::Game2DCurves()
 {
 	float const panelPadding = 2.f;
 
-	AABB2 usableSpace = AABB2( Vec2( 0.f, 0.f ), Vec2( WORLD_SIZE_X, WORLD_SIZE_Y - 10.f ) );
+	AABB2 usableSpace = AABB2( Vec2( 0.f, 0.f ), Vec2( WORLD_SIZE_X, WORLD_SIZE_Y - 8.f ) );
 	AABB2 topHalf = usableSpace;
 
 	m_bezierPanel = topHalf.ChopTop( 0.5f );
@@ -43,7 +43,10 @@ void Game2DCurves::Update( float deltaSeconds )
 //-----------------------------------------------------------------------------------------------
 void Game2DCurves::UpdateFromKeyboard( [[maybe_unused]] float deltaSeconds )
 {
-	// DO NOTHING
+	if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_F1 ) )
+	{
+		m_isDebugDraw = !m_isDebugDraw;
+	}
 }
 
 
@@ -58,9 +61,13 @@ void Game2DCurves::Render() const
 
 	std::vector<Vertex> verts;
 
-	AddVertsForAABB2D( verts, m_splinePanel, Rgba8::RED, Vec2::ZERO, Vec2::ONE );
-	AddVertsForAABB2D( verts, m_bezierPanel, Rgba8::GREEN, Vec2::ZERO, Vec2::ONE );
-	AddVertsForAABB2D( verts, m_easingPanel, Rgba8::BLUE, Vec2::ZERO, Vec2::ONE );
+	if ( m_isDebugDraw )
+	{
+		Rgba8 const panelColor( 100, 0, 0 );
+		AddVertsForAABB2D( verts, m_splinePanel, panelColor, Vec2::ZERO, Vec2::ONE );
+		AddVertsForAABB2D( verts, m_bezierPanel, panelColor, Vec2::ZERO, Vec2::ONE );
+		AddVertsForAABB2D( verts, m_easingPanel, panelColor, Vec2::ZERO, Vec2::ONE );
+	}
 
 	g_engine->m_renderer->BindTexture( nullptr );
 	g_engine->m_renderer->DrawVertexArray( verts );

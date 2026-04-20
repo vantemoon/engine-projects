@@ -234,7 +234,7 @@ void App::RenderHUD() const
 			AddVertsForTextTriangles2D( verts, "Test Shapes (3D)", Vec2( 400.f, 760.f ), 20.f, Rgba8::YELLOW );
 			break;
 		case GAMEMODE_2D_CURVES:
-			AddVertsForTextTriangles2D( verts, "2D Curves", Vec2( 400.f, 760.f ), 20.f, Rgba8::YELLOW );
+			AddVertsForTextTriangles2D( verts, "Easing, Curves, Splines (2D)", Vec2( 400.f, 760.f ), 20.f, Rgba8::YELLOW );
 			break;
 		default:
 			break;

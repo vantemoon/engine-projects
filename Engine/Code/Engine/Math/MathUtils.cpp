@@ -1020,3 +1020,44 @@ Mat44 GetBillboardTransform( BillboardType type, Mat44 const& targetTransform, V
 	result.SetTranslation3D( billboardPosition );
 	return result;
 }
+
+
+//-----------------------------------------------------------------------------------------------
+float ComputeCubicBezier1D( float A, float B, float C, float D, float t )
+{
+	float AB = Interpolate( A, B, t );
+	float BC = Interpolate( B, C, t );
+	float CD = Interpolate( C, D, t );
+
+	float ABC = Interpolate( AB, BC, t );
+	float BCD = Interpolate( BC, CD, t );
+
+	float ABCD = Interpolate( ABC, BCD, t );
+	return ABCD;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+float ComputeQuinticBezier1D( float A, float B, float C, float D, float E, float F, float t )
+{
+	float AB = Interpolate( A, B, t );
+	float BC = Interpolate( B, C, t );
+	float CD = Interpolate( C, D, t );
+	float DE = Interpolate( D, E, t );
+	float EF = Interpolate( E, F, t );
+
+	float ABC = Interpolate( AB, BC, t );
+	float BCD = Interpolate( BC, CD, t );
+	float CDE = Interpolate( CD, DE, t );
+	float DEF = Interpolate( DE, EF, t );
+
+	float ABCD = Interpolate( ABC, BCD, t );
+	float BCDE = Interpolate( BCD, CDE, t );
+	float CDEF = Interpolate( CDE, DEF, t );
+
+	float ABCDE = Interpolate( ABCD, BCDE, t );
+	float BCDEF = Interpolate( BCDE, CDEF, t );
+
+	float ABCDEF = Interpolate( ABCDE, BCDEF, t );
+	return ABCDEF;
+}

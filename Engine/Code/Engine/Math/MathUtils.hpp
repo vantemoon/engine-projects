@@ -123,3 +123,9 @@ unsigned char DenormalizeByte( float zeroToOne);
 //-----------------------------------------------------------------------------------------------
 // Billboard utilities
 Mat44 GetBillboardTransform( BillboardType type, Mat44 const& targetTransform, Vec3 const& billboardPosition, Vec2 billboardScale = Vec2::ONE );
+
+
+//-----------------------------------------------------------------------------------------------
+// 1D Bezier curve utilities
+float ComputeCubicBezier1D( float A, float B, float C, float D, float t );
+float ComputeQuinticBezier1D( float A, float B, float C, float D, float E, float F, float t );

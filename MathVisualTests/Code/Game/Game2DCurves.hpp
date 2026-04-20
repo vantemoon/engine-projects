@@ -15,6 +15,7 @@ public:
 	void Render() const override;
 
 private:
+	bool m_isDebugDraw = false;
 	AABB2 m_splinePanel = AABB2::ZERO_TO_ONE;
 	AABB2 m_bezierPanel = AABB2::ZERO_TO_ONE;
 	AABB2 m_easingPanel = AABB2::ZERO_TO_ONE;
