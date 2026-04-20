@@ -60,5 +60,5 @@ private:
 
 	// Easing function
 	AABB2 m_easingFunctionGraphBounds = AABB2::ZERO_TO_ONE;
-	EasingFunctionLabel m_easingFunction = EasingFunctionLabel::IDENTITY;
+	EasingFunctionLabel m_easingFunction = EasingFunctionLabel::SMOOTH_STOP_2;
 };

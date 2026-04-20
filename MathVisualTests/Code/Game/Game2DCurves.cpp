@@ -206,5 +206,6 @@ void Game2DCurves::RenderEasingFunctionGraph( std::vector<Vertex>& verts ) const
 //-----------------------------------------------------------------------------------------------
 float Game2DCurves::CustomFunkyEasingFunction( float t )
 {
-	return t;
+	float pi = 3.1415926f;
+	return t + sinf( 6.f * pi * t ) * t * ( 1.f - t );
 }
