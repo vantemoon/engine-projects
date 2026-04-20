@@ -6,10 +6,10 @@
 #include "Engine/Core/VertexUtils.hpp"
 #include "Engine/Math/Easing.hpp"
 #include "Engine/Math/MathUtils.hpp"
+#include "Engine/Math/RandomNumberGenerator.hpp"
 #include "Engine/Math/Vec2.hpp"
 #include "Engine/Renderer/Camera.hpp"
 #include "Engine/Renderer/Renderer.hpp"
-
 
 
 //-----------------------------------------------------------------------------------------------
@@ -35,6 +35,10 @@ Game2DCurves::Game2DCurves()
 	m_easingFunctionGraphBounds = AABB2(
 		Vec2( graphCenterX - halfGraphSize, m_easingPanel.m_maxs.y - easingFunctionGraphSize ),
 		Vec2( graphCenterX + halfGraphSize, m_easingPanel.m_maxs.y ) );
+
+	RandomNumberGenerator rng;
+
+	Randomize();
 }
 
 
@@ -67,6 +71,11 @@ void Game2DCurves::UpdateFromKeyboard( [[maybe_unused]] float deltaSeconds )
 	if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_F1 ) )
 	{
 		m_isDebugDraw = !m_isDebugDraw;
+	}
+
+	if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_F8 ) )
+	{
+		Randomize();
 	}
 
 	if ( g_engine->m_inputSystem->WasKeyJustPressed( 'W' ) )
@@ -108,24 +117,12 @@ void Game2DCurves::Render() const
 	}
 
 	// Easing functions
-	Rgba8 const graphBackgroundColor( 0, 0, 100 );
-	Rgba8 const graphLineColor( 0, 255, 0 );
-	AddVertsForAABB2D( verts, m_easingFunctionGraphBounds, graphBackgroundColor, Vec2::ZERO, Vec2::ONE );
-
-	std::string easingFunctionLabel = GetEasingFunctionLabel();
 	RenderEasingFunctionGraph( verts );
 	RenderEasingFunctionPoint( verts );
-	
-	if ( !easingFunctionLabel.empty() )
-	{
-		float const labelCellHeight = 3.5f;
-		float const labelWidth = GetSimpleTriangleStringWidth( easingFunctionLabel, labelCellHeight );
-		Vec2 const labelStartMins(
-			m_easingFunctionGraphBounds.GetCenter().x - ( labelWidth * 0.5f ),
-			m_easingFunctionGraphBounds.m_mins.y - labelCellHeight - 1.5f );
 
-		AddVertsForTextTriangles2D( verts, easingFunctionLabel, labelStartMins, labelCellHeight, graphLineColor );
-	}
+	// Cubic Bezier curve
+	RenderCubicBezierCurve( verts );
+	RenderCubicBezierPoint( verts );
 
 	g_engine->m_renderer->BindTexture( nullptr );
 	g_engine->m_renderer->DrawVertexArray( verts );
@@ -187,10 +184,45 @@ EasingFunction Game2DCurves::GetEasingFunction() const
 
 
 //-----------------------------------------------------------------------------------------------
+void Game2DCurves::Randomize()
+{
+	GenerateRandomEasingFunctionLabel();
+	GenerateRandomCubicBezierCurve();
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game2DCurves::GenerateRandomEasingFunctionLabel()
+{
+	RandomNumberGenerator rng;
+	int randomIndex = rng.RollRandomIntLessThan( ( int ) EasingFunctionLabel::NUM_EASING_FUNCTIONS );
+	m_easingFunction = ( EasingFunctionLabel ) randomIndex;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game2DCurves::GenerateRandomCubicBezierCurve()
+{
+	RandomNumberGenerator rng;
+	m_bezierCurve.m_startPos = m_bezierPanel.GetPointAtUV( Vec2( rng.RollRandomFloatInRange( 0.f, 1.f ), rng.RollRandomFloatInRange( 0.f, 1.f ) ) );
+	m_bezierCurve.m_guidePos1 = m_bezierPanel.GetPointAtUV( Vec2( rng.RollRandomFloatInRange( 0.f, 1.f ), rng.RollRandomFloatInRange( 0.f, 1.f ) ) );
+	m_bezierCurve.m_guidePos2 = m_bezierPanel.GetPointAtUV( Vec2( rng.RollRandomFloatInRange( 0.f, 1.f ), rng.RollRandomFloatInRange( 0.f, 1.f ) ) );
+	m_bezierCurve.m_endPos = m_bezierPanel.GetPointAtUV( Vec2( rng.RollRandomFloatInRange( 0.f, 1.f ), rng.RollRandomFloatInRange( 0.f, 1.f ) ) );
+}
+
+
+//-----------------------------------------------------------------------------------------------
 void Game2DCurves::RenderEasingFunctionGraph( std::vector<Vertex>& verts ) const
 {
-	Rgba8 const curveColor( 0, 255, 0 );
+	Rgba8 const graphBackgroundColor( 0, 0, 100 );
+	Rgba8 const graphLineColor( 0, 255, 0 );
+	AddVertsForAABB2D( verts, m_easingFunctionGraphBounds, graphBackgroundColor, Vec2::ZERO, Vec2::ONE );
+
 	float const lineThickness = 0.4f;
+	Rgba8 const lineColor( 50, 50, 100 );
+
+	AddVertsForLineSegment2D( verts, Vec2( m_easingFunctionPoint.x, m_easingFunctionGraphBounds.m_mins.y ), m_easingFunctionPoint, 0.3f, lineColor );
+	AddVertsForLineSegment2D( verts, Vec2( m_easingFunctionGraphBounds.m_mins.x, m_easingFunctionPoint.y ), m_easingFunctionPoint, 0.3f, lineColor );
 
 	for ( int segmentIndex = 0; segmentIndex < m_numSubdivisions; ++ segmentIndex )
 	{
@@ -209,7 +241,19 @@ void Game2DCurves::RenderEasingFunctionGraph( std::vector<Vertex>& verts ) const
 			RangeMap( t1, 0.f, 1.f, m_easingFunctionGraphBounds.m_mins.x, m_easingFunctionGraphBounds.m_maxs.x ),
 			RangeMap( y1, 0.f, 1.f, m_easingFunctionGraphBounds.m_mins.y, m_easingFunctionGraphBounds.m_maxs.y ) );
 
-		AddVertsForLineSegment2D( verts, p0, p1, lineThickness, curveColor );
+		AddVertsForLineSegment2D( verts, p0, p1, lineThickness, Rgba8::GREEN );
+	}
+
+	std::string easingFunctionLabel = GetEasingFunctionLabel();
+	if ( !easingFunctionLabel.empty() )
+	{
+		float const labelCellHeight = 3.5f;
+		float const labelWidth = GetSimpleTriangleStringWidth( easingFunctionLabel, labelCellHeight );
+		Vec2 const labelStartMins(
+			m_easingFunctionGraphBounds.GetCenter().x - ( labelWidth * 0.5f ),
+			m_easingFunctionGraphBounds.m_mins.y - labelCellHeight - 1.5f );
+
+		AddVertsForTextTriangles2D( verts, easingFunctionLabel, labelStartMins, labelCellHeight, graphLineColor );
 	}
 }
 
@@ -218,10 +262,68 @@ void Game2DCurves::RenderEasingFunctionGraph( std::vector<Vertex>& verts ) const
 void Game2DCurves::RenderEasingFunctionPoint( std::vector<Vertex>& verts ) const
 {
 	float const pointRadius = 0.5f;
-	Rgba8 const lineColor( 50, 50, 100 );
-	AddVertsForLineSegment2D( verts, Vec2( m_easingFunctionPoint.x, m_easingFunctionGraphBounds.m_mins.y ), m_easingFunctionPoint, 0.3f, lineColor );
-	AddVertsForLineSegment2D( verts, Vec2( m_easingFunctionGraphBounds.m_mins.x, m_easingFunctionPoint.y ), m_easingFunctionPoint, 0.3f, lineColor );
 	AddVertsForDisc2D( verts, m_easingFunctionPoint, pointRadius, Rgba8::WHITE, 32 );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game2DCurves::RenderCubicBezierCurve( std::vector<Vertex>& verts ) const
+{
+	Rgba8 const faintLineColor( 50, 50, 100 );
+	float const thinLineThickness = 0.2f;
+	AddVertsForLineSegment2D( verts, m_bezierCurve.m_startPos, m_bezierCurve.m_guidePos1, thinLineThickness, faintLineColor );
+	AddVertsForLineSegment2D( verts, m_bezierCurve.m_guidePos1, m_bezierCurve.m_guidePos2, thinLineThickness, faintLineColor );
+	AddVertsForLineSegment2D( verts, m_bezierCurve.m_guidePos2, m_bezierCurve.m_endPos, thinLineThickness, faintLineColor );
+
+	Rgba8 const darkGrey( 50, 50, 50 );
+	float const lineThickness = 0.4f;
+	int const fixedSegmentCount = 64;
+	for ( int segmentIndex = 0; segmentIndex < fixedSegmentCount; ++ segmentIndex )
+	{
+		float t0 = static_cast<float>( segmentIndex ) / static_cast<float>( fixedSegmentCount );
+		float t1 = static_cast<float>( segmentIndex + 1 ) / static_cast<float>( fixedSegmentCount );
+		Vec2 const p0 = m_bezierCurve.EvaluateAtParametric( t0 );
+		Vec2 const p1 = m_bezierCurve.EvaluateAtParametric( t1 );
+		AddVertsForLineSegment2D( verts, p0, p1, lineThickness, darkGrey );
+	}
+	for ( int segmentIndex = 0; segmentIndex < m_numSubdivisions; ++ segmentIndex )
+	{
+		float t0 = static_cast<float>( segmentIndex ) / static_cast<float>( m_numSubdivisions );
+		float t1 = static_cast<float>( segmentIndex + 1 ) / static_cast<float>( m_numSubdivisions );
+		Vec2 const p0 = m_bezierCurve.EvaluateAtParametric( t0 );
+		Vec2 const p1 = m_bezierCurve.EvaluateAtParametric( t1 );
+		AddVertsForLineSegment2D( verts, p0, p1, lineThickness, Rgba8::GREEN );
+	}
+
+	Rgba8 const lightBlue( 100, 100, 255 );
+	float const pointRadius = 0.5f;
+	AddVertsForDisc2D( verts, m_bezierCurve.m_startPos, pointRadius, lightBlue, 32 );
+	AddVertsForDisc2D( verts, m_bezierCurve.m_guidePos1, pointRadius, lightBlue, 32 );
+	AddVertsForDisc2D( verts, m_bezierCurve.m_guidePos2, pointRadius, lightBlue, 32 );
+	AddVertsForDisc2D( verts, m_bezierCurve.m_endPos, pointRadius, lightBlue, 32 );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game2DCurves::RenderCubicBezierPoint( std::vector<Vertex>& verts ) const
+{
+	float const pointRadius = 0.5f;
+	float const clampedT = GetClampedZeroToOne( m_parametricT );
+
+	Vec2 const whitePoint = m_bezierCurve.EvaluateAtParametric( clampedT );
+	AddVertsForDisc2D( verts, whitePoint, pointRadius, Rgba8::WHITE, 32 );
+
+	int const numSubdivisions = ( m_numSubdivisions > 0 ) ? m_numSubdivisions : 64;
+	float const totalLength = m_bezierCurve.GetApproximateLength( numSubdivisions );
+
+	Vec2 greenPoint = m_bezierCurve.m_startPos;
+	if ( totalLength > 0.f )
+	{
+		float const distanceAlongCurve = clampedT * totalLength;
+		greenPoint = m_bezierCurve.EvaluateAtApproximateDistance( distanceAlongCurve, numSubdivisions );
+	}
+
+	AddVertsForDisc2D( verts, greenPoint, pointRadius, Rgba8::GREEN, 32 );
 }
 
 

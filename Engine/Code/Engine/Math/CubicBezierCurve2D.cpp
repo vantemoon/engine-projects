@@ -29,6 +29,11 @@ Vec2 CubicBezierCurve2D::EvaluateAtParametric( float parametricZeroToOne ) const
 //-----------------------------------------------------------------------------------------------
 float CubicBezierCurve2D::GetApproximateLength( int numSubdivisions ) const
 {
+	if ( numSubdivisions <= 0 )
+	{
+		return 0.f;
+	}
+
 	float length = 0.f;
 	Vec2 prevPoint = m_startPos;
 	for ( int segmentIndex = 0; segmentIndex < numSubdivisions; ++ segmentIndex )
@@ -38,6 +43,7 @@ float CubicBezierCurve2D::GetApproximateLength( int numSubdivisions ) const
 		length += GetDistance2D( prevPoint, pointOnCurve );
 		prevPoint = pointOnCurve;
 	}
+
 	return length;
 }
 
@@ -45,7 +51,35 @@ float CubicBezierCurve2D::GetApproximateLength( int numSubdivisions ) const
 //-----------------------------------------------------------------------------------------------
 Vec2 CubicBezierCurve2D::EvaluateAtApproximateDistance( float distanceAlongCurve, int numSubdivisions ) const
 {
-	float totalLength = GetApproximateLength( numSubdivisions );
-	float t = distanceAlongCurve / totalLength;
-	return EvaluateAtParametric( t );
+	if ( numSubdivisions <= 0 )
+	{
+		return m_startPos;
+	}
+
+	if ( distanceAlongCurve <= 0.f )
+	{
+		return m_startPos;
+	}
+
+	float distanceAccumulated = 0.f;
+	Vec2 previousPoint = m_startPos;
+
+	for ( int segmentIndex = 0; segmentIndex < numSubdivisions; ++ segmentIndex )
+	{
+		float const nextT = static_cast<float>( segmentIndex + 1 ) / static_cast<float>( numSubdivisions );
+		Vec2 const nextPoint = EvaluateAtParametric( nextT );
+		float const segmentLength = GetDistance2D( previousPoint, nextPoint );
+
+		if ( segmentLength > 0.f && ( distanceAccumulated + segmentLength ) >= distanceAlongCurve )
+		{
+			float const distanceIntoSegment = distanceAlongCurve - distanceAccumulated;
+			float const segmentFraction = distanceIntoSegment / segmentLength;
+			return previousPoint + ( nextPoint - previousPoint ) * segmentFraction;
+		}
+
+		distanceAccumulated += segmentLength;
+		previousPoint = nextPoint;
+	}
+
+	return m_endPos;
 }

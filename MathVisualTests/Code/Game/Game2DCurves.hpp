@@ -48,8 +48,14 @@ public:
 private:
 	std::string GetEasingFunctionLabel() const;
 	EasingFunction GetEasingFunction() const;
+	void Randomize();
+	void GenerateRandomEasingFunctionLabel();
+	void GenerateRandomCubicBezierCurve();
 	void RenderEasingFunctionGraph( std::vector<Vertex>& verts ) const;
 	void RenderEasingFunctionPoint( std::vector<Vertex>& verts ) const;
+	void RenderCubicBezierCurve( std::vector<Vertex>& verts ) const;
+	void RenderCubicBezierPoint( std::vector<Vertex>& verts ) const;
+
 	static float CustomFunkyEasingFunction( float t );
 
 private:
