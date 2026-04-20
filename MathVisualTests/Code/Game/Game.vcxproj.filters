@@ -73,6 +73,9 @@
     <ClCompile Include="TestShapeZCylinder.cpp">
       <Filter>Test Shape</Filter>
     </ClCompile>
+    <ClCompile Include="Game2DCurves.cpp">
+      <Filter>Gameplay</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.hpp">
@@ -131,6 +134,9 @@
     </ClInclude>
     <ClInclude Include="TestShapeZCylinder.hpp">
       <Filter>Test Shape</Filter>
+    </ClInclude>
+    <ClInclude Include="Game2DCurves.hpp">
+      <Filter>Gameplay</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

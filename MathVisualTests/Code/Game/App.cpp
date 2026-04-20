@@ -1,5 +1,6 @@
 #include "Game/App.hpp"
 #include "Game/Game.hpp"
+#include "Game/Game2DCurves.hpp"
 #include "Game/Game3DShapes.hpp"
 #include "Game/GameNearestPoint.hpp"
 #include "Game/GameRaycastVsAABB.hpp"
@@ -166,6 +167,10 @@ void App::HardReset( GameMode newGameMode )
 			m_game = new Game3DShapes();
 			break;
 
+		case GAMEMODE_2D_CURVES:
+			m_game = new Game2DCurves();
+			break;
+
 		case NUM_GAME_MODES:
 			break;
 
@@ -228,6 +233,9 @@ void App::RenderHUD() const
 		case GAMEMODE_3D_SHAPES:
 			AddVertsForTextTriangles2D( verts, "Test Shapes (3D)", Vec2( 400.f, 760.f ), 20.f, Rgba8::YELLOW );
 			break;
+		case GAMEMODE_2D_CURVES:
+			AddVertsForTextTriangles2D( verts, "2D Curves", Vec2( 400.f, 760.f ), 20.f, Rgba8::YELLOW );
+			break;
 		default:
 			break;
 	}
@@ -248,6 +256,9 @@ void App::RenderHUD() const
 			break;
 		case GAMEMODE_3D_SHAPES:
 			AddVertsForTextTriangles2D( verts, "WASD: fly horizontal, QE: fly vertical, space: lock raycast, hold T: slow", Vec2( 240.f, 730.f ), 20.f, Rgba8::CYAN );
+			break;
+		case GAMEMODE_2D_CURVES:
+			AddVertsForTextTriangles2D( verts, "TODO: Controls", Vec2( 240.f, 730.f ), 20.f, Rgba8::CYAN );
 			break;
 		default:
 			break;

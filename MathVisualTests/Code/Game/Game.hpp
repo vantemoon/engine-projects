@@ -13,7 +13,7 @@ public:
 	Camera*     m_worldCamera = nullptr;
 	Camera*     m_screenCamera = nullptr;
 
-	Clock* m_gameClock = nullptr;
+	Clock*		m_gameClock = nullptr;
 
 public:
 	Game();
