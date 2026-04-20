@@ -87,13 +87,7 @@ void Player::UpdateInput()
 		// N
 		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'N' ) && m_map != nullptr )
 		{
-			Actor* nextPossessableActor = m_map->GetNextPossessableActor( m_possessedActor );
-			if ( nextPossessableActor != nullptr )
-			{
-				Possess( nextPossessableActor->m_handle );
-				m_orientation = nextPossessableActor->m_orientation;
-				m_orientation.m_rollDegrees = 0.f;
-			}
+			m_map->DebugPossessNext();
 		}
 
 		Actor* actor = GetActor();

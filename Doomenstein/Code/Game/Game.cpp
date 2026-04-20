@@ -243,11 +243,10 @@ void Game::UpdateFromKeyboard()
 	if ( m_currentGameState == GameState::ATTRACT_MODE )
 	{
 		// Start the game
-		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'P' ) || g_engine->m_inputSystem->WasKeyJustPressed( 'N' ) || g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_SPACE ) )
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'P' ) || g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_SPACE ) )
 		{
 			Reset();
 			m_currentGameState = GameState::PLAYING;
-			LoadMaps();
 		};
 
 		// Quit the game
@@ -413,8 +412,8 @@ void Game::UpdateFromController()
 		{
 			Reset();
 			m_currentGameState = GameState::PLAYING;
-			LoadMaps();
 		};
+
 		// Quit the game
 		if ( controller.WasButtonJustPressed( XBOX_BUTTON_BACK ) )
 		{
@@ -445,11 +444,6 @@ void Game::UpdatePlayer( float deltaSeconds )
 	if ( m_player == nullptr )
 	{
 		return;
-	}
-
-	if ( m_currentMap != nullptr && m_player->GetActor() == nullptr )
-	{
-		m_currentMap->SpawnPlayer( m_player );
 	}
 
 	m_player->Update( deltaSeconds );
@@ -674,58 +668,37 @@ void Game::AddInstructionsToDevConsole() const
 	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::MAGENTA, "Controls" );
 	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "" );
 
-	// KEYBOARD + MOUSE
-	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MAJOR, "Keyboard & Mouse" );
-	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "" );
-
 	// Attract Mode
 	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::MAGENTA, "[Attract Mode]" );
-	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "Space / P:                 Switch to Game Mode" );
-	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "Esc:                       Exit the game" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "Space      | P:           Start game" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "Esc:                      Exit" );
 	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "" );
 
-	// Game Mode — General
-	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::MAGENTA, "[Game Mode: General]" );
-	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "P:                         Pause / Resume" );
-	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "O:                         Advance one frame, then pause" );
-	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "T (Hold):                  Slow game time to 1/10 speed" );
-	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "Esc:                       Switch to Attract Mode" );
-	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "H:                         Reset camera position and orientation" );
+	// First-Person Camera
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::MAGENTA, "[First-Person Camera]" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "Mouse      | Right Stick: Look (yaw / pitch)" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "WASD       | Left Stick:  Move (relative to camera)" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "Shift      | A (Hold):    Sprint" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "LMB        | RT (Hold):   Fire weapon" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "Arrow keys | D-Pad L/R:   Switch weapon" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "1          | X:           Weapon 1" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "2          | Y:           Weapon 2" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "F:                        Toggle free-fly" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "N:                        Possess next actor" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "P          | Start:       Pause / Resume" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "Esc:                      Back to attract" );
 	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "" );
 
-	// Game Mode — Movement & Rotation
-	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::MAGENTA, "[Game Mode: Movement & Rotation]" );
-	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "Mouse X:                   Yaw" );
-	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "Mouse Y:                   Pitch" );
-	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "Q / E:                     Roll" );
-
-	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "A / D:                     Move camera left / right" );
-	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "W / S:                     Move camera forward / back" );
-	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "Z / C:                     Move camera down / up" );
-
-	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "Shift (Hold):              Increase camera movement speed x10" );
-	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "" );
-
-	// CONTROLLER
-	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MAJOR, "Controller" );
-	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "" );
-
-	// Game Mode — General
-	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::MAGENTA, "[Game Mode: General]" );
-	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "Start:                     Reset camera position and orientation" );
-	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "" );
-
-	// Game Mode — Movement & Rotation
-	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::MAGENTA, "[Game Mode: Movement & Rotation]" );
-	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "Right Stick X:             Yaw" );
-	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "Right Stick Y:             Pitch" );
-	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "LT / RT:                   Roll" );
-
-	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "Left Stick X:              Move camera left / right" );
-	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "Left Stick Y:              Move camera forward / back" );
-	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "LB / RB:                   Move camera down / up" );
-
-	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "A Button (Hold):           Increase camera movement speed x10" );
+	// Free-Fly Camera
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::MAGENTA, "[Free-Fly Camera]" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "Mouse      | Right Stick: Look (yaw / pitch)" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "WASD       | Left Stick:  Move (relative to camera)" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "Z/C        | LB/RB:       Move up / down" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "Shift      | A (Hold):    Fast move" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "F:                        Toggle free-fly" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "P          | Start:       Pause / Resume" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "H          | Back:        Reset camera" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "Esc:                      Back to attract" );
 }
 
 

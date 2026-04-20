@@ -8,6 +8,20 @@ void Controller::Possess( ActorHandle actorHandle )
 {
 	Actor* oldActor = GetActor();
 
+	if ( actorHandle.IsValid() )
+	{
+		if ( m_map == nullptr )
+		{
+			return;
+		}
+
+		Actor* requestedActor = m_map->GetActorByHandle( actorHandle );
+		if ( requestedActor == nullptr )
+		{
+			return;
+		}
+	}
+
 	m_possessedActor = actorHandle;
 
 	Actor* newActor = GetActor();

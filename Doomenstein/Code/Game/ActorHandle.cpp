@@ -22,7 +22,8 @@ ActorHandle::ActorHandle( unsigned int uid, unsigned int index )
 //-----------------------------------------------------------------------------------------------
 bool ActorHandle::IsValid() const
 {
-	return ( m_data != ActorHandle::INVALID.m_data );
+	unsigned int const uid = ( m_data >> 16 ) & MAX_ACTOR_UID;
+	return ( uid != 0u );
 }
 
 

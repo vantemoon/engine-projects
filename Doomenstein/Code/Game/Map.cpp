@@ -942,32 +942,37 @@ Actor* Map::SpawnActor( SpawnInfo const& spawnInfo )
 	}
 
 	int actorIndex = -1;
-for ( int index = 0; index < ( int ) m_actors.size(); index++ )
-{
-	if ( m_actors[index] == nullptr )
+	for ( int index = 0; index < ( int ) m_actors.size(); index++ )
 	{
-		actorIndex = index;
-		break;
+		if ( m_actors[index] == nullptr )
+		{
+			actorIndex = index;
+			break;
+		}
 	}
-}
 
-if ( actorIndex < 0 )
-{
-	unsigned int const newIndex = static_cast< unsigned int >( m_actors.size() );
+	if ( actorIndex < 0 )
+	{
+		unsigned int const newIndex = static_cast<unsigned int>( m_actors.size() );
+		GUARANTEE_OR_DIE(
+			newIndex <= ActorHandle::MAX_ACTOR_INDEX,
+			"Map::SpawnActor exceeded ActorHandle::MAX_ACTOR_INDEX (too many actors)." );
+
+		actorIndex = ( int ) newIndex;
+		m_actors.push_back( nullptr );
+	}
+
+	unsigned int const uidStep = ( ( ActorHandle::MAX_ACTOR_UID & 1u ) == 0u ) ? 2u : 1u;
 	GUARANTEE_OR_DIE(
-		newIndex <= ActorHandle::MAX_ACTOR_INDEX,
-		"Map::SpawnActor exceeded ActorHandle::MAX_ACTOR_INDEX (too many actors)." );
+		m_nextActorUID <= ( ActorHandle::MAX_ACTOR_UID - uidStep ),
+		"Map::SpawnActor exceeded ActorHandle::MAX_ACTOR_UID (no more unique actor handles)." );
 
-	actorIndex = ( int ) newIndex;
-	m_actors.push_back( nullptr );
-}
+	m_nextActorUID += uidStep;
 
-GUARANTEE_OR_DIE(
-	m_nextActorUID < ActorHandle::MAX_ACTOR_UID,
-	"Map::SpawnActor exceeded ActorHandle::MAX_ACTOR_UID (no more unique actor handles)." );
-
-	++m_nextActorUID;
-	ActorHandle const newHandle = ActorHandle( m_nextActorUID, static_cast< unsigned int >( actorIndex ) );
+	ActorHandle const newHandle = ActorHandle( m_nextActorUID, static_cast<unsigned int>( actorIndex ) );
+	GUARANTEE_OR_DIE(
+		newHandle.IsValid(),
+		"Map::SpawnActor generated an invalid ActorHandle." );
 
 	Actor* newActor = new Actor( newHandle, actorDef, this );
 	newActor->m_position = spawnInfo.m_position;
@@ -1154,14 +1159,31 @@ void Map::DebugPossessNext()
 	Player* player = m_game->m_player;
 	player->m_map = this;
 
-	Actor* nextPossessableActor = GetNextPossessableActor( player->m_possessedActor );
+	ActorHandle const previousHandle = player->m_possessedActor;
+	Actor* previousActor = player->GetActor();
+
+	ActorHandle currentHandle = ActorHandle::INVALID;
+	if ( previousActor != nullptr )
+	{
+		currentHandle = previousActor->m_handle;
+	}
+
+	Actor* nextPossessableActor = GetNextPossessableActor( currentHandle );
 	if ( nextPossessableActor == nullptr )
 	{
 		return;
 	}
 
 	player->Possess( nextPossessableActor->m_handle );
-	player->m_orientation = nextPossessableActor->m_orientation;
+
+	Actor* newlyPossessedActor = player->GetActor();
+	if ( newlyPossessedActor != nextPossessableActor )
+	{
+		player->Possess( previousHandle );
+		return;
+	}
+
+	player->m_orientation = newlyPossessedActor->m_orientation;
 	player->m_orientation.m_rollDegrees = 0.f;
 }
 
@@ -1169,31 +1191,46 @@ void Map::DebugPossessNext()
 //-----------------------------------------------------------------------------------------------
 Actor* Map::GetNextPossessableActor( ActorHandle const& currentHandle ) const
 {
-	if ( m_actors.empty() )
+	int const actorCount = ( int ) m_actors.size();
+	if ( actorCount <= 0 )
 	{
 		return nullptr;
 	}
 
-	int startIndex = 0;
+	int currentIndex = -1;
 	if ( currentHandle.IsValid() )
 	{
-		startIndex = ( int ) currentHandle.GetIndex() + 1;
+		unsigned int const index = currentHandle.GetIndex();
+		if ( index < m_actors.size() )
+		{
+			Actor* actorAtIndex = m_actors[index];
+			if ( actorAtIndex != nullptr && actorAtIndex->m_handle == currentHandle )
+			{
+				currentIndex = ( int ) index;
+			}
+		}
 	}
 
-	int actorCount = ( int ) m_actors.size();
-	for ( int offset = 0; offset < actorCount; ++offset )
+	for ( int step = 1; step <= actorCount; ++step )
 	{
-		int actorIndex = ( startIndex + offset ) % actorCount;
+		int const actorIndex = ( currentIndex + step + actorCount ) % actorCount;
 		Actor* actor = m_actors[actorIndex];
 		if ( actor == nullptr || actor->m_definition == nullptr )
 		{
 			continue;
 		}
 
-		if ( actor->m_definition->m_canBePossessed )
+		if ( actor->m_isDead || actor->m_isDestroyed )
 		{
-			return actor;
+			continue;
 		}
+
+		if ( !actor->m_definition->m_canBePossessed )
+		{
+			continue;
+		}
+
+		return actor;
 	}
 
 	return nullptr;
