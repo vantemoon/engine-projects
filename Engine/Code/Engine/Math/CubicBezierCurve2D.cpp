@@ -1,4 +1,5 @@
 #include "Engine/Math/CubicBezierCurve2D.hpp"
+#include "Engine/Math/CubicHermiteCurve2D.hpp"
 #include "Engine/Math/MathUtils.hpp"
 
 
@@ -8,6 +9,16 @@ CubicBezierCurve2D::CubicBezierCurve2D( Vec2 startPos, Vec2 guidePos1, Vec2 guid
 	, m_guidePos1( guidePos1 )
 	, m_guidePos2( guidePos2 )
 	, m_endPos( endPos )
+{
+}
+
+
+//-----------------------------------------------------------------------------------------------
+CubicBezierCurve2D::CubicBezierCurve2D( CubicHermiteCurve2D const& fromHermite )
+	: m_startPos( fromHermite.m_startPos )
+	, m_guidePos1( fromHermite.m_startPos + ( fromHermite.m_startTangent / 3.f ) )
+	, m_guidePos2( fromHermite.m_endPos - ( fromHermite.m_endTangent / 3.f ) )
+	, m_endPos( fromHermite.m_endPos )
 {
 }
 
@@ -36,6 +47,7 @@ float CubicBezierCurve2D::GetApproximateLength( int numSubdivisions ) const
 
 	float length = 0.f;
 	Vec2 prevPoint = m_startPos;
+
 	for ( int segmentIndex = 0; segmentIndex < numSubdivisions; ++ segmentIndex )
 	{
 		float t = static_cast<float>( segmentIndex + 1 ) / static_cast<float>( numSubdivisions );

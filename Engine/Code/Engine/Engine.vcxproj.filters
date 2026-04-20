@@ -181,6 +181,9 @@
     <ClCompile Include="Math\CubicBezierCurve2D.cpp">
       <Filter>Math</Filter>
     </ClCompile>
+    <ClCompile Include="Math\CubicHermiteCurve2D.cpp">
+      <Filter>Math</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Math\Vec2.hpp">
@@ -367,6 +370,9 @@
       <Filter>Math</Filter>
     </ClInclude>
     <ClInclude Include="Math\CubicBezierCurve2D.hpp">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\CubicHermiteCurve2D.hpp">
       <Filter>Math</Filter>
     </ClInclude>
   </ItemGroup>

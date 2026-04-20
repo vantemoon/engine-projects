@@ -195,6 +195,7 @@
     <ClCompile Include="Math\AABB2.cpp" />
     <ClCompile Include="Math\AABB3.cpp" />
     <ClCompile Include="Math\CubicBezierCurve2D.cpp" />
+    <ClCompile Include="Math\CubicHermiteCurve2D.cpp" />
     <ClCompile Include="Math\Easing.cpp" />
     <ClCompile Include="Math\EulerAngles.cpp" />
     <ClCompile Include="Math\FloatRange.cpp" />
@@ -258,6 +259,7 @@
     <ClInclude Include="Math\AABB2.hpp" />
     <ClInclude Include="Math\AABB3.hpp" />
     <ClInclude Include="Math\CubicBezierCurve2D.hpp" />
+    <ClInclude Include="Math\CubicHermiteCurve2D.hpp" />
     <ClInclude Include="Math\Easing.hpp" />
     <ClInclude Include="Math\EulerAngles.hpp" />
     <ClInclude Include="Math\FloatRange.hpp" />
