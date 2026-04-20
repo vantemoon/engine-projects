@@ -30,6 +30,9 @@ public:
 	void        SetDimensions( Vec2 const& newDimensions );
 	void 	    StretchToIncludePoint( Vec2 const& point );
 
+	// Others
+	AABB2       ChopLeft( float fractionFromLeft, float padding = 0.f ) const;
+
 public:
 	static const AABB2 ZERO_TO_ONE;
 	static const AABB2 NEGATIVE_ONE_TO_ONE;

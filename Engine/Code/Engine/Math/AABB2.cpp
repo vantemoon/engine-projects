@@ -146,3 +146,20 @@ void AABB2::StretchToIncludePoint( Vec2 const& point )
 		m_maxs.y = point.y;
 	}
 }
+
+
+//-----------------------------------------------------------------------------------------------
+AABB2 AABB2::ChopLeft( float fractionFromLeft, float padding ) const
+{
+	float totalWidth = m_maxs.x - m_mins.x;
+	float chopWidth = totalWidth * fractionFromLeft;
+	chopWidth = GetClamped( chopWidth, 0.f, totalWidth );
+
+	AABB2 choppedBox = *this;
+	choppedBox.m_maxs.x = m_mins.x + chopWidth;
+
+	AABB2 remainingBox = *this;
+	remainingBox.m_mins.x = choppedBox.m_maxs.x + padding;
+
+	return choppedBox;
+}
