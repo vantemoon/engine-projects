@@ -149,34 +149,64 @@ void AABB2::StretchToIncludePoint( Vec2 const& point )
 
 
 //-----------------------------------------------------------------------------------------------
-AABB2 AABB2::ChopLeft( float fractionFromLeft, float padding ) const
+AABB2 AABB2::ChopLeft( float fractionFromLeft, float padding )
 {
-	float totalWidth = m_maxs.x - m_mins.x;
-	float chopWidth = totalWidth * fractionFromLeft;
-	chopWidth = GetClamped( chopWidth, 0.f, totalWidth );
+	float originalMinX = m_mins.x;
+	float originalMaxX = m_maxs.x;
+	float totalWidth = originalMaxX - originalMinX;
+	float chopWidth = GetClamped( totalWidth * fractionFromLeft, 0.f, totalWidth );
+	float splitX = originalMinX + chopWidth;
 
 	AABB2 choppedBox = *this;
-	choppedBox.m_maxs.x = m_mins.x + chopWidth;
+	choppedBox.m_mins.x = originalMinX;
+	choppedBox.m_maxs.x = splitX - padding;
+	if ( choppedBox.m_maxs.x < choppedBox.m_mins.x )
+	{
+		float centerX = ( originalMinX + splitX ) * 0.5f;
+		choppedBox.m_mins.x = centerX;
+		choppedBox.m_maxs.x = centerX;
+	}
 
-	AABB2 remainingBox = *this;
-	remainingBox.m_mins.x = choppedBox.m_maxs.x + padding;
+	m_mins.x = splitX + padding;
+	m_maxs.x = originalMaxX;
+	if ( m_maxs.x < m_mins.x )
+	{
+		float centerX = ( splitX + originalMaxX ) * 0.5f;
+		m_mins.x = centerX;
+		m_maxs.x = centerX;
+	}
 
 	return choppedBox;
 }
 
 
 //-----------------------------------------------------------------------------------------------
-AABB2 AABB2::ChopTop( float fractionFromTop, float padding ) const
+AABB2 AABB2::ChopTop( float fractionFromTop, float padding )
 {
-	float totalHeight = m_maxs.y - m_mins.y;
-	float chopHeight = totalHeight * fractionFromTop;
-	chopHeight = GetClamped( chopHeight, 0.f, totalHeight );
+	float originalMinY = m_mins.y;
+	float originalMaxY = m_maxs.y;
+	float totalHeight = originalMaxY - originalMinY;
+	float chopHeight = GetClamped( totalHeight * fractionFromTop, 0.f, totalHeight );
+	float splitY = originalMaxY - chopHeight;
 
 	AABB2 choppedBox = *this;
-	choppedBox.m_mins.y = m_maxs.y - chopHeight;
+	choppedBox.m_mins.y = splitY + padding;
+	choppedBox.m_maxs.y = originalMaxY;
+	if ( choppedBox.m_maxs.y < choppedBox.m_mins.y )
+	{
+		float centerY = ( splitY + originalMaxY ) * 0.5f;
+		choppedBox.m_mins.y = centerY;
+		choppedBox.m_maxs.y = centerY;
+	}
 
-	AABB2 remainingBox = *this;
-	remainingBox.m_maxs.y = choppedBox.m_mins.y - padding;
+	m_mins.y = originalMinY;
+	m_maxs.y = splitY - padding;
+	if ( m_maxs.y < m_mins.y )
+	{
+		float centerY = ( originalMinY + splitY ) * 0.5f;
+		m_mins.y = centerY;
+		m_maxs.y = centerY;
+	}
 
 	return choppedBox;
 }

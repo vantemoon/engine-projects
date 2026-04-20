@@ -1,10 +1,26 @@
 #include "Game/Game2DCurves.hpp"
 #include "Game/GameCommon.hpp"
+#include "Engine/Core/Engine.hpp"
+#include "Engine/Core/Rgba8.hpp"
+#include "Engine/Core/Vertex.hpp"
+#include "Engine/Core/VertexUtils.hpp"
+#include "Engine/Renderer/Camera.hpp"
+#include "Engine/Renderer/Renderer.hpp"
+#include <vector>
 
 
 //-----------------------------------------------------------------------------------------------
 Game2DCurves::Game2DCurves()
 {
+	// Set up panels
+	float panelPadding = 2.f;
+	AABB2 usableSpace = AABB2( Vec2( panelPadding, panelPadding ), Vec2( WORLD_SIZE_X - panelPadding, WORLD_SIZE_Y - 10.f ) );
+
+	AABB2 topHalf = usableSpace;
+	m_splinePanel = topHalf;
+	m_bezierPanel = topHalf.ChopTop( 0.5f, 2.f );
+	m_splinePanel = topHalf;
+	m_easingPanel = m_bezierPanel.ChopLeft( 0.5f, 2.f );
 }
 
 
@@ -31,5 +47,20 @@ void Game2DCurves::UpdateFromKeyboard( [[maybe_unused]] float deltaSeconds )
 //-----------------------------------------------------------------------------------------------
 void Game2DCurves::Render() const
 {
-	// DO NOTHING
+	g_engine->m_renderer->BeginCamera( *m_worldCamera );
+
+	g_engine->m_renderer->SetDepthMode( DepthMode::READ_WRITE_LESS_EQUAL );
+	g_engine->m_renderer->SetRasterizerMode( RasterizerMode::SOLID_CULL_BACK );
+	g_engine->m_renderer->SetBlendMode( BlendMode::OPAQUE );
+
+	std::vector<Vertex> verts;
+
+	AddVertsForAABB2D( verts, m_splinePanel, Rgba8::RED, Vec2::ZERO, Vec2::ONE );
+	AddVertsForAABB2D( verts, m_bezierPanel, Rgba8::GREEN, Vec2::ZERO, Vec2::ONE );
+	AddVertsForAABB2D( verts, m_easingPanel, Rgba8::BLUE, Vec2::ZERO, Vec2::ONE );
+
+	g_engine->m_renderer->BindTexture( nullptr );
+	g_engine->m_renderer->DrawVertexArray( verts );
+
+	g_engine->m_renderer->EndCamera( *m_worldCamera );
 }

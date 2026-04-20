@@ -31,8 +31,8 @@ public:
 	void 	    StretchToIncludePoint( Vec2 const& point );
 
 	// Others
-	AABB2       ChopLeft( float fractionFromLeft, float padding = 0.f ) const;
-	AABB2       ChopTop( float fractionFromTop, float padding = 0.f ) const;
+	AABB2       ChopLeft( float fractionFromLeft, float padding = 0.f );
+	AABB2       ChopTop( float fractionFromTop, float padding = 0.f );
 
 public:
 	static const AABB2 ZERO_TO_ONE;
