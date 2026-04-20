@@ -12,15 +12,18 @@
 //-----------------------------------------------------------------------------------------------
 Game2DCurves::Game2DCurves()
 {
-	// Set up panels
-	float panelPadding = 2.f;
-	AABB2 usableSpace = AABB2( Vec2( panelPadding, panelPadding ), Vec2( WORLD_SIZE_X - panelPadding, WORLD_SIZE_Y - 10.f ) );
+	float const panelPadding = 2.f;
 
+	AABB2 usableSpace = AABB2( Vec2( 0.f, 0.f ), Vec2( WORLD_SIZE_X, WORLD_SIZE_Y - 10.f ) );
 	AABB2 topHalf = usableSpace;
+
+	m_bezierPanel = topHalf.ChopTop( 0.5f );
 	m_splinePanel = topHalf;
-	m_bezierPanel = topHalf.ChopTop( 0.5f, 2.f );
-	m_splinePanel = topHalf;
-	m_easingPanel = m_bezierPanel.ChopLeft( 0.5f, 2.f );
+	m_easingPanel = m_bezierPanel.ChopLeft( 0.5f );
+
+	m_splinePanel.PadOnAllSides( panelPadding );
+	m_bezierPanel.PadOnAllSides( panelPadding );
+	m_easingPanel.PadOnAllSides( panelPadding );
 }
 
 

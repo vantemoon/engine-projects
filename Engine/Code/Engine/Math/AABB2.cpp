@@ -154,26 +154,20 @@ AABB2 AABB2::ChopLeft( float fractionFromLeft, float padding )
 	float originalMinX = m_mins.x;
 	float originalMaxX = m_maxs.x;
 	float totalWidth = originalMaxX - originalMinX;
-	float chopWidth = GetClamped( totalWidth * fractionFromLeft, 0.f, totalWidth );
-	float splitX = originalMinX + chopWidth;
+	float clampedFraction = GetClamped( fractionFromLeft, 0.f, 1.f );
+	float splitX = originalMinX + ( totalWidth * clampedFraction );
 
 	AABB2 choppedBox = *this;
 	choppedBox.m_mins.x = originalMinX;
-	choppedBox.m_maxs.x = splitX - padding;
-	if ( choppedBox.m_maxs.x < choppedBox.m_mins.x )
-	{
-		float centerX = ( originalMinX + splitX ) * 0.5f;
-		choppedBox.m_mins.x = centerX;
-		choppedBox.m_maxs.x = centerX;
-	}
+	choppedBox.m_maxs.x = splitX;
 
-	m_mins.x = splitX + padding;
+	m_mins.x = splitX;
 	m_maxs.x = originalMaxX;
-	if ( m_maxs.x < m_mins.x )
+
+	if ( padding != 0.f )
 	{
-		float centerX = ( splitX + originalMaxX ) * 0.5f;
-		m_mins.x = centerX;
-		m_maxs.x = centerX;
+		choppedBox.PadOnAllSides( padding );
+		PadOnAllSides( padding );
 	}
 
 	return choppedBox;
@@ -186,27 +180,44 @@ AABB2 AABB2::ChopTop( float fractionFromTop, float padding )
 	float originalMinY = m_mins.y;
 	float originalMaxY = m_maxs.y;
 	float totalHeight = originalMaxY - originalMinY;
-	float chopHeight = GetClamped( totalHeight * fractionFromTop, 0.f, totalHeight );
-	float splitY = originalMaxY - chopHeight;
+	float clampedFraction = GetClamped( fractionFromTop, 0.f, 1.f );
+	float splitY = originalMaxY - ( totalHeight * clampedFraction );
 
 	AABB2 choppedBox = *this;
-	choppedBox.m_mins.y = splitY + padding;
+	choppedBox.m_mins.y = splitY;
 	choppedBox.m_maxs.y = originalMaxY;
-	if ( choppedBox.m_maxs.y < choppedBox.m_mins.y )
-	{
-		float centerY = ( splitY + originalMaxY ) * 0.5f;
-		choppedBox.m_mins.y = centerY;
-		choppedBox.m_maxs.y = centerY;
-	}
 
 	m_mins.y = originalMinY;
-	m_maxs.y = splitY - padding;
-	if ( m_maxs.y < m_mins.y )
+	m_maxs.y = splitY;
+
+	if ( padding != 0.f )
 	{
-		float centerY = ( originalMinY + splitY ) * 0.5f;
-		m_mins.y = centerY;
-		m_maxs.y = centerY;
+		choppedBox.PadOnAllSides( padding );
+		PadOnAllSides( padding );
 	}
 
 	return choppedBox;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void AABB2::PadOnAllSides( float paddingAmount )
+{
+	m_mins.x += paddingAmount;
+	m_maxs.x -= paddingAmount;
+	if ( m_maxs.x < m_mins.x )
+	{
+		float centerX = ( m_mins.x + m_maxs.x ) * 0.5f;
+		m_mins.x = centerX;
+		m_maxs.x = centerX;
+	}
+
+	m_mins.y += paddingAmount;
+	m_maxs.y -= paddingAmount;
+	if ( m_maxs.y < m_mins.y )
+	{
+		float centerY = ( m_mins.y + m_maxs.y ) * 0.5f;
+		m_mins.y = centerY;
+		m_maxs.y = centerY;
+	}
 }

@@ -33,6 +33,7 @@ public:
 	// Others
 	AABB2       ChopLeft( float fractionFromLeft, float padding = 0.f );
 	AABB2       ChopTop( float fractionFromTop, float padding = 0.f );
+	void        PadOnAllSides( float paddingAmount );
 
 public:
 	static const AABB2 ZERO_TO_ONE;
