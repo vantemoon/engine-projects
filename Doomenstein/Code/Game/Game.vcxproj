@@ -27,6 +27,7 @@
     <ClCompile Include="Actor.cpp" />
     <ClCompile Include="ActorDefinition.cpp" />
     <ClCompile Include="ActorHandle.cpp" />
+    <ClCompile Include="AI.cpp" />
     <ClCompile Include="App.cpp" />
     <ClCompile Include="Controller.cpp" />
     <ClCompile Include="Game.cpp" />
@@ -44,6 +45,7 @@
     <ClInclude Include="Actor.hpp" />
     <ClInclude Include="ActorDefinition.hpp" />
     <ClInclude Include="ActorHandle.hpp" />
+    <ClInclude Include="AI.hpp" />
     <ClInclude Include="App.hpp" />
     <ClInclude Include="Controller.hpp" />
     <ClInclude Include="EngineBuildPreferences.hpp" />

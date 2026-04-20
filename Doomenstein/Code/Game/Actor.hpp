@@ -12,6 +12,7 @@
 
 
 //-----------------------------------------------------------------------------------------------
+class AI;
 class Controller;
 class Map;
 
@@ -26,10 +27,12 @@ public:
 
 	void Update();
 	void UpdatePhysics();
-	void TakeDamage( int damageAmount );
+	void TakeDamage( int damageAmount, Actor* attacker = nullptr );
 	void AddForce( Vec3 const& force );
 	void AddImpulse( Vec3 const& impulse );
-	void OnCollide();
+	void OnCollide( Actor* otherActor = nullptr, Vec3 const& collisionNormal = Vec3::ZERO );
+	void OnPossessed( Controller* newController );
+	void OnUnpossessed();
 	void MoveInDirection( Vec3 const& moveDirection, float speed );
 	void TurnInDirection( Vec3 const& turnDirection, float maxTurnDegrees );
 	void Attack();
@@ -45,7 +48,7 @@ public:
 	Map* m_map = nullptr;
 
 	bool m_isProjectile = false;
-	Actor* m_owner = nullptr;
+	ActorHandle m_ownerHandle = ActorHandle::INVALID;
 
 	bool m_isDead = false;
 	Timer m_deadTimer = Timer( 0.0 );
@@ -64,6 +67,7 @@ public:
 	int m_currentHealth = 1;
 
 	Controller* m_controller = nullptr;
+	AI* m_aiController = nullptr;
 
 	std::vector<Weapon> m_inventory;
 	Weapon* m_currentWeapon = nullptr;

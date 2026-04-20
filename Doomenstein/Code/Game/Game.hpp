@@ -42,8 +42,8 @@ public:
 
 	void Update();
 	void UpdateAttractMode();
-	void UpdatePlayer();
-	void UpdateCurrentMap();
+	void UpdatePlayer( float deltaSeconds );
+	void UpdateCurrentMap( float deltaSeconds );
 	void UpdateFromKeyboard();
 	void UpdateFromController();
 

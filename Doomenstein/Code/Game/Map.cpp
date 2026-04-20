@@ -1,9 +1,11 @@
 #include "Game/Map.hpp"
+#include "Game/AI.hpp"
 #include "Game/Actor.hpp"
 #include "Game/ActorDefinition.hpp"
 #include "Game/Game.hpp"
 #include "Game/Player.hpp"
 #include "Game/TileDefinition.hpp"
+#include "Engine/Core/Clock.hpp"
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/ErrorWarningAssert.hpp"
 #include "Engine/Core/Image.hpp"
@@ -30,6 +32,11 @@ Map::Map( Game* game, MapDefinition const& mapDef )
 
 	for ( SpawnInfo const& spawnInfo : m_definition->m_spawnInfos )
 	{
+		if ( spawnInfo.m_actor == "SpawnPoint" )
+		{
+			continue;
+		}
+
 		SpawnActor( spawnInfo );
 	}
 }
@@ -208,8 +215,8 @@ void Map::CreateBuffers()
 	delete m_indexBuffer;
 	m_indexBuffer = nullptr;
 
-	unsigned int const vertexBufferSize = static_cast< unsigned int >( m_verts.size() * sizeof( Vertex ) );
-	unsigned int const indexBufferSize = static_cast< unsigned int >( m_indices.size() * sizeof( unsigned int ) );
+	unsigned int const vertexBufferSize = static_cast<unsigned int>( m_verts.size() * sizeof( Vertex ) );
+	unsigned int const indexBufferSize = static_cast<unsigned int>( m_indices.size() * sizeof( unsigned int ) );
 
 	m_vertexBuffer = g_engine->m_renderer->CreateVertexBuffer( vertexBufferSize, sizeof( Vertex ) );
 	g_engine->m_renderer->CopyCPUToGPU( m_verts.data(), vertexBufferSize, m_vertexBuffer );
@@ -220,14 +227,21 @@ void Map::CreateBuffers()
 
 
 //-----------------------------------------------------------------------------------------------
-void Map::Update()
+void Map::Update( float deltaSeconds )
 {
 	for ( Actor* actor : m_actors )
 	{
-		if ( actor != nullptr )
+		if ( actor == nullptr )
 		{
-			actor->Update();
+			continue;
 		}
+
+		if ( actor->m_aiController != nullptr && actor->m_controller == actor->m_aiController )
+		{
+			actor->m_aiController->Update( deltaSeconds );
+		}
+
+		actor->Update();
 	}
 
 	CollideActors();
@@ -265,6 +279,21 @@ void Map::CollideActors()
 void Map::CollideActors( Actor* actorA, Actor* actorB )
 {
 	if ( actorA == nullptr || actorB == nullptr )
+	{
+		return;
+	}
+
+	if ( actorA->m_handle == actorB->m_ownerHandle || actorB->m_handle == actorA->m_ownerHandle )
+	{
+		return;
+	}
+
+	if ( actorA->m_definition == nullptr || actorB->m_definition == nullptr )
+	{
+		return;
+	}
+
+	if ( !actorA->m_definition->m_collideWithActors || !actorB->m_definition->m_collideWithActors )
 	{
 		return;
 	}
@@ -324,6 +353,9 @@ void Map::CollideActors( Actor* actorA, Actor* actorB )
 			actorB->m_position.z += pushSignForB * halfPush;
 		}
 
+		Vec3 collisionNormalAtoB( 0.f, 0.f, pushSignForB );
+		actorA->OnCollide( actorB, collisionNormalAtoB );
+		actorB->OnCollide( actorA, -collisionNormalAtoB );
 		return;
 	}
 
@@ -344,6 +376,20 @@ void Map::CollideActors( Actor* actorA, Actor* actorB )
 	actorA->m_position.y = centerA.y;
 	actorB->m_position.x = centerB.x;
 	actorB->m_position.y = centerB.y;
+
+	Vec2 collisionDirXY = fromAToB;
+	if ( collisionDirXY == Vec2::ZERO )
+	{
+		collisionDirXY = Vec2( 1.f, 0.f );
+	}
+	else
+	{
+		collisionDirXY.Normalize();
+	}
+
+	Vec3 collisionNormalAtoB( collisionDirXY.x, collisionDirXY.y, 0.f );
+	actorA->OnCollide( actorB, collisionNormalAtoB );
+	actorB->OnCollide( actorA, -collisionNormalAtoB );
 }
 
 
@@ -363,11 +409,12 @@ void Map::CollideActorWithMap()
 //-----------------------------------------------------------------------------------------------
 void Map::CollideActorWithMap( Actor* actor )
 {
-	if ( actor == nullptr )
+	if ( actor == nullptr || actor->m_definition == nullptr || !actor->m_definition->m_collideWithWorld )
 	{
 		return;
 	}
 
+	Vec3 const oldPosition = actor->m_position;
 	Vec2 actorCenter = Vec2( actor->m_position.x, actor->m_position.y );
 	int actorTileX = ( int ) RoundDownToInt( actorCenter.x );
 	int actorTileY = ( int ) RoundDownToInt( actorCenter.y );
@@ -440,6 +487,11 @@ void Map::CollideActorWithMap( Actor* actor )
 	{
 		actor->m_position.z = 0.f;
 	}
+
+	if ( actor->m_position != oldPosition )
+	{
+		actor->OnCollide();
+	}
 }
 
 
@@ -499,41 +551,53 @@ void Map::Render() const
 
 
 //-----------------------------------------------------------------------------------------------
-RaycastResult3D Map::RaycastAll( Vec3 const& startPos, Vec3 const& forwardNormal, float maxLength, Actor* owner ) const
+RaycastResult3D Map::RaycastAll( Vec3 const& startPos, Vec3 const& forwardNormal, float maxLength, Actor* owner, Actor** outHitActor ) const
 {
+	if ( outHitActor != nullptr )
+	{
+		*outHitActor = nullptr;
+	}
+
 	RaycastResult3D result;
 	float closestImpactDist = maxLength;
+	Actor* closestHitActor = nullptr;
 
 	AABB3 mapBounds = AABB3( Vec3( 0.f, 0.f, 0.f ), Vec3( ( float ) m_dimensions.x, ( float ) m_dimensions.y, 1.f ) );
 
-	// Raycast against actors
-	RaycastResult3D actorResult = RaycastWorldActors( startPos, forwardNormal, maxLength, owner );
-	if ( actorResult.m_didImpact 
-		&& actorResult.m_impactDist < closestImpactDist 
+	Actor* actorHit = nullptr;
+	RaycastResult3D actorResult = RaycastWorldActors( startPos, forwardNormal, maxLength, owner, &actorHit );
+	if ( actorResult.m_didImpact
+		&& actorResult.m_impactDist < closestImpactDist
 		&& mapBounds.IsPointInside( actorResult.m_impactPos ) )
 	{
 		result = actorResult;
 		closestImpactDist = actorResult.m_impactDist;
+		closestHitActor = actorHit;
 	}
 
-	// Raycast against floor and ceiling
 	RaycastResult3D floorCeilingResult = RaycastWorldZ( startPos, forwardNormal, maxLength );
-	if ( floorCeilingResult.m_didImpact 
-		&& floorCeilingResult.m_impactDist < closestImpactDist 
+	if ( floorCeilingResult.m_didImpact
+		&& floorCeilingResult.m_impactDist < closestImpactDist
 		&& mapBounds.IsPointInside( floorCeilingResult.m_impactPos ) )
 	{
 		result = floorCeilingResult;
 		closestImpactDist = floorCeilingResult.m_impactDist;
+		closestHitActor = nullptr;
 	}
 
-	// Raycast against walls
 	RaycastResult3D wallResult = RaycastWorldXY( startPos, forwardNormal, maxLength );
-	if ( wallResult.m_didImpact 
-		&& wallResult.m_impactDist < closestImpactDist 
+	if ( wallResult.m_didImpact
+		&& wallResult.m_impactDist < closestImpactDist
 		&& mapBounds.IsPointInside( wallResult.m_impactPos ) )
 	{
 		result = wallResult;
 		closestImpactDist = wallResult.m_impactDist;
+		closestHitActor = nullptr;
+	}
+
+	if ( outHitActor != nullptr )
+	{
+		*outHitActor = closestHitActor;
 	}
 
 	return result;
@@ -701,14 +765,20 @@ RaycastResult3D Map::RaycastWorldZ( Vec3 const& startPos, Vec3 const& forwardNor
 
 
 //-----------------------------------------------------------------------------------------------
-RaycastResult3D Map::RaycastWorldActors( Vec3 const& startPos, Vec3 const& forwardNormal, float maxLength, Actor* owner ) const
+RaycastResult3D Map::RaycastWorldActors( Vec3 const& startPos, Vec3 const& forwardNormal, float maxLength, Actor* owner, Actor** outHitActor ) const
 {
+	if ( outHitActor != nullptr )
+	{
+		*outHitActor = nullptr;
+	}
+
 	RaycastResult3D result;
 	float closestImpactDist = maxLength;
+	Actor* closestHitActor = nullptr;
 
 	for ( Actor* actor : m_actors )
 	{
-		if ( actor == nullptr || actor == owner || actor->m_isDead || actor->m_isDestroyed )
+		if ( actor == nullptr || actor == owner || actor->m_isDead || actor->m_isDestroyed || actor->m_definition == nullptr )
 		{
 			continue;
 		}
@@ -722,7 +792,13 @@ RaycastResult3D Map::RaycastWorldActors( Vec3 const& startPos, Vec3 const& forwa
 		{
 			result = actorResult;
 			closestImpactDist = actorResult.m_impactDist;
+			closestHitActor = actor;
 		}
+	}
+
+	if ( outHitActor != nullptr )
+	{
+		*outHitActor = closestHitActor;
 	}
 
 	return result;
@@ -866,29 +942,29 @@ Actor* Map::SpawnActor( SpawnInfo const& spawnInfo )
 	}
 
 	int actorIndex = -1;
-	for ( int index = 0; index < ( int ) m_actors.size(); index++ )
+for ( int index = 0; index < ( int ) m_actors.size(); index++ )
+{
+	if ( m_actors[index] == nullptr )
 	{
-		if ( m_actors[index] == nullptr )
-		{
-			actorIndex = index;
-			break;
-		}
+		actorIndex = index;
+		break;
 	}
+}
 
-	if ( actorIndex < 0 )
-	{
-		unsigned int const newIndex = static_cast< unsigned int >( m_actors.size() );
-		GUARANTEE_OR_DIE(
-			newIndex <= ActorHandle::MAX_ACTOR_INDEX,
-			"Map::SpawnActor exceeded ActorHandle::MAX_ACTOR_INDEX (too many actors)." );
-
-		actorIndex = ( int ) newIndex;
-		m_actors.push_back( nullptr );
-	}
-
+if ( actorIndex < 0 )
+{
+	unsigned int const newIndex = static_cast< unsigned int >( m_actors.size() );
 	GUARANTEE_OR_DIE(
-		m_nextActorUID < ActorHandle::MAX_ACTOR_UID,
-		"Map::SpawnActor exceeded ActorHandle::MAX_ACTOR_UID (no more unique actor handles)." );
+		newIndex <= ActorHandle::MAX_ACTOR_INDEX,
+		"Map::SpawnActor exceeded ActorHandle::MAX_ACTOR_INDEX (too many actors)." );
+
+	actorIndex = ( int ) newIndex;
+	m_actors.push_back( nullptr );
+}
+
+GUARANTEE_OR_DIE(
+	m_nextActorUID < ActorHandle::MAX_ACTOR_UID,
+	"Map::SpawnActor exceeded ActorHandle::MAX_ACTOR_UID (no more unique actor handles)." );
 
 	++m_nextActorUID;
 	ActorHandle const newHandle = ActorHandle( m_nextActorUID, static_cast< unsigned int >( actorIndex ) );
@@ -912,7 +988,181 @@ Actor* Map::SpawnActor( SpawnInfo const& spawnInfo )
 	}
 
 	m_actors[actorIndex] = newActor;
+
 	return newActor;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+Actor* Map::GetClosestVisibleEnemy( Actor* seeker )
+{
+	if ( seeker == nullptr || seeker->m_definition == nullptr )
+	{
+		return nullptr;
+	}
+
+	ActorDefinition const* seekerDef = seeker->m_definition;
+	float const sightRadius = seekerDef->m_sightRadius;
+	if ( sightRadius <= 0.f )
+	{
+		return nullptr;
+	}
+
+	Vec3 seekerEyePos = seeker->m_position;
+	seekerEyePos.z += seekerDef->m_eyeHeight;
+
+	Vec3 seekerForward3D = seeker->m_orientation.GetForwardDir_IFwd_JLeft_KUp();
+	Vec2 seekerForwardXY = Vec2( seekerForward3D.x, seekerForward3D.y );
+	bool hasForwardXY = seekerForwardXY != Vec2::ZERO;
+	if ( hasForwardXY )
+	{
+		seekerForwardXY.Normalize();
+	}
+
+	float const sightRadiusSq = sightRadius * sightRadius;
+	float const halfSightAngle = seekerDef->m_sightAngle * 0.5f;
+
+	Actor* closestEnemy = nullptr;
+	float closestDistSq = FLT_MAX;
+
+	for ( Actor* other : m_actors )
+	{
+		if ( other == nullptr || other == seeker || other->m_isDead || other->m_isDestroyed || other->m_definition == nullptr )
+		{
+			continue;
+		}
+
+		if ( seekerDef->m_faction == other->m_definition->m_faction )
+		{
+			continue;
+		}
+		if ( seekerDef->m_faction == "NEUTRAL" || other->m_definition->m_faction == "NEUTRAL" )
+		{
+			continue;
+		}
+
+		Vec3 targetEyePos = other->m_position;
+		targetEyePos.z += other->m_definition->m_eyeHeight;
+
+		Vec3 toTarget = targetEyePos - seekerEyePos;
+		float const distSq = toTarget.GetLengthSquared();
+		if ( distSq > sightRadiusSq || distSq >= closestDistSq )
+		{
+			continue;
+		}
+
+		if ( seekerDef->m_sightAngle > 0.f && hasForwardXY )
+		{
+			Vec2 toTargetXY = Vec2( toTarget.x, toTarget.y );
+			if ( toTargetXY != Vec2::ZERO )
+			{
+				toTargetXY.Normalize();
+				float const angleToTarget = GetAngleDegreesBetweenVectors2D( seekerForwardXY, toTargetXY );
+				if ( angleToTarget > halfSightAngle )
+				{
+					continue;
+				}
+			}
+		}
+
+		float const distToTarget = sqrtf( distSq );
+		Vec3 const dirToTarget = toTarget.GetNormalized();
+
+		RaycastResult3D const wallResult = RaycastWorldXY( seekerEyePos, dirToTarget, distToTarget );
+		if ( wallResult.m_didImpact && wallResult.m_impactDist < ( distToTarget - 0.001f ) )
+		{
+			continue;
+		}
+
+		RaycastResult3D const floorCeilingResult = RaycastWorldZ( seekerEyePos, dirToTarget, distToTarget );
+		if ( floorCeilingResult.m_didImpact && floorCeilingResult.m_impactDist < ( distToTarget - 0.001f ) )
+		{
+			continue;
+		}
+
+		closestDistSq = distSq;
+		closestEnemy = other;
+	}
+
+	return closestEnemy;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+Actor* Map::GetClosestActorInSector( Vec3 const& startPos, Vec3 const& forwardNormal, float maxLength, float arcDegrees, Actor* owner ) const
+{
+	if ( maxLength <= 0.f )
+	{
+		return nullptr;
+	}
+
+	Vec2 forwardXY( forwardNormal.x, forwardNormal.y );
+	if ( forwardXY == Vec2::ZERO )
+	{
+		return nullptr;
+	}
+	forwardXY.Normalize();
+
+	float halfArcDegrees = arcDegrees * 0.5f;
+	float closestDistSq = maxLength * maxLength;
+	Actor* closestActor = nullptr;
+
+	for ( Actor* actor : m_actors )
+	{
+		if ( actor == nullptr || actor == owner || actor->m_isDead || actor->m_isDestroyed || actor->m_definition == nullptr )
+		{
+			continue;
+		}
+
+		Vec3 targetPos = actor->m_position;
+		targetPos.z += actor->m_definition->m_physicsHeight * 0.5f;
+
+		Vec3 toTarget = targetPos - startPos;
+		float distSq = toTarget.GetLengthSquared();
+		if ( distSq > closestDistSq )
+		{
+			continue;
+		}
+
+		Vec2 toTargetXY( toTarget.x, toTarget.y );
+		if ( arcDegrees > 0.f && toTargetXY != Vec2::ZERO )
+		{
+			toTargetXY.Normalize();
+			float angleToTarget = GetAngleDegreesBetweenVectors2D( forwardXY, toTargetXY );
+			if ( angleToTarget > halfArcDegrees )
+			{
+				continue;
+			}
+		}
+
+		closestDistSq = distSq;
+		closestActor = actor;
+	}
+
+	return closestActor;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Map::DebugPossessNext()
+{
+	if ( m_game == nullptr || m_game->m_player == nullptr )
+	{
+		return;
+	}
+
+	Player* player = m_game->m_player;
+	player->m_map = this;
+
+	Actor* nextPossessableActor = GetNextPossessableActor( player->m_possessedActor );
+	if ( nextPossessableActor == nullptr )
+	{
+		return;
+	}
+
+	player->Possess( nextPossessableActor->m_handle );
+	player->m_orientation = nextPossessableActor->m_orientation;
+	player->m_orientation.m_rollDegrees = 0.f;
 }
 
 

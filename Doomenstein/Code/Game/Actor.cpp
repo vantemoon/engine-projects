@@ -1,4 +1,5 @@
 #include "Game/Actor.hpp"
+#include "Game/AI.hpp"
 #include "Game/Controller.hpp"
 #include "Game/Map.hpp"
 #include "Game/WeaponDefinition.hpp"
@@ -8,6 +9,7 @@
 #include "Engine/Core/VertexUtils.hpp"
 #include "Engine/Renderer/Renderer.hpp"
 #include "Engine/Math/MathUtils.hpp"
+#include "Engine/Math/RandomNumberGenerator.hpp"
 #include <vector>
 
 
@@ -38,6 +40,15 @@ Actor::Actor( ActorHandle handle, ActorDefinition const* definition, Map* map )
 
 		m_maxHealth = m_definition->m_health;
 		m_currentHealth = m_maxHealth;
+
+		// Create default AI controller for AI-enabled actors
+		if ( m_definition->m_aiEnabled )
+		{
+			m_aiController = new AI();
+			m_aiController->m_map = m_map;
+			m_aiController->m_possessedActor = m_handle;
+			m_controller = m_aiController;
+		}
 
 		// Initialize weapon inventory
 		m_inventory.reserve( m_definition->m_weaponDefNames.size() );
@@ -90,6 +101,13 @@ Actor::Actor( ActorHandle handle, ActorDefinition const* definition, Map* map )
 //-----------------------------------------------------------------------------------------------
 Actor::~Actor()
 {
+	if ( m_controller == m_aiController )
+	{
+		m_controller = nullptr;
+	}
+
+	delete m_aiController;
+	m_aiController = nullptr;
 }
 
 
@@ -150,16 +168,21 @@ void Actor::UpdatePhysics()
 
 
 //-----------------------------------------------------------------------------------------------
-void Actor::TakeDamage( int damageAmount )
+void Actor::TakeDamage( int damageAmount, Actor* attacker )
 {
 	if ( m_definition == nullptr || damageAmount <= 0 || m_isDead || m_isDestroyed )
 	{
 		return;
 	}
 
+	if ( attacker != nullptr && m_aiController != nullptr && m_controller == m_aiController )
+	{
+		m_aiController->DamagedBy( attacker );
+	}
+
 	m_currentHealth -= damageAmount;
 
-	if ( m_currentHealth < 0 )
+	if ( m_currentHealth <= 0 )
 	{
 		m_isDead = true;
 		m_currentHealth = 0;
@@ -205,9 +228,107 @@ void Actor::AddImpulse( Vec3 const& impulse )
 
 
 //-----------------------------------------------------------------------------------------------
-void Actor::OnCollide()
+void Actor::OnCollide( Actor* otherActor, Vec3 const& collisionNormal )
 {
+	if ( m_definition == nullptr || m_isDead || m_isDestroyed )
+	{
+		return;
+	}
 
+	if ( otherActor != nullptr )
+	{
+		if ( !m_definition->m_collideWithActors )
+		{
+			return;
+		}
+	}
+	else
+	{
+		if ( !m_definition->m_collideWithWorld )
+		{
+			return;
+		}
+	}
+
+	Vec3 impulseDirection = collisionNormal;
+	if ( impulseDirection == Vec3::ZERO )
+	{
+		if ( otherActor != nullptr )
+		{
+			impulseDirection = otherActor->m_position - m_position;
+		}
+		else
+		{
+			impulseDirection = -m_velocity;
+		}
+	}
+
+	if ( impulseDirection != Vec3::ZERO )
+	{
+		impulseDirection = impulseDirection.GetNormalized();
+	}
+
+	if ( otherActor != nullptr )
+	{
+		int minDamage = ( int ) m_definition->m_damageOnCollide.m_min;
+		int maxDamage = ( int ) m_definition->m_damageOnCollide.m_max;
+		if ( minDamage > maxDamage )
+		{
+			int temp = minDamage;
+			minDamage = maxDamage;
+			maxDamage = temp;
+		}
+
+		if ( maxDamage > 0 )
+		{
+			static RandomNumberGenerator s_rng;
+			int const damageAmount = s_rng.RollRandomIntInRange( minDamage, maxDamage );
+			if ( damageAmount > 0 )
+			{
+				otherActor->TakeDamage( damageAmount, this );
+			}
+		}
+
+		if ( m_definition->m_impulseOnCollide > 0.f && impulseDirection != Vec3::ZERO )
+		{
+			otherActor->AddImpulse( impulseDirection * m_definition->m_impulseOnCollide );
+		}
+	}
+
+	if ( m_definition->m_dieOnCollide )
+	{
+		TakeDamage( m_currentHealth );
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Actor::OnPossessed( Controller* newController )
+{
+	if ( newController == nullptr || m_controller == newController )
+	{
+		return;
+	}
+
+	if ( m_controller != nullptr )
+	{
+		m_controller->Possess( ActorHandle::INVALID );
+	}
+
+	m_controller = newController;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Actor::OnUnpossessed()
+{
+	Controller* previousController = m_controller;
+	m_controller = nullptr;
+
+	if ( previousController != nullptr && previousController != m_aiController && m_aiController != nullptr )
+	{
+		m_aiController->Possess( m_handle );
+	}
 }
 
 
@@ -249,7 +370,7 @@ void Actor::Attack()
 		return;
 	}
 
-	m_currentWeapon->Fire();
+	m_currentWeapon->Fire( this );
 }
 
 
@@ -270,6 +391,7 @@ void Actor::EquipWeapon( Weapon* weapon )
 		}
 	}
 }
+
 
 
 //-----------------------------------------------------------------------------------------------

@@ -53,6 +53,7 @@ void Player::UpdateInput()
 {
 	float deltaSeconds = ( float ) Clock::GetSystemClock().GetDeltaSeconds();
 
+	// F
 	if ( g_engine->m_inputSystem->WasKeyJustPressed( 'F' ) )
 	{
 		if ( m_cameraMode == CameraMode::FREE_FLY )
@@ -83,6 +84,7 @@ void Player::UpdateInput()
 			return;
 		}
 
+		// N
 		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'N' ) && m_map != nullptr )
 		{
 			Actor* nextPossessableActor = m_map->GetNextPossessableActor( m_possessedActor );
@@ -123,8 +125,25 @@ void Player::UpdateCamera()
 			return;
 		}
 
+		float eyeHeight = actor->m_definition->m_eyeHeight;
+
+		if ( actor->m_isDead )
+		{
+			float corpseLifetime = ( float ) actor->m_deadTimer.m_period;
+			if ( corpseLifetime > 0.f )
+			{
+				float elapsed = ( float ) actor->m_deadTimer.GetElapsedSeconds();
+				float dropFraction = GetClamped( elapsed / ( corpseLifetime * 0.5f ), 0.f, 1.f );
+				eyeHeight *= ( 1.f - dropFraction );
+			}
+			else
+			{
+				eyeHeight = 0.f;
+			}
+		}
+
 		Vec3 eyePos = actor->m_position;
-		eyePos.z += actor->m_definition->m_eyeHeight;
+		eyePos.z += eyeHeight;
 
 		m_position = eyePos;
 		m_orientation.m_rollDegrees = 0.f;
@@ -318,18 +337,15 @@ void Player::UpdateFirstPersonControls( Actor* actor, float deltaSeconds )
 		return;
 	}
 
+	if ( actor->m_isDead || actor->m_isDestroyed )
+	{
+		return;
+	}
+
 	UpdateFirstPersonFromMouse( actor );
 	UpdateFirstPersonFromKeyboard( actor, deltaSeconds );
 	UpdateFirstPersonFromController( actor, deltaSeconds );
 
-	EulerAngles desiredYawOnly( m_orientation.m_yawDegrees, 0.f, 0.f );
-	Mat44 orientationMat = desiredYawOnly.GetAsMatrix_IFwd_JLeft_KUp();
-	Vec3 desiredForward = orientationMat.GetIBasis3D();
-
-	float maxTurnDegrees = actor->m_definition->m_turnSpeed * deltaSeconds;
-	actor->TurnInDirection( desiredForward, maxTurnDegrees );
-
-	m_orientation.m_yawDegrees = actor->m_orientation.m_yawDegrees;
 	m_orientation.m_rollDegrees = 0.f;
 }
 
@@ -348,6 +364,8 @@ void Player::UpdateFirstPersonFromMouse( Actor* actor )
 	m_orientation.m_yawDegrees -= ( float ) mouseDelta.x * mouseSensitivity;
 	m_orientation.m_pitchDegrees = GetClamped( m_orientation.m_pitchDegrees + ( float ) mouseDelta.y * mouseSensitivity, -85.f, 85.f );
 	m_orientation.m_rollDegrees = 0.f;
+
+	actor->m_orientation.m_yawDegrees = m_orientation.m_yawDegrees;
 
 	if ( g_engine->m_inputSystem->IsKeyDown( KEYCODE_LBUTTON ) )
 	{
@@ -369,13 +387,18 @@ void Player::UpdateFirstPersonFromKeyboard( Actor* actor, float deltaSeconds )
 	float moveX = 0.f;
 	float moveY = 0.f;
 
-	if ( g_engine->m_inputSystem->IsKeyDown( 'A' ) ) moveX += 1.f;
-	if ( g_engine->m_inputSystem->IsKeyDown( 'D' ) ) moveX -= 1.f;
+	// WASD movement
 	if ( g_engine->m_inputSystem->IsKeyDown( 'W' ) ) moveY += 1.f;
+	if ( g_engine->m_inputSystem->IsKeyDown( 'A' ) ) moveX += 1.f;
 	if ( g_engine->m_inputSystem->IsKeyDown( 'S' ) ) moveY -= 1.f;
+	if ( g_engine->m_inputSystem->IsKeyDown( 'D' ) ) moveX -= 1.f;
 
 	bool isSprinting = g_engine->m_inputSystem->IsKeyDown( KEYCODE_SHIFT );
-	float moveSpeed = isSprinting ? actor->m_definition->m_runSpeed : actor->m_definition->m_walkSpeed;
+	float moveSpeed = actor->m_definition->m_walkSpeed;
+	if ( isSprinting )
+	{
+		moveSpeed = actor->m_definition->m_runSpeed;
+	}
 
 	Mat44 orientationMat = m_orientation.GetAsMatrix_IFwd_JLeft_KUp();
 	Vec3 forwardVector = orientationMat.GetIBasis3D();
@@ -392,19 +415,25 @@ void Player::UpdateFirstPersonFromKeyboard( Actor* actor, float deltaSeconds )
 		actor->MoveInDirection( moveDirection, moveSpeed );
 	}
 
+	// Left arrow
 	if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_LEFTARROW ) )
 	{
 		SelectPreviousWeapon( actor );
 	}
+
+	// Right arrow
 	if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_RIGHTARROW ) )
 	{
 		SelectNextWeapon( actor );
 	}
 
+	// 1
 	if ( g_engine->m_inputSystem->WasKeyJustPressed( '1' ) )
 	{
 		SelectWeaponBySlot( actor, 0 );
 	}
+
+	// 2
 	if ( g_engine->m_inputSystem->WasKeyJustPressed( '2' ) )
 	{
 		SelectWeaponBySlot( actor, 1 );
@@ -428,10 +457,25 @@ void Player::UpdateFirstPersonFromController( Actor* actor, float deltaSeconds )
 	m_orientation.m_pitchDegrees = GetClamped( m_orientation.m_pitchDegrees - rightStick.y * turnSpeed * deltaSeconds, -85.f, 85.f );
 	m_orientation.m_rollDegrees = 0.f;
 
+	if ( rightStick.x != 0.f )
+	{
+		EulerAngles desiredYawOnly( m_orientation.m_yawDegrees, 0.f, 0.f );
+		Mat44 orientationMat = desiredYawOnly.GetAsMatrix_IFwd_JLeft_KUp();
+		Vec3 desiredForward = orientationMat.GetIBasis3D();
+
+		float maxTurnDegrees = actor->m_definition->m_turnSpeed * deltaSeconds;
+		actor->TurnInDirection( desiredForward, maxTurnDegrees );
+		m_orientation.m_yawDegrees = actor->m_orientation.m_yawDegrees;
+	}
+
 	Vec2 leftStick = controller.GetLeftJoystick().GetPosition();
 
 	bool isSprinting = controller.IsButtonDown( XBOX_BUTTON_A );
-	float moveSpeed = isSprinting ? actor->m_definition->m_runSpeed : actor->m_definition->m_walkSpeed;
+	float moveSpeed = actor->m_definition->m_walkSpeed;
+	if ( isSprinting )
+	{
+		moveSpeed = actor->m_definition->m_runSpeed;
+	}
 
 	Mat44 orientationMat = m_orientation.GetAsMatrix_IFwd_JLeft_KUp();
 	Vec3 forwardVector = orientationMat.GetIBasis3D();
@@ -442,17 +486,20 @@ void Player::UpdateFirstPersonFromController( Actor* actor, float deltaSeconds )
 	forwardVector = forwardVector.GetNormalized();
 	leftVector = leftVector.GetNormalized();
 
+	// Movement
 	Vec3 moveDirection = ( forwardVector * leftStick.y ) + ( leftVector * leftStick.x );
 	if ( moveDirection.GetLengthSquared() > 0.f )
 	{
 		actor->MoveInDirection( moveDirection, moveSpeed );
 	}
 
+	// Attack
 	if ( controller.GetRightTrigger() > 0.1f )
 	{
 		actor->Attack();
 	}
 
+	// Weapon selection
 	if ( controller.WasButtonJustPressed( XBOX_BUTTON_DOWN ) )
 	{
 		SelectPreviousWeapon( actor );
@@ -461,7 +508,6 @@ void Player::UpdateFirstPersonFromController( Actor* actor, float deltaSeconds )
 	{
 		SelectNextWeapon( actor );
 	}
-
 	if ( controller.WasButtonJustPressed( XBOX_BUTTON_X ) )
 	{
 		SelectWeaponBySlot( actor, 0 );

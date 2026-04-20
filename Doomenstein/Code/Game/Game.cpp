@@ -98,19 +98,21 @@ void Game::LoadMaps()
 {
 	int numMapsToLoad = g_gameConfigBlackboard.GetValue( "numOfMaps", 2 );
 	std::string defaultMapName = g_gameConfigBlackboard.GetValue( "defaultMapName", "TestMap" );
+
 	for ( int mapIndex = 0; mapIndex < numMapsToLoad; ++mapIndex )
 	{
 		MapDefinition const* mapDef = MapDefinition::GetMapDefinitionByIndex( mapIndex );
-		if ( mapDef != nullptr )
+		if ( mapDef == nullptr )
 		{
-			Map* newMap = new Map( this, *mapDef );
-			m_maps.push_back( newMap );
+			continue;
+		}
 
-			std::string mapName = mapDef->m_name;
-			if ( mapName == defaultMapName )
-			{
-				m_currentMap = newMap;
-			}
+		Map* newMap = new Map( this, *mapDef );
+		m_maps.push_back( newMap );
+
+		if ( mapDef->m_name == defaultMapName )
+		{
+			m_currentMap = newMap;
 		}
 	}
 
@@ -188,19 +190,25 @@ void Game::Update()
 		return;
 	};
 
+	float deltaSeconds = 0.f;
+	if ( m_gameClock != nullptr )
+	{
+		deltaSeconds = ( float ) m_gameClock->GetDeltaSeconds();
+	}
+
 	if ( m_currentGameState == GameState::PAUSED )
 	{
 		UpdateFromKeyboard();
 		UpdateFromController();
 
-		UpdatePlayer();
+		UpdatePlayer( deltaSeconds );
 		return;
 	};
 
 	UpdateFromKeyboard();
 	UpdateFromController();
-	UpdatePlayer();
-	UpdateCurrentMap();
+	UpdatePlayer( deltaSeconds );
+	UpdateCurrentMap( deltaSeconds );
 
 	g_app->m_game->DeleteGarbageEntities();
 
@@ -250,164 +258,6 @@ void Game::UpdateFromKeyboard()
 	}
 	else
 	{
-		// LMB
-		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_LBUTTON ) )
-		{
-			if ( m_player != nullptr && m_currentMap != nullptr )
-			{
-				Vec3 rayStartPos = m_player->m_position;
-				Vec3 rayFwdNormal = m_player->m_orientation.GetForwardDir_IFwd_JLeft_KUp();
-				float rayMaxLength = 10.f;
-
-				RaycastResult3D raycastResult = m_currentMap->RaycastAll( rayStartPos, rayFwdNormal, rayMaxLength );
-
-				Vec3 rayEndPos = rayStartPos + ( rayFwdNormal * rayMaxLength );
-
-				DebugAddWorldCylinder(
-					rayStartPos,
-					rayEndPos,
-					0.01f,
-					10.f,
-					Rgba8::WHITE,
-					Rgba8::WHITE,
-					DebugRenderMode::X_RAY );
-
-				if ( raycastResult.m_didImpact )
-				{
-					DebugAddWorldSphere(
-						raycastResult.m_impactPos,
-						0.06f,
-						10.f,
-						Rgba8::WHITE,
-						Rgba8::WHITE,
-						DebugRenderMode::USE_DEPTH );
-
-					Vec3 impactNormal = raycastResult.m_impactNormal.GetNormalized();
-					Vec3 arrowEndPos = raycastResult.m_impactPos + ( impactNormal * 0.3f );
-					DebugAddWorldArrow(
-						raycastResult.m_impactPos,
-						arrowEndPos,
-						0.03f,
-						10.f,
-						Rgba8::BLUE,
-						Rgba8::BLUE,
-						DebugRenderMode::USE_DEPTH );
-				}
-			}
-		}
-
-		// RMB
-		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_RBUTTON ) )
-		{
-			if ( m_player != nullptr && m_currentMap != nullptr )
-			{
-				Vec3 rayStartPos = m_player->m_position;
-				Vec3 rayFwdNormal = m_player->m_orientation.GetForwardDir_IFwd_JLeft_KUp();
-				float rayMaxLength = 0.25f;
-
-				RaycastResult3D raycastResult = m_currentMap->RaycastAll( rayStartPos, rayFwdNormal, rayMaxLength );
-
-				Vec3 rayEndPos = rayStartPos + ( rayFwdNormal * rayMaxLength );
-
-				DebugAddWorldCylinder(
-					rayStartPos,
-					rayEndPos,
-					0.01f,
-					10.f,
-					Rgba8::WHITE,
-					Rgba8::WHITE,
-					DebugRenderMode::X_RAY );
-
-				if ( raycastResult.m_didImpact )
-				{
-					DebugAddWorldSphere(
-						raycastResult.m_impactPos,
-						0.06f,
-						10.f,
-						Rgba8::WHITE,
-						Rgba8::WHITE,
-						DebugRenderMode::USE_DEPTH );
-
-					Vec3 impactNormal = raycastResult.m_impactNormal.GetNormalized();
-					Vec3 arrowEndPos = raycastResult.m_impactPos + ( impactNormal * 0.3f );
-					DebugAddWorldArrow(
-						raycastResult.m_impactPos,
-						arrowEndPos,
-						0.03f,
-						10.f,
-						Rgba8::BLUE,
-						Rgba8::BLUE,
-						DebugRenderMode::USE_DEPTH );
-				}
-			}
-		}
-
-		// 1
-		if ( g_engine->m_inputSystem->WasKeyJustPressed( '1' ) )
-		{
-			Vec3 start = m_player->m_position;
-			Vec3 forward = m_player->m_orientation.GetForwardDir_IFwd_JLeft_KUp();
-			Vec3 end = start + forward * 20.f;
-			DebugAddWorldCylinder( start, end, 0.0625f, 10.f, Rgba8::YELLOW, Rgba8::YELLOW, DebugRenderMode::X_RAY );
-		}
-
-		// 2
-		if ( g_engine->m_inputSystem->IsKeyDown( '2' ) )
-		{
-			Vec3 center = Vec3( m_player->m_position.x, m_player->m_position.y, 0.f );
-			DebugAddWorldSphere( center, 0.25f, 60.f, Rgba8( 150, 75, 0 ), Rgba8( 150, 75, 0 ), DebugRenderMode::USE_DEPTH );
-		}
-
-		// 3
-		if ( g_engine->m_inputSystem->WasKeyJustPressed( '3' ) )
-		{
-			Vec3 center = m_player->m_position;
-			Vec3 forward = m_player->m_orientation.GetForwardDir_IFwd_JLeft_KUp();
-			center += forward * 2.f;
-			DebugAddWorldWireSphere( center, 1.f, 5.f, Rgba8::GREEN, Rgba8::RED, DebugRenderMode::USE_DEPTH );
-		}
-
-		// 4
-		if ( g_engine->m_inputSystem->WasKeyJustPressed( '4' ) )
-		{
-			DebugAddBasis( m_player->GetModelToWorldTransform(), 20.f, 1.f, 0.08f, 1.f, 1.f, DebugRenderMode::USE_DEPTH );
-		}
-
-		// 5
-		if ( g_engine->m_inputSystem->WasKeyJustPressed( '5' ) )
-		{
-			std::string debugText = Stringf(
-				"Position: %.2f, %.2f, %.2f\nOrientation: %.1f, %.1f, %.1f",
-				m_player->m_position.x, m_player->m_position.y, m_player->m_position.z,
-				m_player->m_orientation.m_yawDegrees, m_player->m_orientation.m_pitchDegrees, m_player->m_orientation.m_rollDegrees );
-			Vec3 textPosition = m_player->m_position + m_player->m_orientation.GetForwardDir_IFwd_JLeft_KUp() * 2.f;
-
-			DebugAddWorldBillboardText( debugText, textPosition, 0.125f, Vec2( 0.5f, 0.5f ), 10.f, Rgba8::WHITE, Rgba8::RED );
-		}
-
-		// 6
-		if ( g_engine->m_inputSystem->WasKeyJustPressed( '6' ) )
-		{
-			Vec3 start = m_player->m_position;
-			Vec3 end = start + Vec3( 0.f, 0.f, 1.f );
-			DebugAddWorldWireCylinder( start, end, 0.5f, 10.f, Rgba8::WHITE, Rgba8::RED, DebugRenderMode::USE_DEPTH );
-		}
-
-		// 7 
-		if ( g_engine->m_inputSystem->WasKeyJustPressed( '7' ) )
-		{
-			EulerAngles cameraOrientation = m_player->m_playerCamera->GetOrientation();
-			float yaw = cameraOrientation.m_yawDegrees;
-			float pitch = cameraOrientation.m_pitchDegrees;
-			float roll = cameraOrientation.m_rollDegrees;
-
-			std::string debugText = Stringf(
-				"Camera Orientation: %.2f, %.2f, %.2f",
-				yaw, pitch, roll );
-
-			DebugAddMessage( debugText, 5.f );
-		}
-
 		// F2
 		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_F2 ) )
 		{
@@ -590,25 +440,28 @@ void Game::UpdateFromController()
 
 
 //-----------------------------------------------------------------------------------------------
-void Game::UpdatePlayer()
+void Game::UpdatePlayer( float deltaSeconds )
 {
 	if ( m_player == nullptr )
 	{
 		return;
 	}
 
-	float const deltaSeconds = ( float ) m_gameClock->GetDeltaSeconds();
+	if ( m_currentMap != nullptr && m_player->GetActor() == nullptr )
+	{
+		m_currentMap->SpawnPlayer( m_player );
+	}
 
 	m_player->Update( deltaSeconds );
 }
 
 
 //-----------------------------------------------------------------------------------------------
-void Game::UpdateCurrentMap()
+void Game::UpdateCurrentMap( float deltaSeconds )
 {
 	if ( m_currentMap != nullptr )
 	{
-		m_currentMap->Update();
+		m_currentMap->Update( deltaSeconds );
 	}
 }
 
@@ -697,8 +550,11 @@ void Game::RenderHUD() const
 		Rgba8::WHITE,
 		Rgba8::WHITE );
 
+	Actor* playerActor = nullptr;
 	if ( m_player != nullptr )
 	{
+		playerActor = m_player->GetActor();
+
 		std::string playerPosText = Stringf(
 			"Player Position: (%.2f, %.2f, %.2f)",
 			m_player->m_position.x,
@@ -706,6 +562,20 @@ void Game::RenderHUD() const
 			m_player->m_position.z );
 
 		DebugAddMessage( playerPosText, 0.f );
+	}
+
+	if ( playerActor != nullptr )
+	{
+		std::string healthText = Stringf( "Health: %d / %d", playerActor->m_currentHealth, playerActor->m_maxHealth );
+		AABB2 healthTextBounds( Vec2( 0.f, 8.f ), Vec2( SCREEN_SIZE_X, 48.f ) );
+		DebugAddScreenText(
+			healthText,
+			healthTextBounds,
+			20.f,
+			Vec2( 0.5f, 0.f ),
+			0.f,
+			Rgba8::WHITE,
+			Rgba8::WHITE );
 	}
 
 	if ( m_currentMap != nullptr )
@@ -731,6 +601,15 @@ void Game::RenderHUD() const
 			0.f,
 			Rgba8::WHITE,
 			Rgba8::WHITE );
+	}
+
+	if ( playerActor != nullptr && playerActor->m_isDead )
+	{
+		std::vector<Vertex> overlayVerts;
+		AddVertsForAABB2D( overlayVerts, screenBounds, Rgba8( 96, 96, 96, 120 ) );
+		g_engine->m_renderer->BindTexture( nullptr );
+		g_engine->m_renderer->SetModelConstants();
+		g_engine->m_renderer->DrawVertexArray( overlayVerts );
 	}
 
 	g_engine->m_renderer->EndCamera( *m_screenCamera );
