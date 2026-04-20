@@ -163,3 +163,20 @@ AABB2 AABB2::ChopLeft( float fractionFromLeft, float padding ) const
 
 	return choppedBox;
 }
+
+
+//-----------------------------------------------------------------------------------------------
+AABB2 AABB2::ChopTop( float fractionFromTop, float padding ) const
+{
+	float totalHeight = m_maxs.y - m_mins.y;
+	float chopHeight = totalHeight * fractionFromTop;
+	chopHeight = GetClamped( chopHeight, 0.f, totalHeight );
+
+	AABB2 choppedBox = *this;
+	choppedBox.m_mins.y = m_maxs.y - chopHeight;
+
+	AABB2 remainingBox = *this;
+	remainingBox.m_maxs.y = choppedBox.m_mins.y - padding;
+
+	return choppedBox;
+}
