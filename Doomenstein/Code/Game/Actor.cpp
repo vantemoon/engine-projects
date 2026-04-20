@@ -285,7 +285,17 @@ void Actor::OnCollide( Actor* otherActor, Vec3 const& collisionNormal )
 			int const damageAmount = s_rng.RollRandomIntInRange( minDamage, maxDamage );
 			if ( damageAmount > 0 )
 			{
-				otherActor->TakeDamage( damageAmount, this );
+				Actor* damageInstigator = this;
+				if ( m_isProjectile && m_map != nullptr && m_ownerHandle.IsValid() )
+				{
+					Actor* ownerActor = m_map->GetActorByHandle( m_ownerHandle );
+					if ( ownerActor != nullptr && !ownerActor->m_isDead && !ownerActor->m_isDestroyed )
+					{
+						damageInstigator = ownerActor;
+					}
+				}
+
+				otherActor->TakeDamage( damageAmount, damageInstigator );
 			}
 		}
 

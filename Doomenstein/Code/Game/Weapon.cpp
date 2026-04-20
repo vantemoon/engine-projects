@@ -1,5 +1,6 @@
 #include "Game/Weapon.hpp"
 #include "Game/Actor.hpp"
+#include "Game/ActorDefinition.hpp"
 #include "Game/Map.hpp"
 #include "Game/WeaponDefinition.hpp"
 #include "Engine/Core/DebugRender.hpp"
@@ -83,17 +84,30 @@ void Weapon::Fire( Actor* owner )
 	}
 	baseForward = baseForward.GetNormalized();
 
+	Vec3 attackSpawnCenter = fireStartPos;
+	Vec2 ownerForwardXY( baseForward.x, baseForward.y );
+	if ( ownerForwardXY != Vec2::ZERO )
+	{
+		ownerForwardXY.Normalize();
+		attackSpawnCenter.x += ownerForwardXY.x * owner->m_definition->m_physicsRadius;
+		attackSpawnCenter.y += ownerForwardXY.y * owner->m_definition->m_physicsRadius;
+	}
+	else
+	{
+		attackSpawnCenter.x += owner->m_definition->m_physicsRadius;
+	}
+
 	for ( int rayIndex = 0; rayIndex < m_definition->m_rayCount; ++rayIndex )
 	{
 		Vec3 rayDir = GetRandomDirectionInCone( baseForward, m_definition->m_rayCone );
 
 		Actor* rayHitActor = nullptr;
-		RaycastResult3D rayResult = owner->m_map->RaycastAll( fireStartPos, rayDir, m_definition->m_rayRange, owner, &rayHitActor );
+		RaycastResult3D rayResult = owner->m_map->RaycastAll( attackSpawnCenter, rayDir, m_definition->m_rayRange, owner, &rayHitActor );
 
 		if ( rayResult.m_didImpact )
 		{
 			Vec3 debugOffset( 0.f, 0.f, -0.08f );
-			Vec3 debugStart = fireStartPos + debugOffset;
+			Vec3 debugStart = attackSpawnCenter + debugOffset;
 			Vec3 debugEnd = rayResult.m_impactPos + debugOffset;
 			DebugAddWorldCylinder( debugStart, debugEnd, 0.01f, 1.0f, Rgba8::BLUE, Rgba8::BLUE );
 		}
@@ -136,7 +150,16 @@ void Weapon::Fire( Actor* owner )
 
 		SpawnInfo spawnInfo;
 		spawnInfo.m_actor = m_definition->m_projectileActorDefName;
-		spawnInfo.m_position = fireStartPos;
+
+		ActorDefinition const* projectileDef = ActorDefinition::GetActorDefinitionByName( m_definition->m_projectileActorDefName );
+		float projectileHalfHeight = 0.f;
+		if ( projectileDef != nullptr )
+		{
+			projectileHalfHeight = projectileDef->m_physicsHeight * 0.5f;
+		}
+
+		spawnInfo.m_position = attackSpawnCenter;
+		spawnInfo.m_position.z -= projectileHalfHeight;
 
 		float yaw = Atan2Degrees( projectileDir.y, projectileDir.x );
 		float pitch = Atan2Degrees( projectileDir.z, Vec2( projectileDir.x, projectileDir.y ).GetLength() );
@@ -153,7 +176,13 @@ void Weapon::Fire( Actor* owner )
 
 	for ( int meleeIndex = 0; meleeIndex < m_definition->m_meleeCount; ++meleeIndex )
 	{
-		Actor* meleeTarget = owner->m_map->GetClosestActorInSector( fireStartPos, baseForward, m_definition->m_meleeRange, m_definition->m_meleeArc, owner );
+		Actor* meleeTarget = owner->m_map->GetClosestActorInSector(
+			owner->m_position,
+			baseForward,
+			m_definition->m_meleeRange,
+			m_definition->m_meleeArc,
+			owner );
+
 		if ( meleeTarget == nullptr )
 		{
 			continue;

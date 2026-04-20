@@ -74,17 +74,7 @@ void AI::Update( float deltaSeconds )
 		weaponDef = self->m_currentWeapon->m_definition;
 	}
 
-	bool hasMeleeWeapon = ( weaponDef != nullptr && weaponDef->m_meleeCount > 0 && weaponDef->m_meleeRange > 0.f );
-
 	float stopDistance = self->m_definition->m_physicsRadius + target->m_definition->m_physicsRadius + 0.05f;
-	if ( hasMeleeWeapon )
-	{
-		float preferredMeleeDistance = weaponDef->m_meleeRange * 0.8f;
-		if ( preferredMeleeDistance > stopDistance )
-		{
-			stopDistance = preferredMeleeDistance;
-		}
-	}
 
 	if ( toTargetXY != Vec3::ZERO && distToTargetXY > stopDistance )
 	{
