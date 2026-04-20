@@ -1,6 +1,7 @@
 #pragma once
 #include "Game/Game.hpp"
 #include "Engine/Math/AABB2.hpp"
+#include "Engine/Math/CubicBezierCurve2D.hpp"
 #include "Engine/Core/Vertex.hpp"
 #include <string>
 #include <vector>
@@ -48,11 +49,13 @@ private:
 	std::string GetEasingFunctionLabel() const;
 	EasingFunction GetEasingFunction() const;
 	void RenderEasingFunctionGraph( std::vector<Vertex>& verts ) const;
+	void RenderEasingFunctionPoint( std::vector<Vertex>& verts ) const;
 	static float CustomFunkyEasingFunction( float t );
 
 private:
-	int m_numCurveSegments = 64;
+	int m_numSubdivisions = 64;
 	bool m_isDebugDraw = false;
+	float m_parametricT = 0.f;
 
 	AABB2 m_splinePanel = AABB2::ZERO_TO_ONE;
 	AABB2 m_bezierPanel = AABB2::ZERO_TO_ONE;
@@ -61,4 +64,8 @@ private:
 	// Easing function
 	AABB2 m_easingFunctionGraphBounds = AABB2::ZERO_TO_ONE;
 	EasingFunctionLabel m_easingFunction = EasingFunctionLabel::SMOOTH_STOP_2;
+	Vec2 m_easingFunctionPoint = Vec2::ZERO;
+
+	// Cubic Bezier curve
+	CubicBezierCurve2D m_bezierCurve = CubicBezierCurve2D( Vec2::ZERO, Vec2::ZERO, Vec2::ZERO, Vec2::ZERO );
 };

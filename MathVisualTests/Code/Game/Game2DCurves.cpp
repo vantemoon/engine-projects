@@ -47,6 +47,16 @@ Game2DCurves::~Game2DCurves()
 //-----------------------------------------------------------------------------------------------
 void Game2DCurves::Update( float deltaSeconds )
 {
+	m_parametricT += deltaSeconds * 0.5f;
+	if ( m_parametricT > 1.f )
+	{
+		m_parametricT -= 1.f;
+	}
+
+	// Easing function point
+	float easedT = GetEasingFunction()( m_parametricT );
+	m_easingFunctionPoint = m_easingFunctionGraphBounds.m_mins + ( Vec2( m_parametricT, easedT ) * m_easingFunctionGraphBounds.GetDimensions() );
+
 	UpdateFromKeyboard( deltaSeconds );
 }
 
@@ -104,6 +114,7 @@ void Game2DCurves::Render() const
 
 	std::string easingFunctionLabel = GetEasingFunctionLabel();
 	RenderEasingFunctionGraph( verts );
+	RenderEasingFunctionPoint( verts );
 	
 	if ( !easingFunctionLabel.empty() )
 	{
@@ -179,12 +190,12 @@ EasingFunction Game2DCurves::GetEasingFunction() const
 void Game2DCurves::RenderEasingFunctionGraph( std::vector<Vertex>& verts ) const
 {
 	Rgba8 const curveColor( 0, 255, 0 );
-	float const lineThickness = 0.2f;
+	float const lineThickness = 0.4f;
 
-	for ( int segmentIndex = 0; segmentIndex < m_numCurveSegments; ++ segmentIndex )
+	for ( int segmentIndex = 0; segmentIndex < m_numSubdivisions; ++ segmentIndex )
 	{
-		float t0 = static_cast<float>( segmentIndex ) / static_cast<float>( m_numCurveSegments );
-		float t1 = static_cast<float>( segmentIndex + 1 ) / static_cast<float>( m_numCurveSegments );
+		float t0 = static_cast<float>( segmentIndex ) / static_cast<float>( m_numSubdivisions );
+		float t1 = static_cast<float>( segmentIndex + 1 ) / static_cast<float>( m_numSubdivisions );
 
 		EasingFunction easingFunction = GetEasingFunction();
 		float y0 = easingFunction( t0 );
@@ -200,6 +211,17 @@ void Game2DCurves::RenderEasingFunctionGraph( std::vector<Vertex>& verts ) const
 
 		AddVertsForLineSegment2D( verts, p0, p1, lineThickness, curveColor );
 	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game2DCurves::RenderEasingFunctionPoint( std::vector<Vertex>& verts ) const
+{
+	float const pointRadius = 0.5f;
+	Rgba8 const lineColor( 50, 50, 100 );
+	AddVertsForLineSegment2D( verts, Vec2( m_easingFunctionPoint.x, m_easingFunctionGraphBounds.m_mins.y ), m_easingFunctionPoint, 0.3f, lineColor );
+	AddVertsForLineSegment2D( verts, Vec2( m_easingFunctionGraphBounds.m_mins.x, m_easingFunctionPoint.y ), m_easingFunctionPoint, 0.3f, lineColor );
+	AddVertsForDisc2D( verts, m_easingFunctionPoint, pointRadius, Rgba8::WHITE, 32 );
 }
 
 
