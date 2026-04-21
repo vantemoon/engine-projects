@@ -51,17 +51,32 @@ Game2DCurves::~Game2DCurves()
 //-----------------------------------------------------------------------------------------------
 void Game2DCurves::Update( float deltaSeconds )
 {
+	UpdateFromKeyboard( deltaSeconds );
+
+	if ( m_isSlowMo )
+	{
+		deltaSeconds *= 0.1f;
+	}
+
 	m_parametricT += deltaSeconds * 0.5f;
 	if ( m_parametricT > 1.f )
 	{
 		m_parametricT -= 1.f;
 	}
 
+	int const numSplineSections = std::max( 1, static_cast<int>( m_hermiteSpline.m_controlPoints.size() ) - 1 );
+	float const splineLoopDurationSeconds = 2.f * static_cast<float>( numSplineSections );
+	float const splineParametricRate = 1.f / splineLoopDurationSeconds;
+
+	m_splineParametricT += deltaSeconds * splineParametricRate;
+	if ( m_splineParametricT > 1.f )
+	{
+		m_splineParametricT -= 1.f;
+	}
+
 	// Easing function point
 	float easedT = GetEasingFunction()( m_parametricT );
 	m_easingFunctionPoint = m_easingFunctionGraphBounds.m_mins + ( Vec2( m_parametricT, easedT ) * m_easingFunctionGraphBounds.GetDimensions() );
-
-	UpdateFromKeyboard( deltaSeconds );
 }
 
 
@@ -76,6 +91,15 @@ void Game2DCurves::UpdateFromKeyboard( [[maybe_unused]] float deltaSeconds )
 	if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_F8 ) )
 	{
 		Randomize();
+	}
+
+	if ( g_engine->m_inputSystem->IsKeyDown( 'T' ) )
+	{
+		m_isSlowMo = true;
+	}
+	else
+	{
+		m_isSlowMo = false;
 	}
 
 	if ( g_engine->m_inputSystem->WasKeyJustPressed( 'W' ) )
@@ -94,6 +118,17 @@ void Game2DCurves::UpdateFromKeyboard( [[maybe_unused]] float deltaSeconds )
 			m_easingFunction = EasingFunctionLabel::IDENTITY;
 		}
 	}
+
+	if ( g_engine->m_inputSystem->WasKeyJustPressed( 'N' ) )
+	{
+		m_numSubdivisionsPower = std::max( 0, m_numSubdivisionsPower - 1 );
+	}
+	if ( g_engine->m_inputSystem->WasKeyJustPressed( 'M' ) )
+	{
+		m_numSubdivisionsPower =  m_numSubdivisionsPower + 1;
+	}
+
+	m_numSubdivisions = 1 << m_numSubdivisionsPower;
 }
 
 
@@ -122,12 +157,23 @@ void Game2DCurves::Render() const
 
 	// Cubic Bezier curve
 	RenderCubicBezierCurve( verts );
-	RenderCubicBezierPoint( verts );
+	RenderCubicBezierPoints( verts );
+
+	// Cubic Hermite spline
+	RenderCubicHermiteSpline( verts );
+	RenderCubicHermiteSplinePoints( verts );
 
 	g_engine->m_renderer->BindTexture( nullptr );
 	g_engine->m_renderer->DrawVertexArray( verts );
 
 	g_engine->m_renderer->EndCamera( *m_worldCamera );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+int Game2DCurves::GetNumSubdivisions() const
+{
+	return m_numSubdivisions;
 }
 
 
@@ -188,6 +234,7 @@ void Game2DCurves::Randomize()
 {
 	GenerateRandomEasingFunctionLabel();
 	GenerateRandomCubicBezierCurve();
+	GenerateRandomCubicHermiteSpline();
 }
 
 
@@ -208,6 +255,41 @@ void Game2DCurves::GenerateRandomCubicBezierCurve()
 	m_bezierCurve.m_guidePos1 = m_bezierPanel.GetPointAtUV( Vec2( rng.RollRandomFloatInRange( 0.f, 1.f ), rng.RollRandomFloatInRange( 0.f, 1.f ) ) );
 	m_bezierCurve.m_guidePos2 = m_bezierPanel.GetPointAtUV( Vec2( rng.RollRandomFloatInRange( 0.f, 1.f ), rng.RollRandomFloatInRange( 0.f, 1.f ) ) );
 	m_bezierCurve.m_endPos = m_bezierPanel.GetPointAtUV( Vec2( rng.RollRandomFloatInRange( 0.f, 1.f ), rng.RollRandomFloatInRange( 0.f, 1.f ) ) );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game2DCurves::GenerateRandomCubicHermiteSpline()
+{
+	RandomNumberGenerator rng;
+	std::vector<Vec2> controlPoints;
+
+	int const numControlPoints = rng.RollRandomIntInRange( 4, 10 );
+	controlPoints.reserve( numControlPoints );
+
+	float const minX = m_splinePanel.m_mins.x;
+	float const maxX = m_splinePanel.m_maxs.x;
+	float const minY = m_splinePanel.m_mins.y;
+	float const maxY = m_splinePanel.m_maxs.y;
+
+	float const panelWidth = maxX - minX;
+	float const xStep = ( numControlPoints > 1 ) ? panelWidth / static_cast< float >( numControlPoints - 1 ) : 0.f;
+
+	float const xJitterRange = xStep * 0.6f;
+
+	for ( int controlPointIndex = 0; controlPointIndex < numControlPoints; ++controlPointIndex )
+	{
+		float const baseX = minX + ( xStep * static_cast< float >( controlPointIndex ) );
+		float x = baseX + rng.RollRandomFloatInRange( -xJitterRange, xJitterRange );
+		float y = rng.RollRandomFloatInRange( minY, maxY );
+
+		if ( x < minX ) x = minX;
+		if ( x > maxX ) x = maxX;
+
+		controlPoints.push_back( Vec2( x, y ) );
+	}
+
+	m_hermiteSpline = CubicHermiteSpline2D( controlPoints );
 }
 
 
@@ -261,7 +343,7 @@ void Game2DCurves::RenderEasingFunctionGraph( std::vector<Vertex>& verts ) const
 //-----------------------------------------------------------------------------------------------
 void Game2DCurves::RenderEasingFunctionPoint( std::vector<Vertex>& verts ) const
 {
-	float const pointRadius = 0.5f;
+	float const pointRadius = 0.6f;
 	AddVertsForDisc2D( verts, m_easingFunctionPoint, pointRadius, Rgba8::WHITE, 32 );
 }
 
@@ -305,9 +387,9 @@ void Game2DCurves::RenderCubicBezierCurve( std::vector<Vertex>& verts ) const
 
 
 //-----------------------------------------------------------------------------------------------
-void Game2DCurves::RenderCubicBezierPoint( std::vector<Vertex>& verts ) const
+void Game2DCurves::RenderCubicBezierPoints( std::vector<Vertex>& verts ) const
 {
-	float const pointRadius = 0.5f;
+	float const pointRadius = 0.6f;
 	float const clampedT = GetClampedZeroToOne( m_parametricT );
 
 	Vec2 const whitePoint = m_bezierCurve.EvaluateAtParametric( clampedT );
@@ -321,6 +403,84 @@ void Game2DCurves::RenderCubicBezierPoint( std::vector<Vertex>& verts ) const
 	{
 		float const distanceAlongCurve = clampedT * totalLength;
 		greenPoint = m_bezierCurve.EvaluateAtApproximateDistance( distanceAlongCurve, numSubdivisions );
+	}
+
+	AddVertsForDisc2D( verts, greenPoint, pointRadius, Rgba8::GREEN, 32 );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game2DCurves::RenderCubicHermiteSpline( std::vector<Vertex>& verts ) const
+{
+	Rgba8 const faintLineColor( 50, 50, 100 );
+	float const thinLineThickness = 0.2f;
+	for ( int segmentIndex = 0; segmentIndex < m_hermiteSpline.m_controlPoints.size() - 1; ++ segmentIndex )
+	{
+		Vec2 const& p0 = m_hermiteSpline.m_controlPoints[segmentIndex];
+		Vec2 const& p1 = m_hermiteSpline.m_controlPoints[segmentIndex + 1];
+		AddVertsForLineSegment2D( verts, p0, p1, thinLineThickness, faintLineColor );
+	}
+
+	Rgba8 const darkGrey( 50, 50, 50 );
+	float const lineThickness = 0.4f;
+	int const fixedSegmentCount = 64;
+	for ( int segmentIndex = 0; segmentIndex < fixedSegmentCount; ++ segmentIndex )
+	{
+		float t0 = static_cast< float >( segmentIndex ) / static_cast< float >( fixedSegmentCount );
+		float t1 = static_cast< float >( segmentIndex + 1 ) / static_cast< float >( fixedSegmentCount );
+		Vec2 const p0 = m_hermiteSpline.EvaluateAtParametric( t0 );
+		Vec2 const p1 = m_hermiteSpline.EvaluateAtParametric( t1 );
+		AddVertsForLineSegment2D( verts, p0, p1, lineThickness, darkGrey );
+	}
+
+	int const numSplineSections = std::max( 1, static_cast< int >( m_hermiteSpline.m_controlPoints.size() ) - 1 );
+	int const totalSplineSubdivisions = m_numSubdivisions * numSplineSections;
+
+	for ( int segmentIndex = 0; segmentIndex < totalSplineSubdivisions; ++ segmentIndex )
+	{
+		float t0 = static_cast< float >( segmentIndex ) / static_cast< float >( totalSplineSubdivisions );
+		float t1 = static_cast< float >( segmentIndex + 1 ) / static_cast< float >( totalSplineSubdivisions );
+		Vec2 const p0 = m_hermiteSpline.EvaluateAtParametric( t0 );
+		Vec2 const p1 = m_hermiteSpline.EvaluateAtParametric( t1 );
+		AddVertsForLineSegment2D( verts, p0, p1, lineThickness, Rgba8::GREEN );
+	}
+
+	for ( int tangentIndex = 0; tangentIndex < m_hermiteSpline.m_tangents.size(); ++ tangentIndex )
+	{
+		Vec2 const& controlPoint = m_hermiteSpline.m_controlPoints[tangentIndex];
+		Vec2 const& tangent = m_hermiteSpline.m_tangents[tangentIndex];
+		if ( tangent.GetLengthSquared() > 0.f )
+		{
+			Vec2 const tangentEnd = controlPoint + tangent;
+			AddVertsForArrow2D( verts, controlPoint, tangentEnd, 0.4f, 0.5f, Rgba8::RED );
+		}
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game2DCurves::RenderCubicHermiteSplinePoints( std::vector<Vertex>& verts ) const
+{
+	Rgba8 const lightBlue( 100, 100, 255 );
+	float const pointRadius = 0.6f;
+	for ( int controlPointIndex = 0; controlPointIndex < m_hermiteSpline.m_controlPoints.size(); ++ controlPointIndex )
+	{
+		Vec2 const& controlPoint = m_hermiteSpline.m_controlPoints[controlPointIndex];
+		AddVertsForDisc2D( verts, controlPoint, pointRadius, lightBlue, 32 );
+	}
+
+	float const splineT = GetClampedZeroToOne( m_splineParametricT );
+	Vec2 const whitePoint = m_hermiteSpline.EvaluateAtParametric( splineT );
+	AddVertsForDisc2D( verts, whitePoint, pointRadius, Rgba8::WHITE, 32 );
+
+	int const numSubdivisions = ( m_numSubdivisions > 0 ) ? m_numSubdivisions : 64;
+	float const totalLength = m_hermiteSpline.GetApproximateLength( numSubdivisions );
+
+	Vec2 greenPoint = m_hermiteSpline.m_controlPoints[0];
+	if ( totalLength > 0.f )
+	{
+		float const distanceAlongCurve = splineT * totalLength;
+		greenPoint = m_hermiteSpline.EvaluateAtApproximateDistance( distanceAlongCurve, numSubdivisions );
 	}
 
 	AddVertsForDisc2D( verts, greenPoint, pointRadius, Rgba8::GREEN, 32 );

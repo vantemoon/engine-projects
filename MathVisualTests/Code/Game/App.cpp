@@ -258,8 +258,13 @@ void App::RenderHUD() const
 			AddVertsForTextTriangles2D( verts, "WASD: fly horizontal, QE: fly vertical, space: lock raycast, hold T: slow", Vec2( 240.f, 730.f ), 20.f, Rgba8::CYAN );
 			break;
 		case GAMEMODE_2D_CURVES:
-			AddVertsForTextTriangles2D( verts, "TODO: Controls", Vec2( 240.f, 730.f ), 20.f, Rgba8::CYAN );
+		{
+			Game2DCurves const* currGame = dynamic_cast<Game2DCurves const*>( m_game );
+			int const numSubdivisions = ( currGame != nullptr ) ? currGame->GetNumSubdivisions() : 0;
+			std::string controlsText = "W/E: prev/next easing function, N/M: curve subdivisions (" + std::to_string( numSubdivisions ) + "), hold T: slow";
+			AddVertsForTextTriangles2D( verts, controlsText, Vec2( 240.f, 730.f ), 20.f, Rgba8::CYAN );
 			break;
+		}
 		default:
 			break;
 	}

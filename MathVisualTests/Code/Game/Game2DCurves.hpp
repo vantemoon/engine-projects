@@ -2,6 +2,7 @@
 #include "Game/Game.hpp"
 #include "Engine/Math/AABB2.hpp"
 #include "Engine/Math/CubicBezierCurve2D.hpp"
+#include "Engine/Math/CubicHermiteSpline2D.hpp"
 #include "Engine/Core/Vertex.hpp"
 #include <string>
 #include <vector>
@@ -45,23 +46,31 @@ public:
 	void UpdateFromKeyboard( float deltaSeconds );
 	void Render() const override;
 
+	int GetNumSubdivisions() const;
+
 private:
 	std::string GetEasingFunctionLabel() const;
 	EasingFunction GetEasingFunction() const;
 	void Randomize();
 	void GenerateRandomEasingFunctionLabel();
 	void GenerateRandomCubicBezierCurve();
+	void GenerateRandomCubicHermiteSpline();
 	void RenderEasingFunctionGraph( std::vector<Vertex>& verts ) const;
 	void RenderEasingFunctionPoint( std::vector<Vertex>& verts ) const;
 	void RenderCubicBezierCurve( std::vector<Vertex>& verts ) const;
-	void RenderCubicBezierPoint( std::vector<Vertex>& verts ) const;
+	void RenderCubicBezierPoints( std::vector<Vertex>& verts ) const;
+	void RenderCubicHermiteSpline( std::vector<Vertex>& verts ) const;
+	void RenderCubicHermiteSplinePoints( std::vector<Vertex>& verts ) const;
 
 	static float CustomFunkyEasingFunction( float t );
 
 private:
+	int m_numSubdivisionsPower = 6;
 	int m_numSubdivisions = 64;
 	bool m_isDebugDraw = false;
+	bool m_isSlowMo = false;
 	float m_parametricT = 0.f;
+	float m_splineParametricT = 0.f;
 
 	AABB2 m_splinePanel = AABB2::ZERO_TO_ONE;
 	AABB2 m_bezierPanel = AABB2::ZERO_TO_ONE;
@@ -74,4 +83,7 @@ private:
 
 	// Cubic Bezier curve
 	CubicBezierCurve2D m_bezierCurve = CubicBezierCurve2D( Vec2::ZERO, Vec2::ZERO, Vec2::ZERO, Vec2::ZERO );
+
+	// Cubic Hermite spline
+	CubicHermiteSpline2D m_hermiteSpline = CubicHermiteSpline2D( std::vector<Vec2>{ Vec2::ZERO, Vec2::ZERO, Vec2::ZERO, Vec2::ZERO } );
 };
