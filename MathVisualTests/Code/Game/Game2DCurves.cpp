@@ -414,7 +414,8 @@ void Game2DCurves::RenderCubicHermiteSpline( std::vector<Vertex>& verts ) const
 {
 	Rgba8 const faintLineColor( 50, 50, 100 );
 	float const thinLineThickness = 0.2f;
-	for ( int segmentIndex = 0; segmentIndex < m_hermiteSpline.m_controlPoints.size() - 1; ++ segmentIndex )
+	size_t const controlPointCount = m_hermiteSpline.m_controlPoints.size();
+	for ( size_t segmentIndex = 0; segmentIndex + 1 < controlPointCount; ++ segmentIndex )
 	{
 		Vec2 const& p0 = m_hermiteSpline.m_controlPoints[segmentIndex];
 		Vec2 const& p1 = m_hermiteSpline.m_controlPoints[segmentIndex + 1];
@@ -445,7 +446,8 @@ void Game2DCurves::RenderCubicHermiteSpline( std::vector<Vertex>& verts ) const
 		AddVertsForLineSegment2D( verts, p0, p1, lineThickness, Rgba8::GREEN );
 	}
 
-	for ( int tangentIndex = 0; tangentIndex < m_hermiteSpline.m_tangents.size(); ++ tangentIndex )
+	size_t const tangentCount = std::min( m_hermiteSpline.m_tangents.size(), controlPointCount );
+	for ( size_t tangentIndex = 0; tangentIndex < tangentCount; ++ tangentIndex )
 	{
 		Vec2 const& controlPoint = m_hermiteSpline.m_controlPoints[tangentIndex];
 		Vec2 const& tangent = m_hermiteSpline.m_tangents[tangentIndex];
@@ -463,7 +465,7 @@ void Game2DCurves::RenderCubicHermiteSplinePoints( std::vector<Vertex>& verts ) 
 {
 	Rgba8 const lightBlue( 100, 100, 255 );
 	float const pointRadius = 0.6f;
-	for ( int controlPointIndex = 0; controlPointIndex < m_hermiteSpline.m_controlPoints.size(); ++ controlPointIndex )
+	for ( size_t controlPointIndex = 0; controlPointIndex < m_hermiteSpline.m_controlPoints.size(); ++ controlPointIndex )
 	{
 		Vec2 const& controlPoint = m_hermiteSpline.m_controlPoints[controlPointIndex];
 		AddVertsForDisc2D( verts, controlPoint, pointRadius, lightBlue, 32 );
