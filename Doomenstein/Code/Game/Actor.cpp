@@ -190,7 +190,9 @@ void Actor::TakeDamage( int damageAmount, Actor* attacker )
 		m_velocity = Vec3::ZERO;
 		m_acceleration = Vec3::ZERO;
 
+		m_deadTimer.Stop();
 		m_deadTimer.m_period = m_definition->corpseLifetime;
+
 		if ( m_deadTimer.m_period <= 0.0 )
 		{
 			m_isDestroyed = true;

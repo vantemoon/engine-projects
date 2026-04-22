@@ -527,7 +527,12 @@ void Game::RenderEntities() const
 void Game::RenderHUD() const
 {
 	g_engine->m_renderer->BeginCamera( *m_screenCamera );
-	
+
+	g_engine->m_renderer->SetBlendMode( BlendMode::ALPHA );
+	g_engine->m_renderer->SetDepthMode( DepthMode::DISABLED );
+	g_engine->m_renderer->SetRasterizerMode( RasterizerMode::SOLID_CULL_NONE );
+	g_engine->m_renderer->BindTexture( nullptr );
+
 	AABB2 screenBounds( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) );
 	std::string clockText = Stringf(
 		"Time: %.2f FPS: %.1f Scale: %.2f",
@@ -600,7 +605,7 @@ void Game::RenderHUD() const
 	if ( playerActor != nullptr && playerActor->m_isDead )
 	{
 		std::vector<Vertex> overlayVerts;
-		AddVertsForAABB2D( overlayVerts, screenBounds, Rgba8( 96, 96, 96, 120 ) );
+		AddVertsForAABB2D( overlayVerts, screenBounds, Rgba8( 96, 96, 96, 150 ) );
 		g_engine->m_renderer->BindTexture( nullptr );
 		g_engine->m_renderer->SetModelConstants();
 		g_engine->m_renderer->DrawVertexArray( overlayVerts );

@@ -42,6 +42,10 @@ Player::~Player()
 //-----------------------------------------------------------------------------------------------
 void Player::Update( float deltaSeconds )
 {
+	if ( GetActor() == nullptr )
+	{
+		m_game->m_currentMap->SpawnPlayer( this );
+	}
 	UNUSED( deltaSeconds );
 	UpdateInput();
 	UpdateCamera();
