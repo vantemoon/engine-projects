@@ -58,6 +58,7 @@ public:
 	void AddToAmbientIntensity( float delta );
 
 	void SpawnPlayer( Player* player );
+	void RespawnPlayer( Player* player );
 	Actor* SpawnActor( SpawnInfo const& spawnInfo );
 
 	Actor* GetClosestVisibleEnemy( Actor* seeker );

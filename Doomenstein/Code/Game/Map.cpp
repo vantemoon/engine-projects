@@ -247,6 +247,11 @@ void Map::Update( float deltaSeconds )
 	CollideActors();
 	CollideActorWithMap();
 	DeleteDestroyedActors();
+
+	if (m_game->m_player->GetActor()->m_isDead)
+	{
+		RespawnPlayer(m_game->m_player);
+	}
 }
 
 
@@ -928,6 +933,22 @@ void Map::SpawnPlayer( Player* player )
 	player->m_orientation.m_rollDegrees = 0.f;
 	player->m_position = marineActor->m_position;
 	player->m_position.z += marineActor->m_definition->m_eyeHeight;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Map::RespawnPlayer( Player* player )
+{
+	if ( player == nullptr || m_definition == nullptr )
+	{
+		return;
+	}
+	Actor* possessedActor = player->GetActor();
+	if ( possessedActor != nullptr )
+	{
+		possessedActor->m_isDestroyed = true;
+	}
+	SpawnPlayer( player );
 }
 
 
