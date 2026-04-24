@@ -6,7 +6,6 @@
 #include "Game/MapDefinition.hpp"
 #include "Game/Player.hpp"
 #include "Game/TileDefinition.hpp"
-#include "Engine/Audio/AudioSystem.hpp"
 #include "Engine/Core/DebugRender.hpp"
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/EngineCommon.hpp"
@@ -46,7 +45,6 @@ Game::Game()
 	// Register console commands
 	g_engine->m_eventSystem->SubscribeEventCallbackFunction( "Controls", Command_Controls );
 
-	LoadGameConfigFromFile( "Data/GameConfig.xml" );
 	Startup();
 }
 
@@ -61,6 +59,10 @@ Game::~Game()
 //-----------------------------------------------------------------------------------------------
 void Game::Startup()
 {
+	// Initialize game config variables
+	LoadGameConfigFromFile( "Data/GameConfig.xml" );
+	InitializeConfigVariables();
+
 	// Load all definitions
 	MapDefinition::InitializeDefinitions();
 	TileDefinition::InitializeDefinitions();
@@ -161,6 +163,19 @@ void Game::DestroyMaps()
 	}
 	m_maps.clear();
 	m_currentMap = nullptr;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game::InitializeConfigVariables()
+{
+	m_musicVolume = g_gameConfigBlackboard.GetValue( "musicVolume", 0.1f );
+	std::string mainMenuMusicFilePath = g_gameConfigBlackboard.GetValue( "mainMenuMusic", "Data/Audio/Music/MainMenu_InTheDark.mp2" );
+	std::string gameMusicFilePath = g_gameConfigBlackboard.GetValue( "gameMusic", "Data/Audio/Music/E1M1_AtDoomsGate.mp2" );
+	std::string buttonClickSoundFilePath = g_gameConfigBlackboard.GetValue( "buttonClickSound", "Data/Audio/Click.mp3" );
+	m_mainMenuMusicID = g_engine->m_audioSystem->CreateOrGetSound( mainMenuMusicFilePath );
+	m_gameMusicID = g_engine->m_audioSystem->CreateOrGetSound( gameMusicFilePath );
+	m_buttonClickSoundID = g_engine->m_audioSystem->CreateOrGetSound( buttonClickSoundFilePath );
 }
 
 

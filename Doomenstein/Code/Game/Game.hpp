@@ -1,5 +1,6 @@
 #pragma once
 #include "Game/GameCommon.hpp"
+#include "Engine/Audio/AudioSystem.hpp"
 #include "Engine/Core/Clock.hpp"
 #include "Engine/Core/EventSystem.hpp"
 #include "Engine/Core/Rgba8.hpp"
@@ -30,6 +31,11 @@ public:
 
 	bool				m_hasControlsBeenShown = false;
 
+	float               m_musicVolume = 0.1f;
+	SoundID             m_mainMenuMusicID = MISSING_SOUND_ID;
+	SoundID             m_gameMusicID = MISSING_SOUND_ID;
+	SoundID             m_buttonClickSoundID = MISSING_SOUND_ID;
+
 public:
 	Game();
 	~Game();
@@ -59,6 +65,7 @@ public:
 	static bool Command_Controls( EventArgs& args );
 
 protected:
+	void InitializeConfigVariables();
 	void DeleteGarbageEntities();
 	Vec3 TransformWorldToScreen( Vec3 const& worldPosition )		   const;
 	bool IsOnScreen( Vec2 const& worldPosition, float cosmeticRadius ) const;
