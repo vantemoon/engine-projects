@@ -52,6 +52,60 @@ void WeaponDefinition::InitializeDefinitions()
 		}
 		newWeaponDef.m_meleeImpulse = ParseXmlAttribute( *weaponDefElement, "meleeImpulse", newWeaponDef.m_meleeImpulse );
 
+		tinyxml2::XMLElement* hudElement = weaponDefElement->FirstChildElement( "HUD" );
+		if ( hudElement != nullptr )
+		{
+			newWeaponDef.m_hudShader = ParseXmlAttribute( *hudElement, "shader", newWeaponDef.m_hudShader );
+			newWeaponDef.m_hudTexture = ParseXmlAttribute( *hudElement, "baseTexture", newWeaponDef.m_hudTexture );
+			newWeaponDef.m_rectileTexture = ParseXmlAttribute( *hudElement, "reticleTexture", newWeaponDef.m_rectileTexture );
+			newWeaponDef.m_rectileSize = ParseXmlAttribute( *hudElement, "reticleSize", newWeaponDef.m_rectileSize );
+			newWeaponDef.m_spriteSize = ParseXmlAttribute( *hudElement, "spriteSize", newWeaponDef.m_spriteSize );
+			newWeaponDef.m_spritePivot = ParseXmlAttribute( *hudElement, "spritePivot", newWeaponDef.m_spritePivot );
+
+			tinyxml2::XMLElement* animationElement = hudElement->FirstChildElement( "Animation" );
+			while ( animationElement != nullptr )
+			{
+				newWeaponDef.m_animationNames.push_back(
+					ParseXmlAttribute( *animationElement, "name", std::string() ) );
+
+				newWeaponDef.m_animationShaders.push_back(
+					ParseXmlAttribute( *animationElement, "shader", std::string( "Default" ) ) );
+
+				newWeaponDef.m_animationSpriteSheets.push_back(
+					ParseXmlAttribute( *animationElement, "spriteSheet", std::string() ) );
+
+				newWeaponDef.m_animationCellCounts.push_back(
+					ParseXmlAttribute( *animationElement, "cellCount", Vec2::ONE ) );
+
+				newWeaponDef.m_animationGroupSecondsPerFrame.push_back(
+					ParseXmlAttribute( *animationElement, "secondsPerFrame", 0.f ) );
+
+				newWeaponDef.m_animationStartFrames.push_back(
+					ParseXmlAttribute( *animationElement, "startFrame", 0 ) );
+
+				newWeaponDef.m_animationEndFrames.push_back(
+					ParseXmlAttribute( *animationElement, "endFrame", 0 ) );
+
+				animationElement = animationElement->NextSiblingElement( "Animation" );
+			}
+		}
+
+		tinyxml2::XMLElement* soundsElement = weaponDefElement->FirstChildElement( "Sounds" );
+		if ( soundsElement != nullptr )
+		{
+			tinyxml2::XMLElement* soundElement = soundsElement->FirstChildElement( "Sound" );
+			while ( soundElement != nullptr )
+			{
+				newWeaponDef.m_soundTypes.push_back(
+					ParseXmlAttribute( *soundElement, "sound", std::string() ) );
+
+				newWeaponDef.m_soundNames.push_back(
+					ParseXmlAttribute( *soundElement, "name", std::string() ) );
+
+				soundElement = soundElement->NextSiblingElement( "Sound" );
+			}
+		}
+
 		if ( !newWeaponDef.m_name.empty() )
 		{
 			auto existingDefIter = s_definitions.find( newWeaponDef.m_name );

@@ -1,4 +1,4 @@
-#include "Game/Weapon.hpp"
+﻿#include "Game/Weapon.hpp"
 #include "Game/Actor.hpp"
 #include "Game/ActorDefinition.hpp"
 #include "Game/App.hpp"
@@ -327,17 +327,17 @@ void Weapon::Fire( Actor* owner )
 //-----------------------------------------------------------------------------------------------
 void Weapon::Render( Actor const* owner ) const
 {
-	if ( owner == nullptr || g_engine == nullptr || g_engine->m_renderer == nullptr )
+	if ( owner == nullptr || m_definition == nullptr )
 	{
 		return;
 	}
 
-	if ( m_definition != nullptr && m_definition->m_name == "DemonMelee" )
+	if ( g_engine == nullptr || g_engine->m_renderer == nullptr )
 	{
 		return;
 	}
 
-	if ( g_app == nullptr || g_app->m_game == nullptr || g_app->m_game->m_player == nullptr || g_app->m_game->m_player->m_playerScreenCamera == nullptr )
+	if ( g_app == nullptr || g_app->m_game == nullptr || g_app->m_game->m_player == nullptr )
 	{
 		return;
 	}
@@ -347,43 +347,83 @@ void Weapon::Render( Actor const* owner ) const
 		return;
 	}
 
-	Texture* hudBaseTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/Hud_Base.png" );
-	Texture* rectileTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/Reticle.png" );
+	if ( g_app->m_game->m_player->m_playerScreenCamera == nullptr )
+	{
+		return;
+	}
 
-	IntVec2 hudDimensions = hudBaseTexture->GetDimensions();
-	float scaleFactor = SCREEN_SIZE_X / ( float ) hudDimensions.x;
-	Vec2 hudMins( 0.f, 0.f );
-	Vec2 hudMaxs( SCREEN_SIZE_X, ( float ) hudDimensions.y * scaleFactor );
-	AABB2 hudBounds( hudMins, hudMaxs );
+	// No HUD defined → do not render
+	if ( m_definition->m_hudTexture.empty() )
+	{
+		return;
+	}
 
-	IntVec2 rectileDimensions = rectileTexture->GetDimensions();
-	Vec2 rectileMins = Vec2( SCREEN_SIZE_X / 2.f, SCREEN_SIZE_Y / 2.f ) - Vec2( ( float ) rectileDimensions.x, ( float ) rectileDimensions.y ) * 0.5f;
-	Vec2 rectileMaxs = rectileMins + Vec2( ( float ) rectileDimensions.x, ( float ) rectileDimensions.y );
-	AABB2 rectileBounds( rectileMins, rectileMaxs );
+	Renderer* renderer = g_engine->m_renderer;
+
+	Texture* hudBaseTexture = renderer->CreateOrGetTextureFromFile(
+		m_definition->m_hudTexture.c_str()
+	);
+
+	if ( hudBaseTexture == nullptr )
+	{
+		return;
+	}
 
 	Camera screenCamera = *g_app->m_game->m_player->m_playerScreenCamera;
-	g_engine->m_renderer->BeginCamera( screenCamera );
-	g_engine->m_renderer->SetBlendMode( BlendMode::ALPHA );
-	g_engine->m_renderer->SetDepthMode( DepthMode::DISABLED );
-	g_engine->m_renderer->SetRasterizerMode( RasterizerMode::SOLID_CULL_NONE );
 
-	std::vector<Vertex> hudVerts;
-	AddVertsForAABB2D( hudVerts, hudBounds, Rgba8::WHITE );
+	renderer->BeginCamera( screenCamera );
+	renderer->SetBlendMode( BlendMode::ALPHA );
+	renderer->SetDepthMode( DepthMode::DISABLED );
+	renderer->SetRasterizerMode( RasterizerMode::SOLID_CULL_NONE );
 
-	g_engine->m_renderer->BindTexture( hudBaseTexture );
-	g_engine->m_renderer->SetModelConstants();
-	g_engine->m_renderer->DrawVertexArray( hudVerts );
-	g_engine->m_renderer->BindTexture( nullptr );
+	{
+		IntVec2 hudDimensions = hudBaseTexture->GetDimensions();
 
-	std::vector<Vertex> rectileVerts;
-	AddVertsForAABB2D( rectileVerts, rectileBounds, Rgba8::WHITE );
+		float scaleFactor = SCREEN_SIZE_X / ( float ) hudDimensions.x;
 
-	g_engine->m_renderer->BindTexture( rectileTexture );
-	g_engine->m_renderer->SetModelConstants();
-	g_engine->m_renderer->DrawVertexArray( rectileVerts );
-	g_engine->m_renderer->BindTexture( nullptr );
+		Vec2 hudMins( 0.f, 0.f );
+		Vec2 hudMaxs( SCREEN_SIZE_X, ( float ) hudDimensions.y * scaleFactor );
+		AABB2 hudBounds( hudMins, hudMaxs );
 
-	g_engine->m_renderer->SetDepthMode( DepthMode::READ_WRITE_LESS_EQUAL );
-	g_engine->m_renderer->SetRasterizerMode( RasterizerMode::SOLID_CULL_BACK );
-	g_engine->m_renderer->EndCamera( screenCamera );
+		std::vector<Vertex> hudVerts;
+		AddVertsForAABB2D( hudVerts, hudBounds, Rgba8::WHITE );
+
+		renderer->BindTexture( hudBaseTexture );
+		renderer->SetModelConstants();
+		renderer->DrawVertexArray( hudVerts );
+		renderer->BindTexture( nullptr );
+	}
+
+	if ( !m_definition->m_rectileTexture.empty() )
+	{
+		Texture* rectileTexture = renderer->CreateOrGetTextureFromFile(
+			m_definition->m_rectileTexture.c_str()
+		);
+
+		if ( rectileTexture != nullptr )
+		{
+			Vec2 rectileSize = m_definition->m_rectileSize;
+
+			if ( rectileSize == Vec2::ZERO )
+			{
+				IntVec2 dims = rectileTexture->GetDimensions();
+				rectileSize = Vec2( ( float ) dims.x, ( float ) dims.y );
+			}
+
+			Vec2 center( SCREEN_SIZE_X * 0.5f, SCREEN_SIZE_Y * 0.5f );
+			AABB2 rectileBounds( center - rectileSize * 0.5f, center + rectileSize * 0.5f );
+
+			std::vector<Vertex> rectileVerts;
+			AddVertsForAABB2D( rectileVerts, rectileBounds, Rgba8::WHITE );
+
+			renderer->BindTexture( rectileTexture );
+			renderer->SetModelConstants();
+			renderer->DrawVertexArray( rectileVerts );
+			renderer->BindTexture( nullptr );
+		}
+	}
+
+	renderer->SetDepthMode( DepthMode::READ_WRITE_LESS_EQUAL );
+	renderer->SetRasterizerMode( RasterizerMode::SOLID_CULL_BACK );
+	renderer->EndCamera( screenCamera );
 }

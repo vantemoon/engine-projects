@@ -58,8 +58,8 @@ public:
 	BillboardType m_visualBillboardType = BillboardType::NONE;
 	bool m_visualRenderLit = false;
 	bool m_visualRenderRounded = false;
-	std::string m_visualShader;
-	std::string m_visualSpriteSheet;
+	std::string m_visualShader = "Default";
+	std::string m_visualSpriteSheet = "Default";
 	IntVec2 m_visualCellCount = IntVec2::ONE;
 
 	// Animation
