@@ -9,6 +9,7 @@
 #include "Game/WeaponDefinition.hpp"
 #include "Engine/Core/DebugRender.hpp"
 #include "Engine/Core/Engine.hpp"
+#include "Engine/Core/Time.hpp"
 #include "Engine/Core/Vertex.hpp"
 #include "Engine/Core/VertexUtils.hpp"
 #include "Engine/Math/AABB2.hpp"
@@ -319,6 +320,7 @@ void Weapon::Fire( Actor* owner )
 
 	if ( m_refireTimer.m_period > 0.0 )
 	{
+		m_attackStartTime = GetCurrentTimeSeconds();
 		m_refireTimer.Start();
 	}
 }
@@ -352,7 +354,6 @@ void Weapon::Render( Actor const* owner ) const
 		return;
 	}
 
-	// No HUD defined → do not render
 	if ( m_definition->m_hudTexture.empty() )
 	{
 		return;
@@ -360,10 +361,7 @@ void Weapon::Render( Actor const* owner ) const
 
 	Renderer* renderer = g_engine->m_renderer;
 
-	Texture* hudBaseTexture = renderer->CreateOrGetTextureFromFile(
-		m_definition->m_hudTexture.c_str()
-	);
-
+	Texture* hudBaseTexture = renderer->CreateOrGetTextureFromFile( m_definition->m_hudTexture.c_str() );
 	if ( hudBaseTexture == nullptr )
 	{
 		return;
@@ -376,9 +374,15 @@ void Weapon::Render( Actor const* owner ) const
 	renderer->SetDepthMode( DepthMode::DISABLED );
 	renderer->SetRasterizerMode( RasterizerMode::SOLID_CULL_NONE );
 
+	// Animation
+	if ( !m_definition->m_animationNames.empty() )
+	{
+		PlayAnimation();
+	}
+
+	// HUD base
 	{
 		IntVec2 hudDimensions = hudBaseTexture->GetDimensions();
-
 		float scaleFactor = SCREEN_SIZE_X / ( float ) hudDimensions.x;
 
 		Vec2 hudMins( 0.f, 0.f );
@@ -394,11 +398,10 @@ void Weapon::Render( Actor const* owner ) const
 		renderer->BindTexture( nullptr );
 	}
 
+	// Reticle
 	if ( !m_definition->m_rectileTexture.empty() )
 	{
-		Texture* rectileTexture = renderer->CreateOrGetTextureFromFile(
-			m_definition->m_rectileTexture.c_str()
-		);
+		Texture* rectileTexture = renderer->CreateOrGetTextureFromFile( m_definition->m_rectileTexture.c_str() );
 
 		if ( rectileTexture != nullptr )
 		{
@@ -426,4 +429,171 @@ void Weapon::Render( Actor const* owner ) const
 	renderer->SetDepthMode( DepthMode::READ_WRITE_LESS_EQUAL );
 	renderer->SetRasterizerMode( RasterizerMode::SOLID_CULL_BACK );
 	renderer->EndCamera( screenCamera );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Weapon::PlayAnimation() const
+{
+	if ( m_definition == nullptr || g_engine == nullptr || g_engine->m_renderer == nullptr )
+	{
+		return;
+	}
+
+	if ( m_definition->m_animationNames.empty() )
+	{
+		return;
+	}
+
+	Renderer* renderer = g_engine->m_renderer;
+
+	int idleIndex = -1;
+	int attackIndex = -1;
+
+	for ( int i = 0; i < ( int ) m_definition->m_animationNames.size(); ++i )
+	{
+		if ( m_definition->m_animationNames[i] == "Idle" )
+		{
+			idleIndex = i;
+		}
+		else if ( m_definition->m_animationNames[i] == "Attack" )
+		{
+			attackIndex = i;
+		}
+	}
+
+	bool isAttackPlaying = false;
+
+	if ( attackIndex >= 0 )
+	{
+		int startFrame = m_definition->m_animationStartFrames[attackIndex];
+		int endFrame = m_definition->m_animationEndFrames[attackIndex];
+
+		if ( endFrame < startFrame )
+		{
+			int temp = startFrame;
+			startFrame = endFrame;
+			endFrame = temp;
+		}
+
+		int frameCount = endFrame - startFrame + 1;
+		float secondsPerFrame = m_definition->m_animationGroupSecondsPerFrame[attackIndex];
+
+		if ( frameCount > 0 && secondsPerFrame > 0.f )
+		{
+			float duration = ( float ) frameCount * secondsPerFrame;
+			double elapsed = GetCurrentTimeSeconds() - m_attackStartTime;
+
+			isAttackPlaying = elapsed < duration;
+		}
+	}
+
+	int animIndex = idleIndex;
+	if ( isAttackPlaying && attackIndex >= 0 )
+	{
+		animIndex = attackIndex;
+	}
+
+	if ( animIndex < 0 )
+	{
+		return;
+	}
+
+	std::string const& spriteSheet = m_definition->m_animationSpriteSheets[animIndex];
+	if ( spriteSheet.empty() )
+	{
+		return;
+	}
+
+	Texture* texture = renderer->CreateOrGetTextureFromFile( spriteSheet.c_str() );
+	if ( texture == nullptr )
+	{
+		return;
+	}
+
+	Vec2 cellCount = m_definition->m_animationCellCounts[animIndex];
+	int cellsWide = ( int ) cellCount.x;
+	int cellsHigh = ( int ) cellCount.y;
+
+	if ( cellsWide <= 0 || cellsHigh <= 0 )
+	{
+		return;
+	}
+
+	int startFrame = m_definition->m_animationStartFrames[animIndex];
+	int endFrame = m_definition->m_animationEndFrames[animIndex];
+
+	if ( endFrame < startFrame )
+	{
+		int temp = startFrame;
+		startFrame = endFrame;
+		endFrame = temp;
+	}
+
+	int frameCount = endFrame - startFrame + 1;
+	float secondsPerFrame = m_definition->m_animationGroupSecondsPerFrame[animIndex];
+
+	int localFrame = 0;
+
+	if ( secondsPerFrame > 0.f && frameCount > 1 )
+	{
+		double time = GetCurrentTimeSeconds();
+
+		if ( isAttackPlaying )
+		{
+			time -= m_attackStartTime;
+
+			localFrame = ( int ) ( time / secondsPerFrame );
+
+			if ( localFrame >= frameCount )
+			{
+				localFrame = frameCount - 1;
+			}
+		}
+		else
+		{
+			localFrame = ( int ) ( time / secondsPerFrame ) % frameCount;
+		}
+	}
+
+	int frameIndex = startFrame + localFrame;
+
+	int cellX = frameIndex % cellsWide;
+	int cellY = frameIndex / cellsWide;
+
+	Vec2 uvMins;
+	Vec2 uvMaxs;
+
+	uvMins.x = ( float ) cellX / ( float ) cellsWide;
+	uvMaxs.x = ( float ) ( cellX + 1 ) / ( float ) cellsWide;
+
+	uvMins.y = 1.f - ( float ) ( cellY + 1 ) / ( float ) cellsHigh;
+	uvMaxs.y = 1.f - ( float ) cellY / ( float ) cellsHigh;
+
+	Vec2 spriteSize = m_definition->m_spriteSize;
+
+	if ( spriteSize == Vec2::ZERO )
+	{
+		IntVec2 texDim = texture->GetDimensions();
+		spriteSize = Vec2(
+			( float ) texDim.x / ( float ) cellsWide,
+			( float ) texDim.y / ( float ) cellsHigh
+		);
+	}
+
+	Vec2 pivot = m_definition->m_spritePivot;
+
+	Vec2 anchor( SCREEN_SIZE_X * 0.5f, 100.f );
+	Vec2 mins = anchor - Vec2( spriteSize.x * pivot.x, spriteSize.y * pivot.y );
+	Vec2 maxs = mins + spriteSize;
+
+	AABB2 bounds( mins, maxs );
+
+	std::vector<Vertex> verts;
+	AddVertsForAABB2D( verts, bounds, Rgba8::WHITE, uvMins, uvMaxs );
+
+	renderer->BindTexture( texture );
+	renderer->SetModelConstants();
+	renderer->DrawVertexArray( verts );
+	renderer->BindTexture( nullptr );
 }

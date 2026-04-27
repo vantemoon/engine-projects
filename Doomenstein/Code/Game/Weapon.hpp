@@ -19,6 +19,7 @@ public:
 	void Fire( Actor* owner );
 
 	void Render( Actor const* owner ) const;
+	void PlayAnimation() const;
 
 private:
 	Vec3 GetRandomDirectionInCone( Vec3 const& baseForward, float coneDegrees ) const;
@@ -26,4 +27,5 @@ private:
 public:
 	WeaponDefinition const* m_definition = nullptr;
 	Timer m_refireTimer = Timer( 0.0 );
+	double m_attackStartTime = 0.0;
 };
