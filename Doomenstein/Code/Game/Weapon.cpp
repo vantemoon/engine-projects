@@ -101,48 +101,106 @@ void Weapon::Fire( Actor* owner )
 
 	RandomNumberGenerator damageRng;
 
-	Vec3 fireStartPos = owner->m_position;
-	fireStartPos.z += owner->m_definition->m_eyeHeight;
+	Vec3 fireStartPos;
+	Vec3 baseForward;
 
-	Vec3 baseForward = owner->m_orientation.GetForwardDir_IFwd_JLeft_KUp();
-	if ( baseForward == Vec3::ZERO )
-	{
-		baseForward = Vec3( 1.f, 0.f, 0.f );
-	}
-	baseForward = baseForward.GetNormalized();
+	bool isPlayerOwner = g_app->m_game->m_player->GetActor() == owner;
 
-	Vec3 attackSpawnCenter = fireStartPos;
-	Vec2 ownerForwardXY( baseForward.x, baseForward.y );
-	if ( ownerForwardXY != Vec2::ZERO )
+	if ( isPlayerOwner )
 	{
-		ownerForwardXY.Normalize();
-		attackSpawnCenter.x += ownerForwardXY.x * owner->m_definition->m_physicsRadius;
-		attackSpawnCenter.y += ownerForwardXY.y * owner->m_definition->m_physicsRadius;
+		Camera* camera = g_app->m_game->m_player->m_playerWorldCamera;
+
+		fireStartPos = camera->GetPosition();
+		baseForward = camera->GetForwardDir();
 	}
 	else
 	{
-		attackSpawnCenter.x += owner->m_definition->m_physicsRadius;
+		fireStartPos = owner->m_position;
+		fireStartPos.z += owner->m_definition->m_eyeHeight;
+
+		baseForward = owner->m_orientation.GetForwardDir_IFwd_JLeft_KUp();
 	}
 
+	if ( baseForward.GetLengthSquared() <= 0.f )
+	{
+		baseForward = Vec3( 1.f, 0.f, 0.f );
+	}
+
+	baseForward = baseForward.GetNormalized();
+
+	float spawnOffset = owner->m_definition->m_physicsRadius;
+	Vec3 attackSpawnCenter = fireStartPos + baseForward * spawnOffset;
+
+	float aimDistance = m_definition->m_rayRange;
+	if ( aimDistance <= 0.f )
+	{
+		aimDistance = 1000.f;
+	}
+
+	Vec3 aimTargetPos = fireStartPos + baseForward * aimDistance;
+
+	if ( isPlayerOwner )
+	{
+		Actor* ignoredHitActor = nullptr;
+		RaycastResult3D aimResult = owner->m_map->RaycastAll(
+			fireStartPos,
+			baseForward,
+			aimDistance,
+			owner,
+			&ignoredHitActor
+		);
+
+		if ( aimResult.m_didImpact )
+		{
+			aimTargetPos = aimResult.m_impactPos;
+		}
+	}
+
+	Vec3 correctedForward = aimTargetPos - attackSpawnCenter;
+	if ( correctedForward.GetLengthSquared() <= 0.f )
+	{
+		correctedForward = baseForward;
+	}
+	else
+	{
+		correctedForward = correctedForward.GetNormalized();
+	}
+
+	// Rays
 	for ( int rayIndex = 0; rayIndex < m_definition->m_rayCount; ++rayIndex )
 	{
-		Vec3 rayDir = GetRandomDirectionInCone( baseForward, m_definition->m_rayCone );
+		Vec3 rayDir = GetRandomDirectionInCone( correctedForward, m_definition->m_rayCone );
 
 		Actor* rayHitActor = nullptr;
-		RaycastResult3D rayResult = owner->m_map->RaycastAll( attackSpawnCenter, rayDir, m_definition->m_rayRange, owner, &rayHitActor );
+		RaycastResult3D rayResult = owner->m_map->RaycastAll(
+			attackSpawnCenter,
+			rayDir,
+			m_definition->m_rayRange,
+			owner,
+			&rayHitActor
+		);
 
 		if ( rayResult.m_didImpact )
 		{
 			Vec3 debugOffset( 0.f, 0.f, -0.08f );
 			Vec3 debugStart = attackSpawnCenter + debugOffset;
 			Vec3 debugEnd = rayResult.m_impactPos + debugOffset;
-			DebugAddWorldCylinder( debugStart, debugEnd, 0.01f, 1.0f, Rgba8::BLUE, Rgba8::BLUE );
+
+			DebugAddWorldCylinder(
+				debugStart,
+				debugEnd,
+				0.01f,
+				1.0f,
+				Rgba8::BLUE,
+				Rgba8::BLUE
+			);
 		}
 
 		if ( rayHitActor != nullptr )
 		{
 			int minDamage = ( int ) m_definition->m_rayDamage.m_min;
 			int maxDamage = ( int ) m_definition->m_rayDamage.m_max;
+
 			if ( minDamage > maxDamage )
 			{
 				int temp = minDamage;
@@ -166,6 +224,7 @@ void Weapon::Fire( Actor* owner )
 		}
 	}
 
+	// Projectiles
 	for ( int projectileIndex = 0; projectileIndex < m_definition->m_projectileCount; ++projectileIndex )
 	{
 		if ( m_definition->m_projectileActorDefName.empty() )
@@ -173,12 +232,23 @@ void Weapon::Fire( Actor* owner )
 			break;
 		}
 
-		Vec3 projectileDir = GetRandomDirectionInCone( baseForward, m_definition->m_projectileCone );
+		Vec3 projectileForward = aimTargetPos - attackSpawnCenter;
+		if ( projectileForward.GetLengthSquared() <= 0.f )
+		{
+			projectileForward = baseForward;
+		}
+		else
+		{
+			projectileForward = projectileForward.GetNormalized();
+		}
+
+		Vec3 projectileDir = GetRandomDirectionInCone( projectileForward, m_definition->m_projectileCone );
 
 		SpawnInfo spawnInfo;
 		spawnInfo.m_actor = m_definition->m_projectileActorDefName;
 
 		ActorDefinition const* projectileDef = ActorDefinition::GetActorDefinitionByName( m_definition->m_projectileActorDefName );
+
 		float projectileHalfHeight = 0.f;
 		if ( projectileDef != nullptr )
 		{
@@ -190,8 +260,8 @@ void Weapon::Fire( Actor* owner )
 
 		float yaw = Atan2Degrees( projectileDir.y, projectileDir.x );
 		float pitch = Atan2Degrees( projectileDir.z, Vec2( projectileDir.x, projectileDir.y ).GetLength() );
-		spawnInfo.m_orientation = Vec3( yaw, pitch, 0.f );
 
+		spawnInfo.m_orientation = Vec3( yaw, pitch, 0.f );
 		spawnInfo.m_velocity = projectileDir * m_definition->m_projectileSpeed;
 
 		Actor* spawnedProjectile = owner->m_map->SpawnActor( spawnInfo );
@@ -201,6 +271,7 @@ void Weapon::Fire( Actor* owner )
 		}
 	}
 
+	// Melee
 	for ( int meleeIndex = 0; meleeIndex < m_definition->m_meleeCount; ++meleeIndex )
 	{
 		Actor* meleeTarget = owner->m_map->GetClosestActorInSector(
@@ -208,7 +279,8 @@ void Weapon::Fire( Actor* owner )
 			baseForward,
 			m_definition->m_meleeRange,
 			m_definition->m_meleeArc,
-			owner );
+			owner
+		);
 
 		if ( meleeTarget == nullptr )
 		{
@@ -217,6 +289,7 @@ void Weapon::Fire( Actor* owner )
 
 		int minDamage = ( int ) m_definition->m_meleeDamage.m_min;
 		int maxDamage = ( int ) m_definition->m_meleeDamage.m_max;
+
 		if ( minDamage > maxDamage )
 		{
 			int temp = minDamage;
@@ -264,7 +337,7 @@ void Weapon::Render( Actor const* owner ) const
 		return;
 	}
 
-	if ( g_app == nullptr || g_app->m_game == nullptr || g_app->m_game->m_player == nullptr || g_app->m_game->m_screenCamera == nullptr )
+	if ( g_app == nullptr || g_app->m_game == nullptr || g_app->m_game->m_player == nullptr || g_app->m_game->m_player->m_playerScreenCamera == nullptr )
 	{
 		return;
 	}
@@ -275,10 +348,18 @@ void Weapon::Render( Actor const* owner ) const
 	}
 
 	Texture* hudBaseTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/Hud_Base.png" );
-	if ( hudBaseTexture == nullptr )
-	{
-		return;
-	}
+	Texture* rectileTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/Reticle.png" );
+
+	IntVec2 hudDimensions = hudBaseTexture->GetDimensions();
+	float scaleFactor = SCREEN_SIZE_X / ( float ) hudDimensions.x;
+	Vec2 hudMins( 0.f, 0.f );
+	Vec2 hudMaxs( SCREEN_SIZE_X, ( float ) hudDimensions.y * scaleFactor );
+	AABB2 hudBounds( hudMins, hudMaxs );
+
+	IntVec2 rectileDimensions = rectileTexture->GetDimensions();
+	Vec2 rectileMins = Vec2( SCREEN_SIZE_X / 2.f, SCREEN_SIZE_Y / 2.f ) - Vec2( ( float ) rectileDimensions.x, ( float ) rectileDimensions.y ) * 0.5f;
+	Vec2 rectileMaxs = rectileMins + Vec2( ( float ) rectileDimensions.x, ( float ) rectileDimensions.y );
+	AABB2 rectileBounds( rectileMins, rectileMaxs );
 
 	Camera screenCamera = *g_app->m_game->m_player->m_playerScreenCamera;
 	g_engine->m_renderer->BeginCamera( screenCamera );
@@ -286,20 +367,20 @@ void Weapon::Render( Actor const* owner ) const
 	g_engine->m_renderer->SetDepthMode( DepthMode::DISABLED );
 	g_engine->m_renderer->SetRasterizerMode( RasterizerMode::SOLID_CULL_NONE );
 
-	IntVec2 hudDimensions = hudBaseTexture->GetDimensions();
-	float scaleFactor = SCREEN_SIZE_X / ( float ) hudDimensions.x;
-
-	Vec2 hudMins( 0.f, 0.f );
-	Vec2 hudMaxs( SCREEN_SIZE_X, ( float ) hudDimensions.y * scaleFactor );
-	AABB2 hudBounds( hudMins, hudMaxs );
-
 	std::vector<Vertex> hudVerts;
-	hudVerts.reserve( 6 );
 	AddVertsForAABB2D( hudVerts, hudBounds, Rgba8::WHITE );
 
 	g_engine->m_renderer->BindTexture( hudBaseTexture );
 	g_engine->m_renderer->SetModelConstants();
 	g_engine->m_renderer->DrawVertexArray( hudVerts );
+	g_engine->m_renderer->BindTexture( nullptr );
+
+	std::vector<Vertex> rectileVerts;
+	AddVertsForAABB2D( rectileVerts, rectileBounds, Rgba8::WHITE );
+
+	g_engine->m_renderer->BindTexture( rectileTexture );
+	g_engine->m_renderer->SetModelConstants();
+	g_engine->m_renderer->DrawVertexArray( rectileVerts );
 	g_engine->m_renderer->BindTexture( nullptr );
 
 	g_engine->m_renderer->SetDepthMode( DepthMode::READ_WRITE_LESS_EQUAL );

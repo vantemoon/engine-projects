@@ -60,6 +60,15 @@ EulerAngles Camera::GetOrientation() const
 
 
 //-----------------------------------------------------------------------------------------------
+Vec3 Camera::GetForwardDir() const
+{
+	Vec3 forward, left, up;
+	m_orientation.GetAsVectors_IFwd_JLeft_KUp( forward, left, up );
+	return forward;
+}
+
+
+//-----------------------------------------------------------------------------------------------
 Mat44 Camera::GetCameraToWorldTransform() const
 {
 	Mat44 cameraToWorld;
