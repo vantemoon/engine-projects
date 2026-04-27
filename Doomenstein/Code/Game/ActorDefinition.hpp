@@ -1,5 +1,10 @@
 #pragma once
 #include "Engine/Math/FloatRange.hpp"
+#include "Engine/Math/MathUtils.hpp"
+#include "Engine/Math/IntVec2.hpp"
+#include "Engine/Math/Vec2.hpp"
+#include "Engine/Math/Vec3.hpp"
+#include "Engine/Renderer/SpriteAnimDefinition.hpp"
 #include <map>
 #include <string>
 #include <vector>
@@ -16,6 +21,7 @@ public:
 	float corpseLifetime = 0.f;
 	std::string m_faction = "NEUTRAL";
 	bool m_canBePossessed = false;
+	bool m_dieOnSpawn = false;
 
 	// Collision
 	float m_physicsRadius = 0.f;
@@ -46,6 +52,30 @@ public:
 	// Weapons
 	std::vector<std::string> m_weaponDefNames;
 
+	// Visuals
+	Vec2 m_visualSize = Vec2::ONE;
+	Vec2 m_visualPivot = Vec2( 0.5f, 0.5f );
+	BillboardType m_visualBillboardType = BillboardType::NONE;
+	bool m_visualRenderLit = false;
+	bool m_visualRenderRounded = false;
+	std::string m_visualShader;
+	std::string m_visualSpriteSheet;
+	IntVec2 m_visualCellCount = IntVec2::ONE;
+
+	// Animation
+	std::vector<std::string> m_animationGroupNames;
+	std::vector<bool> m_animationGroupScaleBySpeed;
+	std::vector<float> m_animationGroupSecondsPerFrame;
+	std::vector<SpriteAnimPlaybackType> m_animationGroupPlaybackModes;
+	std::vector<int> m_animationDirectionGroupIndex;
+	std::vector<Vec3> m_animationDirectionVectors;
+	std::vector<int> m_animationStartFrames;
+	std::vector<int> m_animationEndFrames;
+
+	// Sounds
+	std::vector<std::string> m_soundTypes;
+	std::vector<std::string> m_soundNames;
+
 	static std::map<std::string, ActorDefinition*> s_definitions;
 
 public:
@@ -55,4 +85,8 @@ public:
 
 private:
 	static void LoadDefinitionsFromFile( char const* filepath, bool isProjectile );
+
+private:
+	static BillboardType GetBillboardTypeFromText( char const* text );
+	static SpriteAnimPlaybackType GetPlaybackTypeFromText( char const* text );
 };

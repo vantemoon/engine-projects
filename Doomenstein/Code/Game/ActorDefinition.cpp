@@ -8,6 +8,62 @@ std::map<std::string, ActorDefinition*> ActorDefinition::s_definitions;
 
 
 //-----------------------------------------------------------------------------------------------
+BillboardType ActorDefinition::GetBillboardTypeFromText( char const* text )
+{
+	if ( text == nullptr )
+	{
+		return BillboardType::NONE;
+	}
+
+	std::string const billboardText = text;
+	if ( billboardText == "WorldUpFacing" )
+	{
+		return BillboardType::WORLD_UP_FACING;
+	}
+	if ( billboardText == "WorldUpOpposing" )
+	{
+		return BillboardType::WORLD_UP_OPPOSING;
+	}
+	if ( billboardText == "FullFacing" )
+	{
+		return BillboardType::FULL_FACING;
+	}
+	if ( billboardText == "FullOpposing" )
+	{
+		return BillboardType::FULL_OPPOSING;
+	}
+
+	return BillboardType::NONE;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+SpriteAnimPlaybackType ActorDefinition::GetPlaybackTypeFromText( char const* text )
+{
+	if ( text == nullptr )
+	{
+		return ONCE;
+	}
+
+	std::string const playbackText = text;
+	if ( playbackText == "Loop" )
+	{
+		return LOOP;
+	}
+	if ( playbackText == "PingPong" )
+	{
+		return PINGPONG;
+	}
+	if ( playbackText == "Once" )
+	{
+		return ONCE;
+	}
+
+	return ONCE;
+}
+
+
+//-----------------------------------------------------------------------------------------------
 void ActorDefinition::InitializeDefinitions()
 {
 	LoadDefinitionsFromFile( "Data/Definitions/ProjectileActorDefinitions.xml", true );
@@ -53,6 +109,7 @@ void ActorDefinition::LoadDefinitionsFromFile( char const* filepath, bool isProj
 		newActorDef.corpseLifetime = ParseXmlAttribute( *actorDefElement, "corpseLifetime", newActorDef.corpseLifetime );
 		newActorDef.m_faction = ParseXmlAttribute( *actorDefElement, "faction", newActorDef.m_faction );
 		newActorDef.m_canBePossessed = ParseXmlAttribute( *actorDefElement, "canBePossessed", newActorDef.m_canBePossessed );
+		newActorDef.m_dieOnSpawn = ParseXmlAttribute( *actorDefElement, "dieOnSpawn", newActorDef.m_dieOnSpawn );
 
 		// Collision
 		tinyxml2::XMLElement* collisionElement = actorDefElement->FirstChildElement( "Collision" );
@@ -78,7 +135,7 @@ void ActorDefinition::LoadDefinitionsFromFile( char const* filepath, bool isProj
 		if ( physicsElement != nullptr )
 		{
 			newActorDef.m_isSimulated = ParseXmlAttribute( *physicsElement, "simulated", newActorDef.m_isSimulated );
-			newActorDef.m_isFlying = ParseXmlAttribute( *physicsElement, "flying", newActorDef.m_isFlying ); // fixed
+			newActorDef.m_isFlying = ParseXmlAttribute( *physicsElement, "flying", newActorDef.m_isFlying );
 			newActorDef.m_walkSpeed = ParseXmlAttribute( *physicsElement, "walkSpeed", newActorDef.m_walkSpeed );
 			newActorDef.m_runSpeed = ParseXmlAttribute( *physicsElement, "runSpeed", newActorDef.m_runSpeed );
 			newActorDef.m_drag = ParseXmlAttribute( *physicsElement, "drag", newActorDef.m_drag );
@@ -100,6 +157,68 @@ void ActorDefinition::LoadDefinitionsFromFile( char const* filepath, bool isProj
 			newActorDef.m_aiEnabled = ParseXmlAttribute( *aiElement, "aiEnabled", newActorDef.m_aiEnabled );
 			newActorDef.m_sightRadius = ParseXmlAttribute( *aiElement, "sightRadius", newActorDef.m_sightRadius );
 			newActorDef.m_sightAngle = ParseXmlAttribute( *aiElement, "sightAngle", newActorDef.m_sightAngle );
+		}
+
+		// Visuals
+		tinyxml2::XMLElement* visualsElement = actorDefElement->FirstChildElement( "Visuals" );
+		if ( visualsElement != nullptr )
+		{
+			newActorDef.m_visualSize = ParseXmlAttribute( *visualsElement, "size", newActorDef.m_visualSize );
+			newActorDef.m_visualPivot = ParseXmlAttribute( *visualsElement, "pivot", newActorDef.m_visualPivot );
+			newActorDef.m_visualRenderLit = ParseXmlAttribute( *visualsElement, "renderLit", newActorDef.m_visualRenderLit );
+			newActorDef.m_visualRenderRounded = ParseXmlAttribute( *visualsElement, "renderRounded", newActorDef.m_visualRenderRounded );
+			newActorDef.m_visualShader = ParseXmlAttribute( *visualsElement, "shader", newActorDef.m_visualShader );
+			newActorDef.m_visualSpriteSheet = ParseXmlAttribute( *visualsElement, "spriteSheet", newActorDef.m_visualSpriteSheet );
+			newActorDef.m_visualCellCount = ParseXmlAttribute( *visualsElement, "cellCount", newActorDef.m_visualCellCount );
+
+			newActorDef.m_visualBillboardType = GetBillboardTypeFromText( visualsElement->Attribute( "billboardType" ) );
+
+			tinyxml2::XMLElement* animationGroupElement = visualsElement->FirstChildElement( "AnimationGroup" );
+			while ( animationGroupElement != nullptr )
+			{
+				int const groupIndex = static_cast<int>( newActorDef.m_animationGroupNames.size() );
+
+				newActorDef.m_animationGroupNames.push_back( ParseXmlAttribute( *animationGroupElement, "name", "" ) );
+				newActorDef.m_animationGroupScaleBySpeed.push_back( ParseXmlAttribute( *animationGroupElement, "scaleBySpeed", false ) );
+				newActorDef.m_animationGroupSecondsPerFrame.push_back( ParseXmlAttribute( *animationGroupElement, "secondsPerFrame", 1.f ) );
+				newActorDef.m_animationGroupPlaybackModes.push_back( GetPlaybackTypeFromText( animationGroupElement->Attribute( "playbackMode" ) ) );
+
+				tinyxml2::XMLElement* directionElement = animationGroupElement->FirstChildElement( "Direction" );
+				while ( directionElement != nullptr )
+				{
+					Vec3 directionVector( 1.f, 0.f, 0.f );
+					char const* directionVectorText = directionElement->Attribute( "vector" );
+					if ( directionVectorText != nullptr )
+					{
+						directionVector.SetFromText( directionVectorText );
+					}
+					tinyxml2::XMLElement* animationElement = directionElement->FirstChildElement( "Animation" );
+					if ( animationElement != nullptr )
+					{
+						newActorDef.m_animationDirectionGroupIndex.push_back( groupIndex );
+						newActorDef.m_animationDirectionVectors.push_back( directionVector );
+						newActorDef.m_animationStartFrames.push_back( ParseXmlAttribute( *animationElement, "startFrame", 0 ) );
+						newActorDef.m_animationEndFrames.push_back( ParseXmlAttribute( *animationElement, "endFrame", 0 ) );
+					}
+
+					directionElement = directionElement->NextSiblingElement( "Direction" );
+				}
+
+				animationGroupElement = animationGroupElement->NextSiblingElement( "AnimationGroup" );
+			}
+		}
+
+		// Sounds
+		tinyxml2::XMLElement* soundsElement = actorDefElement->FirstChildElement( "Sounds" );
+		if ( soundsElement != nullptr )
+		{
+			tinyxml2::XMLElement* soundElement = soundsElement->FirstChildElement( "Sound" );
+			while ( soundElement != nullptr )
+			{
+				newActorDef.m_soundTypes.push_back( ParseXmlAttribute( *soundElement, "sound", "" ) );
+				newActorDef.m_soundNames.push_back( ParseXmlAttribute( *soundElement, "name", "" ) );
+				soundElement = soundElement->NextSiblingElement( "Sound" );
+			}
 		}
 
 		// Inventory

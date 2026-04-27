@@ -119,6 +119,11 @@ void Actor::Update()
 		return;
 	}
 
+	if ( m_definition->m_dieOnSpawn )
+	{
+		m_isDead = true;
+	}
+
 	if ( m_isDead )
 	{
 		m_velocity = Vec3::ZERO;

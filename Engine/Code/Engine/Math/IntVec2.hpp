@@ -9,6 +9,7 @@ public: // NOTE: this is one of the few cases where we break both the "m_" namin
 	int y = 0;
 
 	static const IntVec2 ZERO;
+	static const IntVec2 ONE;
 
 public:
 	// Construction/Destruction
