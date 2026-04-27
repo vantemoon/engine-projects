@@ -15,6 +15,7 @@ public:
 	Weapon( WeaponDefinition const* definition );
 	~Weapon();
 
+	bool CanFire( Actor const* owner ) const;
 	void Fire( Actor* owner );
 
 private:

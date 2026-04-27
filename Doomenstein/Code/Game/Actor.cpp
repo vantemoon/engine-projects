@@ -22,7 +22,7 @@ Actor::Actor()
 	, m_orientation( EulerAngles::ZERO )
 	, m_color( Rgba8::RED )
 	, m_deadTimer( 0.0 )
-	, m_animationClock()
+	, m_animationClock( Clock::GetSystemClock() )
 {
 }
 
@@ -36,7 +36,7 @@ Actor::Actor( ActorHandle handle, ActorDefinition const* definition, Map* map )
 	, m_orientation( EulerAngles::ZERO )
 	, m_color( Rgba8::RED )
 	, m_deadTimer( 0.0 )
-	, m_animationClock()
+	, m_animationClock( Clock::GetSystemClock() )
 {
 	if ( m_definition == nullptr )
 	{
@@ -211,6 +211,18 @@ void Actor::Update()
 		}
 	}
 
+	if ( !m_isDead && m_currentAnimationGroupName != "Death" && IsCurrentAnimationGroupComplete() )
+	{
+		if ( GetAnimationGroupIndexByName( "Walk" ) != -1 )
+		{
+			PlayAnimationByName( "Walk" );
+		}
+		else if ( !m_definition->m_animationGroupNames.empty() )
+		{
+			PlayAnimationByName( m_definition->m_animationGroupNames[0] );
+		}
+	}
+
 	if ( m_isDead )
 	{
 		m_velocity = Vec3::ZERO;
@@ -286,6 +298,10 @@ void Actor::TakeDamage( int damageAmount, Actor* attacker )
 		m_deadTimer.m_period = m_definition->corpseLifetime;
 
 		PlaySoundByType( "Death" );
+		if ( GetAnimationGroupIndexByName( "Death" ) != -1 )
+		{
+			PlayAnimationByName( "Death" );
+		}
 
 		if ( m_deadTimer.m_period <= 0.0 )
 		{
@@ -299,6 +315,10 @@ void Actor::TakeDamage( int damageAmount, Actor* attacker )
 	else
 	{
 		PlaySoundByType( "Hurt" );
+		if ( GetAnimationGroupIndexByName( "Hurt" ) != -1 )
+		{
+			PlayAnimationByName( "Hurt" );
+		}
 	}
 }
 
@@ -452,6 +472,17 @@ void Actor::MoveInDirection( Vec3 const& moveDirection, float speed )
 		return;
 	}
 
+	bool const isAttackPlaying = ( m_currentAnimationGroupName == "Attack" ) && !IsCurrentAnimationGroupComplete();
+	bool const isHurtPlaying = ( m_currentAnimationGroupName == "Hurt" ) && !IsCurrentAnimationGroupComplete();
+
+	if ( !isAttackPlaying && !isHurtPlaying )
+	{
+		if ( GetAnimationGroupIndexByName( "Walk" ) != -1 )
+		{
+			PlayAnimationByName( "Walk" );
+		}
+	}
+
 	Vec3 moveDirectionNormalized = moveDirection.GetNormalized();
 	Vec3 movementForce = moveDirectionNormalized * ( speed * m_definition->m_drag );
 	AddForce( movementForce );
@@ -482,7 +513,20 @@ void Actor::Attack()
 		return;
 	}
 
+	if ( !m_currentWeapon->CanFire( this ) )
+	{
+		return;
+	}
+
 	PlaySoundByType( "Attack" );
+	if ( GetAnimationGroupIndexByName( "Attack" ) != -1 )
+	{
+		if ( m_currentAnimationGroupName != "Attack" || IsCurrentAnimationGroupComplete() )
+		{
+			PlayAnimationByName( "Attack" );
+		}
+	}
+
 	m_currentWeapon->Fire( this );
 }
 
@@ -542,7 +586,7 @@ int Actor::GetBestDirectionAnimationIndex() const
 	{
 		toViewer = Vec3( 1.f, 0.f, 0.f );
 	}
-	toViewer = toViewer.GetNormalized();
+	toViewer = ( -toViewer ).GetNormalized();
 
 	float const cosYaw = CosDegrees( m_orientation.m_yawDegrees );
 	float const sinYaw = SinDegrees( m_orientation.m_yawDegrees );
@@ -656,6 +700,61 @@ int Actor::GetCurrentAnimationFrameIndex() const
 	}
 
 	return startFrame + frameOffset;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool Actor::IsCurrentAnimationGroupComplete() const
+{
+	if ( m_definition == nullptr || m_currentAnimationGroupIndex < 0 )
+	{
+		return false;
+	}
+
+	if ( m_currentAnimationGroupIndex >= ( int ) m_definition->m_animationGroupPlaybackModes.size() )
+	{
+		return false;
+	}
+
+	SpriteAnimPlaybackType playbackType = m_definition->m_animationGroupPlaybackModes[m_currentAnimationGroupIndex];
+	if ( playbackType != ONCE )
+	{
+		return false;
+	}
+
+	int directionIndex = GetBestDirectionAnimationIndex();
+	if ( directionIndex < 0
+		|| directionIndex >= ( int ) m_definition->m_animationStartFrames.size()
+		|| directionIndex >= ( int ) m_definition->m_animationEndFrames.size() )
+	{
+		return true;
+	}
+
+	int startFrame = m_definition->m_animationStartFrames[directionIndex];
+	int endFrame = m_definition->m_animationEndFrames[directionIndex];
+	if ( endFrame < startFrame )
+	{
+		int temp = startFrame;
+		startFrame = endFrame;
+		endFrame = temp;
+	}
+
+	int const frameCount = ( endFrame - startFrame ) + 1;
+	if ( frameCount <= 0 )
+	{
+		return true;
+	}
+
+	float secondsPerFrame = 1.f;
+	if ( m_currentAnimationGroupIndex < ( int ) m_definition->m_animationGroupSecondsPerFrame.size() )
+	{
+		secondsPerFrame = m_definition->m_animationGroupSecondsPerFrame[m_currentAnimationGroupIndex];
+	}
+	secondsPerFrame = ( secondsPerFrame <= 0.f ) ? 0.001f : secondsPerFrame;
+
+	double const totalSeconds = m_animationClock.GetTotalSeconds();
+	double const totalDuration = ( double ) frameCount * ( double ) secondsPerFrame;
+	return totalSeconds >= totalDuration;
 }
 
 

@@ -55,6 +55,7 @@ private:
 	int GetAnimationGroupIndexByName( std::string const& animationGroupName ) const;
 	int GetBestDirectionAnimationIndex() const;
 	int GetCurrentAnimationFrameIndex() const;
+	bool IsCurrentAnimationGroupComplete() const;
 	AABB2 GetUVsForFrameIndex( int frameIndex ) const;
 
 	void AppendBillboardVerts( std::vector<Vertex>& outVerts, AABB2 const& uvs ) const;

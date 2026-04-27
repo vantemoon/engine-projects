@@ -92,7 +92,8 @@ void AI::Update( float deltaSeconds )
 		}
 
 		float moveSpeed = minMoveSpeed + ( self->m_definition->m_runSpeed - minMoveSpeed ) * speedScale;
-		self->MoveInDirection( toTargetXY, moveSpeed );
+		Vec3 forwardDir = Vec3::MakeFromPolarDegrees( 0.f, self->m_orientation.m_yawDegrees );
+		self->MoveInDirection( forwardDir, moveSpeed );
 	}
 
 	bool shouldAttack = false;
@@ -102,9 +103,14 @@ void AI::Update( float deltaSeconds )
 		bool canDoRay = ( weaponDef->m_rayCount > 0 && weaponDef->m_rayRange > 0.f );
 		bool canDoProjectile = ( weaponDef->m_projectileCount > 0 && !weaponDef->m_projectileActorDefName.empty() );
 
-		if ( canDoMelee && distToTargetXY <= weaponDef->m_meleeRange )
+		if ( canDoMelee )
 		{
-			shouldAttack = true;
+			shouldAttack = IsPointInsideOrientedSector2D( 
+				Vec2( target->m_position.x, target->m_position.y ), 
+				Vec2( self->m_position.x, self->m_position.y ), 
+				self->m_orientation.m_yawDegrees, 
+				weaponDef->m_meleeArc, 
+				weaponDef->m_meleeRange );
 		}
 		else if ( canDoRay || canDoProjectile )
 		{

@@ -1108,28 +1108,33 @@ Actor* Map::GetClosestActorInSector( Vec3 const& startPos, Vec3 const& forwardNo
 	}
 	forwardXY.Normalize();
 
+	Vec2 startPosXY( startPos.x, startPos.y );
 	float halfArcDegrees = arcDegrees * 0.5f;
 	float closestDistSq = maxLength * maxLength;
 	Actor* closestActor = nullptr;
 
-	for ( Actor* actor : m_actors )
+	for ( int index = 0; index < ( int ) m_actors.size(); index++ )
 	{
-		if ( actor == nullptr || actor == owner || actor->m_isDead || actor->m_isDestroyed || actor->m_definition == nullptr )
+		Actor* actor = m_actors[index];
+		if ( actor == nullptr
+			|| actor == owner
+			|| actor->m_isDead
+			|| actor->m_isDestroyed
+			|| actor->m_definition == nullptr
+			|| owner->m_definition->m_faction == "NEUTRAL"
+			|| actor->m_definition->m_faction == owner->m_definition->m_faction )
 		{
 			continue;
 		}
 
-		Vec3 targetPos = actor->m_position;
-		targetPos.z += actor->m_definition->m_physicsHeight * 0.5f;
-
-		Vec3 toTarget = targetPos - startPos;
-		float distSq = toTarget.GetLengthSquared();
+		Vec2 targetPosXY( actor->m_position.x, actor->m_position.y );
+		Vec2 toTargetXY = targetPosXY - startPosXY;
+		float distSq = toTargetXY.GetLengthSquared();
 		if ( distSq > closestDistSq )
 		{
 			continue;
 		}
 
-		Vec2 toTargetXY( toTarget.x, toTarget.y );
 		if ( arcDegrees > 0.f && toTargetXY != Vec2::ZERO )
 		{
 			toTargetXY.Normalize();

@@ -60,6 +60,23 @@ Vec3 Weapon::GetRandomDirectionInCone( Vec3 const& baseForward, float coneDegree
 
 
 //-----------------------------------------------------------------------------------------------
+bool Weapon::CanFire( Actor const* owner ) const
+{
+	if ( m_definition == nullptr || owner == nullptr || owner->m_definition == nullptr || owner->m_map == nullptr )
+	{
+		return false;
+	}
+
+	if ( m_refireTimer.m_period > 0.0 && !m_refireTimer.IsStopped() && !m_refireTimer.HasPeriodElapsed() )
+	{
+		return false;
+	}
+
+	return true;
+}
+
+
+//-----------------------------------------------------------------------------------------------
 void Weapon::Fire( Actor* owner )
 {
 	if ( m_definition == nullptr || owner == nullptr || owner->m_definition == nullptr || owner->m_map == nullptr )
