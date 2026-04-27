@@ -592,31 +592,6 @@ void Game::RenderHUD() const
 			Rgba8::WHITE );
 	}
 
-	if ( m_currentMap != nullptr )
-	{
-		Vec3 sunDirection = m_currentMap->GetSunDirection();
-		float sunDirectionX = sunDirection.x;
-		float sunDirectionY = sunDirection.y;
-		float sunIntensity = m_currentMap->GetSunIntensity();
-		float ambientIntensity = m_currentMap->GetAmbientIntensity();
-
-		std::string lightingText = Stringf(
-			"\n\nSun Direction X: %.2f [F2/F3 to change]\nSun Direction Y: %.2f [F4/F5 to change]\nSun Intensity: %.2f [F6/F7 to change]\nAmbient Intensity: %.2f [F8/F9 to change]",
-			sunDirectionX,
-			sunDirectionY,
-			sunIntensity,
-			ambientIntensity );
-
-		DebugAddScreenText(
-			lightingText,
-			screenBounds,
-			15.f,
-			Vec2( 1.f, 1.f ),
-			0.f,
-			Rgba8::WHITE,
-			Rgba8::WHITE );
-	}
-
 	if ( playerActor != nullptr && playerActor->m_isDead )
 	{
 		std::vector<Vertex> overlayVerts;
