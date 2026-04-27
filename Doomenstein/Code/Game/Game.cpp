@@ -234,13 +234,13 @@ void Game::Update()
 //-----------------------------------------------------------------------------------------------
 void Game::ScreenShake( float intensity )
 {
-	if ( m_player->m_playerCamera == nullptr || intensity <= 0.f )
+	if ( m_player->m_playerWorldCamera == nullptr || intensity <= 0.f )
 		return;
 
 	RandomNumberGenerator rng;
 	float offsetX = rng.RollRandomFloatInRange( -intensity, intensity );
 	float offsetY = rng.RollRandomFloatInRange( -intensity, intensity );
-	m_player->m_playerCamera->Translate2D( Vec2( offsetX, offsetY ) );
+	m_player->m_playerWorldCamera->Translate2D( Vec2( offsetX, offsetY ) );
 }
 
 
@@ -487,21 +487,21 @@ void Game::Render() const
 	// Clear screen
 	g_engine->m_renderer->ClearScreen( Rgba8( 50, 50, 50 ) );
 
-	if ( m_player == nullptr || m_player->m_playerCamera == nullptr )
+	if ( m_player == nullptr || m_player->m_playerWorldCamera == nullptr )
 	{
 		return;
 	}
 
-	g_engine->m_renderer->BeginCamera( *m_player->m_playerCamera );
+	g_engine->m_renderer->BeginCamera( *m_player->m_playerWorldCamera );
 
 	RenderMap();
 	RenderEntities();
 	RenderHUD();
 
-	DebugRenderWorld( *m_player->m_playerCamera );
+	DebugRenderWorld( *m_player->m_playerWorldCamera );
 	DebugRenderScreen( *m_screenCamera );
 
-	g_engine->m_renderer->EndCamera( *m_player->m_playerCamera );
+	g_engine->m_renderer->EndCamera( *m_player->m_playerWorldCamera );
 }
 
 
@@ -530,11 +530,11 @@ void Game::RenderAttractMode() const
 //-----------------------------------------------------------------------------------------------
 void Game::RenderEntities() const
 {
-	g_engine->m_renderer->BeginCamera( *m_player->m_playerCamera );
+	g_engine->m_renderer->BeginCamera( *m_player->m_playerWorldCamera );
 
 	m_player->Render();
 
-	g_engine->m_renderer->EndCamera( *m_player->m_playerCamera );
+	g_engine->m_renderer->EndCamera( *m_player->m_playerWorldCamera );
 }
 
 
@@ -578,20 +578,6 @@ void Game::RenderHUD() const
 		DebugAddMessage( playerPosText, 0.f );
 	}
 
-	if ( playerActor != nullptr )
-	{
-		std::string healthText = Stringf( "Health: %d / %d", playerActor->m_currentHealth, playerActor->m_maxHealth );
-		AABB2 healthTextBounds( Vec2( 0.f, 8.f ), Vec2( SCREEN_SIZE_X, 48.f ) );
-		DebugAddScreenText(
-			healthText,
-			healthTextBounds,
-			20.f,
-			Vec2( 0.5f, 0.f ),
-			0.f,
-			Rgba8::WHITE,
-			Rgba8::WHITE );
-	}
-
 	if ( playerActor != nullptr && playerActor->m_isDead )
 	{
 		std::vector<Vertex> overlayVerts;
@@ -609,8 +595,8 @@ void Game::RenderHUD() const
 Vec3 Game::TransformWorldToScreen( Vec3 const& worldPosition ) const
 {
 	Mat44 transform;
-	transform.Append( m_player->m_playerCamera->GetWorldToCameraTransform() );
-	transform.Append( m_player->m_playerCamera->GetCameraToRenderTransform() );
+	transform.Append( m_player->m_playerWorldCamera->GetWorldToCameraTransform() );
+	transform.Append( m_player->m_playerWorldCamera->GetCameraToRenderTransform() );
 	Vec3 screenPosition = transform.TransformPosition3D( worldPosition );
 	return screenPosition;
 }

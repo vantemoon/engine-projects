@@ -30,7 +30,8 @@ public:
 	Vec3 m_position;
 	EulerAngles m_orientation;
 
-	Camera* m_playerCamera = nullptr;
+	Camera* m_playerWorldCamera = nullptr;
+	Camera* m_playerScreenCamera = nullptr;
 	CameraMode m_cameraMode = CameraMode::FIRST_PERSON;
 
 public:
@@ -48,6 +49,7 @@ public:
 	void SelectWeaponBySlot( Actor* actor, int slotIndex );
 
 	void Render() const;
+	void RenderHUD() const;
 	Mat44 GetModelToWorldTransform() const;
 
 private:

@@ -1,11 +1,21 @@
 #include "Game/Weapon.hpp"
 #include "Game/Actor.hpp"
 #include "Game/ActorDefinition.hpp"
+#include "Game/App.hpp"
+#include "Game/Game.hpp"
+#include "Game/GameCommon.hpp"
 #include "Game/Map.hpp"
+#include "Game/Player.hpp"
 #include "Game/WeaponDefinition.hpp"
 #include "Engine/Core/DebugRender.hpp"
+#include "Engine/Core/Engine.hpp"
+#include "Engine/Core/Vertex.hpp"
+#include "Engine/Core/VertexUtils.hpp"
+#include "Engine/Math/AABB2.hpp"
 #include "Engine/Math/MathUtils.hpp"
 #include "Engine/Math/RandomNumberGenerator.hpp"
+#include "Engine/Renderer/Renderer.hpp"
+#include "Engine/Renderer/Texture.hpp"
 
 
 //-----------------------------------------------------------------------------------------------
@@ -238,4 +248,61 @@ void Weapon::Fire( Actor* owner )
 	{
 		m_refireTimer.Start();
 	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Weapon::Render( Actor const* owner ) const
+{
+	if ( owner == nullptr || g_engine == nullptr || g_engine->m_renderer == nullptr )
+	{
+		return;
+	}
+
+	if ( m_definition != nullptr && m_definition->m_name == "DemonMelee" )
+	{
+		return;
+	}
+
+	if ( g_app == nullptr || g_app->m_game == nullptr || g_app->m_game->m_player == nullptr || g_app->m_game->m_screenCamera == nullptr )
+	{
+		return;
+	}
+
+	if ( g_app->m_game->m_player->GetActor() != owner )
+	{
+		return;
+	}
+
+	Texture* hudBaseTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/Hud_Base.png" );
+	if ( hudBaseTexture == nullptr )
+	{
+		return;
+	}
+
+	Camera screenCamera = *g_app->m_game->m_player->m_playerScreenCamera;
+	g_engine->m_renderer->BeginCamera( screenCamera );
+	g_engine->m_renderer->SetBlendMode( BlendMode::ALPHA );
+	g_engine->m_renderer->SetDepthMode( DepthMode::DISABLED );
+	g_engine->m_renderer->SetRasterizerMode( RasterizerMode::SOLID_CULL_NONE );
+
+	IntVec2 hudDimensions = hudBaseTexture->GetDimensions();
+	float scaleFactor = SCREEN_SIZE_X / ( float ) hudDimensions.x;
+
+	Vec2 hudMins( 0.f, 0.f );
+	Vec2 hudMaxs( SCREEN_SIZE_X, ( float ) hudDimensions.y * scaleFactor );
+	AABB2 hudBounds( hudMins, hudMaxs );
+
+	std::vector<Vertex> hudVerts;
+	hudVerts.reserve( 6 );
+	AddVertsForAABB2D( hudVerts, hudBounds, Rgba8::WHITE );
+
+	g_engine->m_renderer->BindTexture( hudBaseTexture );
+	g_engine->m_renderer->SetModelConstants();
+	g_engine->m_renderer->DrawVertexArray( hudVerts );
+	g_engine->m_renderer->BindTexture( nullptr );
+
+	g_engine->m_renderer->SetDepthMode( DepthMode::READ_WRITE_LESS_EQUAL );
+	g_engine->m_renderer->SetRasterizerMode( RasterizerMode::SOLID_CULL_BACK );
+	g_engine->m_renderer->EndCamera( screenCamera );
 }

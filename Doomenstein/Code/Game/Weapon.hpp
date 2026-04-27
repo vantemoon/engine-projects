@@ -18,6 +18,8 @@ public:
 	bool CanFire( Actor const* owner ) const;
 	void Fire( Actor* owner );
 
+	void Render( Actor const* owner ) const;
+
 private:
 	Vec3 GetRandomDirectionInCone( Vec3 const& baseForward, float coneDegrees ) const;
 

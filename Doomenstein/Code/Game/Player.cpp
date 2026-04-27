@@ -13,7 +13,8 @@
 Player::Player( Game* owner )
 {
 	m_game = owner;
-	m_playerCamera = new Camera();
+	m_playerWorldCamera = new Camera();
+	m_playerScreenCamera = new Camera();
 
 	m_position = Vec3( 3.f, 3.f, 10.f );
 	m_orientation = EulerAngles( 45.f, 30.f, 0.f );
@@ -26,16 +27,17 @@ Player::Player( Game* owner )
 		 0.f, 0.f, 0.f, 1.f
 	};
 	Mat44 cameraToRender( values );
-	m_playerCamera->SetCameraToRenderTransform( cameraToRender );
-	m_playerCamera->SetPerspectiveView( g_engine->m_window->m_config.m_clientAspect, 60.f, 0.1f, 100.f );
+	m_playerWorldCamera->SetCameraToRenderTransform( cameraToRender );
+	m_playerWorldCamera->SetPerspectiveView( g_engine->m_window->m_config.m_clientAspect, 60.f, 0.1f, 100.f );
+	m_playerScreenCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) );
 }
 
 
 //-----------------------------------------------------------------------------------------------
 Player::~Player()
 {
-	delete m_playerCamera;
-	m_playerCamera = nullptr;
+	delete m_playerWorldCamera;
+	m_playerWorldCamera = nullptr;
 }
 
 
@@ -108,12 +110,12 @@ void Player::UpdateInput()
 //-----------------------------------------------------------------------------------------------
 void Player::UpdateCamera()
 {
-	if ( m_playerCamera == nullptr ) return;
+	if ( m_playerWorldCamera == nullptr ) return;
 
 	if ( m_cameraMode == CameraMode::FREE_FLY )
 	{
-		m_playerCamera->SetPerspectiveView( g_engine->m_window->m_config.m_clientAspect, 60.f, 0.1f, 100.f );
-		m_playerCamera->SetPositionAndOrientation( m_position, m_orientation );
+		m_playerWorldCamera->SetPerspectiveView( g_engine->m_window->m_config.m_clientAspect, 60.f, 0.1f, 100.f );
+		m_playerWorldCamera->SetPositionAndOrientation( m_position, m_orientation );
 	}
 	else if ( m_cameraMode == CameraMode::FIRST_PERSON )
 	{
@@ -146,13 +148,13 @@ void Player::UpdateCamera()
 		m_position = eyePos;
 		m_orientation.m_rollDegrees = 0.f;
 
-		m_playerCamera->SetPerspectiveView(
+		m_playerWorldCamera->SetPerspectiveView(
 			g_engine->m_window->m_config.m_clientAspect,
 			actor->m_definition->m_cameraFOVDegrees,
 			0.1f,
 			100.f );
 
-		m_playerCamera->SetPositionAndOrientation( eyePos, m_orientation );
+		m_playerWorldCamera->SetPositionAndOrientation( eyePos, m_orientation );
 	}
 }
 
@@ -312,6 +314,21 @@ void Player::UpdateFreeFlyCameraFromController( float deltaSeconds )
 void Player::Render() const
 {
 	g_engine->m_renderer->SetModelConstants( GetModelToWorldTransform() );
+
+	RenderHUD();
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Player::RenderHUD() const
+{
+	Actor* actor = GetActor();
+	if ( actor == nullptr || actor->m_currentWeapon == nullptr )
+	{
+		return;
+	}
+
+	actor->m_currentWeapon->Render( actor );
 }
 
 
