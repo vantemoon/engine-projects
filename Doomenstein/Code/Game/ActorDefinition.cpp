@@ -165,13 +165,20 @@ void ActorDefinition::LoadDefinitionsFromFile( char const* filepath, bool isProj
 		{
 			newActorDef.m_visualSize = ParseXmlAttribute( *visualsElement, "size", newActorDef.m_visualSize );
 			newActorDef.m_visualPivot = ParseXmlAttribute( *visualsElement, "pivot", newActorDef.m_visualPivot );
-			newActorDef.m_visualRenderLit = ParseXmlAttribute( *visualsElement, "renderLit", newActorDef.m_visualRenderLit );
-			newActorDef.m_visualRenderRounded = ParseXmlAttribute( *visualsElement, "renderRounded", newActorDef.m_visualRenderRounded );
+
+			newActorDef.m_visualRenderLit = ParseXmlAttribute( *visualsElement, "renderLit", ParseXmlAttribute( *visualsElement, "lit", newActorDef.m_visualRenderLit ) );
+			newActorDef.m_visualRenderRounded = ParseXmlAttribute( *visualsElement, "renderRounded", ParseXmlAttribute( *visualsElement, "rounded", newActorDef.m_visualRenderRounded ) );
+
 			newActorDef.m_visualShader = ParseXmlAttribute( *visualsElement, "shader", newActorDef.m_visualShader );
 			newActorDef.m_visualSpriteSheet = ParseXmlAttribute( *visualsElement, "spriteSheet", newActorDef.m_visualSpriteSheet );
 			newActorDef.m_visualCellCount = ParseXmlAttribute( *visualsElement, "cellCount", newActorDef.m_visualCellCount );
 
-			newActorDef.m_visualBillboardType = GetBillboardTypeFromText( visualsElement->Attribute( "billboardType" ) );
+			char const* billboardText = visualsElement->Attribute( "billboardType" );
+			if ( billboardText == nullptr )
+			{
+				billboardText = visualsElement->Attribute( "billboard" );
+			}
+			newActorDef.m_visualBillboardType = GetBillboardTypeFromText( billboardText );
 
 			tinyxml2::XMLElement* animationGroupElement = visualsElement->FirstChildElement( "AnimationGroup" );
 			while ( animationGroupElement != nullptr )
@@ -215,7 +222,13 @@ void ActorDefinition::LoadDefinitionsFromFile( char const* filepath, bool isProj
 			tinyxml2::XMLElement* soundElement = soundsElement->FirstChildElement( "Sound" );
 			while ( soundElement != nullptr )
 			{
-				newActorDef.m_soundTypes.push_back( ParseXmlAttribute( *soundElement, "sound", "" ) );
+				std::string soundType = ParseXmlAttribute( *soundElement, "type", "" );
+				if ( soundType.empty() )
+				{
+					soundType = ParseXmlAttribute( *soundElement, "sound", "" );
+				}
+
+				newActorDef.m_soundTypes.push_back( soundType );
 				newActorDef.m_soundNames.push_back( ParseXmlAttribute( *soundElement, "name", "" ) );
 				soundElement = soundElement->NextSiblingElement( "Sound" );
 			}

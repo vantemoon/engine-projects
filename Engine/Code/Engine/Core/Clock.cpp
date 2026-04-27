@@ -182,11 +182,16 @@ void Clock::Tick()
 	{
 		m_deltaSeconds = m_maxDeltaSeconds;
 	}
+
 	m_totalSeconds += m_deltaSeconds;
 	m_frameCount++;
-	for ( Clock* childClock : m_children )
+	
+	for (int index = 0; index < m_children.size(); ++index )
 	{
-		childClock->Advance( m_deltaSeconds );
+		if ( m_children[index] != nullptr )
+		{
+			m_children[index]->Advance( m_deltaSeconds );
+		}
 	}
 }
 

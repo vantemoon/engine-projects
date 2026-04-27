@@ -15,6 +15,7 @@ enum SpriteAnimPlaybackType
 class SpriteAnimDefinition
 {
 public:
+	SpriteAnimDefinition() = default;
 	SpriteAnimDefinition( SpriteSheet const& sheet, int startSpriteIndex, int endSpriteIndex,
 						  float framesPerSecond, SpriteAnimPlaybackType playbackType = SpriteAnimPlaybackType::LOOP );
 
