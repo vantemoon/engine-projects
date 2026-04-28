@@ -476,14 +476,32 @@ void Renderer::ClearScreen( Rgba8 const& clearColor )
 void Renderer::BeginCamera( Camera const& camera )
 {
 	// Set viewport
-	D3D11_VIEWPORT viewport = {};
+	AABB2 viewport = camera.GetViewport();
+
+	float screenWidth = ( float ) g_engine->m_window->GetClientDimensions().x;
+	float screenHeight = ( float ) g_engine->m_window->GetClientDimensions().y;
+
+	Vec2 viewportMins = viewport.m_mins;
+	Vec2 viewportMaxs = viewport.m_maxs;
+
+	D3D11_VIEWPORT d3dViewport = {};
+	d3dViewport.TopLeftX = viewportMins.x * screenWidth;
+	d3dViewport.TopLeftY = ( 1.f - viewportMaxs.y ) * screenHeight;
+	d3dViewport.Width = ( viewportMaxs.x - viewportMins.x ) * screenWidth;
+	d3dViewport.Height = ( viewportMaxs.y - viewportMins.y ) * screenHeight;
+	d3dViewport.MinDepth = 0.f;
+	d3dViewport.MaxDepth = 1.f;
+
+	m_deviceContext->RSSetViewports( 1, &d3dViewport );
+
+	/*D3D11_VIEWPORT viewport = {};
 	viewport.TopLeftX = 0.f;
 	viewport.TopLeftY = 0.f;
 	viewport.Width = ( float ) g_engine->m_window->GetClientDimensions().x;
 	viewport.Height = ( float ) g_engine->m_window->GetClientDimensions().y;
 	viewport.MinDepth = 0.f;
 	viewport.MaxDepth = 1.f;
-	m_deviceContext->RSSetViewports( 1, &viewport );
+	m_deviceContext->RSSetViewports( 1, &viewport );*/
 
 	// Update camera constant buffer
 	CameraConstants cameraData;

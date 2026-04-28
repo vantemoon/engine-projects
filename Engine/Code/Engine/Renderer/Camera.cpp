@@ -69,6 +69,35 @@ Vec3 Camera::GetForwardDir() const
 
 
 //-----------------------------------------------------------------------------------------------
+void Camera::SetViewport( AABB2 const& viewport )
+{
+	m_viewport = viewport;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+AABB2 Camera::GetViewport() const
+{
+	return m_viewport;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+float Camera::GetViewportAspect( float screenWidth, float screenHeight ) const
+{
+	float viewportWidth = m_viewport.GetDimensions().x * screenWidth;
+	float viewportHeight = m_viewport.GetDimensions().y * screenHeight;
+
+	if ( viewportHeight <= 0.f )
+	{
+		return 1.f;
+	}
+
+	return viewportWidth / viewportHeight;
+}
+
+
+//-----------------------------------------------------------------------------------------------
 Mat44 Camera::GetCameraToWorldTransform() const
 {
 	Mat44 cameraToWorld;

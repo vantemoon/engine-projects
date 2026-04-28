@@ -1,4 +1,5 @@
 #pragma once
+#include "Engine/Math/AABB2.hpp"
 #include "Engine/Math/EulerAngles.hpp"
 #include "Engine/Math/Mat44.hpp"
 #include "Engine/Math/Vec2.hpp"
@@ -25,6 +26,9 @@ public:
 	void SetOrientation( EulerAngles const& orientation );
 	EulerAngles GetOrientation() const;
 	Vec3 GetForwardDir() const;
+	void SetViewport( AABB2 const& viewport );
+	AABB2 GetViewport() const;
+	float GetViewportAspect( float screenWidth, float screenHeight ) const;
 
 	Mat44 GetCameraToWorldTransform() const;
 	Mat44 GetWorldToCameraTransform() const;
@@ -49,6 +53,7 @@ private:
 
 	Vec3 m_position;
 	EulerAngles m_orientation;
+	AABB2 m_viewport = AABB2::ZERO_TO_ONE;
 
     Vec2 m_orthoBottomLeft;
     Vec2 m_orthoTopRight;
