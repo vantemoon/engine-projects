@@ -20,21 +20,22 @@ struct Vertex;     // Forward declaration
 class Game
 {
 public:
-	std::vector<Map*>	m_maps;
-	Map*				m_currentMap = nullptr;
+	std::vector<Map*>		m_maps;
+	Map*					m_currentMap = nullptr;
 
-	Player*				m_player = nullptr;
-	Camera*				m_screenCamera = nullptr;
+	std::vector<Player*>	m_players;
+	Player*					m_currentRenderingPlayer = nullptr;
+	Camera*					m_screenCamera = nullptr;
 
-	GameState			m_currentGameState;
-	Clock*				m_gameClock = nullptr;
+	GameState				m_currentGameState;
+	Clock*					m_gameClock = nullptr;
 
-	bool				m_hasControlsBeenShown = false;
+	bool					m_hasControlsBeenShown = false;
 
-	float               m_musicVolume = 0.1f;
-	SoundID             m_mainMenuMusicID = MISSING_SOUND_ID;
-	SoundID             m_gameMusicID = MISSING_SOUND_ID;
-	SoundID             m_buttonClickSoundID = MISSING_SOUND_ID;
+	float					m_musicVolume = 0.1f;
+	SoundID					m_mainMenuMusicID = MISSING_SOUND_ID;
+	SoundID					m_gameMusicID = MISSING_SOUND_ID;
+	SoundID					m_buttonClickSoundID = MISSING_SOUND_ID;
 
 public:
 	Game();
@@ -48,20 +49,21 @@ public:
 
 	void Update();
 	void UpdateAttractMode();
-	void UpdatePlayer( float deltaSeconds );
+	void UpdatePlayers( float deltaSeconds );
 	void UpdateCurrentMap( float deltaSeconds );
 	void UpdateFromKeyboard();
 	void UpdateFromController();
 
-	void Render()													  const;
+	void Render();
 	void RenderMap()												  const;
 	void RenderEntities()											  const;
 	void RenderHUD()												  const;
 	void RenderAttractMode()										  const;
+	void RenderLobby()												  const;
 	
-	void ScreenShake( float intensity );
 	void Reset();
 
+	Player* GetPlayerFromActor( Actor const* actor ) const;
 	static bool Command_Controls( EventArgs& args );
 
 protected:

@@ -10,7 +10,8 @@
 
 
 //-----------------------------------------------------------------------------------------------
-Player::Player( Game* owner )
+Player::Player( Game* owner, ControlMode controlMode )
+	: m_controlMode( controlMode )
 {
 	m_game = owner;
 	m_playerWorldCamera = new Camera();
@@ -38,17 +39,17 @@ Player::~Player()
 {
 	delete m_playerWorldCamera;
 	m_playerWorldCamera = nullptr;
+
+	delete m_playerScreenCamera;
+	m_playerScreenCamera = nullptr;
 }
 
 
 //-----------------------------------------------------------------------------------------------
 void Player::Update( float deltaSeconds )
 {
-	if ( GetActor() == nullptr )
-	{
-		m_game->m_currentMap->SpawnPlayer( this );
-	}
 	UNUSED( deltaSeconds );
+
 	UpdateInput();
 	UpdateCamera();
 }
@@ -59,41 +60,55 @@ void Player::UpdateInput()
 {
 	float deltaSeconds = ( float ) Clock::GetSystemClock().GetDeltaSeconds();
 
-	// F
-	if ( g_engine->m_inputSystem->WasKeyJustPressed( 'F' ) )
+	bool multiplayer = false;
+	if ( m_game != nullptr )
 	{
-		if ( m_cameraMode == CameraMode::FREE_FLY )
-		{
-			m_cameraMode = CameraMode::FIRST_PERSON;
+		multiplayer = ( ( int ) m_game->m_players.size() > 1 );
+	}
 
-			Actor* actor = GetActor();
-			if ( actor != nullptr )
-			{
-				m_orientation = actor->m_orientation;
-				m_orientation.m_rollDegrees = 0.f;
-			}
-		}
-		else
+	// Disable free-fly in multiplayer
+	if ( !multiplayer && m_controlMode == ControlMode::KEYBOARD )
+	{
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'F' ) )
 		{
-			m_cameraMode = CameraMode::FREE_FLY;
+			if ( m_cameraMode == CameraMode::FREE_FLY )
+			{
+				m_cameraMode = CameraMode::FIRST_PERSON;
+
+				Actor* actor = GetActor();
+				if ( actor != nullptr )
+				{
+					m_orientation = actor->m_orientation;
+					m_orientation.m_rollDegrees = 0.f;
+				}
+			}
+			else
+			{
+				m_cameraMode = CameraMode::FREE_FLY;
+			}
 		}
 	}
 
 	if ( m_cameraMode == CameraMode::FREE_FLY )
 	{
 		UpdateFreeFlyCameraControls( deltaSeconds );
+		return;
 	}
-	else if ( m_cameraMode == CameraMode::FIRST_PERSON )
+
+	if ( m_cameraMode == CameraMode::FIRST_PERSON )
 	{
 		if ( m_game != nullptr && m_game->m_currentGameState == GameState::PAUSED )
 		{
 			return;
 		}
 
-		// N
-		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'N' ) && m_map != nullptr )
+		// Disable debug possession in multiplayer
+		if ( !multiplayer && m_controlMode == ControlMode::KEYBOARD )
 		{
-			m_map->DebugPossessNext();
+			if ( g_engine->m_inputSystem->WasKeyJustPressed( 'N' ) && m_map != nullptr )
+			{
+				m_map->DebugPossessNext();
+			}
 		}
 
 		Actor* actor = GetActor();
@@ -112,9 +127,13 @@ void Player::UpdateCamera()
 {
 	if ( m_playerWorldCamera == nullptr ) return;
 
+	float aspect = m_playerWorldCamera->GetViewportAspect(
+		( float ) g_engine->m_window->GetClientDimensions().x,
+		( float ) g_engine->m_window->GetClientDimensions().y );
+
 	if ( m_cameraMode == CameraMode::FREE_FLY )
 	{
-		m_playerWorldCamera->SetPerspectiveView( g_engine->m_window->m_config.m_clientAspect, 60.f, 0.1f, 100.f );
+		m_playerWorldCamera->SetPerspectiveView( aspect, 60.f, 0.1f, 100.f );
 		m_playerWorldCamera->SetPositionAndOrientation( m_position, m_orientation );
 	}
 	else if ( m_cameraMode == CameraMode::FIRST_PERSON )
@@ -149,7 +168,7 @@ void Player::UpdateCamera()
 		m_orientation.m_rollDegrees = 0.f;
 
 		m_playerWorldCamera->SetPerspectiveView(
-			g_engine->m_window->m_config.m_clientAspect,
+			aspect,
 			actor->m_definition->m_cameraFOVDegrees,
 			0.1f,
 			100.f );
@@ -357,9 +376,15 @@ void Player::UpdateFirstPersonControls( Actor* actor, float deltaSeconds )
 		return;
 	}
 
-	UpdateFirstPersonFromMouse( actor );
-	UpdateFirstPersonFromKeyboard( actor, deltaSeconds );
-	UpdateFirstPersonFromController( actor, deltaSeconds );
+	if ( m_controlMode == ControlMode::KEYBOARD )
+	{
+		UpdateFirstPersonFromMouse( actor );
+		UpdateFirstPersonFromKeyboard( actor, deltaSeconds );
+	}
+	else if ( m_controlMode == ControlMode::CONTROLLER )
+	{
+		UpdateFirstPersonFromController( actor, deltaSeconds );
+	}
 
 	m_orientation.m_rollDegrees = 0.f;
 }
@@ -599,4 +624,11 @@ void Player::SelectWeaponBySlot( Actor* actor, int slotIndex )
 	}
 
 	actor->EquipWeapon( &actor->m_inventory[slotIndex] );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+ControlMode Player::GetControlMode() const
+{
+	return m_controlMode;
 }

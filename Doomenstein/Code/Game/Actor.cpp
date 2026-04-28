@@ -599,9 +599,14 @@ int Actor::GetBestDirectionAnimationIndex() const
 	}
 
 	Vec3 toViewer = Vec3( 1.f, 0.f, 0.f );
-	if ( g_app != nullptr && g_app->m_game != nullptr && g_app->m_game->m_player != nullptr )
+	Player* renderingPlayer = nullptr;
+	if ( g_app != nullptr && g_app->m_game != nullptr )
 	{
-		toViewer = g_app->m_game->m_player->m_position - m_position;
+		renderingPlayer = g_app->m_game->m_currentRenderingPlayer;
+	}
+	if ( renderingPlayer != nullptr && renderingPlayer->GetActor() != nullptr )
+	{
+		toViewer = renderingPlayer->GetActor()->m_position - m_position;
 	}
 	if ( toViewer == Vec3::ZERO )
 	{
@@ -1009,9 +1014,14 @@ Mat44 Actor::GetModelMatrix() const
 	if ( m_definition != nullptr && m_definition->m_visualBillboardType != BillboardType::NONE )
 	{
 		Vec3 viewVector = Vec3( 1.f, 0.f, 0.f );
-		if ( g_app != nullptr && g_app->m_game != nullptr && g_app->m_game->m_player != nullptr )
+		Player* renderingPlayer = nullptr;
+		if ( g_app != nullptr && g_app->m_game != nullptr )
 		{
-			viewVector = g_app->m_game->m_player->m_position - m_position;
+			renderingPlayer = g_app->m_game->m_currentRenderingPlayer;
+		}
+		if ( renderingPlayer != nullptr && renderingPlayer->GetActor() != nullptr )
+		{
+			viewVector = renderingPlayer->GetActor()->m_position - m_position;
 		}
 
 		BillboardType const billboardType = m_definition->m_visualBillboardType;

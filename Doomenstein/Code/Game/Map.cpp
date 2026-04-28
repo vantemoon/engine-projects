@@ -528,9 +528,15 @@ void Map::Render() const
 	g_engine->m_renderer->BindTexture( nullptr );
 
 	Actor* possessedActorToHide = nullptr;
-	if ( m_game != nullptr && m_game->m_player != nullptr && m_game->m_player->m_cameraMode == CameraMode::FIRST_PERSON )
+
+	if ( m_game != nullptr && m_game->m_currentRenderingPlayer != nullptr )
 	{
-		possessedActorToHide = m_game->m_player->GetActor();
+		Player* renderingPlayer = m_game->m_currentRenderingPlayer;
+
+		if ( renderingPlayer->m_cameraMode == CameraMode::FIRST_PERSON )
+		{
+			possessedActorToHide = renderingPlayer->GetActor();
+		}
 	}
 
 	for ( Actor* actor : m_actors )
@@ -907,10 +913,22 @@ void Map::SpawnPlayer( Player* player )
 		return;
 	}
 
-	RandomNumberGenerator rng;
-	int const randomIndex = rng.RollRandomIntLessThan( static_cast< int >( spawnPoints.size() ) );
+	int playerIndex = 0;
+	if ( m_game != nullptr )
+	{
+		for ( int i = 0; i < ( int ) m_game->m_players.size(); ++i )
+		{
+			if ( m_game->m_players[i] == player )
+			{
+				playerIndex = i;
+				break;
+			}
+		}
+	}
 
-	SpawnInfo marineSpawnInfo = *spawnPoints[randomIndex];
+	int spawnIndex = playerIndex % ( int ) spawnPoints.size();
+
+	SpawnInfo marineSpawnInfo = *spawnPoints[spawnIndex];
 	marineSpawnInfo.m_actor = "Marine";
 	marineSpawnInfo.m_velocity = Vec3::ZERO;
 
@@ -928,6 +946,24 @@ void Map::SpawnPlayer( Player* player )
 	player->m_orientation.m_rollDegrees = 0.f;
 	player->m_position = marineActor->m_position;
 	player->m_position.z += marineActor->m_definition->m_eyeHeight;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Map::RespawnPlayer( Player* player )
+{
+	if ( player == nullptr )
+	{
+		return;
+	}
+
+	Actor* oldActor = player->GetActor();
+	if ( oldActor != nullptr )
+	{
+		oldActor->m_isDestroyed = true;
+	}
+
+	SpawnPlayer( player );
 }
 
 
@@ -1156,12 +1192,22 @@ Actor* Map::GetClosestActorInSector( Vec3 const& startPos, Vec3 const& forwardNo
 //-----------------------------------------------------------------------------------------------
 void Map::DebugPossessNext()
 {
-	if ( m_game == nullptr || m_game->m_player == nullptr )
+	if ( m_game == nullptr )
 	{
 		return;
 	}
 
-	Player* player = m_game->m_player;
+	if ( ( int ) m_game->m_players.size() != 1 )
+	{
+		return;
+	}
+
+	Player* player = m_game->m_players[0];
+	if ( player == nullptr )
+	{
+		return;
+	}
+
 	player->m_map = this;
 
 	ActorHandle const previousHandle = player->m_possessedActor;

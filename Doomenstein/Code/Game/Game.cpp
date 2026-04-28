@@ -123,10 +123,10 @@ void Game::LoadMaps()
 		m_currentMap = m_maps[0];
 	}
 
-	if ( m_currentMap != nullptr && m_player != nullptr )
+	/*if ( m_currentMap != nullptr && m_player != nullptr )
 	{
 		m_currentMap->SpawnPlayer( m_player );
-	}
+	}*/
 }
 
 
@@ -135,11 +135,13 @@ void Game::Shutdown()
 {
 	DestroyMaps();
 
-	if ( m_player != nullptr )
+	// Delete players
+	for ( int playerIndex = 0; playerIndex < ( int ) m_players.size(); ++playerIndex )
 	{
-		delete m_player;
-		m_player = nullptr;
+		Player* player = m_players[playerIndex];
+		delete player;
 	}
+	m_players.clear();
 
 	// Clear definitions
 	MapDefinition::ClearDefinitions();
@@ -216,31 +218,18 @@ void Game::Update()
 		UpdateFromKeyboard();
 		UpdateFromController();
 
-		UpdatePlayer( deltaSeconds );
+		UpdatePlayers( deltaSeconds );
 		return;
 	};
 
 	UpdateFromKeyboard();
 	UpdateFromController();
-	UpdatePlayer( deltaSeconds );
+	UpdatePlayers( deltaSeconds );
 	UpdateCurrentMap( deltaSeconds );
 
 	g_app->m_game->DeleteGarbageEntities();
 
 	m_screenCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) );
-}
-
-
-//-----------------------------------------------------------------------------------------------
-void Game::ScreenShake( float intensity )
-{
-	if ( m_player->m_playerWorldCamera == nullptr || intensity <= 0.f )
-		return;
-
-	RandomNumberGenerator rng;
-	float offsetX = rng.RollRandomFloatInRange( -intensity, intensity );
-	float offsetY = rng.RollRandomFloatInRange( -intensity, intensity );
-	m_player->m_playerWorldCamera->Translate2D( Vec2( offsetX, offsetY ) );
 }
 
 
@@ -257,17 +246,89 @@ void Game::UpdateFromKeyboard()
 {
 	if ( m_currentGameState == GameState::ATTRACT_MODE )
 	{
-		// Start the game
-		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'P' ) || g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_SPACE ) )
+		// Start the game and join player 1 with keyboard controls
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_SPACE ) )
 		{
 			Reset();
-			m_currentGameState = GameState::PLAYING;
+			m_currentGameState = GameState::LOBBY;
+			Player* newPlayer = new Player( this, ControlMode::KEYBOARD );
+			m_players.push_back( newPlayer );
+			return;
 		};
 
 		// Quit the game
 		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_ESCAPE ) )
 		{
 			g_app->SetIsQuitting();
+			return;
+		}
+	}
+	else if ( m_currentGameState == GameState::LOBBY )
+	{
+		int playerCount = ( int ) m_players.size();
+		if ( playerCount == 1 )
+		{
+			ControlMode player1ControlMode = m_players[0]->GetControlMode();
+			if ( player1ControlMode == ControlMode::KEYBOARD )
+			{
+				// Start the game
+				if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_SPACE ) )
+				{
+					m_currentGameState = GameState::PLAYING;
+					for ( int playerIndex = 0; playerIndex < ( int ) m_players.size(); ++playerIndex )
+					{
+						m_currentMap->SpawnPlayer( m_players[playerIndex] );
+					}
+				};
+			}
+			else if ( player1ControlMode == ControlMode::CONTROLLER )
+			{
+				// Join player 2 with keyboard controls
+				if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_SPACE ) )
+				{
+					Player* newPlayer = new Player( this, ControlMode::KEYBOARD );
+					m_players.push_back( newPlayer );
+				};
+			}
+			// Remove player 1 and return to attract mode
+			if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_ESCAPE ) )
+			{
+				Player* player1 = m_players[0];
+				m_players.clear();
+				delete player1;
+				m_currentGameState = GameState::ATTRACT_MODE;
+			}
+		}
+		else if ( playerCount == 2 )
+		{
+			// Start the game
+			if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_SPACE ) )
+			{
+				m_currentGameState = GameState::PLAYING;
+				for ( int playerIndex = 0; playerIndex < ( int ) m_players.size(); ++playerIndex )
+				{
+					m_currentMap->SpawnPlayer( m_players[playerIndex] );
+				}
+			};
+			// Remove player with keyboard controls
+			if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_ESCAPE ) )
+			{
+				Player* playerToRemove = nullptr;
+				for ( int playerIndex = 0; playerIndex < playerCount; ++playerIndex )
+				{
+					Player* player = m_players[playerIndex];
+					if ( player->GetControlMode() == ControlMode::KEYBOARD )
+					{
+						playerToRemove = player;
+						break;
+					}
+				}
+				if ( playerToRemove != nullptr )
+				{
+					m_players.erase( std::remove( m_players.begin(), m_players.end(), playerToRemove ), m_players.end() );
+					delete playerToRemove;
+				}
+			}
 		}
 	}
 	else
@@ -374,11 +435,12 @@ void Game::UpdateFromKeyboard()
 			m_currentGameState = GameState::ATTRACT_MODE;
 			DestroyMaps();
 
-			if ( m_player != nullptr )
+			for ( int playerIndex = 0; playerIndex < ( int ) m_players.size(); ++playerIndex )
 			{
-				delete m_player;
-				m_player = nullptr;
+				Player* player = m_players[playerIndex];
+				delete player;
 			}
+			m_players.clear();
 		}
 
 		// Pause and resume the game
@@ -422,17 +484,89 @@ void Game::UpdateFromController()
 
 	if ( m_currentGameState == GameState::ATTRACT_MODE )
 	{
-		// Start the game
-		if ( controller.WasButtonJustPressed( XBOX_BUTTON_A ) || controller.WasButtonJustPressed( XBOX_BUTTON_START ) )
+		// Start the game and join player 1
+		if ( controller.WasButtonJustPressed( XBOX_BUTTON_START ) )
 		{
 			Reset();
-			m_currentGameState = GameState::PLAYING;
+			m_currentGameState = GameState::LOBBY;
+			Player* newPlayer = new Player( this, ControlMode::CONTROLLER );
+			m_players.push_back( newPlayer );
+			return;
 		};
 
 		// Quit the game
 		if ( controller.WasButtonJustPressed( XBOX_BUTTON_BACK ) )
 		{
 			g_app->SetIsQuitting();
+			return;
+		}
+	}
+	else if ( m_currentGameState == GameState::LOBBY )
+	{
+		int playerCount = ( int ) m_players.size();
+		if ( playerCount == 1 )
+		{
+			ControlMode player1ControlMode = m_players[0]->GetControlMode();
+			if ( player1ControlMode == ControlMode::CONTROLLER )
+			{
+				// Start the game
+				if ( g_engine->m_inputSystem->GetController( 0 ).WasButtonJustPressed( XBOX_BUTTON_START ) )
+				{
+					m_currentGameState = GameState::PLAYING;
+					for ( int playerIndex = 0; playerIndex < ( int ) m_players.size(); ++playerIndex )
+					{
+						m_currentMap->SpawnPlayer( m_players[playerIndex] );
+					}
+				};
+			}
+			else if ( player1ControlMode == ControlMode::KEYBOARD )
+			{
+				// Join player 2 with controller controls
+				if ( controller.WasButtonJustPressed( XBOX_BUTTON_START ) )
+				{
+					Player* newPlayer = new Player( this, ControlMode::CONTROLLER );
+					m_players.push_back( newPlayer );
+				};
+			}
+			// Remove player 1 and return to attract mode
+			if ( controller.WasButtonJustPressed( XBOX_BUTTON_BACK ) )
+			{
+				Player* player1 = m_players[0];
+				m_players.clear();
+				delete player1;
+				m_currentGameState = GameState::ATTRACT_MODE;
+			}
+		}
+		else if ( playerCount == 2 )
+		{
+			// Start the game
+			if ( controller.WasButtonJustPressed( XBOX_BUTTON_START ) )
+			{
+				m_currentGameState = GameState::PLAYING;
+				for ( int playerIndex = 0; playerIndex < ( int ) m_players.size(); ++playerIndex )
+				{
+					m_currentMap->SpawnPlayer( m_players[playerIndex] );
+				}
+			}
+			// Remove player with controller controls
+			if ( controller.WasButtonJustPressed( XBOX_BUTTON_BACK ) )
+			{
+				Player* playerToRemove = nullptr;
+				for ( int playerIndex = 0; playerIndex < playerCount; ++playerIndex )
+				{
+					Player* player = m_players[playerIndex];
+					if ( player->GetControlMode() == ControlMode::CONTROLLER )
+					{
+						playerToRemove = player;
+						break;
+					}
+				}
+				if ( playerToRemove != nullptr )
+				{
+					m_players.erase( std::remove( m_players.begin(), m_players.end(), playerToRemove ), m_players.end() );
+					delete playerToRemove;
+				}
+			}
 		}
 	}
 	else
@@ -443,25 +577,25 @@ void Game::UpdateFromController()
 			m_currentGameState = GameState::ATTRACT_MODE;
 			DestroyMaps();
 
-			if ( m_player != nullptr )
+			for ( int playerIndex = 0; playerIndex < ( int ) m_players.size(); ++playerIndex )
 			{
-				delete m_player;
-				m_player = nullptr;
+				Player* player = m_players[playerIndex];
+				delete player;
 			}
+			m_players.clear();
 		}
 	}
 }
 
 
 //-----------------------------------------------------------------------------------------------
-void Game::UpdatePlayer( float deltaSeconds )
+void Game::UpdatePlayers( float deltaSeconds )
 {
-	if ( m_player == nullptr )
+	for ( int playerIndex = 0; playerIndex < ( int ) m_players.size(); ++playerIndex )
 	{
-		return;
+		Player* player = m_players[playerIndex];
+		player->Update( deltaSeconds );
 	}
-
-	m_player->Update( deltaSeconds );
 }
 
 
@@ -476,32 +610,78 @@ void Game::UpdateCurrentMap( float deltaSeconds )
 
 
 //-----------------------------------------------------------------------------------------------
-void Game::Render() const
+void Game::Render()
 {
 	if ( m_currentGameState == GameState::ATTRACT_MODE )
 	{
 		RenderAttractMode();
 		return;
-	};
+	}
 
-	// Clear screen
-	g_engine->m_renderer->ClearScreen( Rgba8( 50, 50, 50 ) );
-
-	if ( m_player == nullptr || m_player->m_playerWorldCamera == nullptr )
+	if ( m_currentGameState == GameState::LOBBY )
 	{
+		RenderLobby();
 		return;
 	}
 
-	g_engine->m_renderer->BeginCamera( *m_player->m_playerWorldCamera );
+	g_engine->m_renderer->ClearScreen( Rgba8( 50, 50, 50 ) );
 
-	RenderMap();
-	RenderEntities();
-	RenderHUD();
+	int playerCount = ( int ) m_players.size();
 
-	DebugRenderWorld( *m_player->m_playerWorldCamera );
-	DebugRenderScreen( *m_screenCamera );
+	for ( int playerIndex = 0; playerIndex < playerCount; ++playerIndex )
+	{
+		Player* player = m_players[playerIndex];
+		if ( player == nullptr || player->m_playerWorldCamera == nullptr )
+		{
+			continue;
+		}
 
-	g_engine->m_renderer->EndCamera( *m_player->m_playerWorldCamera );
+		AABB2 viewport;
+		if ( playerCount == 1 )
+		{
+			player->m_playerWorldCamera->SetViewport( AABB2( Vec2( 0.f, 0.f ), Vec2( 1.f, 1.f ) ) );
+			viewport = AABB2( Vec2( 0.f, 0.f ), Vec2( 1.f, 1.f ) );
+		}
+		else if ( playerCount == 2 )
+		{
+			if ( playerIndex == 0 )
+			{
+				// Player 1
+				player->m_playerWorldCamera->SetViewport( AABB2( Vec2( 0.f, 0.5f ), Vec2( 1.f, 1.f ) ) );
+				viewport = AABB2( Vec2( 0.f, 0.5f ), Vec2( 1.f, 1.f ) );
+			}
+			else
+			{
+				// Player 2
+				player->m_playerWorldCamera->SetViewport( AABB2( Vec2( 0.f, 0.f ), Vec2( 1.f, 0.5f ) ) );
+				viewport = AABB2( Vec2( 0.f, 0.f ), Vec2( 1.f, 0.5f ) );
+			}
+		}
+
+		player->m_playerWorldCamera->SetViewport( viewport );
+		player->m_playerScreenCamera->SetViewport( viewport );
+
+		float screenWidth = SCREEN_SIZE_X;
+		float screenHeight = SCREEN_SIZE_Y * viewport.GetDimensions().y;
+
+		player->m_playerScreenCamera->SetOrthoView(
+			Vec2( 0.f, 0.f ),
+			Vec2( screenWidth, screenHeight ) );
+
+		m_currentRenderingPlayer = player;
+
+		g_engine->m_renderer->BeginCamera( *player->m_playerWorldCamera );
+
+		RenderMap();
+		RenderEntities();
+		RenderHUD();
+
+		DebugRenderWorld( *player->m_playerWorldCamera );
+
+		g_engine->m_renderer->EndCamera( *player->m_playerWorldCamera );
+	}
+
+	m_currentRenderingPlayer = nullptr;
 }
 
 
@@ -528,19 +708,76 @@ void Game::RenderAttractMode() const
 
 
 //-----------------------------------------------------------------------------------------------
+void Game::RenderLobby() const
+{
+	g_engine->m_renderer->ClearScreen( Rgba8( 100, 100, 100 ) );
+
+	m_screenCamera->SetViewport( AABB2( Vec2( 0.f, 0.f ), Vec2( 1.f, 1.f ) ) );
+	g_engine->m_renderer->BeginCamera( *m_screenCamera );
+
+	std::string lobbyText = "Lobby - Waiting for Players";
+	if ( m_players.size() == 1 )
+	{
+		lobbyText = "Lobby - Player 1 Joined";
+	}
+	else if ( m_players.size() == 2 )
+	{
+		lobbyText = "Lobby - Player 1 and Player 2 Joined";
+	}
+
+	DebugAddScreenText(
+		lobbyText,
+		AABB2( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) ),
+		30.f,
+		Vec2( 0.5f, 0.5f ),
+		0.f,
+		Rgba8::WHITE,
+		Rgba8::WHITE );
+
+	DebugAddScreenText(
+		"Press Space / Start to Play",
+		AABB2( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) ),
+		20.f,
+		Vec2( 0.5f, 0.4f ),
+		0.f,
+		Rgba8::WHITE,
+		Rgba8::WHITE );
+
+	DebugRenderScreen( *m_screenCamera );
+
+	g_engine->m_renderer->EndCamera( *m_screenCamera );
+}
+
+
+//-----------------------------------------------------------------------------------------------
 void Game::RenderEntities() const
 {
-	g_engine->m_renderer->BeginCamera( *m_player->m_playerWorldCamera );
+	if ( m_currentRenderingPlayer == nullptr )
+	{
+		return;
+	}
 
-	m_player->Render();
-
-	g_engine->m_renderer->EndCamera( *m_player->m_playerWorldCamera );
+	for ( int playerIndex = 0; playerIndex < ( int ) m_players.size(); ++playerIndex )
+	{
+		Player* player = m_players[playerIndex];
+		if ( player != nullptr )
+		{
+			player->Render();
+		}
+	}
 }
 
 
 //-----------------------------------------------------------------------------------------------
 void Game::RenderHUD() const
 {
+	if ( m_currentRenderingPlayer == nullptr )
+	{
+		return;
+	}
+
+	m_screenCamera->SetViewport( m_currentRenderingPlayer->m_playerWorldCamera->GetViewport() );
+
 	g_engine->m_renderer->BeginCamera( *m_screenCamera );
 
 	g_engine->m_renderer->SetBlendMode( BlendMode::ALPHA );
@@ -564,27 +801,19 @@ void Game::RenderHUD() const
 		Rgba8::WHITE,
 		Rgba8::WHITE );
 
-	Actor* playerActor = nullptr;
-	if ( m_player != nullptr )
+	for ( int playerIndex = 0; playerIndex < ( int ) m_players.size(); ++playerIndex )
 	{
-		playerActor = m_player->GetActor();
-
-		std::string playerPosText = Stringf(
-			"Player Position: (%.2f, %.2f, %.2f)",
-			m_player->m_position.x,
-			m_player->m_position.y,
-			m_player->m_position.z );
-
-		DebugAddMessage( playerPosText, 0.f );
-	}
-
-	if ( playerActor != nullptr && playerActor->m_isDead )
-	{
-		std::vector<Vertex> overlayVerts;
-		AddVertsForAABB2D( overlayVerts, screenBounds, Rgba8( 96, 96, 96, 150 ) );
-		g_engine->m_renderer->BindTexture( nullptr );
-		g_engine->m_renderer->SetModelConstants();
-		g_engine->m_renderer->DrawVertexArray( overlayVerts );
+		Player* player = m_players[playerIndex];
+		Actor* playerActor = player->GetActor();
+		
+		if ( playerActor != nullptr && playerActor->m_isDead )
+		{
+			std::vector<Vertex> overlayVerts;
+			AddVertsForAABB2D( overlayVerts, screenBounds, Rgba8( 96, 96, 96, 150 ) );
+			g_engine->m_renderer->BindTexture( nullptr );
+			g_engine->m_renderer->SetModelConstants();
+			g_engine->m_renderer->DrawVertexArray( overlayVerts );
+		}
 	}
 
 	g_engine->m_renderer->EndCamera( *m_screenCamera );
@@ -595,8 +824,8 @@ void Game::RenderHUD() const
 Vec3 Game::TransformWorldToScreen( Vec3 const& worldPosition ) const
 {
 	Mat44 transform;
-	transform.Append( m_player->m_playerWorldCamera->GetWorldToCameraTransform() );
-	transform.Append( m_player->m_playerWorldCamera->GetCameraToRenderTransform() );
+	transform.Append( m_currentRenderingPlayer->m_playerWorldCamera->GetWorldToCameraTransform() );
+	transform.Append( m_currentRenderingPlayer->m_playerWorldCamera->GetCameraToRenderTransform() );
 	Vec3 screenPosition = transform.TransformPosition3D( worldPosition );
 	return screenPosition;
 }
@@ -618,15 +847,34 @@ void Game::Reset()
 {
 	DestroyMaps();
 
-	if ( m_player != nullptr )
+	for ( int playerIndex = 0; playerIndex < ( int ) m_players.size(); ++playerIndex )
 	{
-		delete m_player;
-		m_player = nullptr;
+		Player* player = m_players[playerIndex];
+		delete player;
 	}
-
-	m_player = new Player( this );
+	m_players.clear();
 
 	LoadMaps();
+}
+
+
+//-----------------------------------------------------------------------------------------------
+Player* Game::GetPlayerFromActor( Actor const* actor ) const
+{
+	if ( actor == nullptr )
+	{
+		return nullptr;
+	}
+
+	for ( Player* player : m_players )
+	{
+		if ( player != nullptr && player->GetActor() == actor )
+		{
+			return player;
+		}
+	}
+
+	return nullptr;
 }
 
 

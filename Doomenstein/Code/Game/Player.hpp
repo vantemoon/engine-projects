@@ -22,6 +22,15 @@ enum class CameraMode
 
 
 //-----------------------------------------------------------------------------------------------
+enum class ControlMode
+{
+	KEYBOARD,
+	CONTROLLER,
+	COUNT
+};
+
+
+//-----------------------------------------------------------------------------------------------
 class Player : public Controller
 {
 public:
@@ -34,8 +43,10 @@ public:
 	Camera* m_playerScreenCamera = nullptr;
 	CameraMode m_cameraMode = CameraMode::FIRST_PERSON;
 
+	ControlMode m_controlMode = ControlMode::KEYBOARD;
+
 public:
-	Player( Game* owner );
+	Player( Game* owner, ControlMode controlMode = ControlMode::KEYBOARD );
 	~Player();
 
 	void Update( float deltaSeconds );
@@ -51,6 +62,8 @@ public:
 	void Render() const;
 	void RenderHUD() const;
 	Mat44 GetModelToWorldTransform() const;
+
+	ControlMode GetControlMode() const;
 
 private:
 	void UpdateFreeFlyCameraFromMouse();

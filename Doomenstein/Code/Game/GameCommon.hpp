@@ -11,6 +11,7 @@ enum GameState
 {
 	INVALID_STATE = -1,
 	ATTRACT_MODE,
+	LOBBY,
 	PLAYING,
 	PAUSED,
 	GAME_OVER,

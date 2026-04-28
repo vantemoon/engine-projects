@@ -105,11 +105,12 @@ void Weapon::Fire( Actor* owner )
 	Vec3 fireStartPos;
 	Vec3 baseForward;
 
-	bool isPlayerOwner = g_app->m_game->m_player->GetActor() == owner;
+	Player* owningPlayer = g_app->m_game->GetPlayerFromActor( owner );
+	bool isPlayerOwner = owningPlayer != nullptr;
 
 	if ( isPlayerOwner )
 	{
-		Camera* camera = g_app->m_game->m_player->m_playerWorldCamera;
+		Camera* camera = owningPlayer->m_playerWorldCamera;
 
 		fireStartPos = camera->GetPosition();
 		baseForward = camera->GetForwardDir();
@@ -353,17 +354,23 @@ void Weapon::Render( Actor const* owner ) const
 		return;
 	}
 
-	if ( g_app == nullptr || g_app->m_game == nullptr || g_app->m_game->m_player == nullptr )
+	if ( g_app == nullptr || g_app->m_game == nullptr )
 	{
 		return;
 	}
 
-	if ( g_app->m_game->m_player->GetActor() != owner )
+	Player* renderingPlayer = g_app->m_game->m_currentRenderingPlayer;
+	if ( renderingPlayer == nullptr )
 	{
 		return;
 	}
 
-	if ( g_app->m_game->m_player->m_playerScreenCamera == nullptr )
+	if ( renderingPlayer->GetActor() != owner )
+	{
+		return;
+	}
+
+	if ( renderingPlayer->m_playerScreenCamera == nullptr )
 	{
 		return;
 	}
@@ -381,7 +388,7 @@ void Weapon::Render( Actor const* owner ) const
 		return;
 	}
 
-	Camera screenCamera = *g_app->m_game->m_player->m_playerScreenCamera;
+	Camera screenCamera = *renderingPlayer->m_playerScreenCamera;
 
 	renderer->BeginCamera( screenCamera );
 	renderer->SetBlendMode( BlendMode::ALPHA );
@@ -395,22 +402,24 @@ void Weapon::Render( Actor const* owner ) const
 	}
 
 	// HUD base
-	{
-		IntVec2 hudDimensions = hudBaseTexture->GetDimensions();
-		float scaleFactor = SCREEN_SIZE_X / ( float ) hudDimensions.x;
+	AABB2 viewport = renderingPlayer->m_playerScreenCamera->GetViewport();
+	float screenWidth = SCREEN_SIZE_X;
+	float screenHeight = SCREEN_SIZE_Y * viewport.GetDimensions().y;
 
-		Vec2 hudMins( 0.f, 0.f );
-		Vec2 hudMaxs( SCREEN_SIZE_X, ( float ) hudDimensions.y * scaleFactor );
-		AABB2 hudBounds( hudMins, hudMaxs );
+	IntVec2 hudDimensions = hudBaseTexture->GetDimensions();
+	float scaleFactor = screenWidth / ( float ) hudDimensions.x;
 
-		std::vector<Vertex> hudVerts;
-		AddVertsForAABB2D( hudVerts, hudBounds, Rgba8::WHITE );
+	Vec2 hudMins( 0.f, 0.f );
+	Vec2 hudMaxs( screenWidth, ( float ) hudDimensions.y * scaleFactor );
+	AABB2 hudBounds( hudMins, hudMaxs );
 
-		renderer->BindTexture( hudBaseTexture );
-		renderer->SetModelConstants();
-		renderer->DrawVertexArray( hudVerts );
-		renderer->BindTexture( nullptr );
-	}
+	std::vector<Vertex> hudVerts;
+	AddVertsForAABB2D( hudVerts, hudBounds, Rgba8::WHITE );
+
+	renderer->BindTexture( hudBaseTexture );
+	renderer->SetModelConstants();
+	renderer->DrawVertexArray( hudVerts );
+	renderer->BindTexture( nullptr );
 
 	// Reticle
 	if ( !m_definition->m_rectileTexture.empty() )
@@ -427,7 +436,7 @@ void Weapon::Render( Actor const* owner ) const
 				rectileSize = Vec2( ( float ) dims.x, ( float ) dims.y );
 			}
 
-			Vec2 center( SCREEN_SIZE_X * 0.5f, SCREEN_SIZE_Y * 0.5f );
+			Vec2 center( screenWidth * 0.5f, screenHeight * 0.5f );
 			AABB2 rectileBounds( center - rectileSize * 0.5f, center + rectileSize * 0.5f );
 
 			std::vector<Vertex> rectileVerts;
@@ -597,7 +606,12 @@ void Weapon::PlayAnimation() const
 
 	Vec2 pivot = m_definition->m_spritePivot;
 
-	Vec2 anchor( SCREEN_SIZE_X * 0.5f, 100.f );
+	Player* renderingPlayer = g_app->m_game->m_currentRenderingPlayer;
+	AABB2 viewport = renderingPlayer->m_playerScreenCamera->GetViewport();
+
+	float screenWidth = SCREEN_SIZE_X;
+
+	Vec2 anchor( screenWidth * 0.5f, 100.f );
 	Vec2 mins = anchor - Vec2( spriteSize.x * pivot.x, spriteSize.y * pivot.y );
 	Vec2 maxs = mins + spriteSize;
 
