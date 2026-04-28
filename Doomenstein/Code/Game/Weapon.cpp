@@ -407,11 +407,18 @@ void Weapon::Render( Actor const* owner ) const
 	float screenHeight = SCREEN_SIZE_Y * viewport.GetDimensions().y;
 
 	IntVec2 hudDimensions = hudBaseTexture->GetDimensions();
-	float scaleFactor = screenWidth / ( float ) hudDimensions.x;
+	bool multiplayer = g_app->m_game->m_players.size() > 1;
+	float hudHeightScale;
+	if ( multiplayer ) hudHeightScale = 0.5f;
+	else hudHeightScale = 1.f;
 
-	Vec2 hudMins( 0.f, 0.f );
-	Vec2 hudMaxs( screenWidth, ( float ) hudDimensions.y * scaleFactor );
-	AABB2 hudBounds( hudMins, hudMaxs );
+	float hudScaleX = screenWidth / ( float ) hudDimensions.x;
+	float hudScaleY = hudScaleX * hudHeightScale;
+
+	AABB2 hudBounds(
+		Vec2( 0.f, 0.f ),
+		Vec2( screenWidth, ( float ) hudDimensions.y * hudScaleY )
+	);
 
 	std::vector<Vertex> hudVerts;
 	AddVertsForAABB2D( hudVerts, hudBounds, Rgba8::WHITE );
@@ -436,6 +443,7 @@ void Weapon::Render( Actor const* owner ) const
 				rectileSize = Vec2( ( float ) dims.x, ( float ) dims.y );
 			}
 
+			Vec2 reticleSize = m_definition->m_rectileSize;
 			Vec2 center( screenWidth * 0.5f, screenHeight * 0.5f );
 			AABB2 rectileBounds( center - rectileSize * 0.5f, center + rectileSize * 0.5f );
 
@@ -593,6 +601,7 @@ void Weapon::PlayAnimation() const
 	uvMins.y = 1.f - ( float ) ( cellY + 1 ) / ( float ) cellsHigh;
 	uvMaxs.y = 1.f - ( float ) cellY / ( float ) cellsHigh;
 
+
 	Vec2 spriteSize = m_definition->m_spriteSize;
 
 	if ( spriteSize == Vec2::ZERO )
@@ -600,9 +609,15 @@ void Weapon::PlayAnimation() const
 		IntVec2 texDim = texture->GetDimensions();
 		spriteSize = Vec2(
 			( float ) texDim.x / ( float ) cellsWide,
-			( float ) texDim.y / ( float ) cellsHigh
-		);
+			( float ) texDim.y / ( float ) cellsHigh );
 	}
+
+	bool multiplayer = g_app->m_game->m_players.size() > 1;
+	float spriteScale;
+	if ( multiplayer ) spriteScale = 0.5f;
+	else spriteScale = 1.f;
+
+	spriteSize *= spriteScale;
 
 	Vec2 pivot = m_definition->m_spritePivot;
 
@@ -611,7 +626,17 @@ void Weapon::PlayAnimation() const
 
 	float screenWidth = SCREEN_SIZE_X;
 
-	Vec2 anchor( screenWidth * 0.5f, 100.f );
+	Texture* hudBaseTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( m_definition->m_hudTexture.c_str() );
+	IntVec2 hudDimensions = hudBaseTexture->GetDimensions();
+	float hudHeightScale;
+	if ( multiplayer ) hudHeightScale = 0.5f;
+	else hudHeightScale = 1.f;
+
+	float hudScaleX = screenWidth / ( float ) hudDimensions.x;
+	float hudScaleY = hudScaleX * hudHeightScale;
+	float hudHeight = ( float ) hudDimensions.y * hudScaleY;
+
+	Vec2 anchor( screenWidth * 0.5f, hudHeight );
 	Vec2 mins = anchor - Vec2( spriteSize.x * pivot.x, spriteSize.y * pivot.y );
 	Vec2 maxs = mins + spriteSize;
 

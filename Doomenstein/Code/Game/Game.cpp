@@ -699,7 +699,7 @@ void Game::RenderMap() const
 void Game::RenderAttractMode() const
 {
 	// Clear screen
-	g_engine->m_renderer->ClearScreen( Rgba8( 150, 150, 150 ) );
+	g_engine->m_renderer->ClearScreen( Rgba8( 100, 100, 100 ) );
 
 	g_engine->m_renderer->BeginCamera( *m_screenCamera );
 
