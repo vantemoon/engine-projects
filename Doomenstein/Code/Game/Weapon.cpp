@@ -187,14 +187,28 @@ void Weapon::Fire( Actor* owner )
 			Vec3 debugStart = attackSpawnCenter + debugOffset;
 			Vec3 debugEnd = rayResult.m_impactPos + debugOffset;
 
-			DebugAddWorldCylinder(
-				debugStart,
-				debugEnd,
-				0.01f,
-				1.0f,
-				Rgba8::BLUE,
-				Rgba8::BLUE
+			SpawnInfo hitSpawnInfo;
+
+			if ( rayHitActor != nullptr )
+			{
+				hitSpawnInfo.m_actor = "BloodSplatter";
+			}
+			else
+			{
+				hitSpawnInfo.m_actor = "BulletHit";
+			}
+
+			hitSpawnInfo.m_position = rayResult.m_impactPos;
+
+			float yaw = Atan2Degrees( rayResult.m_impactNormal.y, rayResult.m_impactNormal.x );
+			float pitch = Atan2Degrees(
+				rayResult.m_impactNormal.z,
+				Vec2( rayResult.m_impactNormal.x, rayResult.m_impactNormal.y ).GetLength()
 			);
+
+			hitSpawnInfo.m_orientation = Vec3( yaw, pitch, 0.f );
+
+			owner->m_map->SpawnActor( hitSpawnInfo );
 		}
 
 		if ( rayHitActor != nullptr )

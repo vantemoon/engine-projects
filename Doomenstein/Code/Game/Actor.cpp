@@ -183,9 +183,30 @@ void Actor::Update()
 		return;
 	}
 
-	if ( m_definition->m_dieOnSpawn )
+	if ( m_definition->m_dieOnSpawn && !m_isDead )
 	{
 		m_isDead = true;
+		m_currentHealth = 0;
+
+		m_velocity = Vec3::ZERO;
+		m_acceleration = Vec3::ZERO;
+
+		m_deadTimer.Stop();
+		m_deadTimer.m_period = m_definition->corpseLifetime;
+
+		if ( m_deadTimer.m_period <= 0.0 )
+		{
+			m_isDestroyed = true;
+		}
+		else
+		{
+			m_deadTimer.Start();
+		}
+
+		if ( GetAnimationGroupIndexByName( "Death" ) != -1 )
+		{
+			PlayAnimationByName( "Death" );
+		}
 	}
 
 	if ( !m_definition->m_animationGroupNames.empty() && m_currentAnimationGroupIndex < 0 )
