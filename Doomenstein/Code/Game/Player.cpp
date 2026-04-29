@@ -519,7 +519,7 @@ void Player::UpdateFirstPersonFromController( Actor* actor, float deltaSeconds )
 
 	Mat44 orientationMat = m_orientation.GetAsMatrix_IFwd_JLeft_KUp();
 	Vec3 forwardVector = orientationMat.GetIBasis3D();
-	Vec3 leftVector = orientationMat.GetJBasis3D();
+	Vec3 leftVector = -orientationMat.GetJBasis3D();
 
 	forwardVector.z = 0.f;
 	leftVector.z = 0.f;

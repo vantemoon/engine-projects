@@ -2,6 +2,7 @@
 #include "Game/Controller.hpp"
 #include "Engine/Math/EulerAngles.hpp"
 #include "Engine/Core/Rgba8.hpp"
+#include "Engine/Math/AABB2.hpp"
 #include "Engine/Math/Vec3.hpp"
 
 
@@ -38,6 +39,14 @@ public:
 
 	Vec3 m_position;
 	EulerAngles m_orientation;
+
+	int m_playerIndex = -1;
+	int m_controllerIndex = -1;
+
+	int m_killCount = 0;
+	int m_deathCount = 0;
+
+	AABB2 m_viewport = AABB2( Vec2( 0.f, 0.f ), Vec2( 1.f, 1.f ) );
 
 	Camera* m_playerWorldCamera = nullptr;
 	Camera* m_playerScreenCamera = nullptr;
