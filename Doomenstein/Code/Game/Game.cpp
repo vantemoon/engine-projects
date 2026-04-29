@@ -274,11 +274,8 @@ void Game::UpdateFromKeyboard()
 				// Start the game
 				if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_SPACE ) )
 				{
-					m_currentGameState = GameState::PLAYING;
-					for ( int playerIndex = 0; playerIndex < ( int ) m_players.size(); ++playerIndex )
-					{
-						m_currentMap->SpawnPlayer( m_players[playerIndex] );
-					}
+					StartGameFromLobby();
+					return;
 				};
 			}
 			else if ( player1ControlMode == ControlMode::CONTROLLER )
@@ -512,11 +509,8 @@ void Game::UpdateFromController()
 				// Start the game
 				if ( g_engine->m_inputSystem->GetController( 0 ).WasButtonJustPressed( XBOX_BUTTON_START ) )
 				{
-					m_currentGameState = GameState::PLAYING;
-					for ( int playerIndex = 0; playerIndex < ( int ) m_players.size(); ++playerIndex )
-					{
-						m_currentMap->SpawnPlayer( m_players[playerIndex] );
-					}
+					StartGameFromLobby();
+					return;
 				};
 			}
 			else if ( player1ControlMode == ControlMode::KEYBOARD )
@@ -676,12 +670,17 @@ void Game::Render()
 		RenderEntities();
 		RenderHUD();
 
-		DebugRenderWorld( *player->m_playerWorldCamera );
-
 		g_engine->m_renderer->EndCamera( *player->m_playerWorldCamera );
+
+		DebugRenderWorld( *player->m_playerWorldCamera );
 	}
 
 	m_currentRenderingPlayer = nullptr;
+
+	m_screenCamera->SetViewport( AABB2( Vec2( 0.f, 0.f ), Vec2( 1.f, 1.f ) ) );
+	m_screenCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) );
+
+	DebugRenderScreen( *m_screenCamera );
 }
 
 
@@ -920,6 +919,38 @@ bool Game::IsOnScreen( Vec2 const& worldPosition, float cosmeticRadius ) const
 	if ( screenPosition.x < -cosmeticRadius || screenPosition.x > SCREEN_SIZE_X + cosmeticRadius ) return false;
 	if ( screenPosition.y < -cosmeticRadius || screenPosition.y > SCREEN_SIZE_Y + cosmeticRadius ) return false;
 	return true;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game::StartGameFromLobby()
+{
+	if ( m_currentGameState != GameState::LOBBY )
+	{
+		return;
+	}
+
+	if ( m_currentMap == nullptr )
+	{
+		return;
+	}
+
+	m_currentGameState = GameState::PLAYING;
+
+	for ( int playerIndex = 0; playerIndex < ( int ) m_players.size(); ++playerIndex )
+	{
+		Player* player = m_players[playerIndex];
+		if ( player == nullptr )
+		{
+			continue;
+		}
+
+		player->SetPlayerIndex( playerIndex );
+		player->m_possessedActor = ActorHandle::INVALID;
+		player->m_map = m_currentMap;
+
+		m_currentMap->SpawnPlayer( player );
+	}
 }
 
 

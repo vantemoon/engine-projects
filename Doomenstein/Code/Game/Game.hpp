@@ -61,6 +61,7 @@ public:
 	void RenderAttractMode()										  const;
 	void RenderLobby()												  const;
 	
+	void StartGameFromLobby();
 	void Reset();
 
 	Player* GetPlayerFromActor( Actor const* actor ) const;

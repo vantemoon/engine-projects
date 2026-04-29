@@ -933,7 +933,48 @@ void Map::SpawnPlayer( Player* player )
 	}
 
 	RandomNumberGenerator rng;
-	int const spawnIndex = rng.RollRandomIntLessThan( ( int ) spawnPoints.size() );
+
+	int spawnIndex = rng.RollRandomIntLessThan( ( int ) spawnPoints.size() );
+
+	for ( int attempt = 0; attempt < ( int ) spawnPoints.size(); ++attempt )
+	{
+		int testIndex = ( spawnIndex + attempt ) % ( int ) spawnPoints.size();
+		Vec3 testPos = spawnPoints[testIndex]->m_position;
+
+		bool isOccupied = false;
+
+		if ( m_game != nullptr )
+		{
+			for ( Player* otherPlayer : m_game->m_players )
+			{
+				if ( otherPlayer == nullptr || otherPlayer == player )
+				{
+					continue;
+				}
+
+				Actor* otherActor = otherPlayer->GetActor();
+				if ( otherActor == nullptr )
+				{
+					continue;
+				}
+
+				Vec2 otherPosXY( otherActor->m_position.x, otherActor->m_position.y );
+				Vec2 testPosXY( testPos.x, testPos.y );
+
+				if ( GetDistanceSquared2D( otherPosXY, testPosXY ) < 1.f )
+				{
+					isOccupied = true;
+					break;
+				}
+			}
+		}
+
+		if ( !isOccupied )
+		{
+			spawnIndex = testIndex;
+			break;
+		}
+	}
 
 	SpawnInfo marineSpawnInfo = *spawnPoints[spawnIndex];
 	marineSpawnInfo.m_actor = "Marine";
