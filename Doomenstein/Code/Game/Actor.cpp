@@ -312,16 +312,12 @@ void Actor::TakeDamage( int damageAmount, Actor* attacker )
 		m_isDead = true;
 		m_currentHealth = 0;
 
-		Player* player = g_app->m_game->GetPlayerFromActor( attacker );
-		if ( player != nullptr )
+		Player* attackerPlayer = g_app->m_game->GetPlayerFromActor( attacker );
+		Player* selfPlayer = g_app->m_game->GetPlayerFromActor( this );
+		if ( attackerPlayer != nullptr && selfPlayer != nullptr && attackerPlayer != selfPlayer )
 		{
-			player->m_killCount++;
-		}
-
-		player = g_app->m_game->GetPlayerFromActor( this );
-		if ( player != nullptr )
-		{
-			player->m_deathCount++;
+			attackerPlayer->m_killCount++;
+			selfPlayer->m_deathCount++;
 		}
 
 		m_velocity = Vec3::ZERO;
