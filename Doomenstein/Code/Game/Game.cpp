@@ -701,6 +701,9 @@ void Game::RenderAttractMode() const
 	// Clear screen
 	g_engine->m_renderer->ClearScreen( Rgba8( 100, 100, 100 ) );
 
+	m_screenCamera->SetViewport( AABB2( Vec2( 0.f, 0.f ), Vec2( 1.f, 1.f ) ) );
+	m_screenCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) );
+
 	g_engine->m_renderer->BeginCamera( *m_screenCamera );
 
 	BitmapFont* font = g_engine->m_renderer->CreateOrGetBitmapFontFromFile( "Data/Fonts/SquirrelFixedFont" );
@@ -732,37 +735,95 @@ void Game::RenderLobby() const
 	g_engine->m_renderer->ClearScreen( Rgba8( 100, 100, 100 ) );
 
 	m_screenCamera->SetViewport( AABB2( Vec2( 0.f, 0.f ), Vec2( 1.f, 1.f ) ) );
+	m_screenCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) );
+
 	g_engine->m_renderer->BeginCamera( *m_screenCamera );
 
-	std::string lobbyText = "Lobby - Waiting for Players";
+	BitmapFont* font = g_engine->m_renderer->CreateOrGetBitmapFontFromFile( "Data/Fonts/SquirrelFixedFont" );
+	if ( font == nullptr ) return;
+	std::vector<Vertex> textVerts;
+	AABB2 textBounds = AABB2( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) );
+
 	if ( m_players.size() == 1 )
 	{
-		lobbyText = "Lobby - Player 1 Joined";
+		std::string playerTag = "Player 1";
+		font->AddVertsForTextInBox2D( textVerts, playerTag, textBounds, 40.f, Rgba8::WHITE, 1.f, Vec2( 0.5f, 0.5f ) );
+
+		ControlMode controlType = m_players[0]->GetControlMode();
+		std::string controlTypeText = "";
+		std::string startText = "";
+		std::string leaveText = "";
+		std::string joinText = "";
+		if ( controlType == ControlMode::KEYBOARD )
+		{
+			controlTypeText = "Mouse and Keyboard";
+			startText = "Press SPACE to start the game";
+			leaveText = "Press ESCAPE to leave the game";
+			joinText = "Press START to join with a controller";
+		}
+		else if ( controlType == ControlMode::CONTROLLER )
+		{
+			controlTypeText = "Controller";
+			startText = "Press START to start the game";
+			leaveText = "Press BACK to leave the game";
+			joinText = "Press SPACE to join with mouse and keyboard";
+		}
+		font->AddVertsForTextInBox2D( textVerts, controlTypeText, textBounds, 25.f, Rgba8::WHITE, 1.f, Vec2( 0.5f, 0.425f ) );
+		font->AddVertsForTextInBox2D( textVerts, startText, textBounds, 15.f, Rgba8::WHITE, 1.f, Vec2( 0.5f, 0.3f ) );
+		font->AddVertsForTextInBox2D( textVerts, leaveText, textBounds, 15.f, Rgba8::WHITE, 1.f, Vec2( 0.5f, 0.275f ) );
+		font->AddVertsForTextInBox2D( textVerts, joinText, textBounds, 15.f, Rgba8::WHITE, 1.f, Vec2( 0.5f, 0.25f ) );
 	}
 	else if ( m_players.size() == 2 )
 	{
-		lobbyText = "Lobby - Player 1 and Player 2 Joined";
+		std::string playerTag1 = "Player 1";
+		std::string playerTag2 = "Player 2";
+		font->AddVertsForTextInBox2D( textVerts, playerTag1, textBounds, 40.f, Rgba8::WHITE, 1.f, Vec2( 0.5f, 0.75f ) );
+		font->AddVertsForTextInBox2D( textVerts, playerTag2, textBounds, 40.f, Rgba8::WHITE, 1.f, Vec2( 0.5f, 0.35f ) );
+
+		ControlMode player1ControlType = m_players[0]->GetControlMode();
+		ControlMode player2ControlType = m_players[1]->GetControlMode();
+		std::string player1ControlTypeText = "";
+		std::string player2ControlTypeText = "";
+		std::string player1StartText = "";
+		std::string player2StartText = "";
+		std::string player1LeaveText = "";
+		std::string player2LeaveText = "";
+		if ( player1ControlType == ControlMode::KEYBOARD )
+		{
+			player1ControlTypeText = "Mouse and Keyboard";
+			player1StartText = "Press SPACE to start the game";
+			player1LeaveText = "Press ESCAPE to leave the game";
+		}
+		else if ( player1ControlType == ControlMode::CONTROLLER )
+		{
+			player1ControlTypeText = "Controller";
+			player1StartText = "Press START to start the game";
+			player1LeaveText = "Press BACK to leave the game";
+		}
+		if ( player2ControlType == ControlMode::KEYBOARD )
+		{
+			player2ControlTypeText = "Mouse and Keyboard";
+			player2StartText = "Press SPACE to start the game";
+			player2LeaveText = "Press ESCAPE to leave the game";
+		}
+		else if ( player2ControlType == ControlMode::CONTROLLER )
+		{
+			player2ControlTypeText = "Controller";
+			player2StartText = "Press START to start the game";
+			player2LeaveText = "Press BACK to leave the game";
+		}
+		font->AddVertsForTextInBox2D( textVerts, player1ControlTypeText, textBounds, 25.f, Rgba8::WHITE, 1.f, Vec2( 0.5f, 0.625f ) );
+		font->AddVertsForTextInBox2D( textVerts, player1StartText, textBounds, 15.f, Rgba8::WHITE, 1.f, Vec2( 0.5f, 0.55f ) );
+		font->AddVertsForTextInBox2D( textVerts, player1LeaveText, textBounds, 15.f, Rgba8::WHITE, 1.f, Vec2( 0.5f, 0.525f ) );
+		font->AddVertsForTextInBox2D( textVerts, player2ControlTypeText, textBounds, 25.f, Rgba8::WHITE, 1.f, Vec2( 0.5f, 0.225f ) );
+		font->AddVertsForTextInBox2D( textVerts, player2StartText, textBounds, 15.f, Rgba8::WHITE, 1.f, Vec2( 0.5f, 0.15f ) );
+		font->AddVertsForTextInBox2D( textVerts, player2LeaveText, textBounds, 15.f, Rgba8::WHITE, 1.f, Vec2( 0.5f, 0.125f ) );
 	}
 
-	DebugAddScreenText(
-		lobbyText,
-		AABB2( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) ),
-		30.f,
-		Vec2( 0.5f, 0.5f ),
-		0.f,
-		Rgba8::WHITE,
-		Rgba8::WHITE );
-
-	DebugAddScreenText(
-		"Press Space / Start to Play",
-		AABB2( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) ),
-		20.f,
-		Vec2( 0.5f, 0.4f ),
-		0.f,
-		Rgba8::WHITE,
-		Rgba8::WHITE );
-
-	DebugRenderScreen( *m_screenCamera );
+	g_engine->m_renderer->BindTexture( &font->GetTexture() );
+	g_engine->m_renderer->SetModelConstants();
+	g_engine->m_renderer->DrawVertexArray( textVerts );
+	g_engine->m_renderer->BindTexture( nullptr );
 
 	g_engine->m_renderer->EndCamera( *m_screenCamera );
 }
