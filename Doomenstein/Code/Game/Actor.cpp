@@ -318,6 +318,12 @@ void Actor::TakeDamage( int damageAmount, Actor* attacker )
 			player->m_killCount++;
 		}
 
+		player = g_app->m_game->GetPlayerFromActor( this );
+		if ( player != nullptr )
+		{
+			player->m_deathCount++;
+		}
+
 		m_velocity = Vec3::ZERO;
 		m_acceleration = Vec3::ZERO;
 

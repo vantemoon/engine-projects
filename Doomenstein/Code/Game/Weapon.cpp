@@ -464,11 +464,14 @@ void Weapon::Render( Actor const* owner ) const
 	BitmapFont* hudFont = renderer->CreateOrGetBitmapFontFromFile( "Data/Fonts/SquirrelFixedFont" );
 	if ( hudFont == nullptr ) return;
 
+	float hudFontSize = 40.f;
+	if ( multiplayer ) hudFontSize *= 0.5f;
+
 	float healthMinX = hudBounds.m_mins.x + hudBounds.GetDimensions().x * 0.25f + 15.f;
 	float healthMaxX = hudBounds.m_mins.x + hudBounds.GetDimensions().x * 0.35f;
 
 	AABB2 healthBox(
-		Vec2( healthMinX, hudBounds.m_mins.y + 6.f ),
+		Vec2( healthMinX, hudBounds.m_mins.y + 15.f ),
 		Vec2( healthMaxX, hudBounds.m_maxs.y )
 	);
 
@@ -477,7 +480,7 @@ void Weapon::Render( Actor const* owner ) const
 		healthVerts,
 		healthText,
 		healthBox,
-		45.f,
+		hudFontSize,
 		Rgba8::WHITE,
 		1.f,
 		Vec2( 0.5f, 0.5f ) );
@@ -495,7 +498,7 @@ void Weapon::Render( Actor const* owner ) const
 	float killCountMaxX = hudBounds.m_mins.x + hudBounds.GetDimensions().x * 0.12f + 15.f;
 
 	AABB2 killCountBox(
-		Vec2( killCountMinX, hudBounds.m_mins.y + 6.f),
+		Vec2( killCountMinX, hudBounds.m_mins.y + 15.f),
 		Vec2( killCountMaxX, hudBounds.m_maxs.y )
 	);
 
@@ -504,7 +507,7 @@ void Weapon::Render( Actor const* owner ) const
 		killCountVerts,
 		killCountText,
 		killCountBox,
-		45.f,
+		hudFontSize,
 		Rgba8::WHITE,
 		1.f,
 		Vec2( 0.5f, 0.5f ) );
@@ -512,6 +515,32 @@ void Weapon::Render( Actor const* owner ) const
 	renderer->BindTexture( &hudFont->GetTexture() );
 	renderer->SetModelConstants();
 	renderer->DrawVertexArray( killCountVerts );
+	
+	// Player death count
+	int deathCount = player->m_deathCount;
+	std::string deathCountText = Stringf( "%d", deathCount );
+
+	float deathCountMinX = hudBounds.m_maxs.x - hudBounds.GetDimensions().x * 0.12f - 15.f;
+	float deathCountMaxX = hudBounds.m_maxs.x;
+
+	AABB2 deathCountBox(
+		Vec2( deathCountMinX, hudBounds.m_mins.y + 15.f ),
+		Vec2( deathCountMaxX, hudBounds.m_maxs.y )
+	);
+
+	std::vector<Vertex> deathCountVerts;
+	hudFont->AddVertsForTextInBox2D(
+		deathCountVerts,
+		deathCountText,
+		deathCountBox,
+		hudFontSize,
+		Rgba8::WHITE,
+		1.f,
+		Vec2( 0.5f, 0.5f ) );
+
+	renderer->BindTexture( &hudFont->GetTexture() );
+	renderer->SetModelConstants();
+	renderer->DrawVertexArray( deathCountVerts );
 	renderer->BindTexture( nullptr );
 
 
