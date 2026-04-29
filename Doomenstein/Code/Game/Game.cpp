@@ -810,7 +810,7 @@ void Game::RenderHUD() const
 		AddVertsForAABB2D(
 			overlayVerts,
 			AABB2( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) ),
-			Rgba8( 100, 100, 100, 150 ) );
+			Rgba8( 20, 20, 20, 150 ) );
 
 		g_engine->m_renderer->BindTexture( nullptr );
 		g_engine->m_renderer->SetModelConstants();

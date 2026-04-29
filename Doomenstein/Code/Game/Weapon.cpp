@@ -398,7 +398,7 @@ void Weapon::Render( Actor const* owner ) const
 	// Animation
 	if ( !m_definition->m_animationNames.empty() )
 	{
-		PlayAnimation();
+		PlayAnimation( owner );
 	}
 
 	// HUD base
@@ -429,7 +429,7 @@ void Weapon::Render( Actor const* owner ) const
 	renderer->BindTexture( nullptr );
 
 	// Reticle
-	if ( !m_definition->m_rectileTexture.empty() )
+	if ( !m_definition->m_rectileTexture.empty() && owner->m_currentHealth > 0 )
 	{
 		Texture* rectileTexture = renderer->CreateOrGetTextureFromFile( m_definition->m_rectileTexture.c_str() );
 
@@ -551,7 +551,7 @@ void Weapon::Render( Actor const* owner ) const
 
 
 //-----------------------------------------------------------------------------------------------
-void Weapon::PlayAnimation() const
+void Weapon::PlayAnimation( Actor const* owner ) const
 {
 	if ( m_definition == nullptr || g_engine == nullptr || g_engine->m_renderer == nullptr )
 	{
@@ -559,6 +559,11 @@ void Weapon::PlayAnimation() const
 	}
 
 	if ( m_definition->m_animationNames.empty() )
+	{
+		return;
+	}
+
+	if ( owner == nullptr || owner->m_currentHealth <= 0 )
 	{
 		return;
 	}

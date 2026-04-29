@@ -19,7 +19,7 @@ public:
 	void Fire( Actor* owner );
 
 	void Render( Actor const* owner ) const;
-	void PlayAnimation() const;
+	void PlayAnimation( Actor const* owner ) const;
 
 private:
 	Vec3 GetRandomDirectionInCone( Vec3 const& baseForward, float coneDegrees ) const;
