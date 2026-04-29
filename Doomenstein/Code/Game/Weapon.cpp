@@ -457,6 +457,37 @@ void Weapon::Render( Actor const* owner ) const
 		}
 	}
 
+	// Player health
+	int health = owner->m_currentHealth;
+	std::string healthText = Stringf( "%d", health );
+
+	BitmapFont* hudFont = renderer->CreateOrGetBitmapFontFromFile( "Data/Fonts/SquirrelFixedFont" );
+	if ( hudFont != nullptr )
+	{
+		float healthMinX = hudBounds.m_mins.x + hudBounds.GetDimensions().x * 0.25f + 15.f;
+		float healthMaxX = hudBounds.m_mins.x + hudBounds.GetDimensions().x * 0.35f;
+
+		AABB2 healthBox(
+			Vec2( healthMinX, hudBounds.m_mins.y + 6.f ),
+			Vec2( healthMaxX, hudBounds.m_maxs.y )
+		);
+
+		std::vector<Vertex> healthVerts;
+		hudFont->AddVertsForTextInBox2D(
+			healthVerts,
+			healthText,
+			healthBox,
+			45.f,
+			Rgba8::WHITE,
+			1.f,
+			Vec2( 0.5f, 0.5f ) );
+
+		renderer->BindTexture( &hudFont->GetTexture() );
+		renderer->SetModelConstants();
+		renderer->DrawVertexArray( healthVerts );
+		renderer->BindTexture( nullptr );
+	}
+
 	renderer->SetDepthMode( DepthMode::READ_WRITE_LESS_EQUAL );
 	renderer->SetRasterizerMode( RasterizerMode::SOLID_CULL_BACK );
 	renderer->EndCamera( screenCamera );
