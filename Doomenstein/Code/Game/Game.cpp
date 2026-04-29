@@ -61,7 +61,7 @@ void Game::Startup()
 {
 	// Initialize game config variables
 	LoadGameConfigFromFile( "Data/GameConfig.xml" );
-	InitializeConfigVariables();
+	InitializeGameAudio();
 
 	// Load all definitions
 	MapDefinition::InitializeDefinitions();
@@ -169,12 +169,13 @@ void Game::DestroyMaps()
 
 
 //-----------------------------------------------------------------------------------------------
-void Game::InitializeConfigVariables()
+void Game::InitializeGameAudio()
 {
 	m_musicVolume = g_gameConfigBlackboard.GetValue( "musicVolume", 0.1f );
 	std::string mainMenuMusicFilePath = g_gameConfigBlackboard.GetValue( "mainMenuMusic", "Data/Audio/Music/MainMenu_InTheDark.mp2" );
 	std::string gameMusicFilePath = g_gameConfigBlackboard.GetValue( "gameMusic", "Data/Audio/Music/E1M1_AtDoomsGate.mp2" );
 	std::string buttonClickSoundFilePath = g_gameConfigBlackboard.GetValue( "buttonClickSound", "Data/Audio/Click.mp3" );
+
 	m_mainMenuMusicID = g_engine->m_audioSystem->CreateOrGetSound( mainMenuMusicFilePath );
 	m_gameMusicID = g_engine->m_audioSystem->CreateOrGetSound( gameMusicFilePath );
 	m_buttonClickSoundID = g_engine->m_audioSystem->CreateOrGetSound( buttonClickSoundFilePath );
@@ -203,9 +204,37 @@ void Game::Update()
 
 	if ( m_currentGameState == GameState::ATTRACT_MODE )
 	{
+		if ( !m_isMainMenuMusicPlaying )
+		{
+			m_mainMenuMusicPlaybackID = g_engine->m_audioSystem->StartSound( m_mainMenuMusicID, true, m_musicVolume );
+			m_isMainMenuMusicPlaying = true;
+		}
+		if ( m_isGameMusicPlaying )
+		{
+			g_engine->m_audioSystem->StopSound( m_gameMusicPlaybackID );
+			m_isGameMusicPlaying = false;
+		}
+
 		UpdateAttractMode();
 		return;
-	};
+	}
+	if ( m_currentGameState == GameState::LOBBY )
+	{
+		// No change in music from attract mode to lobby
+	}
+	else
+	{
+		if ( m_isMainMenuMusicPlaying )
+		{
+			g_engine->m_audioSystem->StopSound( m_mainMenuMusicPlaybackID );
+			m_isMainMenuMusicPlaying = false;
+		}
+		if ( !m_isGameMusicPlaying )
+		{
+			m_gameMusicPlaybackID = g_engine->m_audioSystem->StartSound( m_gameMusicID, true, m_musicVolume );
+			m_isGameMusicPlaying = true;
+		}
+	}
 
 	float deltaSeconds = 0.f;
 	if ( m_gameClock != nullptr )
@@ -249,6 +278,8 @@ void Game::UpdateFromKeyboard()
 		// Start the game and join player 1 with keyboard controls
 		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_SPACE ) )
 		{
+			g_engine->m_audioSystem->StartSound( m_buttonClickSoundID, false );
+
 			Reset();
 			m_currentGameState = GameState::LOBBY;
 			Player* newPlayer = new Player( this, ControlMode::KEYBOARD );
@@ -259,6 +290,8 @@ void Game::UpdateFromKeyboard()
 		// Quit the game
 		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_ESCAPE ) )
 		{
+			g_engine->m_audioSystem->StartSound( m_buttonClickSoundID, false );
+
 			g_app->SetIsQuitting();
 			return;
 		}
@@ -274,6 +307,8 @@ void Game::UpdateFromKeyboard()
 				// Start the game
 				if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_SPACE ) )
 				{
+					g_engine->m_audioSystem->StartSound( m_buttonClickSoundID, false );
+
 					StartGameFromLobby();
 					return;
 				};
@@ -283,6 +318,8 @@ void Game::UpdateFromKeyboard()
 				// Join player 2 with keyboard controls
 				if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_SPACE ) )
 				{
+					g_engine->m_audioSystem->StartSound( m_buttonClickSoundID, false );
+
 					Player* newPlayer = new Player( this, ControlMode::KEYBOARD );
 					m_players.push_back( newPlayer );
 				};
@@ -290,6 +327,8 @@ void Game::UpdateFromKeyboard()
 			// Remove player 1 and return to attract mode
 			if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_ESCAPE ) )
 			{
+				g_engine->m_audioSystem->StartSound( m_buttonClickSoundID, false );
+
 				Player* player1 = m_players[0];
 				m_players.clear();
 				delete player1;
@@ -301,6 +340,8 @@ void Game::UpdateFromKeyboard()
 			// Start the game
 			if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_SPACE ) )
 			{
+				g_engine->m_audioSystem->StartSound( m_buttonClickSoundID, false );
+
 				m_currentGameState = GameState::PLAYING;
 				for ( int playerIndex = 0; playerIndex < ( int ) m_players.size(); ++playerIndex )
 				{
@@ -310,6 +351,8 @@ void Game::UpdateFromKeyboard()
 			// Remove player with keyboard controls
 			if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_ESCAPE ) )
 			{
+				g_engine->m_audioSystem->StartSound( m_buttonClickSoundID, false );
+
 				Player* playerToRemove = nullptr;
 				for ( int playerIndex = 0; playerIndex < playerCount; ++playerIndex )
 				{
@@ -484,6 +527,8 @@ void Game::UpdateFromController()
 		// Start the game and join player 1
 		if ( controller.WasButtonJustPressed( XBOX_BUTTON_START ) )
 		{
+			g_engine->m_audioSystem->StartSound( m_buttonClickSoundID, false );
+
 			Reset();
 			m_currentGameState = GameState::LOBBY;
 			Player* newPlayer = new Player( this, ControlMode::CONTROLLER );
@@ -494,6 +539,8 @@ void Game::UpdateFromController()
 		// Quit the game
 		if ( controller.WasButtonJustPressed( XBOX_BUTTON_BACK ) )
 		{
+			g_engine->m_audioSystem->StartSound( m_buttonClickSoundID, false );
+
 			g_app->SetIsQuitting();
 			return;
 		}
@@ -509,6 +556,8 @@ void Game::UpdateFromController()
 				// Start the game
 				if ( g_engine->m_inputSystem->GetController( 0 ).WasButtonJustPressed( XBOX_BUTTON_START ) )
 				{
+					g_engine->m_audioSystem->StartSound( m_buttonClickSoundID, false );
+
 					StartGameFromLobby();
 					return;
 				};
@@ -518,6 +567,8 @@ void Game::UpdateFromController()
 				// Join player 2 with controller controls
 				if ( controller.WasButtonJustPressed( XBOX_BUTTON_START ) )
 				{
+					g_engine->m_audioSystem->StartSound( m_buttonClickSoundID, false );
+
 					Player* newPlayer = new Player( this, ControlMode::CONTROLLER );
 					m_players.push_back( newPlayer );
 				};
@@ -525,6 +576,8 @@ void Game::UpdateFromController()
 			// Remove player 1 and return to attract mode
 			if ( controller.WasButtonJustPressed( XBOX_BUTTON_BACK ) )
 			{
+				g_engine->m_audioSystem->StartSound( m_buttonClickSoundID, false );
+
 				Player* player1 = m_players[0];
 				m_players.clear();
 				delete player1;
@@ -536,6 +589,8 @@ void Game::UpdateFromController()
 			// Start the game
 			if ( controller.WasButtonJustPressed( XBOX_BUTTON_START ) )
 			{
+				g_engine->m_audioSystem->StartSound( m_buttonClickSoundID, false );
+
 				m_currentGameState = GameState::PLAYING;
 				for ( int playerIndex = 0; playerIndex < ( int ) m_players.size(); ++playerIndex )
 				{
@@ -545,6 +600,8 @@ void Game::UpdateFromController()
 			// Remove player with controller controls
 			if ( controller.WasButtonJustPressed( XBOX_BUTTON_BACK ) )
 			{
+				g_engine->m_audioSystem->StartSound( m_buttonClickSoundID, false );
+
 				Player* playerToRemove = nullptr;
 				for ( int playerIndex = 0; playerIndex < playerCount; ++playerIndex )
 				{

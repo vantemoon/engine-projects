@@ -36,6 +36,10 @@ public:
 	SoundID					m_mainMenuMusicID = MISSING_SOUND_ID;
 	SoundID					m_gameMusicID = MISSING_SOUND_ID;
 	SoundID					m_buttonClickSoundID = MISSING_SOUND_ID;
+	SoundPlaybackID			m_mainMenuMusicPlaybackID = MISSING_SOUND_ID;
+	SoundPlaybackID			m_gameMusicPlaybackID = MISSING_SOUND_ID;
+	bool 					m_isMainMenuMusicPlaying = false;
+	bool					m_isGameMusicPlaying = false;
 
 public:
 	Game();
@@ -68,7 +72,7 @@ public:
 	static bool Command_Controls( EventArgs& args );
 
 protected:
-	void InitializeConfigVariables();
+	void InitializeGameAudio();
 	void DeleteGarbageEntities();
 	Vec3 TransformWorldToScreen( Vec3 const& worldPosition )		   const;
 	bool IsOnScreen( Vec2 const& worldPosition, float cosmeticRadius ) const;
