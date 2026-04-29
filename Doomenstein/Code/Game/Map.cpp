@@ -246,6 +246,25 @@ void Map::Update( float deltaSeconds )
 
 	CollideActors();
 	CollideActorWithMap();
+
+	if ( m_game != nullptr )
+	{
+		for ( int playerIndex = 0; playerIndex < m_game->m_players.size(); playerIndex++ )
+		{
+			Player* player = m_game->m_players[playerIndex];
+			if ( player == nullptr )
+			{
+				continue;
+			}
+
+			Actor* actor = player->GetActor();
+			if ( actor != nullptr && actor->m_isDead && actor->m_isDestroyed )
+			{
+				RespawnPlayer( player );
+			}
+		}
+	}
+
 	DeleteDestroyedActors();
 }
 
@@ -960,8 +979,11 @@ void Map::RespawnPlayer( Player* player )
 	Actor* oldActor = player->GetActor();
 	if ( oldActor != nullptr )
 	{
+		oldActor->OnUnpossessed();
 		oldActor->m_isDestroyed = true;
 	}
+
+	player->m_possessedActor = ActorHandle::INVALID;
 
 	SpawnPlayer( player );
 }

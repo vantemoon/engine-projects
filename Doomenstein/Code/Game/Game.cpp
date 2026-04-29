@@ -658,8 +658,8 @@ void Game::Render()
 			}
 		}
 
-		player->m_playerWorldCamera->SetViewport( viewport );
-		player->m_playerScreenCamera->SetViewport( viewport );
+		player->SetPlayerIndex( playerIndex );
+		player->SetViewport( viewport );
 
 		float screenWidth = SCREEN_SIZE_X;
 		float screenHeight = SCREEN_SIZE_Y * viewport.GetDimensions().y;
@@ -801,19 +801,20 @@ void Game::RenderHUD() const
 		Rgba8::WHITE,
 		Rgba8::WHITE );
 
-	for ( int playerIndex = 0; playerIndex < ( int ) m_players.size(); ++playerIndex )
+	Player* player = m_currentRenderingPlayer;
+	Actor* playerActor = player->GetActor();
+
+	if ( playerActor != nullptr && playerActor->m_isDead )
 	{
-		Player* player = m_players[playerIndex];
-		Actor* playerActor = player->GetActor();
-		
-		if ( playerActor != nullptr && playerActor->m_isDead )
-		{
-			std::vector<Vertex> overlayVerts;
-			AddVertsForAABB2D( overlayVerts, screenBounds, Rgba8( 96, 96, 96, 150 ) );
-			g_engine->m_renderer->BindTexture( nullptr );
-			g_engine->m_renderer->SetModelConstants();
-			g_engine->m_renderer->DrawVertexArray( overlayVerts );
-		}
+		std::vector<Vertex> overlayVerts;
+		AddVertsForAABB2D(
+			overlayVerts,
+			AABB2( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) ),
+			Rgba8( 100, 100, 100, 150 ) );
+
+		g_engine->m_renderer->BindTexture( nullptr );
+		g_engine->m_renderer->SetModelConstants();
+		g_engine->m_renderer->DrawVertexArray( overlayVerts );
 	}
 
 	g_engine->m_renderer->EndCamera( *m_screenCamera );

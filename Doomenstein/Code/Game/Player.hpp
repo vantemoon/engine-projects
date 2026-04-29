@@ -58,7 +58,7 @@ public:
 	Player( Game* owner, ControlMode controlMode = ControlMode::KEYBOARD );
 	~Player();
 
-	void Update( float deltaSeconds );
+	void Update( float deltaSeconds ) override;
 	void UpdateInput();
 	void UpdateCamera();
 	void UpdateFreeFlyCameraControls( float deltaSeconds );
@@ -73,6 +73,11 @@ public:
 	Mat44 GetModelToWorldTransform() const;
 
 	ControlMode GetControlMode() const;
+	void SetPlayerIndex( int playerIndex );
+	void SetControllerIndex( int controllerIndex );
+	void SetViewport( AABB2 const& viewport );
+
+	bool IsDead() const;
 
 private:
 	void UpdateFreeFlyCameraFromMouse();

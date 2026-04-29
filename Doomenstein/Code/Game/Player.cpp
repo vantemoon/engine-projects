@@ -14,6 +14,16 @@ Player::Player( Game* owner, ControlMode controlMode )
 	: m_controlMode( controlMode )
 {
 	m_game = owner;
+
+	if ( m_controlMode == ControlMode::KEYBOARD )
+	{
+		m_controllerIndex = -1;
+	}
+	else
+	{
+		m_controllerIndex = 0;
+	}
+
 	m_playerWorldCamera = new Camera();
 	m_playerScreenCamera = new Camera();
 
@@ -50,6 +60,37 @@ void Player::Update( float deltaSeconds )
 {
 	UNUSED( deltaSeconds );
 
+	if ( m_game != nullptr && m_game->m_currentGameState != GameState::PLAYING )
+	{
+		return;
+	}
+
+	Actor* actor = GetActor();
+
+	if ( actor == nullptr )
+	{
+		if ( m_map != nullptr && m_possessedActor.IsValid() )
+		{
+			m_map->SpawnPlayer( this );
+		}
+		return;
+	}
+
+	if ( actor->m_isDead )
+	{
+		UpdateCamera();
+
+		if ( actor->m_isDestroyed )
+		{
+			if ( m_map != nullptr )
+			{
+				m_map->RespawnPlayer( this );
+			}
+		}
+
+		return;
+	}
+
 	UpdateInput();
 	UpdateCamera();
 }
@@ -76,6 +117,16 @@ void Player::UpdateInput()
 				m_cameraMode = CameraMode::FIRST_PERSON;
 
 				Actor* actor = GetActor();
+				if ( actor == nullptr || actor->m_definition == nullptr )
+				{
+					return;
+				}
+
+				if ( actor->m_isDead )
+				{
+					return;
+				}
+
 				if ( actor != nullptr )
 				{
 					m_orientation = actor->m_orientation;
@@ -113,6 +164,11 @@ void Player::UpdateInput()
 
 		Actor* actor = GetActor();
 		if ( actor == nullptr || actor->m_definition == nullptr )
+		{
+			return;
+		}
+
+		if ( actor->m_isDead )
 		{
 			return;
 		}
@@ -489,7 +545,12 @@ void Player::UpdateFirstPersonFromController( Actor* actor, float deltaSeconds )
 		return;
 	}
 
-	XboxController const& controller = g_engine->m_inputSystem->GetController( 0 );
+	if ( m_controllerIndex < 0 )
+	{
+		return;
+	}
+
+	XboxController const& controller = g_engine->m_inputSystem->GetController( m_controllerIndex );
 
 	float turnSpeed = actor->m_definition->m_turnSpeed;
 	Vec2 rightStick = controller.GetRightJoystick().GetPosition();
@@ -631,4 +692,50 @@ void Player::SelectWeaponBySlot( Actor* actor, int slotIndex )
 ControlMode Player::GetControlMode() const
 {
 	return m_controlMode;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Player::SetPlayerIndex( int playerIndex )
+{
+	m_playerIndex = playerIndex;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Player::SetControllerIndex( int controllerIndex )
+{
+	m_controllerIndex = controllerIndex;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Player::SetViewport( AABB2 const& viewport )
+{
+	m_viewport = viewport;
+
+	if ( m_playerWorldCamera != nullptr )
+	{
+		m_playerWorldCamera->SetViewport( viewport );
+	}
+
+	if ( m_playerScreenCamera != nullptr )
+	{
+		m_playerScreenCamera->SetViewport( viewport );
+
+		float screenWidth = SCREEN_SIZE_X;
+		float screenHeight = SCREEN_SIZE_Y * viewport.GetDimensions().y;
+
+		m_playerScreenCamera->SetOrthoView(
+			Vec2( 0.f, 0.f ),
+			Vec2( screenWidth, screenHeight ) );
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool Player::IsDead() const
+{
+	Actor* actor = GetActor();
+	return actor != nullptr && actor->m_isDead;
 }
