@@ -196,7 +196,7 @@ void Game::Update()
 {
 	if ( !m_hasControlsBeenShown )
 	{
-		g_engine->m_devConsole->ToggleMode( DevConsoleMode::OPEN_FULL );
+		// g_engine->m_devConsole->ToggleMode( DevConsoleMode::OPEN_FULL );
 		AddInstructionsToDevConsole();
 		m_hasControlsBeenShown = true;
 	}
@@ -702,6 +702,25 @@ void Game::RenderAttractMode() const
 	g_engine->m_renderer->ClearScreen( Rgba8( 100, 100, 100 ) );
 
 	g_engine->m_renderer->BeginCamera( *m_screenCamera );
+
+	BitmapFont* font = g_engine->m_renderer->CreateOrGetBitmapFontFromFile( "Data/Fonts/SquirrelFixedFont" );
+	if ( font == nullptr ) return;
+
+	std::string attractModeText1 = "Press SPACE to join with mouse and keyboard";
+	std::string attractModeText2 = "Press START to join with a controller";
+	std::string attractModeText = "Press ESCAPE or BACK to exit";
+	std::vector<Vertex> textVerts;
+	AABB2 text3Bounds = AABB2( Vec2( 0.f, 30.f ), Vec2( SCREEN_SIZE_X, 60.f ) );
+	AABB2 text2Bounds = AABB2( Vec2( 0.f, 60.f ), Vec2( SCREEN_SIZE_X, 90.f ) );
+	AABB2 text1Bounds = AABB2( Vec2( 0.f, 90.f ), Vec2( SCREEN_SIZE_X, 120.f ) );
+	font->AddVertsForTextInBox2D( textVerts, attractModeText1, text1Bounds, 20.f, Rgba8::WHITE, 1.f, Vec2( 0.5f, 0.5f ) );
+	font->AddVertsForTextInBox2D( textVerts, attractModeText2, text2Bounds, 20.f, Rgba8::WHITE, 1.f, Vec2( 0.5f, 0.5f ) );
+	font->AddVertsForTextInBox2D( textVerts, attractModeText, text3Bounds, 20.f, Rgba8::WHITE, 1.f, Vec2( 0.5f, 0.5f ) );
+
+	g_engine->m_renderer->BindTexture( &font->GetTexture() );
+	g_engine->m_renderer->SetModelConstants();
+	g_engine->m_renderer->DrawVertexArray( textVerts );
+	g_engine->m_renderer->BindTexture( nullptr );
 
 	g_engine->m_renderer->EndCamera( *m_screenCamera );
 }
