@@ -462,31 +462,58 @@ void Weapon::Render( Actor const* owner ) const
 	std::string healthText = Stringf( "%d", health );
 
 	BitmapFont* hudFont = renderer->CreateOrGetBitmapFontFromFile( "Data/Fonts/SquirrelFixedFont" );
-	if ( hudFont != nullptr )
-	{
-		float healthMinX = hudBounds.m_mins.x + hudBounds.GetDimensions().x * 0.25f + 15.f;
-		float healthMaxX = hudBounds.m_mins.x + hudBounds.GetDimensions().x * 0.35f;
+	if ( hudFont == nullptr ) return;
 
-		AABB2 healthBox(
-			Vec2( healthMinX, hudBounds.m_mins.y + 6.f ),
-			Vec2( healthMaxX, hudBounds.m_maxs.y )
-		);
+	float healthMinX = hudBounds.m_mins.x + hudBounds.GetDimensions().x * 0.25f + 15.f;
+	float healthMaxX = hudBounds.m_mins.x + hudBounds.GetDimensions().x * 0.35f;
 
-		std::vector<Vertex> healthVerts;
-		hudFont->AddVertsForTextInBox2D(
-			healthVerts,
-			healthText,
-			healthBox,
-			45.f,
-			Rgba8::WHITE,
-			1.f,
-			Vec2( 0.5f, 0.5f ) );
+	AABB2 healthBox(
+		Vec2( healthMinX, hudBounds.m_mins.y + 6.f ),
+		Vec2( healthMaxX, hudBounds.m_maxs.y )
+	);
 
-		renderer->BindTexture( &hudFont->GetTexture() );
-		renderer->SetModelConstants();
-		renderer->DrawVertexArray( healthVerts );
-		renderer->BindTexture( nullptr );
-	}
+	std::vector<Vertex> healthVerts;
+	hudFont->AddVertsForTextInBox2D(
+		healthVerts,
+		healthText,
+		healthBox,
+		45.f,
+		Rgba8::WHITE,
+		1.f,
+		Vec2( 0.5f, 0.5f ) );
+
+	renderer->BindTexture( &hudFont->GetTexture() );
+	renderer->SetModelConstants();
+	renderer->DrawVertexArray( healthVerts );
+
+	// Player kill count
+	Player* player = g_app->m_game->GetPlayerFromActor( owner );
+	int killCount = player->m_killCount;
+	std::string killCountText = Stringf( "%d", killCount );
+
+	float killCountMinX = hudBounds.m_mins.x;
+	float killCountMaxX = hudBounds.m_mins.x + hudBounds.GetDimensions().x * 0.12f + 15.f;
+
+	AABB2 killCountBox(
+		Vec2( killCountMinX, hudBounds.m_mins.y + 6.f),
+		Vec2( killCountMaxX, hudBounds.m_maxs.y )
+	);
+
+	std::vector<Vertex> killCountVerts;
+	hudFont->AddVertsForTextInBox2D(
+		killCountVerts,
+		killCountText,
+		killCountBox,
+		45.f,
+		Rgba8::WHITE,
+		1.f,
+		Vec2( 0.5f, 0.5f ) );
+
+	renderer->BindTexture( &hudFont->GetTexture() );
+	renderer->SetModelConstants();
+	renderer->DrawVertexArray( killCountVerts );
+	renderer->BindTexture( nullptr );
+
 
 	renderer->SetDepthMode( DepthMode::READ_WRITE_LESS_EQUAL );
 	renderer->SetRasterizerMode( RasterizerMode::SOLID_CULL_BACK );
