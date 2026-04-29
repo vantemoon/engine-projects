@@ -932,20 +932,8 @@ void Map::SpawnPlayer( Player* player )
 		return;
 	}
 
-	int playerIndex = 0;
-	if ( m_game != nullptr )
-	{
-		for ( int i = 0; i < ( int ) m_game->m_players.size(); ++i )
-		{
-			if ( m_game->m_players[i] == player )
-			{
-				playerIndex = i;
-				break;
-			}
-		}
-	}
-
-	int spawnIndex = playerIndex % ( int ) spawnPoints.size();
+	RandomNumberGenerator rng;
+	int const spawnIndex = rng.RollRandomIntLessThan( ( int ) spawnPoints.size() );
 
 	SpawnInfo marineSpawnInfo = *spawnPoints[spawnIndex];
 	marineSpawnInfo.m_actor = "Marine";
@@ -958,6 +946,7 @@ void Map::SpawnPlayer( Player* player )
 	}
 
 	player->m_map = this;
+	player->m_possessedActor = ActorHandle::INVALID;
 	player->Possess( marineActor->m_handle );
 
 	player->m_cameraMode = CameraMode::FIRST_PERSON;
