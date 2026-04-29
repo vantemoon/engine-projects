@@ -2,6 +2,7 @@
 
 
 //-----------------------------------------------------------------------------------------------
+#include "Engine/Math/Vec3.hpp"
 #include "ThirdParty/fmod/fmod.hpp"
 #include "Game/EngineBuildPreferences.hpp"
 #include <string>
@@ -50,6 +51,10 @@ public:
 	virtual void				SetSoundPlaybackVolume( SoundPlaybackID soundPlaybackID, float volume );	// volume is in [0,1]
 	virtual void				SetSoundPlaybackBalance( SoundPlaybackID soundPlaybackID, float balance );	// balance is in [-1,1], where 0 is L/R centered
 	virtual void				SetSoundPlaybackSpeed( SoundPlaybackID soundPlaybackID, float speed );		// speed is frequency multiplier (1.0 == normal)
+
+	virtual SoundID             CreateOrGetSound3D( std::string const& soundFilePath );
+	virtual SoundPlaybackID     StartSound3D( SoundID soundID, Vec3 const& position, bool isLooped = false, float volume = 1.f, float speed = 1.0f, bool isPaused = false );
+	virtual void                SetListener( Vec3 const& position, Vec3 const& forward, Vec3 const& up );
 
 	virtual void				ValidateResult( FMOD_RESULT result );
 

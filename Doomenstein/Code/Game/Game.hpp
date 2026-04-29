@@ -73,5 +73,5 @@ protected:
 	Vec3 TransformWorldToScreen( Vec3 const& worldPosition )		   const;
 	bool IsOnScreen( Vec2 const& worldPosition, float cosmeticRadius ) const;
 	void AddInstructionsToDevConsole()								   const;
-	void AddVertsForCube( std::vector<Vertex>& verts, float size) const;
+	void AddVertsForCube( std::vector<Vertex>& verts, float size)	   const;
 };

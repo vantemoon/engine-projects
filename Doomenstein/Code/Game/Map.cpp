@@ -541,7 +541,7 @@ void Map::Render() const
 	g_engine->m_renderer->DrawIndexedVertexBuffer(
 		m_vertexBuffer,
 		m_indexBuffer,
-		static_cast< unsigned int >( m_indices.size() ) );
+		static_cast<unsigned int>( m_indices.size() ) );
 
 	g_engine->m_renderer->BindShader( nullptr );
 	g_engine->m_renderer->BindTexture( nullptr );
