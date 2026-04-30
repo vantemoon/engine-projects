@@ -100,7 +100,7 @@ Actor::Actor( ActorHandle handle, ActorDefinition const* definition, Map* map )
 				continue;
 			}
 
-			SoundID soundID = g_engine->m_audioSystem->CreateOrGetSound( soundName );
+			SoundID soundID = g_engine->m_audioSystem->CreateOrGetSound( soundName, true );
 			if ( soundID != MISSING_SOUND_ID )
 			{
 				m_soundTypes.push_back( soundType );
@@ -156,20 +156,50 @@ void Actor::PlayAnimationByName( std::string const& animationGroupName )
 
 
 //-----------------------------------------------------------------------------------------------
-void Actor::PlaySoundByType( std::string const& soundType, float volume ) const
+void Actor::PlaySoundByType( std::string const& soundType )
 {
 	if ( soundType.empty() || g_engine == nullptr || g_engine->m_audioSystem == nullptr )
 	{
 		return;
 	}
 
-	float const clampedVolume = GetClamped( volume, 0.f, 1.f );
 	for ( int soundIndex = 0; soundIndex < ( int ) m_soundTypes.size() && soundIndex < ( int ) m_soundIDs.size(); ++soundIndex )
 	{
 		if ( m_soundTypes[soundIndex] == soundType )
 		{
-			g_engine->m_audioSystem->StartSound( m_soundIDs[soundIndex], false, clampedVolume );
+			SoundPlaybackID playbackID = g_engine->m_audioSystem->StartSoundAt( m_soundIDs[soundIndex], m_position, false, 1.0f );
+			m_currentPlayingSounds.push_back( playbackID );
 			return;
+		}
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Actor::UpdateSoundPositions()
+{
+	if ( g_engine == nullptr || g_engine->m_audioSystem == nullptr )
+	{
+		return;
+	}
+
+	for ( int soundIndex = ( int ) m_currentPlayingSounds.size() - 1; soundIndex >= 0; --soundIndex )
+	{
+		SoundPlaybackID soundPlaybackID = m_currentPlayingSounds[soundIndex];
+
+		if ( soundPlaybackID == MISSING_SOUND_ID )
+		{
+			m_currentPlayingSounds.erase( m_currentPlayingSounds.begin() + soundIndex );
+			continue;
+		}
+
+		if ( g_engine->m_audioSystem->IsPlaying( soundPlaybackID ) )
+		{
+			g_engine->m_audioSystem->SetSoundPosition( soundPlaybackID, m_position );
+		}
+		else
+		{
+			m_currentPlayingSounds.erase( m_currentPlayingSounds.begin() + soundIndex );
 		}
 	}
 }
@@ -182,6 +212,8 @@ void Actor::Update()
 	{
 		return;
 	}
+
+	UpdateSoundPositions();
 
 	if ( m_definition->m_dieOnSpawn && !m_isDead )
 	{
@@ -454,7 +486,7 @@ void Actor::OnCollide( Actor* otherActor, Vec3 const& collisionNormal )
 		}
 	}
 
-	PlaySoundByType( "Collide", 0.65f );
+	PlaySoundByType( "Collide" );
 
 	if ( m_definition->m_dieOnCollide )
 	{

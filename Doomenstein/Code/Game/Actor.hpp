@@ -45,7 +45,8 @@ public:
 	void EquipWeapon( Weapon* weapon );
 
 	void PlayAnimationByName( std::string const& animationGroupName );
-	void PlaySoundByType( std::string const& soundType, float volume = 1.f ) const;
+	void PlaySoundByType( std::string const& soundType );
+	void UpdateSoundPositions();
 
 	void Render() const;
 	void SetSolidColor( Rgba8 const& color );
@@ -101,4 +102,5 @@ public:
 
 	std::vector<std::string> m_soundTypes;
 	std::vector<SoundID> m_soundIDs;
+	std::vector<SoundPlaybackID> m_currentPlayingSounds;
 };

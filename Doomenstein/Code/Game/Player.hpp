@@ -78,6 +78,8 @@ public:
 	void SetViewport( AABB2 const& viewport );
 
 	bool IsDead() const;
+	Vec3 GetForwardVector() const;
+	Vec3 GetUpVector() const;
 
 private:
 	void UpdateFreeFlyCameraFromMouse();

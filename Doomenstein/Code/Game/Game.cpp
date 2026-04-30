@@ -255,6 +255,7 @@ void Game::Update()
 	UpdateFromController();
 	UpdatePlayers( deltaSeconds );
 	UpdateCurrentMap( deltaSeconds );
+	UpdateAudioListeners();
 
 	g_app->m_game->DeleteGarbageEntities();
 
@@ -342,11 +343,8 @@ void Game::UpdateFromKeyboard()
 			{
 				g_engine->m_audioSystem->StartSound( m_buttonClickSoundID, false );
 
-				m_currentGameState = GameState::PLAYING;
-				for ( int playerIndex = 0; playerIndex < ( int ) m_players.size(); ++playerIndex )
-				{
-					m_currentMap->SpawnPlayer( m_players[playerIndex] );
-				}
+				StartGameFromLobby();
+				return;
 			};
 			// Remove player with keyboard controls
 			if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_ESCAPE ) )
@@ -591,11 +589,8 @@ void Game::UpdateFromController()
 			{
 				g_engine->m_audioSystem->StartSound( m_buttonClickSoundID, false );
 
-				m_currentGameState = GameState::PLAYING;
-				for ( int playerIndex = 0; playerIndex < ( int ) m_players.size(); ++playerIndex )
-				{
-					m_currentMap->SpawnPlayer( m_players[playerIndex] );
-				}
+				StartGameFromLobby();
+				return;
 			}
 			// Remove player with controller controls
 			if ( controller.WasButtonJustPressed( XBOX_BUTTON_BACK ) )
@@ -1008,6 +1003,8 @@ void Game::StartGameFromLobby()
 
 		m_currentMap->SpawnPlayer( player );
 	}
+
+	g_engine->m_audioSystem->SetNumListeners( ( int ) m_players.size() );
 }
 
 
@@ -1146,4 +1143,29 @@ void Game::AddVertsForCube( std::vector<Vertex>& verts, float size ) const
 		Vec3( -halfSize, halfSize, -halfSize ),
 		Vec3( halfSize, halfSize, -halfSize ),
 		Rgba8::YELLOW );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game::UpdateAudioListeners()
+{
+	if ( g_engine == nullptr || g_engine->m_audioSystem == nullptr )
+	{
+		return;
+	}
+
+	for ( int playerIndex = 0; playerIndex < ( int ) m_players.size(); ++playerIndex )
+	{
+		Player* player = m_players[playerIndex];
+		if ( player == nullptr || player->m_playerWorldCamera == nullptr )
+		{
+			continue;
+		}
+
+		g_engine->m_audioSystem->UpdateListener(
+			playerIndex,
+			player->m_playerWorldCamera->GetPosition(),
+			player->m_playerWorldCamera->GetForwardDir(),
+			Vec3( 0.f, 0.f, 1.f ) );
+	}
 }

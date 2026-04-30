@@ -240,9 +240,9 @@ void AudioSystem::SetNumListeners( int numListeners )
 //-----------------------------------------------------------------------------------------------
 void AudioSystem::UpdateListener( int listenerIndex, Vec3 const& position, Vec3 const& forward, Vec3 const& up )
 {
-	FMOD_VECTOR fmodPosition = { position.x, position.y, position.z };
-	FMOD_VECTOR fmodForward = { forward.x, forward.y, forward.z };
-	FMOD_VECTOR fmodUp = { up.x, up.y, up.z };
+	FMOD_VECTOR fmodPosition = ToFmodVector( position );
+	FMOD_VECTOR fmodForward = ToFmodVector( forward );
+	FMOD_VECTOR fmodUp = ToFmodVector( up );
 
 	m_fmodSystem->set3DListenerAttributes( listenerIndex, &fmodPosition, nullptr, &fmodForward, &fmodUp );
 }
@@ -276,8 +276,8 @@ SoundPlaybackID AudioSystem::StartSoundAt( SoundID soundID, const Vec3& soundPos
 		channelAssignedToSound->setPan( balance );
 		channelAssignedToSound->setLoopCount( loopCount );
 
-		FMOD_VECTOR position = { soundPosition.x, soundPosition.y, soundPosition.z };
-		FMOD_VECTOR velocity = { 0.f, 0.f, 0.f };
+		FMOD_VECTOR position = ToFmodVector( soundPosition );
+		FMOD_VECTOR velocity = ToFmodVector( Vec3::ZERO );
 
 		channelAssignedToSound->set3DAttributes( &position, &velocity );
 		channelAssignedToSound->setPaused( isPaused );
@@ -298,8 +298,8 @@ void AudioSystem::SetSoundPosition( SoundPlaybackID soundPlaybackID, const Vec3&
 
 	FMOD::Channel* channelAssignedToSound = ( FMOD::Channel* ) soundPlaybackID;
 
-	FMOD_VECTOR position = { soundPosition.x, soundPosition.y, soundPosition.z };
-	FMOD_VECTOR velocity = { 0.f, 0.f, 0.f };
+	FMOD_VECTOR position = ToFmodVector( soundPosition );
+	FMOD_VECTOR velocity = ToFmodVector( Vec3::ZERO );
 
 	channelAssignedToSound->set3DAttributes( &position, &velocity );
 }
@@ -320,6 +320,14 @@ bool AudioSystem::IsPlaying( SoundPlaybackID soundPlaybackID )
 	channelAssignedToSound->isPlaying( &isPlaying );
 
 	return isPlaying;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+FMOD_VECTOR AudioSystem::ToFmodVector( Vec3 const& gameVector )
+{
+	FMOD_VECTOR fmodVector = { -gameVector.x, gameVector.y, -gameVector.z };
+	return fmodVector;
 }
 
 

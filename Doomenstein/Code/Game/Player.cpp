@@ -739,3 +739,19 @@ bool Player::IsDead() const
 	Actor* actor = GetActor();
 	return actor != nullptr && actor->m_isDead;
 }
+
+
+//-----------------------------------------------------------------------------------------------
+Vec3 Player::GetForwardVector() const
+{
+	Mat44 orientationMat = m_orientation.GetAsMatrix_IFwd_JLeft_KUp();
+	return orientationMat.GetIBasis3D();
+}
+
+
+//-----------------------------------------------------------------------------------------------
+Vec3 Player::GetUpVector() const
+{
+	Mat44 orientationMat = m_orientation.GetAsMatrix_IFwd_JLeft_KUp();
+	return orientationMat.GetKBasis3D();
+}

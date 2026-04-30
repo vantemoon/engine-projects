@@ -60,6 +60,7 @@ public:
 	virtual void				SetSoundPosition( SoundPlaybackID soundPlaybackID, const Vec3& soundPosition );
 	bool						IsPlaying( SoundPlaybackID soundPlaybackID );
 
+	static FMOD_VECTOR			ToFmodVector( Vec3 const& gameVector );
 
 protected:
 	FMOD::System*						m_fmodSystem;
