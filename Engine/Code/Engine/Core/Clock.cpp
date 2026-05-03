@@ -186,7 +186,7 @@ void Clock::Tick()
 	m_totalSeconds += m_deltaSeconds;
 	m_frameCount++;
 	
-	for (int index = 0; index < m_children.size(); ++index )
+	for ( size_t index = 0; index < m_children.size(); ++index )
 	{
 		if ( m_children[index] != nullptr )
 		{

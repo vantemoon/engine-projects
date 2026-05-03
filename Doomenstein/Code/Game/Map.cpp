@@ -249,7 +249,7 @@ void Map::Update( float deltaSeconds )
 
 	if ( m_game != nullptr )
 	{
-		for ( int playerIndex = 0; playerIndex < m_game->m_players.size(); playerIndex++ )
+		for ( size_t playerIndex = 0; playerIndex < m_game->m_players.size(); playerIndex++ )
 		{
 			Player* player = m_game->m_players[playerIndex];
 			if ( player == nullptr )
