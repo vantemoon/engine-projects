@@ -22,6 +22,7 @@ public:
 	std::string m_faction = "NEUTRAL";
 	bool m_canBePossessed = false;
 	bool m_dieOnSpawn = false;
+	bool m_isVirtualPet = false;
 
 	// Collision
 	float m_physicsRadius = 0.f;

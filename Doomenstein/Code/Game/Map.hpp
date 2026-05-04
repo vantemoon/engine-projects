@@ -63,6 +63,7 @@ public:
 
 	Actor* GetClosestVisibleEnemy( Actor* seeker );
 	Actor* GetClosestActorInSector( Vec3 const& startPos, Vec3 const& forwardNormal, float maxLength, float arcDegrees, Actor* owner = nullptr ) const;
+	Actor* GetClosestVirtualPetInSector( Vec3 const& startPos,Vec3 const& forwardNormal, float maxLength, float arcDegrees, Actor* owner = nullptr ) const;
 	
 	void DebugPossessNext();
 	Actor* GetNextPossessableActor( ActorHandle const& currentHandle ) const;

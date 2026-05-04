@@ -44,6 +44,7 @@ Actor::Actor( ActorHandle handle, ActorDefinition const* definition, Map* map )
 	}
 
 	m_isProjectile = m_definition->m_isProjectile;
+	m_isVirtualPet = m_definition->m_isVirtualPet;
 	m_deadTimer.m_period = m_definition->corpseLifetime;
 
 	m_maxHealth = m_definition->m_health;
@@ -287,6 +288,9 @@ void Actor::Update()
 		}
 		return;
 	}
+
+	float deltaSeconds = static_cast<float>( Clock::GetSystemClock().GetDeltaSeconds() );
+	if ( m_isVirtualPet ) UpdateVirtualPet( deltaSeconds );
 
 	UpdatePhysics();
 }
@@ -1103,4 +1107,36 @@ Mat44 Actor::GetModelMatrix() const
 	modelToWorld.Append( rotation );
 
 	return modelToWorld;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Actor::UpdateVirtualPet( float deltaSeconds )
+{
+	if ( !m_isVirtualPet ) return;
+
+	m_hunger = GetClamped( m_hunger - ( m_hungerDecayRate * deltaSeconds ), 0.f, 100.f );
+	m_cleanliness = GetClamped( m_cleanliness - ( m_cleanlinessDecayRate * deltaSeconds ), 0.f, 100.f );
+	m_happiness = GetClamped( m_happiness - ( m_happinessDecayRate * deltaSeconds ), 0.f, 100.f );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Actor::AddHunger( float amount )
+{
+	m_hunger = GetClamped( m_hunger + amount, 0.f, 100.f );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Actor::AddCleanliness( float amount )
+{
+	m_cleanliness = GetClamped( m_cleanliness + amount, 0.f, 100.f );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Actor::AddHappiness( float amount )
+{
+	m_happiness = GetClamped( m_happiness + amount, 0.f, 100.f );
 }

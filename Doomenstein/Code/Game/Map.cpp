@@ -1242,6 +1242,76 @@ Actor* Map::GetClosestActorInSector( Vec3 const& startPos, Vec3 const& forwardNo
 
 
 //-----------------------------------------------------------------------------------------------
+Actor* Map::GetClosestVirtualPetInSector(
+	Vec3 const& startPos,
+	Vec3 const& forwardNormal,
+	float maxLength,
+	float arcDegrees,
+	Actor* owner
+) const
+{
+	if ( forwardNormal == Vec3::ZERO || maxLength <= 0.f || arcDegrees <= 0.f )
+	{
+		return nullptr;
+	}
+
+	Vec3 forward = forwardNormal.GetNormalized();
+	float maxLengthSq = maxLength * maxLength;
+	float halfArcDegrees = arcDegrees * 0.5f;
+
+	Actor* closestPet = nullptr;
+	float closestDistSq = maxLengthSq;
+
+	for ( Actor* actor : m_actors )
+	{
+		if ( actor == nullptr || actor == owner || actor->m_definition == nullptr )
+		{
+			continue;
+		}
+
+		if ( actor->m_isDead || actor->m_isDestroyed )
+		{
+			continue;
+		}
+
+		if ( !actor->m_isVirtualPet )
+		{
+			continue;
+		}
+
+		Vec3 actorCentre = actor->m_position;
+		actorCentre.z += actor->m_definition->m_physicsHeight * 0.5f;
+
+		Vec3 toActor = actorCentre - startPos;
+		float distSq = toActor.GetLengthSquared();
+
+		if ( distSq > maxLengthSq || distSq <= 0.f )
+		{
+			continue;
+		}
+
+		Vec3 toActorDir = toActor.GetNormalized();
+		float angleDegrees = GetAngleDegreesBetweenVectors2D(
+			Vec2( forward.x, forward.y ),
+			Vec2( toActorDir.x, toActorDir.y ) );
+
+		if ( angleDegrees > halfArcDegrees )
+		{
+			continue;
+		}
+
+		if ( distSq < closestDistSq )
+		{
+			closestDistSq = distSq;
+			closestPet = actor;
+		}
+	}
+
+	return closestPet;
+}
+
+
+//-----------------------------------------------------------------------------------------------
 void Map::DebugPossessNext()
 {
 	if ( m_game == nullptr )

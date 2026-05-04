@@ -724,6 +724,8 @@ void Game::Render()
 
 		g_engine->m_renderer->EndCamera( *player->m_playerWorldCamera );
 
+		RenderVirtualPetHUD();
+
 		DebugRenderWorld( *player->m_playerWorldCamera );
 	}
 
@@ -1168,4 +1170,101 @@ void Game::UpdateAudioListeners()
 			player->m_playerWorldCamera->GetForwardDir(),
 			Vec3( 0.f, 0.f, 1.f ) );
 	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+Actor* Game::GetLookedAtVirtualPetActor() const
+{
+	if ( m_currentMap == nullptr || m_currentRenderingPlayer == nullptr )
+	{
+		return nullptr;
+	}
+
+	if ( m_currentRenderingPlayer->m_playerWorldCamera == nullptr )
+	{
+		return nullptr;
+	}
+
+	Actor* playerActor = m_currentRenderingPlayer->GetActor();
+	if ( playerActor == nullptr )
+	{
+		return nullptr;
+	}
+
+	Vec3 coneStart = m_currentRenderingPlayer->m_playerWorldCamera->GetPosition();
+	Vec3 coneForward = m_currentRenderingPlayer->m_playerWorldCamera->GetForwardDir();
+
+	float maxPetLookDistance = 5.f;
+	float petLookArcDegrees = 20.f;
+
+	return m_currentMap->GetClosestVirtualPetInSector(
+		coneStart,
+		coneForward,
+		maxPetLookDistance,
+		petLookArcDegrees,
+		playerActor
+	);
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game::RenderVirtualPetHUD() const
+{
+	Actor* pet = GetLookedAtVirtualPetActor();
+	if ( pet == nullptr )
+	{
+		return;
+	}
+
+	Player* renderingPlayer = m_currentRenderingPlayer;
+	if ( renderingPlayer == nullptr || renderingPlayer->m_playerScreenCamera == nullptr )
+	{
+		return;
+	}
+
+	BitmapFont* font = g_engine->m_renderer->CreateOrGetBitmapFontFromFile( "Data/Fonts/SquirrelFixedFont" );
+	if ( font == nullptr )
+	{
+		return;
+	}
+
+	Camera screenCamera = *renderingPlayer->m_playerScreenCamera;
+
+	g_engine->m_renderer->BeginCamera( screenCamera );
+	g_engine->m_renderer->SetBlendMode( BlendMode::ALPHA );
+	g_engine->m_renderer->SetDepthMode( DepthMode::DISABLED );
+
+	std::vector<Vertex> textVerts;
+
+	float screenHeight = SCREEN_SIZE_Y * renderingPlayer->m_playerScreenCamera->GetViewport().GetDimensions().y;
+
+	std::string petStats = Stringf(
+		"Hunger: %.0f\nCleanliness: %.0f\nHappiness: %.0f",
+		pet->m_hunger,
+		pet->m_cleanliness,
+		pet->m_happiness
+	);
+
+	AABB2 textBounds(
+		Vec2( 20.f, screenHeight - 140.f ),
+		Vec2( 500.f, screenHeight - 20.f )
+	);
+
+	font->AddVertsForTextInBox2D(
+		textVerts,
+		petStats,
+		textBounds,
+		24.f,
+		Rgba8::WHITE,
+		1.f,
+		Vec2( 0.f, 1.f )
+	);
+
+	g_engine->m_renderer->BindTexture( &font->GetTexture() );
+	g_engine->m_renderer->SetModelConstants();
+	g_engine->m_renderer->DrawVertexArray( textVerts );
+	g_engine->m_renderer->BindTexture( nullptr );
+
+	g_engine->m_renderer->EndCamera( screenCamera );
 }

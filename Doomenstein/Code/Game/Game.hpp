@@ -71,6 +71,9 @@ public:
 	Player* GetPlayerFromActor( Actor const* actor ) const;
 	static bool Command_Controls( EventArgs& args );
 
+	Actor* GetLookedAtVirtualPetActor() const;
+	void RenderVirtualPetHUD() const;
+
 protected:
 	void InitializeGameAudio();
 	void DeleteGarbageEntities();

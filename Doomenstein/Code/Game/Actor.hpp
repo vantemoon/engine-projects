@@ -52,6 +52,11 @@ public:
 	void SetSolidColor( Rgba8 const& color );
 	Mat44 GetModelMatrix() const;
 
+	void UpdateVirtualPet( float deltaSeconds );
+	void AddHunger( float amount );
+	void AddCleanliness( float amount );
+	void AddHappiness( float amount );
+
 private:
 	int GetAnimationGroupIndexByName( std::string const& animationGroupName ) const;
 	int GetBestDirectionAnimationIndex() const;
@@ -103,4 +108,14 @@ public:
 	std::vector<std::string> m_soundTypes;
 	std::vector<SoundID> m_soundIDs;
 	std::vector<SoundPlaybackID> m_currentPlayingSounds;
+
+	bool m_isVirtualPet = false;
+
+	float m_hunger = 100.f;
+	float m_cleanliness = 100.f;
+	float m_happiness = 100.f;
+
+	float m_hungerDecayRate = 2.f;
+	float m_cleanlinessDecayRate = 1.f;
+	float m_happinessDecayRate = 0.5f;
 };
