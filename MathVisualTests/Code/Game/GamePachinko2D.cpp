@@ -12,6 +12,7 @@
 #include "Engine/Math/Vec2.hpp"
 #include "Engine/Renderer/Camera.hpp"
 #include "Engine/Renderer/Renderer.hpp"
+#include <math.h>
 
 
 //-----------------------------------------------------------------------------------------------
@@ -31,25 +32,22 @@ GamePachinko2D::~GamePachinko2D()
 //-----------------------------------------------------------------------------------------------
 void GamePachinko2D::Update( float deltaSeconds )
 {
-	UNUSED( deltaSeconds );
-
 	m_worldCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( PACHINKO_WORLD_SIZE_X, PACHINKO_WORLD_SIZE_Y ) );
 	m_screenCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) );
 
-	// Apply gravity and move balls
-	for ( int ballIndex = 0; ballIndex < m_balls.size(); ++ballIndex )
+	if ( m_usingFixedTimestep )
 	{
-		TestShapeDisc* ball = m_balls[ballIndex];
-		if ( m_isGravityOn )
+		m_physicsTimeOwed += deltaSeconds;
+		while ( m_physicsTimeOwed >= m_physicsTimestep )
 		{
-			Vec2 gravityAcceleration = Vec2( 0.f, -m_gravityStrength );
-			ball->m_velocity += gravityAcceleration * deltaSeconds;
+			UpdatePhysics( m_physicsTimestep );
+			m_physicsTimeOwed -= m_physicsTimestep;
 		}
-		ball->Update( deltaSeconds );
 	}
-
-	CollideBallsWithBalls();
-	CollideBallsWithBumpers();
+	else
+	{
+		UpdatePhysics( deltaSeconds );
+	}
 
 	UpdateFromKeyboard();
 	Render();
@@ -143,6 +141,16 @@ void GamePachinko2D::UpdateFromKeyboard()
 		m_isSlowMo = false;
 	}
 
+	// Use [ and ] keys to decrease/increase physics timestep
+	if ( g_engine->m_inputSystem->WasKeyJustPressed( '[' ) )
+	{
+		m_physicsTimestep /= 1.1f;
+	}
+	if ( g_engine->m_inputSystem->WasKeyJustPressed( ']' ) )
+	{
+		m_physicsTimestep *= 1.1f;
+	}
+
 	// Randomize all shape positions with F8
 	if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_F8 ) )
 	{
@@ -176,6 +184,38 @@ void GamePachinko2D::UpdateFromKeyboard()
 	{
 		m_isGravityOn = !m_isGravityOn;
 	}
+
+	// Toggle floor with B key
+	if ( g_engine->m_inputSystem->WasKeyJustPressed( 'B' ) )
+	{
+		m_isFloorOn = !m_isFloorOn;
+	}
+
+	// Toggle fixed timestep with P key
+	if ( g_engine->m_inputSystem->WasKeyJustPressed( 'P' ) )
+	{
+		m_usingFixedTimestep = !m_usingFixedTimestep;
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void GamePachinko2D::UpdatePhysics( float timestep )
+{
+	for ( int ballIndex = 0; ballIndex < m_balls.size(); ++ballIndex )
+	{
+		TestShapeDisc* ball = m_balls[ballIndex];
+		if ( m_isGravityOn )
+		{
+			Vec2 gravityAcceleration = Vec2( 0.f, -m_gravityStrength );
+			ball->m_velocity += gravityAcceleration * timestep;
+		}
+		ball->Update( timestep );
+	}
+
+	CollideBallsWithBalls();
+	CollideBallsWithBumpers();
+	CollideBallsWithWalls();
 }
 
 
@@ -228,7 +268,11 @@ void GamePachinko2D::CollideBallsWithBumpers()
 		for ( int bumperIndex = 0; bumperIndex < m_capsuleBumpers.size(); ++bumperIndex )
 		{
 			TestShapeCapsule* capsule = m_capsuleBumpers[bumperIndex];
-			
+
+			float distanceSquared = GetDistanceSquared2D( ball->m_center, capsule->m_boundingDiscCenter );
+			float radiusSum = ball->m_radius + capsule->m_boundingDiscRadius;
+			if ( distanceSquared > radiusSum * radiusSum ) continue;
+
 			bool didOverlap = PushDiscOutOfFixedCapsule2D(
 				ball->m_center, ball->m_radius, 
 				capsule->m_boneStart, capsule->m_boneEnd, capsule->m_radius );
@@ -252,6 +296,10 @@ void GamePachinko2D::CollideBallsWithBumpers()
 		for ( int bumperIndex = 0; bumperIndex < m_discBumpers.size(); ++bumperIndex )
 		{
 			TestShapeDisc* disc = m_discBumpers[bumperIndex];
+
+			float distanceSquared = GetDistanceSquared2D( ball->m_center, disc->m_center );
+			float radiusSum = ball->m_radius + disc->m_radius;
+			if ( distanceSquared > radiusSum * radiusSum ) continue;
 			
 			bool didOverlap = PushDiscOutOfFixedDisc2D(
 				ball->m_center, ball->m_radius, 
@@ -275,6 +323,10 @@ void GamePachinko2D::CollideBallsWithBumpers()
 		for ( int bumperIndex = 0; bumperIndex < m_obbBumpers.size(); ++bumperIndex )
 		{
 			TestShapeOBB* obb = m_obbBumpers[bumperIndex];
+
+			float distanceSquared = GetDistanceSquared2D( ball->m_center, obb->m_boundingDiscCenter );
+			float radiusSum = ball->m_radius + obb->m_boundingDiscRadius;
+			if ( distanceSquared > radiusSum * radiusSum ) continue;
 			
 			bool didOverlap = PushDiscOutOfFixedOBB2D(
 				ball->m_center, ball->m_radius, 
@@ -295,6 +347,43 @@ void GamePachinko2D::CollideBallsWithBumpers()
 
 			vN = -vN * elasticity;
 			ball->m_velocity = vT + vN;
+		}
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void GamePachinko2D::CollideBallsWithWalls()
+{
+	float pachinkoWallElasticity = g_gameConfigBlackboard.GetValue( "pachinkoWallElasticity", 0.9f );
+	for ( int ballIndex = 0; ballIndex < m_balls.size(); ++ballIndex )
+	{
+		TestShapeDisc* ball = m_balls[ballIndex];
+		float elasticity = ball->m_elasticity * pachinkoWallElasticity;
+
+		// Left wall
+		if ( ball->m_center.x - ball->m_radius < 0.f )
+		{
+			ball->m_center.x = ball->m_radius;
+			ball->m_velocity.x = -ball->m_velocity.x * elasticity;
+		}
+
+		// Right wall
+		if ( ball->m_center.x + ball->m_radius > PACHINKO_WORLD_SIZE_X )
+		{
+			ball->m_center.x = PACHINKO_WORLD_SIZE_X - ball->m_radius;
+			ball->m_velocity.x = -ball->m_velocity.x * elasticity;
+		}
+
+		// Floor
+		if ( m_isFloorOn && ball->m_center.y - ball->m_radius < 0.f )
+		{
+			ball->m_center.y = ball->m_radius;
+			ball->m_velocity.y = -ball->m_velocity.y * elasticity;
+		}
+		else if ( !m_isFloorOn && ball->m_center.y + ball->m_radius < 0.f )
+		{
+			ball->m_center.y = PACHINKO_WORLD_SIZE_Y * 1.1f + ball->m_radius;
 		}
 	}
 }

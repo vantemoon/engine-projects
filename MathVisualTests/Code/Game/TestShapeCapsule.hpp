@@ -14,6 +14,9 @@ public:
 
 	float   m_elasticity = 0.5f;
 
+	Vec2    m_boundingDiscCenter;
+	float   m_boundingDiscRadius;
+
 public:
 	TestShapeCapsule( Vec2 const& boneStart, Vec2 const& boneEnd, float radius, int numSides, float elasticity = 0.5f );
 	~TestShapeCapsule();

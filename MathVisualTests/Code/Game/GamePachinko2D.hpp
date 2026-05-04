@@ -20,9 +20,14 @@ public:
 	Vec2 m_rayStartPos = Vec2( 500, 250 );
 	Vec2 m_rayEndPos = Vec2( 1100, 550 );
 
+	float m_physicsTimestep = 0.005f;
+	float m_physicsTimeOwed = 0.f;
 	float m_ballElasticity = 0.9f;
-	bool  m_isGravityOn = true;
 	float m_gravityStrength = 800.f;
+
+	bool m_usingFixedTimestep = true;
+	bool  m_isGravityOn = true;
+	bool  m_isFloorOn = true;
 	bool  m_isSlowMo = false;
 
 	GamePachinko2D();
@@ -30,8 +35,10 @@ public:
 
 	void Update( float deltaSeconds ) override;
 	void UpdateFromKeyboard();
+	void UpdatePhysics( float timestep );
 	void CollideBallsWithBalls();
 	void CollideBallsWithBumpers();
+	void CollideBallsWithWalls();
 	void Render() const override;
 
 private:
