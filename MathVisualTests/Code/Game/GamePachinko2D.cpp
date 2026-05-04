@@ -35,9 +35,17 @@ void GamePachinko2D::Update( float deltaSeconds )
 	m_worldCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( PACHINKO_WORLD_SIZE_X, PACHINKO_WORLD_SIZE_Y ) );
 	m_screenCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) );
 
+	UpdateFromKeyboard();
+
+	float physicsDeltaSeconds = deltaSeconds;
+	if ( m_isSlowMo )
+	{
+		physicsDeltaSeconds *= 0.05f;
+	}
+
 	if ( m_usingFixedTimestep )
 	{
-		m_physicsTimeOwed += deltaSeconds;
+		m_physicsTimeOwed += physicsDeltaSeconds;
 		while ( m_physicsTimeOwed >= m_physicsTimestep )
 		{
 			UpdatePhysics( m_physicsTimestep );
@@ -46,10 +54,9 @@ void GamePachinko2D::Update( float deltaSeconds )
 	}
 	else
 	{
-		UpdatePhysics( deltaSeconds );
+		UpdatePhysics( physicsDeltaSeconds );
 	}
 
-	UpdateFromKeyboard();
 	Render();
 }
 
@@ -168,12 +175,12 @@ void GamePachinko2D::UpdateFromKeyboard()
 	}
 
 	// Decrease ball elasticity with G key, increase with H key
-	if ( g_engine->m_inputSystem->IsKeyDown( 'Z' ) )
+	if ( g_engine->m_inputSystem->WasKeyJustPressed( 'Z' ) )
 	{
 		m_ballElasticity -= 0.05f;
 		m_ballElasticity = GetClamped( m_ballElasticity, 0.f, 1.f );
 	}
-	if ( g_engine->m_inputSystem->IsKeyDown( 'X' ) )
+	if ( g_engine->m_inputSystem->WasKeyJustPressed( 'X' ) )
 	{
 		m_ballElasticity += 0.05f;
 		m_ballElasticity = GetClamped( m_ballElasticity, 0.f, 1.f );

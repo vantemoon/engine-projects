@@ -279,8 +279,33 @@ void App::RenderHUD() const
 			break;
 		}
 		case GAMEMODE_PACHINKO_2D:
-			AddVertsForTextTriangles2D( verts, "TODO: Instructions", Vec2( 240.f, 730.f ), 20.f, Rgba8::CYAN );
+		{
+			GamePachinko2D const* currGame = dynamic_cast< GamePachinko2D const* >( m_game );
+			int const numBalls = ( currGame != nullptr ) ? static_cast< int >( currGame->m_balls.size() ) : 0;
+			float const ballElasticity = ( currGame != nullptr ) ? currGame->m_ballElasticity : 0.f;
+			bool isGravityOn = ( currGame != nullptr ) ? currGame->m_isGravityOn : false;
+			bool isFloorOn = ( currGame != nullptr ) ? currGame->m_isFloorOn : false;
+			bool isFixedTimestep = ( currGame != nullptr ) ? currGame->m_usingFixedTimestep : false;
+			float physicsTimestep = ( currGame != nullptr ) ? currGame->m_physicsTimestep : 0.f;
+			float deltaSeconds = ( currGame != nullptr ) ? currGame->m_physicsTimeOwed : 0.f;
+
+			std::string const gravityText = isGravityOn ? "On" : "Off";
+			std::string const floorText = isFloorOn ? "On" : "Off";
+			std::string const timestepText = isFixedTimestep ? "Fixed" : "Variable";
+			std::string const controlsTextLine1 = Stringf( "LMB/RMB move, T:slow, space/N:ball (%d), e=%.2f (Z,X)",
+				numBalls,
+				ballElasticity );
+			std::string const controlsTextLine2 = Stringf( "G:gravity %s, B:bottom warp %s, %s timestep=%.2fms (P,[,]), dt=%.2fms", 
+				gravityText.c_str(), 
+				floorText.c_str(), 
+				timestepText.c_str(), 
+				physicsTimestep * 1000.f, 
+				deltaSeconds * 1000.f );
+
+			AddVertsForTextTriangles2D( verts, controlsTextLine1, Vec2( 240.f, 730.f ), 20.f, Rgba8::CYAN );
+			AddVertsForTextTriangles2D( verts, controlsTextLine2, Vec2( 240.f, 705.f ), 20.f, Rgba8::CYAN );
 			break;
+		}
 		default:
 			break;
 	}
