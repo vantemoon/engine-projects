@@ -3,6 +3,7 @@
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/EngineCommon.hpp"
 #include "Engine/Core/ErrorWarningAssert.hpp"
+#include "Engine/Core/Rgba8.hpp"
 #include "Engine/Core/Vertex.hpp"
 #include "Engine/Core/VertexUtils.hpp"
 #include "Engine/Math/AABB2.hpp"
@@ -34,6 +35,20 @@ void GamePachinko2D::Update( float deltaSeconds )
 
 	m_worldCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( PACHINKO_WORLD_SIZE_X, PACHINKO_WORLD_SIZE_Y ) );
 	m_screenCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) );
+
+	// Apply gravity and move balls
+	for ( int ballIndex = 0; ballIndex < m_balls.size(); ++ballIndex )
+	{
+		TestShapeDisc* ball = m_balls[ballIndex];
+		if ( m_isGravityOn )
+		{
+			Vec2 gravityAcceleration = Vec2( 0.f, -m_gravityStrength );
+			ball->m_velocity += gravityAcceleration * deltaSeconds;
+		}
+		ball->Update( deltaSeconds );
+	}
+
+	CollideBallsWithBalls();
 
 	UpdateFromKeyboard();
 	Render();
@@ -132,6 +147,81 @@ void GamePachinko2D::UpdateFromKeyboard()
 	{
 		Reset();
 	}
+
+	// Spawn new ball with spacebar or N key
+	if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_SPACE ) )
+	{
+		SpawnBall();
+	}
+	if ( g_engine->m_inputSystem->IsKeyDown( 'N' ) )
+	{
+		SpawnBall();
+	}
+
+	// Decrease ball elasticity with G key, increase with H key
+	if ( g_engine->m_inputSystem->IsKeyDown( 'Z' ) )
+	{
+		m_ballElasticity -= 0.05f;
+		m_ballElasticity = GetClamped( m_ballElasticity, 0.f, 1.f );
+	}
+	if ( g_engine->m_inputSystem->IsKeyDown( 'X' ) )
+	{
+		m_ballElasticity += 0.05f;
+		m_ballElasticity = GetClamped( m_ballElasticity, 0.f, 1.f );
+	}
+
+	// Toggle gravity with G key
+	if ( g_engine->m_inputSystem->WasKeyJustPressed( 'G' ) )
+	{
+		m_isGravityOn = !m_isGravityOn;
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void GamePachinko2D::CollideBallsWithBalls()
+{
+	for ( int ballIndexA = 0; ballIndexA < m_balls.size(); ++ballIndexA )
+	{
+		TestShapeDisc* ballA = m_balls[ballIndexA];
+		for ( int ballIndexB = ballIndexA + 1; ballIndexB < m_balls.size(); ++ballIndexB )
+		{
+			TestShapeDisc* ballB = m_balls[ballIndexB];
+
+			bool didOverlap = PushDiscsOutOfEachOther2D( 
+				ballA->m_center, ballA->m_radius, 
+				ballB->m_center, ballB->m_radius );
+
+			if ( !didOverlap )
+			{
+				continue;
+			}
+
+			Vec2 displacement = ballB->m_center - ballA->m_center;
+			Vec2 collisionNormal = displacement.GetNormalized();
+
+			Vec2 relativeVelocity = ballB->m_velocity - ballA->m_velocity;
+			float dot = DotProduct2D( relativeVelocity, collisionNormal );
+			if ( dot >= 0.f )
+			{
+				continue;
+			}
+
+			float elasticity = ballA->m_elasticity * ballB->m_elasticity;
+
+			Vec2 aVN = collisionNormal * DotProduct2D( ballA->m_velocity, collisionNormal );
+			Vec2 bVN = collisionNormal * DotProduct2D( ballB->m_velocity, collisionNormal );
+
+			Vec2 aVT = ballA->m_velocity - aVN;
+			Vec2 bVT = ballB->m_velocity - bVN;
+
+			aVN = bVN * elasticity;
+			bVN = aVN * elasticity;
+
+			ballA->m_velocity = aVT + aVN;
+			ballB->m_velocity = bVT + bVN;
+		}
+	}
 }
 
 
@@ -161,9 +251,20 @@ void GamePachinko2D::Render() const
 		Rgba8 bumperColor = GetBumperColorFromElasticity( obbBumper->m_elasticity );
 		AddVertsForOBB2D( verts, obbBumper->m_orientedBox, bumperColor );
 	}
+
+	// Balls
+	for ( int ballIndex = 0; ballIndex < m_balls.size(); ++ballIndex )
+	{
+		TestShapeDisc* ball = m_balls[ballIndex];
+		AddVertsForDisc2D( verts, ball->m_center, ball->m_radius, ball->m_color, 32 );
+	}
 	
-	// Ray
+	// Ray and circles
 	AddVertsForArrow2D(verts, m_rayStartPos, m_rayEndPos, 3.f, 10.f, Rgba8::GREEN );
+	float pachinkoMinBallRadius = ( float ) g_gameConfigBlackboard.GetValue( "pachinkoMinBallRadius", 5 );
+	float pachinkoMaxBallRadius = ( float ) g_gameConfigBlackboard.GetValue( "pachinkoMaxBallRadius", 25 );
+	AddVertsForRing2D( verts, m_rayStartPos, pachinkoMinBallRadius, 2.f, Rgba8( 50, 80, 150, 255 ), 32 );
+	AddVertsForRing2D( verts, m_rayStartPos, pachinkoMaxBallRadius, 2.f, Rgba8( 50, 80, 150, 255 ), 32 );
 
 	g_engine->m_renderer->BindTexture( nullptr );
 	g_engine->m_renderer->DrawVertexArray( verts );
@@ -305,6 +406,21 @@ void GamePachinko2D::Reset()
 
 
 //-----------------------------------------------------------------------------------------------
+void GamePachinko2D::SpawnBall()
+{
+	RandomNumberGenerator rng;
+	Vec2 velocity = 3.f * ( m_rayEndPos - m_rayStartPos );
+	float pachinkoMinBallRadius =  ( float ) g_gameConfigBlackboard.GetValue( "pachinkoMinBallRadius", 5 );
+	float pachinkoMaxBallRadius = ( float ) g_gameConfigBlackboard.GetValue( "pachinkoMaxBallRadius", 25 );
+	float radius = rng.RollRandomFloatInRange( pachinkoMinBallRadius, pachinkoMaxBallRadius );
+
+	TestShapeDisc* ball = new TestShapeDisc( m_rayStartPos, radius, 32, m_ballElasticity, velocity );
+	ball->m_color = GetRandomBallColor();
+	m_balls.push_back( ball );
+}
+
+
+//-----------------------------------------------------------------------------------------------
 Rgba8 GamePachinko2D::GetBumperColorFromElasticity( float elasticity ) const
 {
 	float pachinkoMinBumperElasticity = g_gameConfigBlackboard.GetValue( "pachinkoMinBumperElasticity", 0.01f );
@@ -315,5 +431,15 @@ Rgba8 GamePachinko2D::GetBumperColorFromElasticity( float elasticity ) const
 	color.r = ( unsigned char ) GetClamped( ( 1.f - normalizedElasticity ) * 255.f, 0.f, 255.f );
 	color.g = ( unsigned char ) GetClamped( normalizedElasticity * 255.f, 0.f, 255.f );
 	color.b = 0;
+	return color;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+Rgba8 GamePachinko2D::GetRandomBallColor() const
+{
+	RandomNumberGenerator rng;
+	float t = rng.RollRandomFloatInRange( 0.2f, 1.f );
+	Rgba8 color = Rgba8().Interpolate( Rgba8::WHITE, Rgba8( 50, 80, 150, 255 ), t );
 	return color;
 }

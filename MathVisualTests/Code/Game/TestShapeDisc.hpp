@@ -12,8 +12,11 @@ public:
 	int		m_numSides;
 
 	float   m_elasticity = 0.5f;
+	Vec2    m_velocity = Vec2::ZERO;
 
 public:
-	TestShapeDisc( Vec2 const& center, float radius, int numSides, float elasticity = 0.5f );
+	TestShapeDisc( Vec2 const& center, float radius, int numSides, float elasticity = 0.5f, Vec2 const& velocity = Vec2::ZERO );
 	~TestShapeDisc();
+
+	void Update( float deltaSeconds );
 };

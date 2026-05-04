@@ -18,15 +18,19 @@ public:
 	std::vector<TestShapeDisc*> m_balls;
 
 	Vec2 m_rayStartPos = Vec2( 500, 250 );
-	Vec2 m_rayEndPos = Vec2( 1500, 750 );
+	Vec2 m_rayEndPos = Vec2( 1100, 550 );
 
-	bool m_isSlowMo = false;
+	float m_ballElasticity = 0.9f;
+	bool  m_isGravityOn = true;
+	float m_gravityStrength = 800.f;
+	bool  m_isSlowMo = false;
 
 	GamePachinko2D();
 	~GamePachinko2D();
 
 	void Update( float deltaSeconds ) override;
 	void UpdateFromKeyboard();
+	void CollideBallsWithBalls();
 	void Render() const override;
 
 private:
@@ -34,5 +38,7 @@ private:
 	Vec2 GetMouseWorldPos() const;
 	void GenerateRandomBumpers();
 	void Reset();
+	void SpawnBall();
 	Rgba8 GetBumperColorFromElasticity( float elasticity ) const;
+	Rgba8 GetRandomBallColor() const;
 };
