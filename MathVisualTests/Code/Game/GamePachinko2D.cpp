@@ -130,7 +130,7 @@ void GamePachinko2D::UpdateFromKeyboard()
 	// Randomize all shape positions with F8
 	if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_F8 ) )
 	{
-		GenerateRandomBumpers();
+		Reset();
 	}
 }
 
@@ -266,6 +266,41 @@ void GamePachinko2D::GenerateRandomBumpers()
 		TestShapeOBB* obbBumper = new TestShapeOBB( center, iBasisNormal, halfDimensions, elasticity );
 		m_obbBumpers.push_back( obbBumper );
 	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void GamePachinko2D::Reset()
+{
+	for ( int bumperIndex = 0; bumperIndex < m_capsuleBumpers.size(); ++bumperIndex )
+	{
+		TestShapeCapsule* capsuleBumper = m_capsuleBumpers[bumperIndex];
+		delete capsuleBumper;
+	}
+	m_capsuleBumpers.clear();
+
+	for ( int bumperIndex = 0; bumperIndex < m_discBumpers.size(); ++bumperIndex )
+	{
+		TestShapeDisc* discBumper = m_discBumpers[bumperIndex];
+		delete discBumper;
+	}
+	m_discBumpers.clear();
+
+	for ( int bumperIndex = 0; bumperIndex < m_obbBumpers.size(); ++bumperIndex )
+	{
+		TestShapeOBB* obbBumper = m_obbBumpers[bumperIndex];
+		delete obbBumper;
+	}
+	m_obbBumpers.clear();
+
+	for ( int ballIndex = 0; ballIndex < m_balls.size(); ++ballIndex )
+	{
+		TestShapeDisc* ball = m_balls[ballIndex];
+		delete ball;
+	}
+	m_balls.clear();
+
+	GenerateRandomBumpers();
 }
 
 

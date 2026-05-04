@@ -33,5 +33,6 @@ private:
 	void LoadGameConfigFromFile( char const* filepath );
 	Vec2 GetMouseWorldPos() const;
 	void GenerateRandomBumpers();
+	void Reset();
 	Rgba8 GetBumperColorFromElasticity( float elasticity ) const;
 };
