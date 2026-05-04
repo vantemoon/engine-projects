@@ -49,6 +49,7 @@ void GamePachinko2D::Update( float deltaSeconds )
 	}
 
 	CollideBallsWithBalls();
+	CollideBallsWithBumpers();
 
 	UpdateFromKeyboard();
 	Render();
@@ -191,21 +192,14 @@ void GamePachinko2D::CollideBallsWithBalls()
 			bool didOverlap = PushDiscsOutOfEachOther2D( 
 				ballA->m_center, ballA->m_radius, 
 				ballB->m_center, ballB->m_radius );
-
-			if ( !didOverlap )
-			{
-				continue;
-			}
+			if ( !didOverlap ) continue;
 
 			Vec2 displacement = ballB->m_center - ballA->m_center;
 			Vec2 collisionNormal = displacement.GetNormalized();
 
 			Vec2 relativeVelocity = ballB->m_velocity - ballA->m_velocity;
 			float dot = DotProduct2D( relativeVelocity, collisionNormal );
-			if ( dot >= 0.f )
-			{
-				continue;
-			}
+			if ( dot >= 0.f ) continue;
 
 			float elasticity = ballA->m_elasticity * ballB->m_elasticity;
 
@@ -220,6 +214,87 @@ void GamePachinko2D::CollideBallsWithBalls()
 
 			ballA->m_velocity = aVT + aVN;
 			ballB->m_velocity = bVT + bVN;
+		}
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void GamePachinko2D::CollideBallsWithBumpers()
+{
+	for ( int ballIndex = 0; ballIndex < m_balls.size(); ++ballIndex )
+	{
+		TestShapeDisc* ball = m_balls[ballIndex];
+		for ( int bumperIndex = 0; bumperIndex < m_capsuleBumpers.size(); ++bumperIndex )
+		{
+			TestShapeCapsule* capsule = m_capsuleBumpers[bumperIndex];
+			
+			bool didOverlap = PushDiscOutOfFixedCapsule2D(
+				ball->m_center, ball->m_radius, 
+				capsule->m_boneStart, capsule->m_boneEnd, capsule->m_radius );
+			if ( !didOverlap ) continue;
+
+			Vec2 nearestPointOnCapsule = GetNearestPointOnCapsule2D( ball->m_center, capsule->m_boneStart, capsule->m_boneEnd, capsule->m_radius );
+			Vec2 displacement = ball->m_center - nearestPointOnCapsule;
+			Vec2 collisionNormal = displacement.GetNormalized();
+
+			float dot = DotProduct2D( ball->m_velocity, collisionNormal );
+			if ( dot >= 0.f ) continue;
+
+			float elasticity = ball->m_elasticity * capsule->m_elasticity;
+
+			Vec2 vN = collisionNormal * DotProduct2D( ball->m_velocity, collisionNormal );
+			Vec2 vT = ball->m_velocity - vN;
+
+			vN = -vN * elasticity;
+			ball->m_velocity = vT + vN;
+		}
+		for ( int bumperIndex = 0; bumperIndex < m_discBumpers.size(); ++bumperIndex )
+		{
+			TestShapeDisc* disc = m_discBumpers[bumperIndex];
+			
+			bool didOverlap = PushDiscOutOfFixedDisc2D(
+				ball->m_center, ball->m_radius, 
+				disc->m_center, disc->m_radius );
+			if ( !didOverlap ) continue;
+
+			Vec2 displacement = ball->m_center - disc->m_center;
+			Vec2 collisionNormal = displacement.GetNormalized();
+
+			float dot = DotProduct2D( ball->m_velocity, collisionNormal );
+			if ( dot >= 0.f ) continue;
+
+			float elasticity = ball->m_elasticity * disc->m_elasticity;
+
+			Vec2 vN = collisionNormal * DotProduct2D( ball->m_velocity, collisionNormal );
+			Vec2 vT = ball->m_velocity - vN;
+
+			vN = -vN * elasticity;
+			ball->m_velocity = vT + vN;
+		}
+		for ( int bumperIndex = 0; bumperIndex < m_obbBumpers.size(); ++bumperIndex )
+		{
+			TestShapeOBB* obb = m_obbBumpers[bumperIndex];
+			
+			bool didOverlap = PushDiscOutOfFixedOBB2D(
+				ball->m_center, ball->m_radius, 
+				obb->m_orientedBox );
+			if ( !didOverlap ) continue;
+
+			Vec2 nearestPointOnOBB = GetNearestPointOnOBB2D( ball->m_center, obb->m_orientedBox );
+			Vec2 displacement = ball->m_center - nearestPointOnOBB;
+			Vec2 collisionNormal = displacement.GetNormalized();
+
+			float dot = DotProduct2D( ball->m_velocity, collisionNormal );
+			if ( dot >= 0.f ) continue;
+
+			float elasticity = ball->m_elasticity * obb->m_elasticity;
+
+			Vec2 vN = collisionNormal * DotProduct2D( ball->m_velocity, collisionNormal );
+			Vec2 vT = ball->m_velocity - vN;
+
+			vN = -vN * elasticity;
+			ball->m_velocity = vT + vN;
 		}
 	}
 }

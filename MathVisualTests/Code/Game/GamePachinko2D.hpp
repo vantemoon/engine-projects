@@ -31,6 +31,7 @@ public:
 	void Update( float deltaSeconds ) override;
 	void UpdateFromKeyboard();
 	void CollideBallsWithBalls();
+	void CollideBallsWithBumpers();
 	void Render() const override;
 
 private:

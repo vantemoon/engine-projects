@@ -82,6 +82,8 @@ bool PushDiscOutOfFixedPoint2D( Vec2& mobileDiscCenter, float mobileDiscRadius, 
 bool PushDiscOutOfFixedDisc2D( Vec2& mobileDiscCenter, float mobileDiscRadius, Vec2 const& fixedDiscCenter, float fixedDiscRadius );
 bool PushDiscsOutOfEachOther2D( Vec2& aCenter, float aRadius, Vec2& bCenter, float bRadius );
 bool PushDiscOutOfFixedAABB2D( Vec2& mobileDiscCenter, float mobileDiscRadius, AABB2 const& fixedBox );
+bool PushDiscOutOfFixedCapsule2D( Vec2& mobileDiscCenter, float mobileDiscRadius, Vec2 const& capsuleBoneStart, Vec2 const& capsuleBoneEnd, float capsuleRadius );
+bool PushDiscOutOfFixedOBB2D( Vec2& mobileDiscCenter, float mobileDiscRadius, OBB2 const& fixedBox );
 
 //-----------------------------------------------------------------------------------------------
 // Transform utilities

@@ -509,6 +509,23 @@ bool PushDiscOutOfFixedAABB2D( Vec2& mobileDiscCenter, float mobileDiscRadius, A
 }
 
 
+
+//-----------------------------------------------------------------------------------------------
+bool PushDiscOutOfFixedCapsule2D( Vec2& mobileDiscCenter, float mobileDiscRadius, Vec2 const& capsuleBoneStart, Vec2 const& capsuleBoneEnd, float capsuleRadius )
+{
+	Vec2 nearestPoint = GetNearestPointOnCapsule2D( mobileDiscCenter, capsuleBoneStart, capsuleBoneEnd, capsuleRadius );
+	return PushDiscOutOfFixedPoint2D( mobileDiscCenter, mobileDiscRadius, nearestPoint );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool PushDiscOutOfFixedOBB2D( Vec2& mobileDiscCenter, float mobileDiscRadius, OBB2 const& fixedBox )
+{
+	Vec2 nearestPoint = GetNearestPointOnOBB2D( mobileDiscCenter, fixedBox );
+	return PushDiscOutOfFixedPoint2D( mobileDiscCenter, mobileDiscRadius, nearestPoint );
+}
+
+
 //-----------------------------------------------------------------------------------------------
 void TransformPosition2D( Vec2& posToTransform, float uniformScale, float rotationDegrees, Vec2 const& translation )
 {
