@@ -2,8 +2,9 @@
 
 
 //-----------------------------------------------------------------------------------------------
-TestShapeOBB::TestShapeOBB( Vec2 const& center, Vec2 const& iBasisNormal, Vec2 const& halfDimensions )
+TestShapeOBB::TestShapeOBB( Vec2 const& center, Vec2 const& iBasisNormal, Vec2 const& halfDimensions, float elasticity )
 	: m_orientedBox( center, iBasisNormal, halfDimensions )
+	, m_elasticity( elasticity )
 {
 }
 

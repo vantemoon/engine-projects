@@ -3,6 +3,7 @@
 #include "Game/Game2DCurves.hpp"
 #include "Game/Game3DShapes.hpp"
 #include "Game/GameNearestPoint.hpp"
+#include "Game/GamePachinko2D.hpp"
 #include "Game/GameRaycastVsAABB.hpp"
 #include "Game/GameRaycastVsDiscs.hpp"
 #include "Game/GameRaycastVsLineSegment.hpp"
@@ -171,6 +172,10 @@ void App::HardReset( GameMode newGameMode )
 			m_game = new Game2DCurves();
 			break;
 
+		case GAMEMODE_PACHINKO_2D:
+			m_game = new GamePachinko2D();
+			break;
+
 		case NUM_GAME_MODES:
 			break;
 
@@ -212,6 +217,11 @@ void App::Render() const
 //-----------------------------------------------------------------------------------------------
 void App::RenderHUD() const
 {
+	if ( m_game == nullptr || m_game->m_screenCamera == nullptr )
+	{
+		return;
+	}
+
 	g_engine->m_renderer->BeginCamera( *m_game->m_screenCamera );
 
 	std::vector<Vertex> verts;
@@ -235,6 +245,9 @@ void App::RenderHUD() const
 			break;
 		case GAMEMODE_2D_CURVES:
 			AddVertsForTextTriangles2D( verts, "Easing, Curves, Splines (2D)", Vec2( 400.f, 760.f ), 20.f, Rgba8::YELLOW );
+			break;
+		case GAMEMODE_PACHINKO_2D:
+			AddVertsForTextTriangles2D( verts, "Pachinko Machine (2D)", Vec2( 400.f, 760.f ), 20.f, Rgba8::YELLOW );
 			break;
 		default:
 			break;
@@ -265,6 +278,9 @@ void App::RenderHUD() const
 			AddVertsForTextTriangles2D( verts, controlsText, Vec2( 240.f, 730.f ), 20.f, Rgba8::CYAN );
 			break;
 		}
+		case GAMEMODE_PACHINKO_2D:
+			AddVertsForTextTriangles2D( verts, "TODO: Instructions", Vec2( 240.f, 730.f ), 20.f, Rgba8::CYAN );
+			break;
 		default:
 			break;
 	}

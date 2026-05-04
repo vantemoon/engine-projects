@@ -76,6 +76,9 @@
     <ClCompile Include="Game2DCurves.cpp">
       <Filter>Gameplay</Filter>
     </ClCompile>
+    <ClCompile Include="GamePachinko2D.cpp">
+      <Filter>Gameplay</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.hpp">
@@ -138,10 +141,18 @@
     <ClInclude Include="Game2DCurves.hpp">
       <Filter>Gameplay</Filter>
     </ClInclude>
+    <ClInclude Include="GamePachinko2D.hpp">
+      <Filter>Gameplay</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="TestShapeTriangle.hpp">
       <Filter>Test Shape</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Xml Include="..\..\Run\Data\GameConfig.xml">
+      <Filter>Framework</Filter>
+    </Xml>
   </ItemGroup>
 </Project>

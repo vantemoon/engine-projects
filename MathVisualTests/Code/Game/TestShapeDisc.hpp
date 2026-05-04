@@ -11,7 +11,9 @@ public:
 	float	m_radius;
 	int		m_numSides;
 
+	float   m_elasticity = 0.5f;
+
 public:
-	TestShapeDisc( Vec2 const& center, float radius, int numSides );
+	TestShapeDisc( Vec2 const& center, float radius, int numSides, float elasticity = 0.5f );
 	~TestShapeDisc();
 };

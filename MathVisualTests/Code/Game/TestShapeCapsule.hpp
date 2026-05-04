@@ -12,7 +12,9 @@ public:
 	float	m_radius;
 	int		m_numSides;
 
+	float   m_elasticity = 0.5f;
+
 public:
-	TestShapeCapsule( Vec2 const& boneStart, Vec2 const& boneEnd, float radius, int numSides );
+	TestShapeCapsule( Vec2 const& boneStart, Vec2 const& boneEnd, float radius, int numSides, float elasticity = 0.5f );
 	~TestShapeCapsule();
 };
