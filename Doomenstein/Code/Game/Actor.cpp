@@ -453,6 +453,17 @@ void Actor::OnCollide( Actor* otherActor, Vec3 const& collisionNormal )
 		impulseDirection = impulseDirection.GetNormalized();
 	}
 
+	if ( m_definition != nullptr && m_definition->m_name == "FoodProjectile"
+		&& otherActor != nullptr && otherActor->m_isVirtualPet )
+	{
+		otherActor->AddHunger( 5.f );
+		otherActor->AddHappiness( 3.f );
+
+		m_isDead = true;
+		m_isDestroyed = true;
+		return;
+	}
+
 	if ( otherActor != nullptr )
 	{
 		int minDamage = ( int ) m_definition->m_damageOnCollide.m_min;

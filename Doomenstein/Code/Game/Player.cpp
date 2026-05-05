@@ -534,6 +534,12 @@ void Player::UpdateFirstPersonFromKeyboard( Actor* actor, float deltaSeconds )
 	{
 		SelectWeaponBySlot( actor, 1 );
 	}
+
+	// 3
+	if ( g_engine->m_inputSystem->WasKeyJustPressed( '3' ) )
+	{
+		SelectWeaponBySlot( actor, 2 );
+	}
 }
 
 

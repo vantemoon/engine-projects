@@ -15,6 +15,7 @@ class ActorDefinition
 {
 public:
 	// Base
+	std::string m_name;
 	bool m_isVisible = false;
 	bool m_isProjectile = false;
 	int m_health = 1;

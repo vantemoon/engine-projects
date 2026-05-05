@@ -104,6 +104,7 @@ void ActorDefinition::LoadDefinitionsFromFile( char const* filepath, bool isProj
 		newActorDef.m_isProjectile = isProjectile;
 
 		std::string actorName = ParseXmlAttribute( *actorDefElement, "name", "" );
+		newActorDef.m_name = actorName;
 		newActorDef.m_isVisible = ParseXmlAttribute( *actorDefElement, "visible", newActorDef.m_isVisible );
 		newActorDef.m_health = ParseXmlAttribute( *actorDefElement, "health", newActorDef.m_health );
 		newActorDef.corpseLifetime = ParseXmlAttribute( *actorDefElement, "corpseLifetime", newActorDef.corpseLifetime );

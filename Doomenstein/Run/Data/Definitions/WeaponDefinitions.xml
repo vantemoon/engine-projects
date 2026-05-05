@@ -25,4 +25,11 @@
       <Sound sound="Fire" name="Data/Audio/DemonAttack.wav"/>
     </Sounds>
   </WeaponDefinition>
+  <!-- Food Gun -->
+  <WeaponDefinition name="FoodGun" refireTime="0.5" projectileCount="1" projectileCone="0" projectileSpeed="6" projectileActor="FoodProjectile">
+	<HUD shader="Default" baseTexture="Data/Images/Hud_Base.png" reticleTexture="Data/Images/Reticle.png" reticleSize="16,16" spriteSize="256,256" spritePivot="0.5,0.0">
+	  <Animation name="Idle" shader="Default" spriteSheet="Data/Images/Weapon_Pistol.png" cellCount="5,1" secondsPerFrame="0.1" startFrame="0" endFrame="0"/>
+	  <Animation name="Attack" shader="Default" spriteSheet="Data/Images/Weapon_Pistol.png" cellCount="5,1" secondsPerFrame="0.1" startFrame="1" endFrame="3" />
+	</HUD>
+  </WeaponDefinition>
 </Definitions>

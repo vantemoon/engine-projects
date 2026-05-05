@@ -48,6 +48,7 @@
     <Inventory>
       <Weapon name="Pistol" />
       <Weapon name="PlasmaRifle" />
+	  <Weapon name="FoodGun" />
     </Inventory>
   </ActorDefinition>
   <!-- Demon -->

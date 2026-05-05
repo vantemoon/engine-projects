@@ -12,4 +12,10 @@
       </AnimationGroup>
     </Visuals>
   </ActorDefinition>
+  <!-- Food Projectile-->
+  <ActorDefinition name="FoodProjectile" canBePossessed="false" corpseLifetime="0.0" visible="true">
+	<Collision radius="0.08" height="0.08" collidesWithWorld="true" collidesWithActors="true" dieOnCollide="true" damageOnCollide="0~0" impulseOnCollide="0" />
+	<Physics simulated="true" turnSpeed="0.0" flying="true" drag="0.0" />
+	<Visuals size="0.15,0.15" pivot="0.5,0.5" billboardType="FullOpposing" renderLit="true" renderRounded="false" shader="Default" spriteSheet="Data/Images/Turkey.png" cellCount="1,1" />
+  </ActorDefinition>
 </Definitions>
