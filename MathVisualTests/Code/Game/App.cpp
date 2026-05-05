@@ -287,7 +287,7 @@ void App::RenderHUD() const
 			bool isFloorOn = ( currGame != nullptr ) ? currGame->m_isFloorOn : false;
 			bool isFixedTimestep = ( currGame != nullptr ) ? currGame->m_usingFixedTimestep : false;
 			float physicsTimestep = ( currGame != nullptr ) ? currGame->m_physicsTimestep : 0.f;
-			float deltaSeconds = ( currGame != nullptr ) ? currGame->m_physicsTimeOwed : 0.f;
+			float deltaSeconds = ( currGame != nullptr ) ? ( float ) currGame->m_gameClock->GetDeltaSeconds() : 0.f;
 
 			std::string const gravityText = isGravityOn ? "On" : "Off";
 			std::string const floorText = isFloorOn ? "On" : "Off";

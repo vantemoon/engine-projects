@@ -5,6 +5,7 @@
 #include "Game/TestShapeOBB.hpp"
 #include "Engine/Math/Vec2.hpp"
 #include "Engine/Core/Rgba8.hpp"
+#include "Engine/Core/Vertex.hpp"
 #include <vector>
 
 

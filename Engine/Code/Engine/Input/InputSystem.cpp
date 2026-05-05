@@ -35,6 +35,8 @@ unsigned char const KEYCODE_BACKSPACE = VK_BACK;
 unsigned char const KEYCODE_HOME = VK_HOME;
 unsigned char const KEYCODE_END = VK_END;
 unsigned char const KEYCODE_SHIFT = VK_SHIFT;
+unsigned char const KEYCODE_LBRACKET = VK_OEM_4;
+unsigned char const KEYCODE_RBRACKET = VK_OEM_6;
 
 
 //-----------------------------------------------------------------------------------------------

@@ -149,11 +149,11 @@ void GamePachinko2D::UpdateFromKeyboard()
 	}
 
 	// Use [ and ] keys to decrease/increase physics timestep
-	if ( g_engine->m_inputSystem->WasKeyJustPressed( '[' ) )
+	if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_LBRACKET ) )
 	{
 		m_physicsTimestep /= 1.1f;
 	}
-	if ( g_engine->m_inputSystem->WasKeyJustPressed( ']' ) )
+	if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_RBRACKET ) )
 	{
 		m_physicsTimestep *= 1.1f;
 	}
@@ -401,44 +401,56 @@ void GamePachinko2D::Render() const
 {
 	g_engine->m_renderer->BeginCamera( *m_worldCamera );
 
-	std::vector<Vertex> verts;
+	const int numSides = 32;
+
+	size_t expectedVerts = 0;
+	expectedVerts += m_capsuleBumpers.size() * static_cast<size_t>( 6 + ( 6 * numSides ) );
+	expectedVerts += m_discBumpers.size() * static_cast<size_t>( 3 * numSides );
+	expectedVerts += m_obbBumpers.size() * 6;
+	expectedVerts += m_balls.size() * static_cast<size_t>( 3 * numSides );
+	expectedVerts += 9;
+	expectedVerts += 2 * static_cast<size_t>( 6 * numSides );
+
+	static std::vector<Vertex> s_renderVerts;
+	s_renderVerts.clear();
+	s_renderVerts.reserve( expectedVerts );
 
 	// Bumpers
 	for ( int bumperIndex = 0; bumperIndex < m_capsuleBumpers.size(); ++bumperIndex )
 	{
 		TestShapeCapsule* capsuleBumper = m_capsuleBumpers[bumperIndex];
 		Rgba8 bumperColor = GetBumperColorFromElasticity( capsuleBumper->m_elasticity );
-		AddVertsForCapsule2D( verts, capsuleBumper->m_boneStart, capsuleBumper->m_boneEnd, capsuleBumper->m_radius, bumperColor, 32 );
+		AddVertsForCapsule2D( s_renderVerts, capsuleBumper->m_boneStart, capsuleBumper->m_boneEnd, capsuleBumper->m_radius, bumperColor, numSides );
 	}
 	for ( int bumperIndex = 0; bumperIndex < m_discBumpers.size(); ++bumperIndex )
 	{
 		TestShapeDisc* discBumper = m_discBumpers[bumperIndex];
 		Rgba8 bumperColor = GetBumperColorFromElasticity( discBumper->m_elasticity );
-		AddVertsForDisc2D( verts, discBumper->m_center, discBumper->m_radius, bumperColor, 32 );
+		AddVertsForDisc2D( s_renderVerts, discBumper->m_center, discBumper->m_radius, bumperColor, numSides );
 	}
 	for ( int bumperIndex = 0; bumperIndex < m_obbBumpers.size(); ++bumperIndex )
 	{
 		TestShapeOBB* obbBumper = m_obbBumpers[bumperIndex];
 		Rgba8 bumperColor = GetBumperColorFromElasticity( obbBumper->m_elasticity );
-		AddVertsForOBB2D( verts, obbBumper->m_orientedBox, bumperColor );
+		AddVertsForOBB2D( s_renderVerts, obbBumper->m_orientedBox, bumperColor );
 	}
 
 	// Balls
 	for ( int ballIndex = 0; ballIndex < m_balls.size(); ++ballIndex )
 	{
 		TestShapeDisc* ball = m_balls[ballIndex];
-		AddVertsForDisc2D( verts, ball->m_center, ball->m_radius, ball->m_color, 32 );
+		AddVertsForDisc2D( s_renderVerts, ball->m_center, ball->m_radius, ball->m_color, numSides );
 	}
 	
 	// Ray and circles
-	AddVertsForArrow2D(verts, m_rayStartPos, m_rayEndPos, 3.f, 10.f, Rgba8::GREEN );
+	AddVertsForArrow2D( s_renderVerts, m_rayStartPos, m_rayEndPos, 3.f, 10.f, Rgba8::GREEN );
 	float pachinkoMinBallRadius = ( float ) g_gameConfigBlackboard.GetValue( "pachinkoMinBallRadius", 5 );
 	float pachinkoMaxBallRadius = ( float ) g_gameConfigBlackboard.GetValue( "pachinkoMaxBallRadius", 25 );
-	AddVertsForRing2D( verts, m_rayStartPos, pachinkoMinBallRadius, 2.f, Rgba8( 50, 80, 150, 255 ), 32 );
-	AddVertsForRing2D( verts, m_rayStartPos, pachinkoMaxBallRadius, 2.f, Rgba8( 50, 80, 150, 255 ), 32 );
+	AddVertsForRing2D( s_renderVerts, m_rayStartPos, pachinkoMinBallRadius, 2.f, Rgba8( 50, 80, 150, 255 ), numSides );
+	AddVertsForRing2D( s_renderVerts, m_rayStartPos, pachinkoMaxBallRadius, 2.f, Rgba8( 50, 80, 150, 255 ), numSides );
 
 	g_engine->m_renderer->BindTexture( nullptr );
-	g_engine->m_renderer->DrawVertexArray( verts );
+	g_engine->m_renderer->DrawVertexArray( s_renderVerts );
 
 	g_engine->m_renderer->EndCamera( *m_worldCamera );
 }

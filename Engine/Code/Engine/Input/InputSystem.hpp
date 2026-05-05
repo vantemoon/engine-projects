@@ -32,6 +32,8 @@ extern unsigned char const KEYCODE_BACKSPACE;
 extern unsigned char const KEYCODE_HOME;
 extern unsigned char const KEYCODE_END;
 extern unsigned char const KEYCODE_SHIFT;
+extern unsigned char const KEYCODE_LBRACKET;
+extern unsigned char const KEYCODE_RBRACKET;
 
 
 //----------------------------------------------------------------
