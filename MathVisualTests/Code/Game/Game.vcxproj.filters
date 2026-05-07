@@ -79,6 +79,9 @@
     <ClCompile Include="GamePachinko2D.cpp">
       <Filter>Gameplay</Filter>
     </ClCompile>
+    <ClCompile Include="TestShapeOBB3D.cpp">
+      <Filter>Test Shape</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.hpp">
@@ -143,6 +146,9 @@
     </ClInclude>
     <ClInclude Include="GamePachinko2D.hpp">
       <Filter>Gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="TestShapeOBB3D.hpp">
+      <Filter>Test Shape</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
