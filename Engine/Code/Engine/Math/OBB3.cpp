@@ -7,6 +7,7 @@ OBB3::OBB3( Vec3 const& center, Vec3 const& iBasisNormal, Vec3 const& jBasisNorm
 	: m_center( center )
 	, m_iBasisNormal( iBasisNormal.GetNormalized() )
 	, m_jBasisNormal( jBasisNormal.GetNormalized() )
+	, m_kBasisNormal( CrossProduct3D( m_iBasisNormal, m_jBasisNormal ).GetNormalized() )
 	, m_halfDimensions( halfDimensions )
 {
 }
@@ -15,7 +16,7 @@ OBB3::OBB3( Vec3 const& center, Vec3 const& iBasisNormal, Vec3 const& jBasisNorm
 //-----------------------------------------------------------------------------------------------
 void OBB3::GetCornerPoints( Vec3* out_eightCornerWorldPositions ) const
 {
-	Vec3 kBasisNormal = CrossProduct3D( m_iBasisNormal, m_jBasisNormal );
+	Vec3 const& kBasisNormal = m_kBasisNormal;
 
 	out_eightCornerWorldPositions[0] = m_center + ( m_iBasisNormal * m_halfDimensions.x ) + ( m_jBasisNormal * m_halfDimensions.y ) + ( kBasisNormal * m_halfDimensions.z );
 	out_eightCornerWorldPositions[1] = m_center - ( m_iBasisNormal * m_halfDimensions.x ) + ( m_jBasisNormal * m_halfDimensions.y ) + ( kBasisNormal * m_halfDimensions.z );
@@ -35,8 +36,7 @@ Vec3 const OBB3::GetLocalPosForWorldPos( Vec3 const& worldPos ) const
 	Vec3 displacementFromCenter = worldPos - m_center;
 	float localX = DotProduct3D( displacementFromCenter, m_iBasisNormal );
 	float localY = DotProduct3D( displacementFromCenter, m_jBasisNormal );
-	Vec3 kBasisNormal = CrossProduct3D( m_iBasisNormal, m_jBasisNormal );
-	float localZ = DotProduct3D( displacementFromCenter, kBasisNormal );
+	float localZ = DotProduct3D( displacementFromCenter, m_kBasisNormal );
 
 	return Vec3( localX, localY, localZ );
 }
@@ -45,8 +45,7 @@ Vec3 const OBB3::GetLocalPosForWorldPos( Vec3 const& worldPos ) const
 //-----------------------------------------------------------------------------------------------
 Vec3 const OBB3::GetWorldPosForLocalPos( Vec3 const& localPos ) const
 {
-	Vec3 kBasisNormal = CrossProduct3D( m_iBasisNormal, m_jBasisNormal );
-	Vec3 worldPos = m_center + ( m_iBasisNormal * localPos.x ) + ( m_jBasisNormal * localPos.y ) + ( kBasisNormal * localPos.z );
+	Vec3 worldPos = m_center + ( m_iBasisNormal * localPos.x ) + ( m_jBasisNormal * localPos.y ) + ( m_kBasisNormal * localPos.z );
 
 	return worldPos;
 }
@@ -57,4 +56,5 @@ void OBB3::RotateAboutCenter( float rotationDeltaDegrees )
 {
 	m_iBasisNormal = m_iBasisNormal.GetRotatedAboutZDegrees( rotationDeltaDegrees );
 	m_jBasisNormal = m_jBasisNormal.GetRotatedAboutZDegrees( rotationDeltaDegrees );
+	m_kBasisNormal = m_kBasisNormal.GetRotatedAboutZDegrees( rotationDeltaDegrees );
 }

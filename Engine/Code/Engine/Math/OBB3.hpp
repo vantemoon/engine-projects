@@ -9,6 +9,7 @@ public:
 	Vec3 m_center;
 	Vec3 m_iBasisNormal;
 	Vec3 m_jBasisNormal;
+	Vec3 m_kBasisNormal;
 	Vec3 m_halfDimensions;
 
 public:

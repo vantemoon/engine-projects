@@ -572,11 +572,10 @@ RaycastResult3D RaycastVsOBB3D( Vec3 startPos, Vec3 fwdNormal, float maxDist, OB
 		return result;
 	}
 
-	Vec3 kBasisNormal = CrossProduct3D( box.m_iBasisNormal, box.m_jBasisNormal );
 	Vec3 localStart = box.GetLocalPosForWorldPos( startPos );
 	Vec3 localFwdNormal( DotProduct3D( fwdNormal, box.m_iBasisNormal ),
 		DotProduct3D( fwdNormal, box.m_jBasisNormal ),
-		DotProduct3D( fwdNormal, kBasisNormal ) );
+		DotProduct3D( fwdNormal, box.m_kBasisNormal ) );
 
 	AABB3 localBox( -box.m_halfDimensions, box.m_halfDimensions );
 	RaycastResult3D localResult = RaycastVsAABB3D( localStart, localFwdNormal, maxDist, localBox );
@@ -590,7 +589,7 @@ RaycastResult3D RaycastVsOBB3D( Vec3 startPos, Vec3 fwdNormal, float maxDist, OB
 	result.m_impactPos = box.GetWorldPosForLocalPos( localResult.m_impactPos );
 	result.m_impactNormal = ( box.m_iBasisNormal * localResult.m_impactNormal.x )
 		+ ( box.m_jBasisNormal * localResult.m_impactNormal.y )
-		+ ( kBasisNormal * localResult.m_impactNormal.z );
+		+ ( box.m_kBasisNormal * localResult.m_impactNormal.z );
 	result.m_impactNormal = result.m_impactNormal.GetNormalized();
 	return result;
 }
