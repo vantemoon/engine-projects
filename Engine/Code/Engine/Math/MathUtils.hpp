@@ -8,6 +8,9 @@ struct AABB2;
 struct AABB3;
 struct FloatRange;
 struct OBB2;
+struct OBB3;
+struct Plane2;
+struct Plane3;
 struct IntVec2;
 struct Mat44;
 struct Vec3;
@@ -102,6 +105,7 @@ bool IsPointInsideOBB2D( Vec2 const& point, OBB2 const& orientedBox );
 bool IsPointInsideCapsule2D( Vec2 const& point, Vec2 const& boneStart, Vec2 const& boneEnd, float radius );
 bool IsPointInsideTriangle2D( Vec2 const& point, Vec2 const& ccw0, Vec2 const& ccw1, Vec2 const& ccw2 );
 bool IsPointInsideCylinderZ3D( Vec3 const& point, Vec2 const& cylinderBaseCenter, float cylinderMinZ, float cylinderMaxZ, float cylinderRadius );
+bool IsPointInsideOBB3D( Vec3 const& point, OBB3 const& orientedBox );
 
 //-----------------------------------------------------------------------------------------------
 // Nearest point calculations
@@ -112,9 +116,12 @@ Vec2 GetNearestPointOnInfiniteLine2D( Vec2 const& referencePos, Vec2 const& poin
 Vec2 GetNearestPointOnLineSegment2D( Vec2 const& referencePos, Vec2 const& start, Vec2 const& end );
 Vec2 GetNearestPointOnCapsule2D( Vec2 const& referencePos, Vec2 const& boneStart, Vec2 const& boneEnd, float radius );
 Vec2 GetNearestPointOnTriangle2D( Vec2 const& referencePos, Vec2 const& ccw0, Vec2 const& ccw1, Vec2 const& ccw2 );
+Vec2 GetNearestPointOnPlane2D( Vec2 const& referencePos, Plane2 const& plane );
 Vec3 GetNearestPointOnAABB3D( Vec3 const& referencePos, Vec3 const& mins, Vec3 const& maxs );
 Vec3 GetNearestPointOnSphere3D( Vec3 const& referencePos, Vec3 const& sphereCenter, float sphereRadius );
 Vec3 GetNearestPointOnCylinderZ3D( Vec3 const& referencePos, Vec2 const& cylinderBaseCenter, float cylinderMinZ, float cylinderMaxZ, float cylinderRadius );
+Vec3 GetNearestPointOnOBB3D( Vec3 const& referencePos, OBB3 const& orientedBox );
+Vec3 GetNearestPointOnPlane3D( Vec3 const& referencePos, Plane3 const& plane );
 
 //-----------------------------------------------------------------------------------------------
 // Normalized byte conversions

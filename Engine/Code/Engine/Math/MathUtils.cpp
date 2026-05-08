@@ -5,6 +5,9 @@
 #include "Engine/Math/IntVec2.hpp"
 #include "Engine/Math/Mat44.hpp"
 #include "Engine/Math/OBB2.hpp"
+#include "Engine/Math/OBB3.hpp"
+#include "Engine/Math/Plane2.hpp"
+#include "Engine/Math/Plane3.hpp"
 #include "Engine/Math/Vec2.hpp"
 #include "Engine/Math/Vec3.hpp"
 #include "Engine/Math/Vec4.hpp"
@@ -713,6 +716,17 @@ bool IsPointInsideCylinderZ3D( Vec3 const& point, Vec2 const& cylinderBaseCenter
 
 
 //-----------------------------------------------------------------------------------------------
+bool IsPointInsideOBB3D( Vec3 const& point, OBB3 const& orientedBox )
+{
+	Vec3 localPos = orientedBox.GetLocalPosForWorldPos( point );
+	bool isInsideX = fabsf( localPos.x ) < orientedBox.m_halfDimensions.x;
+	bool isInsideY = fabsf( localPos.y ) < orientedBox.m_halfDimensions.y;
+	bool isInsideZ = fabsf( localPos.z ) < orientedBox.m_halfDimensions.z;
+	return isInsideX && isInsideY && isInsideZ;
+}
+
+
+//-----------------------------------------------------------------------------------------------
 Vec2 GetNearestPointOnDisc2D( Vec2 const& referencePos, Vec2 const& discCenter, float discRadius )
 {
 	Vec2 toReference = referencePos - discCenter;
@@ -880,6 +894,15 @@ Vec2 GetNearestPointOnTriangle2D( Vec2 const& referencePos, Vec2 const& ccw0, Ve
 
 
 //-----------------------------------------------------------------------------------------------
+Vec2 GetNearestPointOnPlane2D( Vec2 const& referencePos, Plane2 const& plane )
+{
+	float distanceToPlane = DotProduct2D( plane.m_normal, referencePos ) - plane.m_distanceAlongNormalFromOrigin;
+	Vec2 nearestPoint = referencePos - ( plane.m_normal * distanceToPlane );
+	return nearestPoint;
+}
+
+
+//-----------------------------------------------------------------------------------------------
 Vec3 GetNearestPointOnAABB3D( Vec3 const& referencePos, Vec3 const& mins, Vec3 const& maxs )
 {
 	float clampedX = GetClamped( referencePos.x, mins.x, maxs.x );
@@ -915,6 +938,28 @@ Vec3 GetNearestPointOnCylinderZ3D( Vec3 const& referencePos, Vec2 const& cylinde
 	Vec2 nearestXY = GetNearestPointOnDisc2D( referenceXY, cylinderBaseCenter, cylinderRadius );
 	float nearestZ = GetClamped( referencePos.z, cylinderMinZ, cylinderMaxZ );
 	return Vec3( nearestXY.x, nearestXY.y, nearestZ );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+Vec3 GetNearestPointOnOBB3D( Vec3 const& referencePos, OBB3 const& orientedBox )
+{
+	Vec3 localPos = orientedBox.GetLocalPosForWorldPos( referencePos );
+	float clampedX = GetClamped( localPos.x, -orientedBox.m_halfDimensions.x, orientedBox.m_halfDimensions.x );
+	float clampedY = GetClamped( localPos.y, -orientedBox.m_halfDimensions.y, orientedBox.m_halfDimensions.y );
+	float clampedZ = GetClamped( localPos.z, -orientedBox.m_halfDimensions.z, orientedBox.m_halfDimensions.z );
+	Vec3 nearestLocalPos( clampedX, clampedY, clampedZ );
+	Vec3 nearestPoint = orientedBox.GetWorldPosForLocalPos( nearestLocalPos );
+	return nearestPoint;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+Vec3 GetNearestPointOnPlane3D( Vec3 const& referencePos, Plane3 const& plane )
+{
+	float distanceToPlane = DotProduct3D( plane.m_normal, referencePos ) - plane.m_distanceAlongNormalFromOrigin;
+	Vec3 nearestPoint = referencePos - ( plane.m_normal * distanceToPlane );
+	return nearestPoint;
 }
 
 

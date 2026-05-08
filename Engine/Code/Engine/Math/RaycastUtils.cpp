@@ -547,3 +547,105 @@ RaycastResult3D RaycastVsCylinderZ3D( Vec3 startPos, Vec3 fwdNormal, float maxDi
 	result.m_impactNormal = impactNormal;
 	return result;
 }
+
+
+//-----------------------------------------------------------------------------------------------
+RaycastResult3D RaycastVsOBB3D( Vec3 startPos, Vec3 fwdNormal, float maxDist, OBB3 box )
+{
+	RaycastResult3D result;
+	result.m_rayStartPos = startPos;
+	result.m_rayFwdNormal = fwdNormal;
+	result.m_rayMaxLength = maxDist;
+	result.m_didImpact = false;
+
+	if ( maxDist < 0.f )
+	{
+		return result;
+	}
+
+	if ( IsPointInsideOBB3D( startPos, box ) )
+	{
+		result.m_didImpact = true;
+		result.m_impactDist = 0.f;
+		result.m_impactPos = startPos;
+		result.m_impactNormal = -fwdNormal;
+		return result;
+	}
+
+	Vec3 kBasisNormal = CrossProduct3D( box.m_iBasisNormal, box.m_jBasisNormal );
+	Vec3 localStart = box.GetLocalPosForWorldPos( startPos );
+	Vec3 localFwdNormal( DotProduct3D( fwdNormal, box.m_iBasisNormal ),
+		DotProduct3D( fwdNormal, box.m_jBasisNormal ),
+		DotProduct3D( fwdNormal, kBasisNormal ) );
+
+	AABB3 localBox( -box.m_halfDimensions, box.m_halfDimensions );
+	RaycastResult3D localResult = RaycastVsAABB3D( localStart, localFwdNormal, maxDist, localBox );
+	if ( !localResult.m_didImpact )
+	{
+		return result;
+	}
+
+	result.m_didImpact = true;
+	result.m_impactDist = localResult.m_impactDist;
+	result.m_impactPos = box.GetWorldPosForLocalPos( localResult.m_impactPos );
+	result.m_impactNormal = ( box.m_iBasisNormal * localResult.m_impactNormal.x )
+		+ ( box.m_jBasisNormal * localResult.m_impactNormal.y )
+		+ ( kBasisNormal * localResult.m_impactNormal.z );
+	result.m_impactNormal = result.m_impactNormal.GetNormalized();
+	return result;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+RaycastResult3D RaycastVsPlane3D( Vec3 startPos, Vec3 fwdNormal, float maxDist, Plane3 plane )
+{
+	RaycastResult3D result;
+	result.m_rayStartPos = startPos;
+	result.m_rayFwdNormal = fwdNormal;
+	result.m_rayMaxLength = maxDist;
+	result.m_didImpact = false;
+
+	if ( maxDist < 0.f )
+	{
+		return result;
+	}
+
+	float distanceToPlane = DotProduct3D( plane.m_normal, startPos ) - plane.m_distanceAlongNormalFromOrigin;
+	float rayDot = DotProduct3D( plane.m_normal, fwdNormal );
+
+	if ( distanceToPlane == 0.f )
+	{
+		result.m_didImpact = true;
+		result.m_impactDist = 0.f;
+		result.m_impactPos = startPos;
+		result.m_impactNormal = plane.m_normal;
+		if ( rayDot > 0.f )
+		{
+			result.m_impactNormal = -result.m_impactNormal;
+		}
+		return result;
+	}
+
+	if ( rayDot == 0.f )
+	{
+		return result;
+	}
+
+	float impactDist = -distanceToPlane / rayDot;
+	if ( impactDist < 0.f || impactDist > maxDist )
+	{
+		return result;
+	}
+
+	Vec3 impactNormal = plane.m_normal;
+	if ( rayDot > 0.f )
+	{
+		impactNormal = -impactNormal;
+	}
+
+	result.m_didImpact = true;
+	result.m_impactDist = impactDist;
+	result.m_impactPos = startPos + ( fwdNormal * impactDist );
+	result.m_impactNormal = impactNormal;
+	return result;
+}

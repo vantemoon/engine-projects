@@ -4,6 +4,7 @@
 #include "Engine/Math/Mat44.hpp"
 #include "Engine/Math/MathUtils.hpp"
 #include "Engine/Math/OBB2.hpp"
+#include "Engine/Math/OBB3.hpp"
 #include "Engine/Math/Vec2.hpp"
 
 #include <math.h>
@@ -923,4 +924,72 @@ void AddVertsForLineSegment3D( std::vector<Vertex>& verts, Vec3 const& start, Ve
 	AddVertsForQuad3D( verts, endBottomRight, startBottomRight, startTopRight, endTopRight, color );
 	AddVertsForQuad3D( verts, endTopLeft, endTopRight, startTopRight, startTopLeft, color );
 	AddVertsForQuad3D( verts, startBottomLeft, startBottomRight, endBottomRight, endBottomLeft, color );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void AddVertsForOBB3D( std::vector<Vertex>& verts, OBB3 const& orientedBox, Rgba8 const& color )
+{
+	Vec3 corners[8];
+	orientedBox.GetCornerPoints( corners );
+
+	Vec3 const& frontTopRight = corners[0];
+	Vec3 const& frontTopLeft = corners[1];
+	Vec3 const& frontBottomLeft = corners[2];
+	Vec3 const& frontBottomRight = corners[3];
+
+	Vec3 const& backTopRight = corners[4];
+	Vec3 const& backTopLeft = corners[5];
+	Vec3 const& backBottomLeft = corners[6];
+	Vec3 const& backBottomRight = corners[7];
+
+	AABB2 const UVs = AABB2::ZERO_TO_ONE;
+
+	AddVertsForQuad3D( verts, frontBottomRight, frontBottomLeft, frontTopLeft, frontTopRight, color, UVs );
+	AddVertsForQuad3D( verts, backBottomLeft, backBottomRight, backTopRight, backTopLeft, color, UVs );
+	AddVertsForQuad3D( verts, frontBottomLeft, frontBottomRight, backBottomRight, backBottomLeft, color, UVs );
+	AddVertsForQuad3D( verts, frontTopRight, frontTopLeft, backTopLeft, backTopRight, color, UVs );
+	AddVertsForQuad3D( verts, frontTopLeft, frontBottomLeft, backBottomLeft, backTopLeft, color, UVs );
+	AddVertsForQuad3D( verts, frontBottomRight, frontTopRight, backTopRight, backBottomRight, color, UVs );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void AddVertsForPlane3D( std::vector<Vertex>& verts, Plane3 const& plane, float planeSize, Rgba8 const& color /* = Rgba8::WHITE */ )
+{
+	if ( planeSize <= 0.f )
+	{
+		return;
+	}
+
+	Vec3 normal = plane.m_normal;
+	Vec3 basisI;
+	Vec3 basisJ;
+
+	Vec3 worldZAxis( 0.f, 0.f, 1.f );
+	Vec3 worldYAxis( 0.f, 1.f, 0.f );
+
+	if ( abs( DotProduct3D( normal, worldZAxis ) ) < 0.99999f )
+	{
+		basisI = CrossProduct3D( worldZAxis, normal ).GetNormalized();
+		basisJ = CrossProduct3D( normal, basisI ).GetNormalized();
+	}
+	else
+	{
+		basisJ = CrossProduct3D( normal, worldYAxis ).GetNormalized();
+		basisI = CrossProduct3D( basisJ, normal ).GetNormalized();
+	}
+
+	float halfSize = 0.5f * planeSize;
+	Vec3 center = normal * plane.m_distanceAlongNormalFromOrigin;
+
+	Vec3 right = basisI * halfSize;
+	Vec3 up = basisJ * halfSize;
+
+	Vec3 bottomLeft = center - right - up;
+	Vec3 bottomRight = center + right - up;
+	Vec3 topRight = center + right + up;
+	Vec3 topLeft = center - right + up;
+
+	AddVertsForQuad3D( verts, bottomLeft, bottomRight, topRight, topLeft, color );
 }

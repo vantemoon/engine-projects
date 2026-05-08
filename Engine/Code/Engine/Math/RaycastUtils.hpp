@@ -1,6 +1,8 @@
 #pragma once
 #include "Engine/Math/AABB2.hpp"
 #include "Engine/Math/AABB3.hpp"
+#include "Engine/Math/OBB3.hpp"
+#include "Engine/Math/Plane3.hpp"
 #include "Engine/Math/Vec2.hpp"
 #include "Engine/Math/Vec3.hpp"
 
@@ -44,3 +46,5 @@ RaycastResult2D RaycastVsAABB2D( Vec2 startPos, Vec2 fwdNormal, float maxDist, A
 RaycastResult3D RaycastVsAABB3D( Vec3 startPos, Vec3 fwdNormal, float maxDist, AABB3 box );
 RaycastResult3D RaycastVsSphere3D( Vec3 startPos, Vec3 fwdNormal, float maxDist, Vec3 sphereCenter, float sphereRadius );
 RaycastResult3D RaycastVsCylinderZ3D( Vec3 startPos, Vec3 fwdNormal, float maxDist, Vec2 cylinderBaseCenter, float cylinderMinZ, float cylinderMaxZ, float cylinderRadius );
+RaycastResult3D RaycastVsOBB3D( Vec3 startPos, Vec3 fwdNormal, float maxDist, OBB3 box );
+RaycastResult3D RaycastVsPlane3D( Vec3 startPos, Vec3 fwdNormal, float maxDist, Plane3 plane );
