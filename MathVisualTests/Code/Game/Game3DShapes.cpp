@@ -87,8 +87,8 @@ void Game3DShapes::UpdateFromKeyboard( float deltaSeconds )
 	IntVec2 mouseDelta = g_engine->m_inputSystem->GetCursorClientDelta();
 	float mouseSensitivity = 0.1f;
 
-	cameraOrientation.m_yawDegrees += static_cast<float>( mouseDelta.x ) * mouseSensitivity;
-	cameraOrientation.m_pitchDegrees -= static_cast<float>( mouseDelta.y ) * mouseSensitivity;
+	cameraOrientation.m_yawDegrees += static_cast< float >( mouseDelta.x ) * mouseSensitivity;
+	cameraOrientation.m_pitchDegrees -= static_cast< float >( mouseDelta.y ) * mouseSensitivity;
 
 	cameraOrientation.m_pitchDegrees = GetClamped( cameraOrientation.m_pitchDegrees, -89.f, 89.f );
 
@@ -144,7 +144,54 @@ void Game3DShapes::UpdateFromKeyboard( float deltaSeconds )
 		}
 	}
 
-	// Randomize shapes
+	// Rotate grabbed OBB
+	if ( m_isShapeGrabbed && m_grabbedShapeType == 3 )
+	{
+		TestShapeOBB3D* shape = m_testOBBs[m_grabbedShapeIndex];
+		bool didRotate = false;
+
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'I' ) ) {
+			shape->m_orientation.m_yawDegrees += 10.f;
+			didRotate = true;
+		}
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'O' ) ) {
+			shape->m_orientation.m_yawDegrees -= 10.f;
+			didRotate = true;
+		}
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'J' ) ) {
+			shape->m_orientation.m_pitchDegrees += 10.f;
+			didRotate = true;
+		}
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'K' ) ) {
+			shape->m_orientation.m_pitchDegrees -= 10.f;
+			didRotate = true;
+		}
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'N' ) ) {
+			shape->m_orientation.m_rollDegrees += 10.f;
+			didRotate = true;
+		}
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'M' ) ) {
+			shape->m_orientation.m_rollDegrees -= 10.f;
+			didRotate = true;
+		}
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'U' ) ) {
+			shape->m_orientation = EulerAngles::ZERO;
+			didRotate = true;
+		}
+
+		if ( didRotate )
+		{
+			Vec3 iBasis;
+			Vec3 jBasis;
+			Vec3 kBasis;
+			shape->m_orientation.GetAsVectors_IFwd_JLeft_KUp( iBasis, jBasis, kBasis );
+			shape->m_orientedBox.m_iBasisNormal = iBasis;
+			shape->m_orientedBox.m_jBasisNormal = jBasis;
+			shape->m_orientedBox.m_kBasisNormal = kBasis;
+		}
+	}
+
+	// Randomize all shapes F8
 	if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_F8 ) )
 	{
 		GenerateRandomShapes();
@@ -225,6 +272,23 @@ void Game3DShapes::Render() const
 
 		if ( shapeIndex % 2 == 0 ) AddVertsForCylinderZWireframe3D( wireframeVerts, shape->m_start, shape->m_end, shape->m_radius, shapeColor, 16 );
 		else AddVertsForCylinderZ3D( solidVerts, shape->m_start, shape->m_end, shape->m_radius, shapeColor, AABB2::ZERO_TO_ONE, 16 );
+	}
+
+	// OBBs
+	for ( int shapeIndex = 0; shapeIndex < NUM_SHAPE_PER_TYPE; ++shapeIndex )
+	{
+		TestShapeOBB3D* shape = m_testOBBs[shapeIndex];
+		Rgba8 shapeColor = shape->m_color;
+		if ( IsShapeGrabbed( 3, shapeIndex ) )
+		{
+			shapeColor = Rgba8::RED;
+		}
+		else if ( m_nearestRaycastResult.m_didImpact && m_impactedShapeType == 3 && m_impactedShapeIndex == shapeIndex )
+		{
+			shapeColor = pulsedLightBlue;
+		}
+		if ( shapeIndex % 2 == 0 ) AddVertsForOBBWireframe3D(wireframeVerts, shape->m_orientedBox, shapeColor );
+		else AddVertsForOBB3D( solidVerts, shape->m_orientedBox, shapeColor );
 	}
 
 	// Impact debug
@@ -340,6 +404,7 @@ void Game3DShapes::GenerateRandomShapes()
 	GenerateRandomAABBs();
 	GenerateRandomSpheres();
 	GenerateRandomCylinders();
+	GenerateRandomOBBs();
 }
 
 
@@ -458,6 +523,56 @@ void Game3DShapes::GenerateRandomCylinders()
 
 
 //-----------------------------------------------------------------------------------------------
+void Game3DShapes::GenerateRandomOBBs()
+{
+	RandomNumberGenerator rng;
+
+	float worldHalfSize = 30.f;
+	float worldMinX = -worldHalfSize;
+	float worldMaxX = worldHalfSize;
+	float worldMinY = -worldHalfSize;
+	float worldMaxY = worldHalfSize;
+	float worldMinZ = -worldHalfSize;
+	float worldMaxZ = worldHalfSize;
+
+	float worldSpan = worldHalfSize * 2.f;
+
+	float minBoxWidth = 4.f;
+	float maxBoxWidth = GetClamped( 14.f, minBoxWidth, worldSpan );
+	float minBoxDepth = 4.f;
+	float maxBoxDepth = GetClamped( 14.f, minBoxDepth, worldSpan );
+	float minBoxHeight = 3.f;
+	float maxBoxHeight = GetClamped( 10.f, minBoxHeight, worldSpan );
+
+	for ( int shapeIndex = 0; shapeIndex < NUM_SHAPE_PER_TYPE; ++shapeIndex )
+	{
+		float boxWidth = rng.RollRandomFloatInRange( minBoxWidth, maxBoxWidth );
+		float boxDepth = rng.RollRandomFloatInRange( minBoxDepth, maxBoxDepth );
+		float boxHeight = rng.RollRandomFloatInRange( minBoxHeight, maxBoxHeight );
+		float boxLeft = rng.RollRandomFloatInRange( worldMinX, worldMaxX - boxWidth );
+		float boxBottom = rng.RollRandomFloatInRange( worldMinY, worldMaxY - boxDepth );
+		float boxMinZ = rng.RollRandomFloatInRange( worldMinZ, worldMaxZ - boxHeight );
+
+		float yawDegrees = 10.f * static_cast<float>( rng.RollRandomIntInRange( 0, 35 ) );
+		float pitchDegrees = 10.f * static_cast<float>( rng.RollRandomIntInRange( -18, 18 ) );
+		float rollDegrees = 10.f * static_cast<float>( rng.RollRandomIntInRange( -18, 18 ) );
+
+		EulerAngles orientation( yawDegrees, pitchDegrees, rollDegrees );
+		Vec3 iBasis;
+		Vec3 jBasis;
+		Vec3 kBasis;
+		orientation.GetAsVectors_IFwd_JLeft_KUp( iBasis, jBasis, kBasis );
+
+		Vec3 center( boxLeft + ( boxWidth * 0.5f ), boxBottom + ( boxDepth * 0.5f ), boxMinZ + ( boxHeight * 0.5f ) );
+		OBB3 obb( center, iBasis, jBasis, kBasis, Vec3( boxWidth * 0.5f, boxDepth * 0.5f, boxHeight * 0.5f ) );
+
+		TestShapeOBB3D* shape = new TestShapeOBB3D( center, iBasis, jBasis, kBasis, Vec3( boxWidth * 0.5f, boxDepth * 0.5f, boxHeight * 0.5f ) );
+		m_testOBBs[shapeIndex] = shape;
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
 void Game3DShapes::GetNearestPoints()
 {
 	m_nearestPointsToCamera.clear();
@@ -499,6 +614,16 @@ void Game3DShapes::GetNearestPointsToCamera()
 		TestShapeZCylinder* cylinderShape = m_testCylinders[shapeIndex];
 		Vec2 cylinderBaseCenter( cylinderShape->m_start.x, cylinderShape->m_start.y );
 		nearestPointToCamera = GetNearestPointOnCylinderZ3D( cameraPos, cylinderBaseCenter, cylinderShape->m_start.z, cylinderShape->m_end.z, cylinderShape->m_radius );
+		nearestPointDistanceToCameraSquared = GetDistanceSquared3D( cameraPos, nearestPointToCamera );
+		if ( nearestPointDistanceToCameraSquared < nearestPointDistanceSquared )
+		{
+			nearestPointDistanceSquared = nearestPointDistanceToCameraSquared;
+			m_nearestPoint = nearestPointToCamera;
+		}
+		m_nearestPointsToCamera.push_back( nearestPointToCamera );
+
+		TestShapeOBB3D* obbShape = m_testOBBs[shapeIndex];
+		nearestPointToCamera = GetNearestPointOnOBB3D( cameraPos, obbShape->m_orientedBox );
 		nearestPointDistanceToCameraSquared = GetDistanceSquared3D( cameraPos, nearestPointToCamera );
 		if ( nearestPointDistanceToCameraSquared < nearestPointDistanceSquared )
 		{
@@ -664,6 +789,15 @@ void Game3DShapes::CheckIfShapesOverlap()
 			}
 		}
 
+		for ( int obbIndex = 0; obbIndex < NUM_SHAPE_PER_TYPE && !isOverlapping; ++obbIndex )
+		{
+			TestShapeOBB3D* obbShape = m_testOBBs[obbIndex];
+			if ( DoOBBAndSphereOverlap3D( obbShape->m_orientedBox, sphere->m_center, sphere->m_radius ) )
+			{
+				isOverlapping = true;
+			}
+		}
+
 		Rgba8 defaultColor = ( ( sphereIndex % 2 ) == 0 ) ? m_darkBlue : Rgba8::WHITE;
 		Rgba8 overlapColor(
 			static_cast<unsigned char>( static_cast<float>( defaultColor.r ) * pulseBrightness ),
@@ -729,6 +863,30 @@ void Game3DShapes::CheckIfShapesOverlap()
 			defaultColor.a );
 		cylinder->m_color = isOverlapping ? overlapColor : defaultColor;
 	}
+
+	// OBBs
+	for ( int obbIndex = 0; obbIndex < NUM_SHAPE_PER_TYPE; ++obbIndex )
+	{
+		TestShapeOBB3D* obbShape = m_testOBBs[obbIndex];
+		bool isOverlapping = false;
+		
+		for ( int sphereIndex = 0; sphereIndex < NUM_SHAPE_PER_TYPE && !isOverlapping; ++sphereIndex )
+		{
+			TestShapeSphere* sphere = m_testSpheres[sphereIndex];
+			if ( DoOBBAndSphereOverlap3D( obbShape->m_orientedBox, sphere->m_center, sphere->m_radius ) )
+			{
+				isOverlapping = true;
+			}
+		}
+
+		Rgba8 defaultColor = ( ( obbIndex % 2 ) == 0 ) ? m_darkBlue : Rgba8::WHITE;
+		Rgba8 overlapColor(
+			static_cast<unsigned char>( static_cast<float>( defaultColor.r ) * pulseBrightness ),
+			static_cast<unsigned char>( static_cast<float>( defaultColor.g ) * pulseBrightness ),
+			static_cast<unsigned char>( static_cast<float>( defaultColor.b ) * pulseBrightness ),
+			defaultColor.a );
+		obbShape->m_color = isOverlapping ? overlapColor : defaultColor;
+	}
 }
 
 
@@ -783,6 +941,14 @@ void Game3DShapes::RaycastAgainstShapes()
 		{
 			m_nearestRaycastResult = cylinderResult;
 			m_impactedShapeType = 2;
+			m_impactedShapeIndex = shapeIndex;
+		}
+
+		RaycastResult3D obbResult = RaycastVsOBB3D( rayStart, rayDirection, m_raycastMaxLength, m_testOBBs[shapeIndex]->m_orientedBox );
+		if ( obbResult.m_didImpact && ( !m_nearestRaycastResult.m_didImpact || obbResult.m_impactDist < m_nearestRaycastResult.m_impactDist ) )
+		{
+			m_nearestRaycastResult = obbResult;
+			m_impactedShapeType = 3;
 			m_impactedShapeIndex = shapeIndex;
 		}
 	}
@@ -879,14 +1045,21 @@ Vec3 Game3DShapes::GetShapeCenterWorldPosition( int shapeType, int shapeIndex ) 
 		TestShapeAABB3D const* shape = m_testAABBs[shapeIndex];
 		return ( shape->m_alignedBox.m_mins + shape->m_alignedBox.m_maxs ) * 0.5f;
 	}
+
 	if ( shapeType == 1 )
 	{
 		return m_testSpheres[shapeIndex]->m_center;
 	}
+
 	if ( shapeType == 2 )
 	{
 		TestShapeZCylinder const* shape = m_testCylinders[shapeIndex];
 		return ( shape->m_start + shape->m_end ) * 0.5f;
+	}
+
+	if ( shapeType == 3 )
+	{
+		return m_testOBBs[shapeIndex]->m_orientedBox.m_center;
 	}
 
 	return Vec3::ZERO;
@@ -919,6 +1092,13 @@ void Game3DShapes::SetShapeCenterWorldPosition( int shapeType, int shapeIndex, V
 		Vec3 delta = worldCenter - currentCenter;
 		shape->m_start += delta;
 		shape->m_end += delta;
+		return;
+	}
+
+	if ( shapeType == 3 )
+	{
+		TestShapeOBB3D* shape = m_testOBBs[shapeIndex];
+		shape->m_orientedBox.m_center = worldCenter;
 		return;
 	}
 }

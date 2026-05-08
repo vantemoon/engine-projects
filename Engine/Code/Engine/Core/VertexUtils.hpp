@@ -62,4 +62,5 @@ void AddVertsForArrow3D( std::vector<Vertex>& verts, Vec3 const& start, Vec3 con
 	Rgba8 const& color = Rgba8::WHITE, int numSides = 32 );
 void AddVertsForLineSegment3D( std::vector<Vertex>& verts, Vec3 const& start, Vec3 const& end, float thickness, Rgba8 const& color = Rgba8::WHITE );
 void AddVertsForOBB3D( std::vector<Vertex>& verts, OBB3 const& orientedBox, Rgba8 const& color = Rgba8::WHITE );
+void AddVertsForOBBWireframe3D( std::vector<Vertex>& verts, OBB3 const& orientedBox, Rgba8 const& color = Rgba8::WHITE );
 void AddVertsForPlane3D( std::vector<Vertex>& verts, Plane3 const& plane, float planeSize, Rgba8 const& color = Rgba8::WHITE );

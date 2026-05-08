@@ -2,6 +2,7 @@
 #include "Game/Game.hpp"
 #include "Game/TestShape.hpp"
 #include "Game/TestShapeAABB3D.hpp"
+#include "Game/TestShapeOBB3D.hpp"
 #include "Game/TestShapeSphere.hpp"
 #include "Game/TestShapeZCylinder.hpp"
 #include "Engine/Core/Rgba8.hpp"
@@ -20,6 +21,7 @@ public:
 	TestShapeAABB3D*	m_testAABBs[NUM_SHAPE_PER_TYPE] = {};
 	TestShapeSphere*	m_testSpheres[NUM_SHAPE_PER_TYPE] = {};
 	TestShapeZCylinder* m_testCylinders[NUM_SHAPE_PER_TYPE] = {};
+	TestShapeOBB3D*		m_testOBBs[NUM_SHAPE_PER_TYPE] = {};
 
 	Vec3				m_refPoint = Vec3::ZERO;
 	Vec3                m_refDirection = Vec3::ZERO;
@@ -56,6 +58,7 @@ private:
 	void GenerateRandomAABBs();
 	void GenerateRandomSpheres();
 	void GenerateRandomCylinders();
+	void GenerateRandomOBBs();
 
 	void GetNearestPoints();
 	void GetNearestPointsToCamera();

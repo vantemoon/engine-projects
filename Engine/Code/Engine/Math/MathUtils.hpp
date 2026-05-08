@@ -81,6 +81,8 @@ bool DoZCylindersOverlap3D( Vec2 cylinder1CenterXY, float cylinder1Radius, Float
 bool DoSphereAndAABBOverlap3D( Vec3 const& sphereCenter, float sphereRadius, AABB3 const& box);
 bool DoZCylinderAndAABBOverlap3D( Vec2 cylinderCenterXY, float cylinderRadius, FloatRange cylinderMinZMaxZ, AABB3 const& box );
 bool DoZCylinderAndSphereOverlap3D( Vec2 cylinderCenterXY, float cylinderRadius, FloatRange cylinderMinZMaxZ, Vec3 const& sphereCenter, float sphereRadius );
+bool DoOBBAndSphereOverlap3D( OBB3 const& box, Vec3 const& sphereCenter, float sphereRadius );
+bool DoOBBAndPlaneOverlap3D( OBB3 const& box, Plane3 const& plane );
 bool PushDiscOutOfFixedPoint2D( Vec2& mobileDiscCenter, float mobileDiscRadius, Vec2 const& fixedPoint );
 bool PushDiscOutOfFixedDisc2D( Vec2& mobileDiscCenter, float mobileDiscRadius, Vec2 const& fixedDiscCenter, float fixedDiscRadius );
 bool PushDiscsOutOfEachOther2D( Vec2& aCenter, float aRadius, Vec2& bCenter, float bRadius );

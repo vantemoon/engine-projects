@@ -424,6 +424,24 @@ bool DoZCylinderAndSphereOverlap3D( Vec2 cylinderCenterXY, float cylinderRadius,
 
 
 //-----------------------------------------------------------------------------------------------
+bool DoOBBAndSphereOverlap3D( OBB3 const& box, Vec3 const& sphereCenter, float sphereRadius )
+{
+	Vec3 nearestPoint = GetNearestPointOnOBB3D( sphereCenter, box );
+	bool doOverlap = GetDistanceSquared3D( sphereCenter, nearestPoint ) < ( sphereRadius * sphereRadius );
+	return doOverlap;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool DoOBBAndPlaneOverlap3D( OBB3 const& box, Plane3 const& plane )
+{
+	Vec3 nearestPoint = GetNearestPointOnOBB3D( plane.m_normal * plane.m_distanceAlongNormalFromOrigin, box );
+	bool doOverlap = DotProduct3D( plane.m_normal, nearestPoint ) - plane.m_distanceAlongNormalFromOrigin <= 0.f;
+	return doOverlap;
+}
+
+
+//-----------------------------------------------------------------------------------------------
 bool PushDiscOutOfFixedPoint2D( Vec2& mobileDiscCenter, float mobileDiscRadius, Vec2 const& fixedPoint )
 {
 	Vec2 toMobile = mobileDiscCenter - fixedPoint;

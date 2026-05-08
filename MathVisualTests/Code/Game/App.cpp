@@ -268,8 +268,27 @@ void App::RenderHUD() const
 			AddVertsForTextTriangles2D( verts, "LMB/RMB: set ray start/end; WASD: move start, IJKL: move end, arrows move ray, hold T: slow", Vec2( 240.f, 730.f ), 20.f, Rgba8::CYAN );
 			break;
 		case GAMEMODE_3D_SHAPES:
-			AddVertsForTextTriangles2D( verts, "WASD: fly horizontal, QE: fly vertical, space: lock raycast, hold T: slow", Vec2( 240.f, 730.f ), 20.f, Rgba8::CYAN );
+		{
+			Game3DShapes const* currGame = dynamic_cast< Game3DShapes const* >( m_game );
+			std::string controlsText = "WASD: fly horizontal, QE: fly vertical, space: lock raycast, hold T: slow";
+			if ( currGame != nullptr && currGame->m_nearestRaycastResult.m_didImpact )
+			{
+				controlsText += ", LMB: grab object";
+			}
+			AddVertsForTextTriangles2D( verts, controlsText, Vec2( 240.f, 730.f ), 20.f, Rgba8::CYAN );
+
+			if ( currGame != nullptr && currGame->m_isShapeGrabbed && currGame->m_grabbedShapeType == 3 )
+			{
+				TestShapeOBB3D const* shape = currGame->m_testOBBs[currGame->m_grabbedShapeIndex];
+				EulerAngles const& orientation = shape->m_orientation;
+				std::string orientationText = Stringf( "I/O: yaw (%.1f), J/K: pitch (%.1f), N/M: roll (%.1f), U: reset",
+					orientation.m_yawDegrees,
+					orientation.m_pitchDegrees,
+					orientation.m_rollDegrees );
+				AddVertsForTextTriangles2D( verts, orientationText, Vec2( 20.f, 705.f ), 20.f, Rgba8::WHITE );
+			}
 			break;
+		}
 		case GAMEMODE_2D_CURVES:
 		{
 			Game2DCurves const* currGame = dynamic_cast<Game2DCurves const*>( m_game );

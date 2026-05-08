@@ -13,7 +13,7 @@ public:
 	Vec3 m_halfDimensions;
 
 public:
-	OBB3( Vec3 const& center, Vec3 const& iBasisNormal, Vec3 const& jBasisNormal, Vec3 const& halfDimensions );
+	OBB3( Vec3 const& center, Vec3 const& iBasisNormal, Vec3 const& jBasisNormal, Vec3 const& kBasisNormal, Vec3 const& halfDimensions );
 	~OBB3() = default;
 
 	void GetCornerPoints( Vec3* out_eightCornerWorldPositions ) const; // For drawing

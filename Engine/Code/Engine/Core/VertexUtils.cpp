@@ -933,15 +933,15 @@ void AddVertsForOBB3D( std::vector<Vertex>& verts, OBB3 const& orientedBox, Rgba
 	Vec3 corners[8];
 	orientedBox.GetCornerPoints( corners );
 
-	Vec3 const& frontTopRight = corners[0];
-	Vec3 const& frontTopLeft = corners[1];
-	Vec3 const& frontBottomLeft = corners[2];
-	Vec3 const& frontBottomRight = corners[3];
+	Vec3 const& backTopRight = corners[0];
+	Vec3 const& backTopLeft = corners[1];
+	Vec3 const& backBottomLeft = corners[2];
+	Vec3 const& backBottomRight = corners[3];
 
-	Vec3 const& backTopRight = corners[4];
-	Vec3 const& backTopLeft = corners[5];
-	Vec3 const& backBottomLeft = corners[6];
-	Vec3 const& backBottomRight = corners[7];
+	Vec3 const& frontTopRight = corners[4];
+	Vec3 const& frontTopLeft = corners[5];
+	Vec3 const& frontBottomLeft = corners[6];
+	Vec3 const& frontBottomRight = corners[7];
 
 	AABB2 const UVs = AABB2::ZERO_TO_ONE;
 
@@ -951,6 +951,49 @@ void AddVertsForOBB3D( std::vector<Vertex>& verts, OBB3 const& orientedBox, Rgba
 	AddVertsForQuad3D( verts, frontTopRight, frontTopLeft, backTopLeft, backTopRight, color, UVs );
 	AddVertsForQuad3D( verts, frontTopLeft, frontBottomLeft, backBottomLeft, backTopLeft, color, UVs );
 	AddVertsForQuad3D( verts, frontBottomRight, frontTopRight, backTopRight, backBottomRight, color, UVs );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void AddVertsForOBBWireframe3D( std::vector<Vertex>& verts, OBB3 const& orientedBox, Rgba8 const& color /* = Rgba8::WHITE */ )
+{
+	Vec3 corners[8];
+	orientedBox.GetCornerPoints( corners );
+
+	Vec3 const& frontTopRight = corners[0];
+	Vec3 const& frontTopLeft = corners[1];
+	Vec3 const& frontBottomLeft = corners[2];
+	Vec3 const& frontBottomRight = corners[3];
+	Vec3 const& backTopRight = corners[4];
+	Vec3 const& backTopLeft = corners[5];
+	Vec3 const& backBottomLeft = corners[6];
+	Vec3 const& backBottomRight = corners[7];
+
+	float sizeX = ( frontBottomRight - frontBottomLeft ).GetLength();
+	float sizeY = ( frontTopLeft - frontBottomLeft ).GetLength();
+	float sizeZ = ( backBottomLeft - frontBottomLeft ).GetLength();
+	float minSize = sizeX;
+	if ( sizeY < minSize ) minSize = sizeY;
+	if ( sizeZ < minSize ) minSize = sizeZ;
+
+	float thickness = minSize * 0.01f;
+	if ( thickness <= 0.f )
+	{
+		thickness = 0.01f;
+	}
+
+	AddVertsForLineSegment3D( verts, frontBottomLeft, frontBottomRight, thickness, color );
+	AddVertsForLineSegment3D( verts, frontBottomRight, frontTopRight, thickness, color );
+	AddVertsForLineSegment3D( verts, frontTopRight, frontTopLeft, thickness, color );
+	AddVertsForLineSegment3D( verts, frontTopLeft, frontBottomLeft, thickness, color );
+	AddVertsForLineSegment3D( verts, backBottomLeft, backBottomRight, thickness, color );
+	AddVertsForLineSegment3D( verts, backBottomRight, backTopRight, thickness, color );
+	AddVertsForLineSegment3D( verts, backTopRight, backTopLeft, thickness, color );
+	AddVertsForLineSegment3D( verts, backTopLeft, backBottomLeft, thickness, color );
+	AddVertsForLineSegment3D( verts, frontBottomLeft, backBottomLeft, thickness, color );
+	AddVertsForLineSegment3D( verts, frontBottomRight, backBottomRight, thickness, color );
+	AddVertsForLineSegment3D( verts, frontTopRight, backTopRight, thickness, color );
+	AddVertsForLineSegment3D( verts, frontTopLeft, backTopLeft, thickness, color );
 }
 
 
