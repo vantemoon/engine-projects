@@ -291,6 +291,22 @@ void Game3DShapes::Render() const
 		else AddVertsForOBB3D( solidVerts, shape->m_orientedBox, shapeColor );
 	}
 
+	// Grid
+	for ( int shapeIndex = 0; shapeIndex < NUM_PLANE; ++shapeIndex )
+	{
+		TestShapePlane3D* shape = m_testPlanes[shapeIndex];
+		Rgba8 shapeColor = shape->m_color;
+		if ( IsShapeGrabbed( 4, shapeIndex ) )
+		{
+			shapeColor = Rgba8::RED;
+		}
+		else if ( m_nearestRaycastResult.m_didImpact && m_impactedShapeType == 4 && m_impactedShapeIndex == shapeIndex )
+		{
+			shapeColor = pulsedLightBlue;
+		}
+		AddVertsForPlane3D(wireframeVerts, shape->m_plane, 200.f, shapeColor );
+	}
+
 	// Impact debug
 	if ( m_nearestRaycastResult.m_didImpact )
 	{
@@ -378,6 +394,33 @@ void Game3DShapes::Render() const
 		}
 	}
 
+	// Plane debug
+	float planeOriginPointRadius = 0.2f;
+	float planeOriginLineThickness = 0.05f;
+	Rgba8 planeOriginPointColor( 170, 170, 170, 200 );
+	Rgba8 planeOriginLineColor( 170, 170, 170, 120 );
+
+	for ( int planeIndex = 0; planeIndex < NUM_PLANE; ++planeIndex )
+	{
+		TestShapePlane3D* planeShape = m_testPlanes[planeIndex];
+		if ( planeShape == nullptr )
+		{
+			continue;
+		}
+
+		Vec3 nearestPointToOrigin = GetNearestPointOnPlane3D( Vec3::ZERO, planeShape->m_plane );
+		AddVertsForSphere3D( verts, nearestPointToOrigin, planeOriginPointRadius, planeOriginPointColor );
+		AddVertsForLineSegment3D( verts, Vec3::ZERO, nearestPointToOrigin, planeOriginLineThickness, planeOriginLineColor );
+
+		Vec3 normal = planeShape->m_plane.m_normal;
+		if ( DotProduct3D( normal, nearestPointToOrigin ) < 0.f )
+		{
+			normal = -normal;
+		}
+
+		AddVertsForArrow3D( verts, nearestPointToOrigin, nearestPointToOrigin + normal *2.f, planeOriginLineThickness, Rgba8::CYAN );
+	}
+
 	// Shapes
 	Texture* texture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/Test_StbiFlippedAndOpenGL.png" );
 	g_engine->m_renderer->BindTexture( texture );
@@ -387,6 +430,7 @@ void Game3DShapes::Render() const
 	g_engine->m_renderer->DrawVertexArray( wireframeVerts );
 
 	// Draw debug verts
+	g_engine->m_renderer->SetBlendMode( BlendMode::ALPHA );
 	g_engine->m_renderer->BindTexture( nullptr );
 	g_engine->m_renderer->DrawVertexArray( verts );
 
@@ -405,6 +449,7 @@ void Game3DShapes::GenerateRandomShapes()
 	GenerateRandomSpheres();
 	GenerateRandomCylinders();
 	GenerateRandomOBBs();
+	GenerateRandomPlanes();
 }
 
 
@@ -457,6 +502,12 @@ void Game3DShapes::GenerateRandomSpheres()
 {
 	RandomNumberGenerator rng;
 
+	for ( int shapeIndex = 0; shapeIndex < NUM_SHAPE_PER_TYPE; ++shapeIndex )
+	{
+		delete m_testSpheres[shapeIndex];
+		m_testSpheres[shapeIndex] = nullptr;
+	}
+
 	float worldHalfSize = 30.f;
 	float worldMinX = -worldHalfSize;
 	float worldMaxX = worldHalfSize;
@@ -488,6 +539,12 @@ void Game3DShapes::GenerateRandomSpheres()
 void Game3DShapes::GenerateRandomCylinders()
 {
 	RandomNumberGenerator rng;
+
+	for ( int shapeIndex = 0; shapeIndex < NUM_SHAPE_PER_TYPE; ++shapeIndex )
+	{
+		delete m_testCylinders[shapeIndex];
+		m_testCylinders[shapeIndex] = nullptr;
+	}
 
 	float worldHalfSize = 30.f;
 	float worldMinX = -worldHalfSize;
@@ -526,6 +583,12 @@ void Game3DShapes::GenerateRandomCylinders()
 void Game3DShapes::GenerateRandomOBBs()
 {
 	RandomNumberGenerator rng;
+
+	for ( int shapeIndex = 0; shapeIndex < NUM_SHAPE_PER_TYPE; ++shapeIndex )
+	{
+		delete m_testOBBs[shapeIndex];
+		m_testOBBs[shapeIndex] = nullptr;
+	}
 
 	float worldHalfSize = 30.f;
 	float worldMinX = -worldHalfSize;
@@ -568,6 +631,60 @@ void Game3DShapes::GenerateRandomOBBs()
 
 		TestShapeOBB3D* shape = new TestShapeOBB3D( center, iBasis, jBasis, kBasis, Vec3( boxWidth * 0.5f, boxDepth * 0.5f, boxHeight * 0.5f ) );
 		m_testOBBs[shapeIndex] = shape;
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game3DShapes::GenerateRandomPlanes()
+{
+	RandomNumberGenerator rng;
+
+	for ( int planeIndex = 0; planeIndex < NUM_PLANE; ++planeIndex )
+	{
+		delete m_testPlanes[planeIndex];
+		m_testPlanes[planeIndex] = nullptr;
+	}
+
+	float worldHalfSize = 30.f;
+	float worldMinX = -worldHalfSize;
+	float worldMaxX = worldHalfSize;
+	float worldMinY = -worldHalfSize;
+	float worldMaxY = worldHalfSize;
+	float worldMinZ = -worldHalfSize;
+	float worldMaxZ = worldHalfSize;
+
+	float worldSpan = worldHalfSize * 2.f;
+
+	float minPlaneSize = 10.f;
+	float maxPlaneSize = GetClamped( 20.f, minPlaneSize, worldSpan );
+
+	for ( int planeIndex = 0; planeIndex < NUM_PLANE; ++planeIndex )
+	{
+		float planeSize = rng.RollRandomFloatInRange( minPlaneSize, maxPlaneSize );
+		float centerX = rng.RollRandomFloatInRange( worldMinX + ( planeSize * 0.5f ), worldMaxX - ( planeSize * 0.5f ) );
+		float centerY = rng.RollRandomFloatInRange( worldMinY + ( planeSize * 0.5f ), worldMaxY - ( planeSize * 0.5f ) );
+		float centerZ = rng.RollRandomFloatInRange( worldMinZ + ( planeSize * 0.5f ), worldMaxZ - ( planeSize * 0.5f ) );
+
+		Vec3 normal(
+			rng.RollRandomFloatInRange( -1.f, 1.f ),
+			rng.RollRandomFloatInRange( -1.f, 1.f ),
+			rng.RollRandomFloatInRange( -1.f, 1.f ) );
+
+		if ( normal.GetLengthSquared() == 0.f )
+		{
+			normal = Vec3( 0.f, 0.f, 1.f );
+		}
+		else
+		{
+			normal = normal.GetNormalized();
+		}
+
+		Vec3 planePoint( centerX, centerY, centerZ );
+		float distanceFromOrigin = DotProduct3D( normal, planePoint );
+
+		Plane3 plane( normal, distanceFromOrigin );
+		m_testPlanes[planeIndex] = new TestShapePlane3D( plane );
 	}
 }
 
@@ -632,6 +749,19 @@ void Game3DShapes::GetNearestPointsToCamera()
 		}
 		m_nearestPointsToCamera.push_back( nearestPointToCamera );
 	}
+
+	for ( int planeIndex = 0; planeIndex < NUM_PLANE; ++planeIndex )
+	{
+		TestShapePlane3D* planeShape = m_testPlanes[planeIndex];
+		Vec3 nearestPointToCamera = GetNearestPointOnPlane3D( cameraPos, planeShape->m_plane );
+		float nearestPointDistanceToCameraSquared = GetDistanceSquared3D( cameraPos, nearestPointToCamera );
+		if ( nearestPointDistanceToCameraSquared < nearestPointDistanceSquared )
+		{
+			nearestPointDistanceSquared = nearestPointDistanceToCameraSquared;
+			m_nearestPoint = nearestPointToCamera;
+		}
+		m_nearestPointsToCamera.push_back( nearestPointToCamera );
+	}
 }
 
 
@@ -666,6 +796,29 @@ void Game3DShapes::GetNearestPointsToRefPoint()
 		Vec2 cylinderBaseCenter( cylinderShape->m_start.x, cylinderShape->m_start.y );
 		nearestPointToRefPoint = GetNearestPointOnCylinderZ3D( m_refPoint, cylinderBaseCenter, cylinderShape->m_start.z, cylinderShape->m_end.z, cylinderShape->m_radius );
 		nearestPointDistanceToRefPointSquared = GetDistanceSquared3D( m_refPoint, nearestPointToRefPoint );
+		if ( nearestPointDistanceToRefPointSquared < nearestPointDistanceSquared )
+		{
+			nearestPointDistanceSquared = nearestPointDistanceToRefPointSquared;
+			m_nearestPoint = nearestPointToRefPoint;
+		}
+		m_nearestPointsToRefPoint.push_back( nearestPointToRefPoint );
+
+		TestShapeOBB3D* obbShape = m_testOBBs[shapeIndex];
+		nearestPointToRefPoint = GetNearestPointOnOBB3D( m_refPoint, obbShape->m_orientedBox );
+		nearestPointDistanceToRefPointSquared = GetDistanceSquared3D( m_refPoint, nearestPointToRefPoint );
+		if ( nearestPointDistanceToRefPointSquared < nearestPointDistanceSquared )
+		{
+			nearestPointDistanceSquared = nearestPointDistanceToRefPointSquared;
+			m_nearestPoint = nearestPointToRefPoint;
+		}
+		m_nearestPointsToRefPoint.push_back( nearestPointToRefPoint );
+	}
+
+	for ( int planeIndex = 0; planeIndex < NUM_PLANE; ++planeIndex )
+	{
+		TestShapePlane3D* planeShape = m_testPlanes[planeIndex];
+		Vec3 nearestPointToRefPoint = GetNearestPointOnPlane3D( m_refPoint, planeShape->m_plane );
+		float nearestPointDistanceToRefPointSquared = GetDistanceSquared3D( m_refPoint, nearestPointToRefPoint );
 		if ( nearestPointDistanceToRefPointSquared < nearestPointDistanceSquared )
 		{
 			nearestPointDistanceSquared = nearestPointDistanceToRefPointSquared;
@@ -737,6 +890,15 @@ void Game3DShapes::CheckIfShapesOverlap()
 			}
 		}
 
+		for ( int planeIndex = 0; planeIndex < NUM_PLANE && !isOverlapping; ++planeIndex )
+		{
+			TestShapePlane3D* plane = m_testPlanes[planeIndex];
+			if ( DoPlaneAndAABBOverlap3D( plane->m_plane, aabbShape->m_alignedBox ) )
+			{
+				isOverlapping = true;
+			}
+		}
+
 		Rgba8 defaultColor = ( ( aabbIndex % 2 ) == 0 ) ? m_darkBlue : Rgba8::WHITE;
 		Rgba8 overlapColor(
 			static_cast<unsigned char>( static_cast<float>( defaultColor.r ) * pulseBrightness ),
@@ -793,6 +955,15 @@ void Game3DShapes::CheckIfShapesOverlap()
 		{
 			TestShapeOBB3D* obbShape = m_testOBBs[obbIndex];
 			if ( DoOBBAndSphereOverlap3D( obbShape->m_orientedBox, sphere->m_center, sphere->m_radius ) )
+			{
+				isOverlapping = true;
+			}
+		}
+
+		for ( int planeIndex = 0; planeIndex < NUM_PLANE && !isOverlapping; ++planeIndex )
+		{
+			TestShapePlane3D* plane = m_testPlanes[planeIndex];
+			if ( DoPlaneAndSphereOverlap3D( plane->m_plane, sphere->m_center, sphere->m_radius ) )
 			{
 				isOverlapping = true;
 			}
@@ -879,6 +1050,15 @@ void Game3DShapes::CheckIfShapesOverlap()
 			}
 		}
 
+		for ( int planeIndex = 0; planeIndex < NUM_PLANE && !isOverlapping; ++planeIndex )
+		{
+			TestShapePlane3D* plane = m_testPlanes[planeIndex];
+			if ( DoOBBAndPlaneOverlap3D( obbShape->m_orientedBox, plane->m_plane ) )
+			{
+				isOverlapping = true;
+			}
+		}
+
 		Rgba8 defaultColor = ( ( obbIndex % 2 ) == 0 ) ? m_darkBlue : Rgba8::WHITE;
 		Rgba8 overlapColor(
 			static_cast<unsigned char>( static_cast<float>( defaultColor.r ) * pulseBrightness ),
@@ -886,6 +1066,47 @@ void Game3DShapes::CheckIfShapesOverlap()
 			static_cast<unsigned char>( static_cast<float>( defaultColor.b ) * pulseBrightness ),
 			defaultColor.a );
 		obbShape->m_color = isOverlapping ? overlapColor : defaultColor;
+	}
+
+	// Planes
+	for ( int planeIndex = 0; planeIndex < NUM_PLANE; ++planeIndex )
+	{
+		TestShapePlane3D* plane = m_testPlanes[planeIndex];
+		bool isOverlapping = false;
+
+		for ( int aabbIndex = 0; aabbIndex < NUM_SHAPE_PER_TYPE && !isOverlapping; ++aabbIndex )
+		{
+			if ( DoPlaneAndAABBOverlap3D( plane->m_plane, m_testAABBs[aabbIndex]->m_alignedBox ) )
+			{
+				isOverlapping = true;
+			}
+		}
+
+		for ( int sphereIndex = 0; sphereIndex < NUM_SHAPE_PER_TYPE && !isOverlapping; ++sphereIndex )
+		{
+			TestShapeSphere* sphere = m_testSpheres[sphereIndex];
+			if ( DoPlaneAndSphereOverlap3D( plane->m_plane, sphere->m_center, sphere->m_radius ) )
+			{
+				isOverlapping = true;
+			}
+		}
+
+		for ( int obbIndex = 0; obbIndex < NUM_SHAPE_PER_TYPE && !isOverlapping; ++obbIndex )
+		{
+			TestShapeOBB3D* obbShape = m_testOBBs[obbIndex];
+			if ( DoOBBAndPlaneOverlap3D( obbShape->m_orientedBox, plane->m_plane ) )
+			{
+				isOverlapping = true;
+			}
+		}
+
+		Rgba8 defaultColor = ( ( planeIndex % 2 ) == 0 ) ? m_darkBlue : Rgba8::WHITE;
+		Rgba8 overlapColor(
+			static_cast< unsigned char >( static_cast< float >( defaultColor.r )* pulseBrightness ),
+			static_cast< unsigned char >( static_cast< float >( defaultColor.g )* pulseBrightness ),
+			static_cast< unsigned char >( static_cast< float >( defaultColor.b )* pulseBrightness ),
+			defaultColor.a );
+		plane->m_color = isOverlapping ? overlapColor : defaultColor;
 	}
 }
 
@@ -950,6 +1171,17 @@ void Game3DShapes::RaycastAgainstShapes()
 			m_nearestRaycastResult = obbResult;
 			m_impactedShapeType = 3;
 			m_impactedShapeIndex = shapeIndex;
+		}
+	}
+
+	for ( int planeIndex = 0; planeIndex < NUM_PLANE; ++planeIndex )
+	{
+		RaycastResult3D planeResult = RaycastVsPlane3D( rayStart, rayDirection, m_raycastMaxLength, m_testPlanes[planeIndex]->m_plane );
+		if ( planeResult.m_didImpact && ( !m_nearestRaycastResult.m_didImpact || planeResult.m_impactDist < m_nearestRaycastResult.m_impactDist ) )
+		{
+			m_nearestRaycastResult = planeResult;
+			m_impactedShapeType = 4;
+			m_impactedShapeIndex = planeIndex;
 		}
 	}
 

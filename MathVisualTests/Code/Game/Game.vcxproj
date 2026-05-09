@@ -52,6 +52,7 @@
     <ClCompile Include="TestShapeLineSegment.cpp" />
     <ClCompile Include="TestShapeOBB.cpp" />
     <ClCompile Include="TestShapeOBB3D.cpp" />
+    <ClCompile Include="TestShapePlane3D.cpp" />
     <ClCompile Include="TestShapeSphere.cpp" />
     <ClCompile Include="TestShapeTriangle.cpp" />
     <ClCompile Include="TestShapeZCylinder.cpp" />
@@ -77,6 +78,7 @@
     <ClInclude Include="TestShapeLineSegment.hpp" />
     <ClInclude Include="TestShapeOBB.hpp" />
     <ClInclude Include="TestShapeOBB3D.hpp" />
+    <ClInclude Include="TestShapePlane3D.hpp" />
     <ClInclude Include="TestShapeSphere.hpp" />
     <ClInclude Include="TestShapeZCylinder.hpp" />
   </ItemGroup>

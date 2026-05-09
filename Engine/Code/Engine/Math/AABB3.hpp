@@ -17,4 +17,5 @@ public:
 	explicit AABB3( Vec3 const& mins, Vec3 const& maxs );
 
 	bool IsPointInside( Vec3 const& point ) const;
+	void GetCornerPoints( Vec3* out_eightCornerWorldPositions ) const;
 };

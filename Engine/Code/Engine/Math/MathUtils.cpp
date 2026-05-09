@@ -435,8 +435,60 @@ bool DoOBBAndSphereOverlap3D( OBB3 const& box, Vec3 const& sphereCenter, float s
 //-----------------------------------------------------------------------------------------------
 bool DoOBBAndPlaneOverlap3D( OBB3 const& box, Plane3 const& plane )
 {
-	Vec3 nearestPoint = GetNearestPointOnOBB3D( plane.m_normal * plane.m_distanceAlongNormalFromOrigin, box );
-	bool doOverlap = DotProduct3D( plane.m_normal, nearestPoint ) - plane.m_distanceAlongNormalFromOrigin <= 0.f;
+	Vec3 corners[8];
+	box.GetCornerPoints( corners );
+
+	float minDistance = DotProduct3D( plane.m_normal, corners[0] ) - plane.m_distanceAlongNormalFromOrigin;
+	float maxDistance = minDistance;
+
+	for ( int cornerIndex = 1; cornerIndex < 8; ++cornerIndex )
+	{
+		float distance = DotProduct3D( plane.m_normal, corners[cornerIndex] ) - plane.m_distanceAlongNormalFromOrigin;
+		if ( distance < minDistance )
+		{
+			minDistance = distance;
+		}
+		if ( distance > maxDistance )
+		{
+			maxDistance = distance;
+		}
+	}
+
+	return minDistance < 0.f && maxDistance > 0.f;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool DoPlaneAndAABBOverlap3D( Plane3 const& plane, AABB3 const& box )
+{
+	Vec3 corners[8];
+	box.GetCornerPoints( corners );
+
+	float minDistance = DotProduct3D( plane.m_normal, corners[0] ) - plane.m_distanceAlongNormalFromOrigin;
+	float maxDistance = minDistance;
+
+	for ( int cornerIndex = 1; cornerIndex < 8; ++cornerIndex )
+	{
+		float distance = DotProduct3D( plane.m_normal, corners[cornerIndex] ) - plane.m_distanceAlongNormalFromOrigin;
+		if ( distance < minDistance )
+		{
+			minDistance = distance;
+		}
+		if ( distance > maxDistance )
+		{
+			maxDistance = distance;
+		}
+	}
+
+	return minDistance < 0.f && maxDistance > 0.f;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool DoPlaneAndSphereOverlap3D( Plane3 const& plane, Vec3 const& sphereCenter, float sphereRadius )
+{
+	float distanceFromPlaneToSphereCenter = DotProduct3D( plane.m_normal, sphereCenter ) - plane.m_distanceAlongNormalFromOrigin;
+	bool doOverlap = fabsf( distanceFromPlaneToSphereCenter ) < sphereRadius;
 	return doOverlap;
 }
 
@@ -741,6 +793,14 @@ bool IsPointInsideOBB3D( Vec3 const& point, OBB3 const& orientedBox )
 	bool isInsideY = fabsf( localPos.y ) < orientedBox.m_halfDimensions.y;
 	bool isInsideZ = fabsf( localPos.z ) < orientedBox.m_halfDimensions.z;
 	return isInsideX && isInsideY && isInsideZ;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool IsPointInFrontOfPlane3D( Vec3 const& point, Plane3 const& plane )
+{
+	float distanceFromPlane = DotProduct3D( plane.m_normal, point ) - plane.m_distanceAlongNormalFromOrigin;
+	return distanceFromPlane > 0.f;
 }
 
 

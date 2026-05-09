@@ -36,3 +36,17 @@ bool AABB3::IsPointInside( Vec3 const& point ) const
 		return false;
 	return true;
 }
+
+
+//-----------------------------------------------------------------------------------------------
+void AABB3::GetCornerPoints( Vec3* out_eightCornerWorldPositions ) const
+{
+	out_eightCornerWorldPositions[0] = Vec3( m_mins.x, m_mins.y, m_mins.z );
+	out_eightCornerWorldPositions[1] = Vec3( m_maxs.x, m_mins.y, m_mins.z );
+	out_eightCornerWorldPositions[2] = Vec3( m_mins.x, m_maxs.y, m_mins.z );
+	out_eightCornerWorldPositions[3] = Vec3( m_maxs.x, m_maxs.y, m_mins.z );
+	out_eightCornerWorldPositions[4] = Vec3( m_mins.x, m_mins.y, m_maxs.z );
+	out_eightCornerWorldPositions[5] = Vec3( m_maxs.x, m_mins.y, m_maxs.z );
+	out_eightCornerWorldPositions[6] = Vec3( m_mins.x, m_maxs.y, m_maxs.z );
+	out_eightCornerWorldPositions[7] = Vec3( m_maxs.x, m_maxs.y, m_maxs.z );
+}

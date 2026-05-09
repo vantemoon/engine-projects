@@ -82,6 +82,9 @@
     <ClCompile Include="TestShapeOBB3D.cpp">
       <Filter>Test Shape</Filter>
     </ClCompile>
+    <ClCompile Include="TestShapePlane3D.cpp">
+      <Filter>Test Shape</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.hpp">
@@ -148,6 +151,9 @@
       <Filter>Gameplay</Filter>
     </ClInclude>
     <ClInclude Include="TestShapeOBB3D.hpp">
+      <Filter>Test Shape</Filter>
+    </ClInclude>
+    <ClInclude Include="TestShapePlane3D.hpp">
       <Filter>Test Shape</Filter>
     </ClInclude>
   </ItemGroup>

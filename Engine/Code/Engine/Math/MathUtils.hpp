@@ -83,6 +83,8 @@ bool DoZCylinderAndAABBOverlap3D( Vec2 cylinderCenterXY, float cylinderRadius, F
 bool DoZCylinderAndSphereOverlap3D( Vec2 cylinderCenterXY, float cylinderRadius, FloatRange cylinderMinZMaxZ, Vec3 const& sphereCenter, float sphereRadius );
 bool DoOBBAndSphereOverlap3D( OBB3 const& box, Vec3 const& sphereCenter, float sphereRadius );
 bool DoOBBAndPlaneOverlap3D( OBB3 const& box, Plane3 const& plane );
+bool DoPlaneAndAABBOverlap3D( Plane3 const& plane, AABB3 const& box );
+bool DoPlaneAndSphereOverlap3D( Plane3 const& plane, Vec3 const& sphereCenter, float sphereRadius );
 bool PushDiscOutOfFixedPoint2D( Vec2& mobileDiscCenter, float mobileDiscRadius, Vec2 const& fixedPoint );
 bool PushDiscOutOfFixedDisc2D( Vec2& mobileDiscCenter, float mobileDiscRadius, Vec2 const& fixedDiscCenter, float fixedDiscRadius );
 bool PushDiscsOutOfEachOther2D( Vec2& aCenter, float aRadius, Vec2& bCenter, float bRadius );
@@ -108,6 +110,7 @@ bool IsPointInsideCapsule2D( Vec2 const& point, Vec2 const& boneStart, Vec2 cons
 bool IsPointInsideTriangle2D( Vec2 const& point, Vec2 const& ccw0, Vec2 const& ccw1, Vec2 const& ccw2 );
 bool IsPointInsideCylinderZ3D( Vec3 const& point, Vec2 const& cylinderBaseCenter, float cylinderMinZ, float cylinderMaxZ, float cylinderRadius );
 bool IsPointInsideOBB3D( Vec3 const& point, OBB3 const& orientedBox );
+bool IsPointInFrontOfPlane3D( Vec3 const& point, Plane3 const& plane );
 
 //-----------------------------------------------------------------------------------------------
 // Nearest point calculations

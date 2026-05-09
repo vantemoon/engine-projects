@@ -1024,15 +1024,31 @@ void AddVertsForPlane3D( std::vector<Vertex>& verts, Plane3 const& plane, float 
 	}
 
 	float halfSize = 0.5f * planeSize;
-	Vec3 center = normal * plane.m_distanceAlongNormalFromOrigin;
+	float thickness = planeSize * 0.0005f;
+	if ( thickness <= 0.01f )
+	{
+		thickness = 0.01f;
+	}
 
+	float step = 5.f;
+	int gridLineCount = static_cast<int>( planeSize / step );
+
+	Vec3 center = normal * plane.m_distanceAlongNormalFromOrigin;
 	Vec3 right = basisI * halfSize;
 	Vec3 up = basisJ * halfSize;
 
-	Vec3 bottomLeft = center - right - up;
-	Vec3 bottomRight = center + right - up;
-	Vec3 topRight = center + right + up;
-	Vec3 topLeft = center - right + up;
+	for ( int lineIndex = 0; lineIndex <= gridLineCount; ++lineIndex )
+	{
+		float offset = -halfSize + ( step * static_cast<float>( lineIndex ) );
 
-	AddVertsForQuad3D( verts, bottomLeft, bottomRight, topRight, topLeft, color );
+		Vec3 offsetJ = basisJ * offset;
+		Vec3 rowStart = center - right + offsetJ;
+		Vec3 rowEnd = center + right + offsetJ;
+		AddVertsForLineSegment3D( verts, rowStart, rowEnd, thickness, color );
+
+		Vec3 offsetI = basisI * offset;
+		Vec3 colStart = center - up + offsetI;
+		Vec3 colEnd = center + up + offsetI;
+		AddVertsForLineSegment3D( verts, colStart, colEnd, thickness, color );
+	}
 }
