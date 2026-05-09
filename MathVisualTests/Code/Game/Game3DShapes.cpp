@@ -150,31 +150,38 @@ void Game3DShapes::UpdateFromKeyboard( float deltaSeconds )
 		TestShapeOBB3D* shape = m_testOBBs[m_grabbedShapeIndex];
 		bool didRotate = false;
 
-		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'I' ) ) {
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'I' ) ) 
+		{
 			shape->m_orientation.m_yawDegrees += 10.f;
 			didRotate = true;
 		}
-		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'O' ) ) {
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'O' ) ) 
+		{
 			shape->m_orientation.m_yawDegrees -= 10.f;
 			didRotate = true;
 		}
-		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'J' ) ) {
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'J' ) ) 
+		{
 			shape->m_orientation.m_pitchDegrees += 10.f;
 			didRotate = true;
 		}
-		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'K' ) ) {
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'K' ) ) 
+		{
 			shape->m_orientation.m_pitchDegrees -= 10.f;
 			didRotate = true;
 		}
-		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'N' ) ) {
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'N' ) ) 
+		{
 			shape->m_orientation.m_rollDegrees += 10.f;
 			didRotate = true;
 		}
-		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'M' ) ) {
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'M' ) ) 
+		{
 			shape->m_orientation.m_rollDegrees -= 10.f;
 			didRotate = true;
 		}
-		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'U' ) ) {
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( 'U' ) ) 
+		{
 			shape->m_orientation = EulerAngles::ZERO;
 			didRotate = true;
 		}
