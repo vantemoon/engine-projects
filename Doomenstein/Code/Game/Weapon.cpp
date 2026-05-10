@@ -184,9 +184,19 @@ void Weapon::Fire( Actor* owner )
 
 		if ( rayResult.m_didImpact )
 		{
-			Vec3 debugOffset( 0.f, 0.f, -0.08f );
-			Vec3 debugStart = attackSpawnCenter + debugOffset;
-			Vec3 debugEnd = rayResult.m_impactPos + debugOffset;
+			if ( rayHitActor != nullptr && m_definition->m_name == "CleaningTool" && rayHitActor->IsActorNamed( "DemonMess" ) )
+			{
+				rayHitActor->DestroyImmediately();
+
+				Actor* pet = owner->m_map->GetClosestVirtualPetToPosition( rayHitActor->m_position, 5.f );
+				if ( pet != nullptr )
+				{
+					pet->AddCleanliness( 20.f );
+					pet->AddHappiness( 2.f );
+				}
+
+				continue;
+			}
 
 			SpawnInfo hitSpawnInfo;
 

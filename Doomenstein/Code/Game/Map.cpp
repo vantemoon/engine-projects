@@ -229,8 +229,10 @@ void Map::CreateBuffers()
 //-----------------------------------------------------------------------------------------------
 void Map::Update( float deltaSeconds )
 {
-	for ( Actor* actor : m_actors )
+	size_t const actorCount = m_actors.size();
+	for ( size_t actorIndex = 0; actorIndex < actorCount; ++actorIndex )
 	{
+		Actor* actor = m_actors[actorIndex];
 		if ( actor == nullptr )
 		{
 			continue;
@@ -1312,6 +1314,80 @@ Actor* Map::GetClosestVirtualPetInSector(
 
 
 //-----------------------------------------------------------------------------------------------
+Actor* Map::GetClosestVirtualPetToPosition( Vec3 const& position, float maxDistance ) const
+{
+	Actor* closestPet = nullptr;
+	float closestDistSq = maxDistance * maxDistance;
+
+	for ( Actor* actor : m_actors )
+	{
+		if ( actor == nullptr || actor->m_definition == nullptr )
+		{
+			continue;
+		}
+
+		if ( actor->m_isDead || actor->m_isDestroyed )
+		{
+			continue;
+		}
+
+		if ( !actor->m_isVirtualPet )
+		{
+			continue;
+		}
+
+		float distSq = ( actor->m_position - position ).GetLengthSquared();
+		if ( distSq < closestDistSq )
+		{
+			closestDistSq = distSq;
+			closestPet = actor;
+		}
+	}
+
+	return closestPet;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+int Map::GetNearbyActorCountByName( std::string const& actorName, Vec3 const& position, float radius ) const
+{
+	if ( actorName.empty() || radius <= 0.f )
+	{
+		return 0;
+	}
+
+	int count = 0;
+	float radiusSq = radius * radius;
+
+	for ( Actor* actor : m_actors )
+	{
+		if ( actor == nullptr || actor->m_definition == nullptr )
+		{
+			continue;
+		}
+
+		if ( actor->m_isDead || actor->m_isDestroyed )
+		{
+			continue;
+		}
+
+		if ( actor->m_definition->m_name != actorName )
+		{
+			continue;
+		}
+
+		Vec3 displacement = actor->m_position - position;
+		if ( displacement.GetLengthSquared() <= radiusSq )
+		{
+			count++;
+		}
+	}
+
+	return count;
+}
+
+
+//-----------------------------------------------------------------------------------------------
 void Map::DebugPossessNext()
 {
 	if ( m_game == nullptr )
@@ -1451,4 +1527,16 @@ void Map::DeleteDestroyedActors()
 			m_actors[index] = nullptr;
 		}
 	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+Clock* Map::GetGameClock() const
+{
+	if ( m_game == nullptr )
+	{
+		return nullptr;
+	}
+
+	return m_game->m_gameClock;
 }

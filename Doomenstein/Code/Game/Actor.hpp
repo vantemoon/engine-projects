@@ -53,9 +53,13 @@ public:
 	Mat44 GetModelMatrix() const;
 
 	void UpdateVirtualPet( float deltaSeconds );
+	void UpdatePetMessSpawning( float deltaSeconds );
 	void AddHunger( float amount );
 	void AddCleanliness( float amount );
 	void AddHappiness( float amount );
+
+	bool IsActorNamed( std::string const& name ) const;
+	void DestroyImmediately();
 
 private:
 	int GetAnimationGroupIndexByName( std::string const& animationGroupName ) const;
@@ -118,4 +122,9 @@ public:
 	float m_hungerDecayRate = 2.f;
 	float m_cleanlinessDecayRate = 1.f;
 	float m_happinessDecayRate = 0.5f;
+
+	float m_messSpawnTimer = 0.f;
+	float m_messSpawnInterval = 8.f;
+	float m_messCleanlinessThreshold = 60.f;
+	int m_maxMessCount = 3;
 };

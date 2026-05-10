@@ -24,6 +24,7 @@ Actor::Actor()
 	, m_deadTimer( 0.0 )
 	, m_animationClock( Clock::GetSystemClock() )
 {
+	m_deadTimer.m_clock = &Clock::GetSystemClock();
 }
 
 
@@ -36,8 +37,19 @@ Actor::Actor( ActorHandle handle, ActorDefinition const* definition, Map* map )
 	, m_orientation( EulerAngles::ZERO )
 	, m_color( Rgba8::RED )
 	, m_deadTimer( 0.0 )
-	, m_animationClock( Clock::GetSystemClock() )
+	, m_animationClock( ( map != nullptr && map->GetGameClock() != nullptr )
+		? *map->GetGameClock()
+		: Clock::GetSystemClock() )
 {
+	if ( m_map != nullptr && m_map->GetGameClock() != nullptr )
+	{
+		m_deadTimer.m_clock = m_map->GetGameClock();
+	}
+	else
+	{
+		m_deadTimer.m_clock = &Clock::GetSystemClock();
+	}
+
 	if ( m_definition == nullptr )
 	{
 		return;
@@ -289,7 +301,15 @@ void Actor::Update()
 		return;
 	}
 
-	float deltaSeconds = static_cast<float>( Clock::GetSystemClock().GetDeltaSeconds() );
+	float deltaSeconds = 0.f;
+	if ( m_map != nullptr && m_map->GetGameClock() != nullptr )
+	{
+		deltaSeconds = static_cast<float>( m_map->GetGameClock()->GetDeltaSeconds() );
+	}
+	else
+	{
+		deltaSeconds = static_cast<float>( Clock::GetSystemClock().GetDeltaSeconds() );
+	}
 	if ( m_isVirtualPet ) UpdateVirtualPet( deltaSeconds );
 
 	UpdatePhysics();
@@ -1129,6 +1149,8 @@ void Actor::UpdateVirtualPet( float deltaSeconds )
 	m_hunger = GetClamped( m_hunger - ( m_hungerDecayRate * deltaSeconds ), 0.f, 100.f );
 	m_cleanliness = GetClamped( m_cleanliness - ( m_cleanlinessDecayRate * deltaSeconds ), 0.f, 100.f );
 	m_happiness = GetClamped( m_happiness - ( m_happinessDecayRate * deltaSeconds ), 0.f, 100.f );
+
+ 	UpdatePetMessSpawning( deltaSeconds );
 }
 
 
@@ -1150,4 +1172,65 @@ void Actor::AddCleanliness( float amount )
 void Actor::AddHappiness( float amount )
 {
 	m_happiness = GetClamped( m_happiness + amount, 0.f, 100.f );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Actor::UpdatePetMessSpawning( float deltaSeconds )
+{
+	if ( !m_isVirtualPet || m_map == nullptr )
+	{
+		return;
+	}
+
+	m_messSpawnTimer -= deltaSeconds;
+
+	if ( m_cleanliness > m_messCleanlinessThreshold )
+	{
+		return;
+	}
+
+	if ( m_messSpawnTimer > 0.f )
+	{
+		return;
+	}
+
+	if ( m_map->GetNearbyActorCountByName( "DemonMess", m_position, 4.f ) >= m_maxMessCount )
+	{
+		m_messSpawnTimer = m_messSpawnInterval;
+		return;
+	}
+
+	SpawnInfo spawnInfo;
+	spawnInfo.m_actor = "DemonMess";
+
+	RandomNumberGenerator rng;
+	float angle = rng.RollRandomFloatInRange( 0.f, 360.f );
+	float radius = rng.RollRandomFloatInRange( 0.25f, 0.75f );
+	Vec2 offset = Vec2::MakeFromPolarDegrees( angle, radius );
+
+	spawnInfo.m_position = m_position + Vec3( offset.x, offset.y, 0.f );
+	spawnInfo.m_orientation = Vec3::ZERO;
+
+	m_map->SpawnActor( spawnInfo );
+
+	m_messSpawnTimer = m_messSpawnInterval;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool Actor::IsActorNamed( std::string const& name ) const
+{
+	return m_definition != nullptr && m_definition->m_name == name;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Actor::DestroyImmediately()
+{
+	m_isDead = true;
+	m_isDestroyed = true;
+	m_currentHealth = 0;
+	m_velocity = Vec3::ZERO;
+	m_acceleration = Vec3::ZERO;
 }

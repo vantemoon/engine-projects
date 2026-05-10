@@ -70,6 +70,7 @@ public:
 
 	Player* GetPlayerFromActor( Actor const* actor ) const;
 	static bool Command_Controls( EventArgs& args );
+	static bool Command_SetTimeScale( EventArgs& args );
 
 	Actor* GetLookedAtVirtualPetActor() const;
 	void RenderVirtualPetHUD() const;

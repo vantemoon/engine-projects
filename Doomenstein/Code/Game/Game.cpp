@@ -44,6 +44,8 @@ Game::Game()
 
 	// Register console commands
 	g_engine->m_eventSystem->SubscribeEventCallbackFunction( "Controls", Command_Controls );
+	g_engine->m_eventSystem->SubscribeEventCallbackFunction( "SetTimeScale", Command_SetTimeScale );
+	g_engine->m_eventSystem->SetEventRequiredArgs( "SetTimeScale", { "scale=<float>" } );
 
 	Startup();
 }
@@ -1195,8 +1197,8 @@ Actor* Game::GetLookedAtVirtualPetActor() const
 	Vec3 coneStart = m_currentRenderingPlayer->m_playerWorldCamera->GetPosition();
 	Vec3 coneForward = m_currentRenderingPlayer->m_playerWorldCamera->GetForwardDir();
 
-	float maxPetLookDistance = 5.f;
-	float petLookArcDegrees = 20.f;
+	float maxPetLookDistance = 8.f;
+	float petLookArcDegrees = 30.f;
 
 	return m_currentMap->GetClosestVirtualPetInSector(
 		coneStart,
@@ -1267,4 +1269,35 @@ void Game::RenderVirtualPetHUD() const
 	g_engine->m_renderer->BindTexture( nullptr );
 
 	g_engine->m_renderer->EndCamera( screenCamera );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool Game::Command_SetTimeScale( EventArgs& args )
+{
+	if ( g_app == nullptr || g_app->m_game == nullptr || g_app->m_game->m_gameClock == nullptr )
+	{
+		return false;
+	}
+
+	float currentScale = ( float ) g_app->m_game->m_gameClock->GetTimeScale();
+	float requestedScale = args.GetValue( "scale", currentScale );
+	if ( requestedScale <= 0.f )
+	{
+		if ( g_engine && g_engine->m_devConsole )
+		{
+			g_engine->m_devConsole->AddLine( Rgba8::WARNING, "TimeScale requires scale > 0. Usage: TimeScale scale=<float>" );
+		}
+		return false;
+	}
+
+	g_app->m_game->m_gameClock->SetTimeScale( requestedScale );
+
+	if ( g_engine && g_engine->m_devConsole )
+	{
+		std::string message = Stringf( "Time scale set to %.2f", requestedScale );
+		g_engine->m_devConsole->AddLine( Rgba8::INFO_MINOR, message );
+	}
+
+	return true;
 }

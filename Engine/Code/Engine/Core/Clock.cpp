@@ -227,7 +227,10 @@ void Clock::Advance( double deltaTimeSeconds )
 	m_frameCount++;
 	for ( Clock* childClock : m_children )
 	{
-		childClock->Advance( m_deltaSeconds );
+		if ( childClock != nullptr )
+		{
+			childClock->Advance( m_deltaSeconds );
+		}
 	}
 }
 
@@ -242,11 +245,15 @@ void Clock::AddChild( Clock* childClock )
 //-----------------------------------------------------------------------------------------------
 void Clock::RemoveChild( Clock* childClock )
 {
-	for ( size_t childIndex = 0; childIndex < m_children.size(); ++childIndex )
+	for ( size_t childIndex = 0; childIndex < m_children.size(); )
 	{
 		if ( m_children[childIndex] == childClock )
 		{
-			m_children[childIndex] = nullptr;
+			m_children.erase( m_children.begin() + childIndex );
+		}
+		else
+		{
+			++childIndex;
 		}
 	}
 }
