@@ -24,6 +24,15 @@ class Texture;
 
 
 //-----------------------------------------------------------------------------------------------
+enum class PetEvolutionStage
+{
+	Baby,
+	GoodCare,
+	Neglected
+};
+
+
+//-----------------------------------------------------------------------------------------------
 class Actor
 {
 public:
@@ -56,12 +65,15 @@ public:
 	void UpdatePetMessSpawning( float deltaSeconds );
 	void UpdatePickupRespawn( float deltaSeconds );
 	void UpdatePetMisbehavior( float deltaSeconds );
+	void UpdatePetEvolution( float deltaSeconds );
 	void AddHunger( float amount );
 	void AddCleanliness( float amount );
 	void AddHappiness( float amount );
 	void CollectPickup();
 	void Discipline();
 	bool ShouldMisbehave() const;
+	void EvolvePet();
+	std::string GetPetEvolutionStageText() const;
 
 	bool IsActorNamed( std::string const& name ) const;
 	void DestroyImmediately();
@@ -145,4 +157,19 @@ public:
 
 	float m_disciplineCooldownTimer = 0.f;
 	float m_disciplineCooldownSeconds = 8.f;
+
+	float m_misbehaveSoundTimer = 0.f;
+
+	PetEvolutionStage m_petEvolutionStage = PetEvolutionStage::Baby;
+
+	float m_evolutionCheckTimer = 0.f;
+	float m_evolutionCheckInterval = 5.f;
+
+	float m_evolutionTimer = 0.f;
+	float m_evolutionTimeRequired = 10.f;
+
+	int m_goodCareScore = 0;
+	int m_badCareScore = 0;
+
+	bool m_hasEvolved = false;
 };

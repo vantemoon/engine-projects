@@ -344,7 +344,7 @@ void Weapon::Fire( Actor* owner )
 			continue;
 		}
 
-		if ( m_definition->m_name == "DisciplineCommand" )
+		if ( m_definition->m_name == "Fist" )
 		{
 			if ( meleeTarget->m_isVirtualPet )
 			{

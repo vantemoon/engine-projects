@@ -468,6 +468,7 @@ void Actor::OnCollide( Actor* otherActor, Vec3 const& collisionNormal )
 			if ( IsActorNamed( "FoodPickup" ) )
 			{
 				player->m_foodAmmo += 5;
+				PlaySoundByType( "Pickup" );
 				CollectPickup();
 				return;
 			}
@@ -475,6 +476,7 @@ void Actor::OnCollide( Actor* otherActor, Vec3 const& collisionNormal )
 			if ( IsActorNamed( "CleaningPickup" ) )
 			{
 				player->m_cleaningCharges += 3;
+				PlaySoundByType( "Pickup" );
 				CollectPickup();
 				return;
 			}
@@ -487,6 +489,7 @@ void Actor::OnCollide( Actor* otherActor, Vec3 const& collisionNormal )
 					pet->AddHappiness( 20.f );
 				}
 
+				PlaySoundByType( "Pickup" );
 				CollectPickup();
 				return;
 			}
@@ -516,6 +519,7 @@ void Actor::OnCollide( Actor* otherActor, Vec3 const& collisionNormal )
 	{
 		otherActor->AddHunger( 5.f );
 		otherActor->AddHappiness( 3.f );
+		otherActor->PlaySoundByType( "Eat" );
 
 		m_isDead = true;
 		m_isDestroyed = true;
@@ -1196,6 +1200,21 @@ void Actor::UpdateVirtualPet( float deltaSeconds )
 
  	UpdatePetMessSpawning( deltaSeconds );
 	UpdatePetMisbehavior( deltaSeconds );
+	UpdatePetEvolution( deltaSeconds );
+
+	if ( m_isMisbehaving )
+	{
+		m_misbehaveSoundTimer -= deltaSeconds;
+		if ( m_misbehaveSoundTimer <= 0.f )
+		{
+			PlaySoundByType( "Misbehave" );
+			m_misbehaveSoundTimer = 2.f;
+		}
+	}
+	else
+	{
+		m_misbehaveSoundTimer = 0.f;
+	}
 }
 
 
@@ -1392,4 +1411,99 @@ void Actor::Discipline()
 	{
 		AddHappiness( -15.f );
 	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Actor::UpdatePetEvolution( float deltaSeconds )
+{
+	if ( !m_isVirtualPet || m_hasEvolved )
+	{
+		return;
+	}
+
+	m_evolutionTimer += deltaSeconds;
+	m_evolutionCheckTimer -= deltaSeconds;
+
+	if ( m_evolutionCheckTimer <= 0.f )
+	{
+		m_evolutionCheckTimer = m_evolutionCheckInterval;
+
+		bool goodCare =
+			m_hunger >= 60.f &&
+			m_cleanliness >= 60.f &&
+			m_happiness >= 60.f;
+
+		bool badCare =
+			m_hunger <= 30.f ||
+			m_cleanliness <= 30.f ||
+			m_happiness <= 30.f;
+
+		if ( goodCare )
+		{
+			m_goodCareScore++;
+		}
+
+		if ( badCare )
+		{
+			m_badCareScore++;
+		}
+	}
+
+	if ( m_evolutionTimer >= m_evolutionTimeRequired )
+	{
+		EvolvePet();
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Actor::EvolvePet()
+{
+	if ( !m_isVirtualPet || m_hasEvolved )
+	{
+		return;
+	}
+
+	m_hasEvolved = true;
+
+	if ( m_goodCareScore >= m_badCareScore )
+	{
+		m_petEvolutionStage = PetEvolutionStage::GoodCare;
+
+		// Good evolution bonus
+		m_hungerDecayRate *= 0.75f;
+		m_cleanlinessDecayRate *= 0.75f;
+		m_happinessDecayRate *= 0.75f;
+		m_messSpawnInterval *= 1.5f;
+	}
+	else
+	{
+		m_petEvolutionStage = PetEvolutionStage::Neglected;
+
+		// Neglected evolution drawback
+		m_hungerDecayRate *= 1.25f;
+		m_cleanlinessDecayRate *= 1.25f;
+		m_happinessDecayRate *= 1.25f;
+		m_messSpawnInterval *= 0.75f;
+	}
+
+	PlaySoundByType( "Evolve" );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+std::string Actor::GetPetEvolutionStageText() const
+{
+	if ( m_petEvolutionStage == PetEvolutionStage::GoodCare )
+	{
+		return "Good Care";
+	}
+
+	if ( m_petEvolutionStage == PetEvolutionStage::Neglected )
+	{
+		return "Neglected";
+	}
+
+	return "Baby";
 }

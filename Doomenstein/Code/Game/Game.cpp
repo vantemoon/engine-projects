@@ -101,7 +101,7 @@ void Game::LoadGameConfigFromFile( char const* filepath )
 void Game::LoadMaps()
 {
 	int numMapsToLoad = g_gameConfigBlackboard.GetValue( "numOfMaps", 2 );
-	std::string defaultMapName = g_gameConfigBlackboard.GetValue( "defaultMapName", "TestMap" );
+	std::string defaultMapName = g_gameConfigBlackboard.GetValue( "defaultMap", "TestMap" );
 
 	for ( int mapIndex = 0; mapIndex < numMapsToLoad; ++mapIndex )
 	{
@@ -1243,11 +1243,12 @@ void Game::RenderVirtualPetHUD() const
 
 	std::string behaviourText = pet->m_isMisbehaving ? "Misbehaving" : "Calm";
 	std::string petStats = Stringf(
-		"Hunger: %.0f\nCleanliness: %.0f\nHappiness: %.0f\nState: %s",
+		"Hunger: %.0f\nCleanliness: %.0f\nHappiness: %.0f\nState: %s\nEvolution: %s",
 		pet->m_hunger,
 		pet->m_cleanliness,
 		pet->m_happiness,
-		behaviourText.c_str()
+		behaviourText.c_str(),
+		pet->GetPetEvolutionStageText().c_str()
 	);
 
 	AABB2 textBounds(

@@ -62,6 +62,7 @@ public:
 	void RenderMap()												  const;
 	void RenderEntities()											  const;
 	void RenderHUD()												  const;
+	void RenderVirtualPetHUD() const;
 	void RenderAttractMode()										  const;
 	void RenderLobby()												  const;
 	
@@ -69,11 +70,11 @@ public:
 	void Reset();
 
 	Player* GetPlayerFromActor( Actor const* actor ) const;
+	Actor* GetLookedAtVirtualPetActor() const;
+
 	static bool Command_Controls( EventArgs& args );
 	static bool Command_SetTimeScale( EventArgs& args );
 
-	Actor* GetLookedAtVirtualPetActor() const;
-	void RenderVirtualPetHUD() const;
 
 protected:
 	void InitializeGameAudio();
