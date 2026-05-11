@@ -1082,6 +1082,7 @@ void Game::AddInstructionsToDevConsole() const
 	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "Arrow keys | D-Pad L/R:   Switch weapon" );
 	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "1          | X:           Weapon 1" );
 	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "2          | Y:           Weapon 2" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "3          | B:           Weapon 3" );
 	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "F:                        Toggle free-fly" );
 	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "N:                        Possess next actor" );
 	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "P          | Start:       Pause / Resume" );
@@ -1098,6 +1099,15 @@ void Game::AddInstructionsToDevConsole() const
 	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "P          | Start:       Pause / Resume" );
 	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "H          | Back:        Reset camera" );
 	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "Esc:                      Back to attract" );
+
+	// Virtual Pet Controls
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::MAGENTA, "[Virtual Pet Controls]" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "FoodGun:                  Shoot food projectiles at demon pets to restore hunger" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "CleaningTool:             Clean DemonMess to restore cleanliness" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "DisciplineCommand:        Discipline a misbehaving pet" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "Pickups:                  Collect FoodPickup, CleaningPickup, and ToyPickup" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "Face pet:                 Show pet HUD" );
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "" );
 }
 
 

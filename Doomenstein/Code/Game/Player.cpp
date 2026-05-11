@@ -607,11 +607,11 @@ void Player::UpdateFirstPersonFromController( Actor* actor, float deltaSeconds )
 	}
 
 	// Weapon selection
-	if ( controller.WasButtonJustPressed( XBOX_BUTTON_DOWN ) )
+	if ( controller.WasButtonJustPressed( XBOX_BUTTON_LEFT ) )
 	{
 		SelectPreviousWeapon( actor );
 	}
-	if ( controller.WasButtonJustPressed( XBOX_BUTTON_UP ) )
+	if ( controller.WasButtonJustPressed( XBOX_BUTTON_RIGHT ) )
 	{
 		SelectNextWeapon( actor );
 	}
@@ -622,6 +622,10 @@ void Player::UpdateFirstPersonFromController( Actor* actor, float deltaSeconds )
 	if ( controller.WasButtonJustPressed( XBOX_BUTTON_Y ) )
 	{
 		SelectWeaponBySlot( actor, 1 );
+	}
+	if ( controller.WasButtonJustPressed( XBOX_BUTTON_B ) )
+	{
+		SelectWeaponBySlot( actor, 2 );
 	}
 }
 
