@@ -26,6 +26,12 @@ void AI::Update( float deltaSeconds )
 		return;
 	}
 
+	if ( self->m_isVirtualPet )
+	{
+		UpdateVirtualPetAI( self, deltaSeconds );
+		return;
+	}
+
 	Actor* target = nullptr;
 	if ( m_targetActorHandle.IsValid() && m_map != nullptr )
 	{
@@ -122,6 +128,63 @@ void AI::Update( float deltaSeconds )
 	{
 		self->Attack();
 	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void AI::UpdateVirtualPetAI( Actor* self, float deltaSeconds )
+{
+	if ( self == nullptr || self->m_definition == nullptr )
+	{
+		return;
+	}
+
+	if ( self->m_isDead || self->m_isDestroyed )
+	{
+		return;
+	}
+
+	int petType = ( int ) ( self->m_handle.GetIndex() % 3 );
+
+	float moveSpeed = self->m_definition->m_walkSpeed * 0.4f;
+	float turnSpeed = 20.f;
+
+	if ( self->m_hunger < 25.f || self->m_happiness < 25.f )
+	{
+		moveSpeed *= 0.25f;
+		turnSpeed *= 0.5f;
+	}
+
+	if ( petType == 0 )
+	{
+		// Lazy pet: slow and calm
+		moveSpeed *= 0.5f;
+		turnSpeed *= 0.5f;
+	}
+	else if ( petType == 1 )
+	{
+		// Playful pet: moves more actively
+		moveSpeed *= 1.25f;
+		turnSpeed *= 1.5f;
+	}
+	else if ( petType == 2 )
+	{
+		// Restless pet: turns more often
+		moveSpeed *= 0.8f;
+		turnSpeed *= 2.5f;
+	}
+
+	if ( self->m_isMisbehaving )
+	{
+		moveSpeed *= 1.5f;
+		turnSpeed *= 2.f;
+	}
+
+	float turnDirection = ( petType == 1 ) ? -1.f : 1.f;
+	self->m_orientation.m_yawDegrees += turnDirection * turnSpeed * deltaSeconds;
+
+	Vec3 forwardDir = Vec3::MakeFromPolarDegrees( 0.f, self->m_orientation.m_yawDegrees );
+	self->MoveInDirection( forwardDir, moveSpeed );
 }
 
 

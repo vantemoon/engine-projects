@@ -14,5 +14,6 @@ public:
 	~AI();
 
 	void Update( float deltaSeconds );
+	void UpdateVirtualPetAI( Actor* self, float deltaSeconds );
 	void DamagedBy( Actor* attacker );
 };

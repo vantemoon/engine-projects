@@ -1,5 +1,6 @@
 #pragma once
 #include "Engine/Core/Timer.hpp"
+#include <string>
 
 
 //-----------------------------------------------------------------------------------------------
@@ -23,6 +24,7 @@ public:
 
 private:
 	Vec3 GetRandomDirectionInCone( Vec3 const& baseForward, float coneDegrees ) const;
+	void PlaySoundByType( Vec3 const& position, std::string const& soundType ) const;
 
 public:
 	WeaponDefinition const* m_definition = nullptr;

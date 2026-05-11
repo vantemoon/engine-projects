@@ -169,6 +169,8 @@ void Weapon::Fire( Actor* owner )
 
 	Vec3 aimTargetPos = fireStartPos + baseForward * aimDistance;
 
+	PlaySoundByType( fireStartPos, "Fire" );
+
 	if ( isPlayerOwner )
 	{
 		Actor* ignoredHitActor = nullptr;
@@ -328,8 +330,9 @@ void Weapon::Fire( Actor* owner )
 	// Melee
 	for ( int meleeIndex = 0; meleeIndex < m_definition->m_meleeCount; ++meleeIndex )
 	{
+		Vec3 meleeStartPos = isPlayerOwner ? fireStartPos : owner->m_position;
 		Actor* meleeTarget = owner->m_map->GetClosestActorInSector(
-			owner->m_position,
+			meleeStartPos,
 			baseForward,
 			m_definition->m_meleeRange,
 			m_definition->m_meleeArc,
@@ -338,6 +341,16 @@ void Weapon::Fire( Actor* owner )
 
 		if ( meleeTarget == nullptr )
 		{
+			continue;
+		}
+
+		if ( m_definition->m_name == "DisciplineCommand" )
+		{
+			if ( meleeTarget->m_isVirtualPet )
+			{
+				meleeTarget->Discipline();
+			}
+
 			continue;
 		}
 
@@ -852,4 +865,43 @@ void Weapon::PlayAnimation( Actor const* owner ) const
 	renderer->SetModelConstants();
 	renderer->DrawVertexArray( verts );
 	renderer->BindTexture( nullptr );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Weapon::PlaySoundByType( Vec3 const& position, std::string const& soundType ) const
+{
+	if ( soundType.empty() || m_definition == nullptr || g_engine == nullptr || g_engine->m_audioSystem == nullptr )
+	{
+		return;
+	}
+
+	int soundTypeCount = ( int ) m_definition->m_soundTypes.size();
+	int soundNameCount = ( int ) m_definition->m_soundNames.size();
+	int soundCount = soundTypeCount;
+	if ( soundNameCount < soundCount )
+	{
+		soundCount = soundNameCount;
+	}
+
+	for ( int soundIndex = 0; soundIndex < soundCount; ++soundIndex )
+	{
+		if ( m_definition->m_soundTypes[soundIndex] != soundType )
+		{
+			continue;
+		}
+
+		std::string const& soundName = m_definition->m_soundNames[soundIndex];
+		if ( soundName.empty() )
+		{
+			continue;
+		}
+
+		SoundID soundID = g_engine->m_audioSystem->CreateOrGetSound( soundName, true );
+		if ( soundID != MISSING_SOUND_ID )
+		{
+			g_engine->m_audioSystem->StartSoundAt( soundID, position, false, 1.0f );
+		}
+		return;
+	}
 }

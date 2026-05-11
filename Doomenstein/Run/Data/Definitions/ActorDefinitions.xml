@@ -48,6 +48,7 @@
     <Inventory>
 	  <Weapon name="FoodGun" />
       <Weapon name="CleaningTool" />
+	  <Weapon name="Fist" />
     </Inventory>
   </ActorDefinition>
   <!-- Demon -->
