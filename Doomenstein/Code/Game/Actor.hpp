@@ -55,10 +55,13 @@ public:
 	void UpdateVirtualPet( float deltaSeconds );
 	void UpdatePetMessSpawning( float deltaSeconds );
 	void UpdatePickupRespawn( float deltaSeconds );
+	void UpdatePetMisbehavior( float deltaSeconds );
 	void AddHunger( float amount );
 	void AddCleanliness( float amount );
 	void AddHappiness( float amount );
 	void CollectPickup();
+	void Discipline();
+	bool ShouldMisbehave() const;
 
 	bool IsActorNamed( std::string const& name ) const;
 	void DestroyImmediately();
@@ -134,4 +137,12 @@ public:
 	bool m_isPickupActive = true;
 	float m_pickupRespawnTimer = 0.f;
 	float m_pickupRespawnSeconds = 10.f;
+
+	bool m_isMisbehaving = false;
+
+	float m_misbehaviourTimer = 0.f;
+	float m_misbehaviourCheckInterval = 5.f;
+
+	float m_disciplineCooldownTimer = 0.f;
+	float m_disciplineCooldownSeconds = 8.f;
 };

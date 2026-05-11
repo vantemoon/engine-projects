@@ -1241,11 +1241,13 @@ void Game::RenderVirtualPetHUD() const
 
 	float screenHeight = SCREEN_SIZE_Y * renderingPlayer->m_playerScreenCamera->GetViewport().GetDimensions().y;
 
+	std::string behaviourText = pet->m_isMisbehaving ? "Misbehaving" : "Calm";
 	std::string petStats = Stringf(
-		"Hunger: %.0f\nCleanliness: %.0f\nHappiness: %.0f",
+		"Hunger: %.0f\nCleanliness: %.0f\nHappiness: %.0f\nState: %s",
 		pet->m_hunger,
 		pet->m_cleanliness,
-		pet->m_happiness
+		pet->m_happiness,
+		behaviourText.c_str()
 	);
 
 	AABB2 textBounds(

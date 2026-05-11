@@ -91,4 +91,5 @@ private:
 	void UpdateFirstPersonFromMouse( Actor* actor );
 	void UpdateFirstPersonFromKeyboard( Actor* actor, float deltaSeconds );
 	void UpdateFirstPersonFromController( Actor* actor, float deltaSeconds );
+	Actor* GetLookedAtVirtualPetActor() const;
 };

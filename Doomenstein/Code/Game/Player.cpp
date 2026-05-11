@@ -540,6 +540,16 @@ void Player::UpdateFirstPersonFromKeyboard( Actor* actor, float deltaSeconds )
 	{
 		SelectWeaponBySlot( actor, 2 );
 	}
+
+	// Discipline
+	if ( g_engine->m_inputSystem->WasKeyJustPressed( 'R' ) )
+	{
+		Actor* pet = GetLookedAtVirtualPetActor();
+		if ( pet != nullptr )
+		{
+			pet->Discipline();
+		}
+	}
 }
 
 
@@ -760,4 +770,34 @@ Vec3 Player::GetUpVector() const
 {
 	Mat44 orientationMat = m_orientation.GetAsMatrix_IFwd_JLeft_KUp();
 	return orientationMat.GetKBasis3D();
+}
+
+
+//-----------------------------------------------------------------------------------------------
+Actor* Player::GetLookedAtVirtualPetActor() const
+{
+	if ( m_map == nullptr || m_playerWorldCamera == nullptr )
+	{
+		return nullptr;
+	}
+
+	Actor* playerActor = GetActor();
+	if ( playerActor == nullptr )
+	{
+		return nullptr;
+	}
+
+	Vec3 coneStart = m_playerWorldCamera->GetPosition();
+	Vec3 coneForward = m_playerWorldCamera->GetForwardDir();
+
+	float maxPetLookDistance = 8.f;
+	float petLookArcDegrees = 30.f;
+
+	return m_map->GetClosestVirtualPetInSector(
+		coneStart,
+		coneForward,
+		maxPetLookDistance,
+		petLookArcDegrees,
+		playerActor
+	);
 }

@@ -120,12 +120,7 @@
   <ActorDefinition name="DemonMess" visible="true" health="1" faction="NEUTRAL" corpseLifetime="0">
     <Collision radius="0.2" height="0.2" collidesWithWorld="false" collidesWithActors="true" dieOnCollide="false" damageOnCollide="0~0" impulseOnCollide="0" />
     <Physics simulated="false" flying="false" drag="0" />
-    <Visuals size="0.15,0.15" pivot="0.5,0.0" billboardType="WorldUpFacing" spriteSheet="Data/Images/Mud.png" cellCount="1,16" />
-	  <AnimationGroup name="Death" secondsPerFrame="0.1" playbackMode="Once">
-		  <Direction vector="1,0,0">
-			  <Animation startFrame="0" endFrame="15"/>
-		  </Direction>
-	  </AnimationGroup>
+    <Visuals size="0.15,0.15" pivot="0.5,0.0" billboardType="WorldUpFacing" spriteSheet="Data/Images/Mud.png" cellCount="1,1" />
   </ActorDefinition>
 	<!-- Food Pickup -->
 	<ActorDefinition name="FoodPickup" visible="true" pickup="true" pickupRespawnSeconds="5" health="1" faction="NEUTRAL" corpseLifetime="0">

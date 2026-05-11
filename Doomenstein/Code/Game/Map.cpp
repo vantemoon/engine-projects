@@ -300,6 +300,11 @@ void Map::CollideActors()
 				continue;
 			}
 
+			if ( actorA->IsActorNamed( "DemonMess" ) || actorB->IsActorNamed( "DemonMess" ) )
+			{
+				continue;
+			}
+
 			CollideActors( actorA, actorB );
 		}
 	}

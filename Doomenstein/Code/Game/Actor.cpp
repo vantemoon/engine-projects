@@ -1195,6 +1195,7 @@ void Actor::UpdateVirtualPet( float deltaSeconds )
 	m_happiness = GetClamped( m_happiness - ( m_happinessDecayRate * deltaSeconds ), 0.f, 100.f );
 
  	UpdatePetMessSpawning( deltaSeconds );
+	UpdatePetMisbehavior( deltaSeconds );
 }
 
 
@@ -1258,7 +1259,14 @@ void Actor::UpdatePetMessSpawning( float deltaSeconds )
 
 	m_map->SpawnActor( spawnInfo );
 
-	m_messSpawnTimer = m_messSpawnInterval;
+	float spawnInterval = m_messSpawnInterval;
+
+	if ( m_isMisbehaving )
+	{
+		spawnInterval *= 0.5f;
+	}
+
+	m_messSpawnTimer = spawnInterval;
 }
 
 
@@ -1315,5 +1323,73 @@ void Actor::UpdatePickupRespawn( float deltaSeconds )
 		{
 			PlayAnimationByName( m_definition->m_animationGroupNames[0] );
 		}
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool Actor::ShouldMisbehave() const
+{
+	if ( !m_isVirtualPet )
+	{
+		return false;
+	}
+
+	return m_hunger < 30.f || m_cleanliness < 30.f || m_happiness < 30.f;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Actor::UpdatePetMisbehavior( float deltaSeconds )
+{
+	if ( !m_isVirtualPet )
+	{
+		return;
+	}
+
+	if ( m_disciplineCooldownTimer > 0.f )
+	{
+		m_disciplineCooldownTimer -= deltaSeconds;
+		if ( m_disciplineCooldownTimer <= 0.f )
+		{
+			m_disciplineCooldownTimer = 0.f;
+		}
+	}
+
+	m_misbehaviourTimer -= deltaSeconds;
+	if ( m_misbehaviourTimer > 0.f )
+	{
+		return;
+	}
+
+	m_misbehaviourTimer = m_misbehaviourCheckInterval;
+
+	if ( m_disciplineCooldownTimer > 0.f )
+	{
+		m_isMisbehaving = false;
+		return;
+	}
+
+	m_isMisbehaving = ShouldMisbehave();
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Actor::Discipline()
+{
+	if ( !m_isVirtualPet )
+	{
+		return;
+	}
+
+	if ( m_isMisbehaving )
+	{
+		m_isMisbehaving = false;
+		m_disciplineCooldownTimer = m_disciplineCooldownSeconds;
+		AddHappiness( -5.f );
+	}
+	else
+	{
+		AddHappiness( -15.f );
 	}
 }
