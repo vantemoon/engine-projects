@@ -46,6 +46,9 @@ public:
 	int m_killCount = 0;
 	int m_deathCount = 0;
 
+	int m_foodAmmo = 10;
+	int m_cleaningCharges = 5;
+
 	AABB2 m_viewport = AABB2( Vec2( 0.f, 0.f ), Vec2( 1.f, 1.f ) );
 
 	Camera* m_playerWorldCamera = nullptr;

@@ -57,6 +57,8 @@ Actor::Actor( ActorHandle handle, ActorDefinition const* definition, Map* map )
 
 	m_isProjectile = m_definition->m_isProjectile;
 	m_isVirtualPet = m_definition->m_isVirtualPet;
+	m_isPickup = m_definition->m_isPickup;
+	m_pickupRespawnSeconds = m_definition->m_pickupRespawnSeconds;
 	m_deadTimer.m_period = m_definition->corpseLifetime;
 
 	m_maxHealth = m_definition->m_health;
@@ -226,7 +228,18 @@ void Actor::Update()
 		return;
 	}
 
+	float deltaSeconds = 0.f;
+	if ( m_map != nullptr && m_map->GetGameClock() != nullptr )
+	{
+		deltaSeconds = static_cast< float >( m_map->GetGameClock()->GetDeltaSeconds() );
+	}
+	else
+	{
+		deltaSeconds = static_cast< float >( Clock::GetSystemClock().GetDeltaSeconds() );
+	}
+
 	UpdateSoundPositions();
+	UpdatePickupRespawn( deltaSeconds );
 
 	if ( m_definition->m_dieOnSpawn && !m_isDead )
 	{
@@ -301,15 +314,6 @@ void Actor::Update()
 		return;
 	}
 
-	float deltaSeconds = 0.f;
-	if ( m_map != nullptr && m_map->GetGameClock() != nullptr )
-	{
-		deltaSeconds = static_cast<float>( m_map->GetGameClock()->GetDeltaSeconds() );
-	}
-	else
-	{
-		deltaSeconds = static_cast<float>( Clock::GetSystemClock().GetDeltaSeconds() );
-	}
 	if ( m_isVirtualPet ) UpdateVirtualPet( deltaSeconds );
 
 	UpdatePhysics();
@@ -452,6 +456,40 @@ void Actor::OnCollide( Actor* otherActor, Vec3 const& collisionNormal )
 		if ( !m_definition->m_collideWithWorld )
 		{
 			return;
+		}
+	}
+
+	if ( otherActor != nullptr )
+	{
+		Player* player = g_app->m_game->GetPlayerFromActor( otherActor );
+
+		if ( player != nullptr )
+		{
+			if ( IsActorNamed( "FoodPickup" ) )
+			{
+				player->m_foodAmmo += 5;
+				CollectPickup();
+				return;
+			}
+
+			if ( IsActorNamed( "CleaningPickup" ) )
+			{
+				player->m_cleaningCharges += 3;
+				CollectPickup();
+				return;
+			}
+
+			if ( IsActorNamed( "ToyPickup" ) )
+			{
+				Actor* pet = m_map->GetClosestVirtualPetToPosition( m_position, 8.f );
+				if ( pet != nullptr )
+				{
+					pet->AddHappiness( 20.f );
+				}
+
+				CollectPickup();
+				return;
+			}
 		}
 	}
 
@@ -1004,6 +1042,11 @@ void Actor::AppendBillboardVerts( std::vector<Vertex>& outVerts, AABB2 const& uv
 //-----------------------------------------------------------------------------------------------
 void Actor::Render() const
 {
+	if ( m_isPickup && !m_isPickupActive )
+	{
+		return;
+	}
+
 	if ( g_engine == nullptr || g_engine->m_renderer == nullptr || m_definition == nullptr )
 	{
 		return;
@@ -1037,6 +1080,7 @@ void Actor::Render() const
 	{
 		g_engine->m_renderer->BindShader( nullptr );
 	}
+	g_engine->m_renderer->SetSamplerMode( SamplerMode::POINT_CLAMP );
 	g_engine->m_renderer->BindTexture( m_visualTexture );
 
 	g_engine->m_renderer->SetModelConstants( modelMatrix, modelTint );
@@ -1233,4 +1277,43 @@ void Actor::DestroyImmediately()
 	m_currentHealth = 0;
 	m_velocity = Vec3::ZERO;
 	m_acceleration = Vec3::ZERO;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Actor::CollectPickup()
+{
+	if ( !m_isPickup )
+	{
+		return;
+	}
+
+	m_isPickupActive = false;
+	m_pickupRespawnTimer = m_pickupRespawnSeconds;
+
+	m_velocity = Vec3::ZERO;
+	m_acceleration = Vec3::ZERO;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Actor::UpdatePickupRespawn( float deltaSeconds )
+{
+	if ( !m_isPickup || m_isPickupActive )
+	{
+		return;
+	}
+
+	m_pickupRespawnTimer -= deltaSeconds;
+
+	if ( m_pickupRespawnTimer <= 0.f )
+	{
+		m_pickupRespawnTimer = 0.f;
+		m_isPickupActive = true;
+
+		if ( !m_definition->m_animationGroupNames.empty() )
+		{
+			PlayAnimationByName( m_definition->m_animationGroupNames[0] );
+		}
+	}
 }

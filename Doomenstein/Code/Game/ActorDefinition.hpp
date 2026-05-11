@@ -24,6 +24,8 @@ public:
 	bool m_canBePossessed = false;
 	bool m_dieOnSpawn = false;
 	bool m_isVirtualPet = false;
+	bool m_isPickup = false;
+	float m_pickupRespawnSeconds = 10.f;
 
 	// Collision
 	float m_physicsRadius = 0.f;

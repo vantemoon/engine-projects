@@ -54,9 +54,11 @@ public:
 
 	void UpdateVirtualPet( float deltaSeconds );
 	void UpdatePetMessSpawning( float deltaSeconds );
+	void UpdatePickupRespawn( float deltaSeconds );
 	void AddHunger( float amount );
 	void AddCleanliness( float amount );
 	void AddHappiness( float amount );
+	void CollectPickup();
 
 	bool IsActorNamed( std::string const& name ) const;
 	void DestroyImmediately();
@@ -127,4 +129,9 @@ public:
 	float m_messSpawnInterval = 8.f;
 	float m_messCleanlinessThreshold = 60.f;
 	int m_maxMessCount = 3;
+
+	bool m_isPickup = false;
+	bool m_isPickupActive = true;
+	float m_pickupRespawnTimer = 0.f;
+	float m_pickupRespawnSeconds = 10.f;
 };

@@ -112,6 +112,8 @@ void ActorDefinition::LoadDefinitionsFromFile( char const* filepath, bool isProj
 		newActorDef.m_canBePossessed = ParseXmlAttribute( *actorDefElement, "canBePossessed", newActorDef.m_canBePossessed );
 		newActorDef.m_dieOnSpawn = ParseXmlAttribute( *actorDefElement, "dieOnSpawn", newActorDef.m_dieOnSpawn );
 		newActorDef.m_isVirtualPet = ParseXmlAttribute( *actorDefElement, "virtualPet", newActorDef.m_isVirtualPet );
+		newActorDef.m_isPickup = ParseXmlAttribute( *actorDefElement, "pickup", newActorDef.m_isPickup );
+		newActorDef.m_pickupRespawnSeconds = ParseXmlAttribute( *actorDefElement, "pickupRespawnSeconds", newActorDef.m_pickupRespawnSeconds );
 
 		// Collision
 		tinyxml2::XMLElement* collisionElement = actorDefElement->FirstChildElement( "Collision" );

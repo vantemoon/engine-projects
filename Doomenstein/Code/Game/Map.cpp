@@ -290,6 +290,16 @@ void Map::CollideActors()
 				continue;
 			}
 
+			if ( actorA->m_isPickup && !actorA->m_isPickupActive )
+			{
+				continue;
+			}
+
+			if ( actorB->m_isPickup && !actorB->m_isPickupActive )
+			{
+				continue;
+			}
+
 			CollideActors( actorA, actorB );
 		}
 	}

@@ -83,6 +83,21 @@ bool Weapon::CanFire( Actor const* owner ) const
 		return false;
 	}
 
+	Player* owningPlayer = g_app->m_game->GetPlayerFromActor( owner );
+
+	if ( owningPlayer != nullptr )
+	{
+		if ( m_definition->m_name == "FoodGun" && owningPlayer->m_foodAmmo <= 0 )
+		{
+			return false;
+		}
+
+		if ( m_definition->m_name == "CleaningTool" && owningPlayer->m_cleaningCharges <= 0 )
+		{
+			return false;
+		}
+	}
+
 	return true;
 }
 
@@ -100,13 +115,26 @@ void Weapon::Fire( Actor* owner )
 		return;
 	}
 
+	Player* owningPlayer = g_app->m_game->GetPlayerFromActor( owner );
+	bool isPlayerOwner = owningPlayer != nullptr;
+
+	if ( isPlayerOwner )
+	{
+		if ( m_definition->m_name == "FoodGun" )
+		{
+			owningPlayer->m_foodAmmo--;
+		}
+
+		if ( m_definition->m_name == "CleaningTool" )
+		{
+			owningPlayer->m_cleaningCharges--;
+		}
+	}
+
 	RandomNumberGenerator damageRng;
 
 	Vec3 fireStartPos;
 	Vec3 baseForward;
-
-	Player* owningPlayer = g_app->m_game->GetPlayerFromActor( owner );
-	bool isPlayerOwner = owningPlayer != nullptr;
 
 	if ( isPlayerOwner )
 	{
@@ -499,8 +527,81 @@ void Weapon::Render( Actor const* owner ) const
 	renderer->SetModelConstants();
 	renderer->DrawVertexArray( healthVerts );
 
-	// Player kill count
+	// Player ammo
 	Player* player = g_app->m_game->GetPlayerFromActor( owner );
+	if ( player == nullptr )
+	{
+		renderer->EndCamera( screenCamera );
+		return;
+	}
+
+	std::string ammoTypeText = "AMMO";
+
+	if ( m_definition->m_name == "FoodGun" )
+	{
+		ammoTypeText = "FOOD";
+	}
+	else if ( m_definition->m_name == "CleaningTool" )
+	{
+		ammoTypeText = "CLEAN";
+	}
+
+	int ammoCount = 0;
+
+	if ( m_definition->m_name == "FoodGun" )
+	{
+		ammoCount = player->m_foodAmmo;
+	}
+	else if ( m_definition->m_name == "CleaningTool" )
+	{
+		ammoCount = player->m_cleaningCharges;
+	}
+	else
+	{
+		ammoCount = 0;
+	}
+
+	std::string ammoText = Stringf( "%d", ammoCount );
+
+	float ammoMinX = hudBounds.m_mins.x + hudBounds.GetDimensions().x * 0.12f;
+	float ammoMaxX = hudBounds.m_mins.x + hudBounds.GetDimensions().x * 0.25f;
+
+	AABB2 ammoTypeBox(
+		Vec2( ammoMinX, hudBounds.m_mins.y + 75.f ),
+		Vec2( ammoMaxX, hudBounds.m_mins.y + 110.f )
+	);
+
+	AABB2 ammoBox(
+		Vec2( ammoMinX, hudBounds.m_mins.y + 20.f ),
+		Vec2( ammoMaxX, hudBounds.m_mins.y + 85.f )
+	);
+
+	std::vector<Vertex> ammoTypeVerts;
+	hudFont->AddVertsForTextInBox2D(
+		ammoTypeVerts,
+		ammoTypeText,
+		ammoTypeBox,
+		hudFontSize * 0.45f,
+		Rgba8::WHITE,
+		1.f,
+		Vec2( 0.5f, 0.5f ) );
+	
+	std::vector<Vertex> ammoVerts;
+	hudFont->AddVertsForTextInBox2D(
+		ammoVerts,
+		ammoText,
+		ammoBox,
+		hudFontSize,
+		Rgba8::WHITE,
+		1.f,
+		Vec2( 0.5f, 0.5f ) );
+
+	renderer->BindTexture( &hudFont->GetTexture() );
+	renderer->SetModelConstants();
+	renderer->DrawVertexArray( ammoTypeVerts );
+	renderer->DrawVertexArray( ammoVerts );
+
+	// Player kill count
 	int killCount = player->m_killCount;
 	std::string killCountText = Stringf( "%d", killCount );
 
