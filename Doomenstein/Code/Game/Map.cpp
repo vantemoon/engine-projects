@@ -71,6 +71,9 @@ void Map::CreateTiles()
 	Image const& mapImage = m_definition->m_image;
 	m_dimensions = mapImage.GetDimensions();
 
+	m_tiles.clear();
+	m_tiles.resize( m_dimensions.x * m_dimensions.y, nullptr );
+
 	for ( int y = 0; y < m_dimensions.y; y++ )
 	{
 		for ( int x = 0; x < m_dimensions.x; x++ )
@@ -79,9 +82,12 @@ void Map::CreateTiles()
 			TileDefinition const* tileDef = TileDefinition::GetTileDefinitionFromColor( pixelColor );
 			if ( tileDef != nullptr )
 			{
-				AABB3 tileBounds = AABB3( Vec3( ( float ) x, ( float ) y, 0.f ), Vec3( ( float ) ( x + 1 ), ( float ) ( y + 1 ), 1.f ) );
+				AABB3 tileBounds = AABB3(
+					Vec3( ( float ) x, ( float ) y, 0.f ),
+					Vec3( ( float ) ( x + 1 ), ( float ) ( y + 1 ), 1.f ) );
 				Tile* newTile = new Tile( tileBounds, tileDef );
-				m_tiles.push_back( newTile );
+				int tileIndex = y * m_dimensions.x + x;
+				m_tiles[tileIndex] = newTile;
 			}
 		}
 	}
@@ -95,6 +101,11 @@ void Map::CreateGeometry()
 {
 	for ( Tile* tile : m_tiles )
 	{
+		if ( tile == nullptr )
+		{
+			continue;
+		}
+
 		AABB3 const& bounds = tile->m_bounds;
 		TileDefinition const& def = tile->GetDefinition();
 		IntVec2 const& cellCount = m_definition->m_spriteSheetCellCount;
@@ -920,7 +931,13 @@ Tile* const Map::GetTileAtCoords( int x, int y ) const
 	{
 		return nullptr;
 	}
+
 	int tileIndex = y * m_dimensions.x + x;
+	if ( tileIndex < 0 || tileIndex >= ( int ) m_tiles.size() )
+	{
+		return nullptr;
+	}
+
 	return m_tiles[tileIndex];
 }
 

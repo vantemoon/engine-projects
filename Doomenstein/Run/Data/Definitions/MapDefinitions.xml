@@ -28,13 +28,14 @@
     </SpawnInfos>
   </MapDefinition>
   <MapDefinition name="PetRoom" image="Data/Maps/PetRoom.png" shader="Data/Shaders/Diffuse" spriteSheetTexture="Data/Images/Terrain_8x8.png" spriteSheetCellCount="8,8">
-    <SpawnInfos>
-	  <SpawnInfo actor="SpawnPoint" position="5.5,3.5,0.0" orientation="90.0,0.0,0.0" />
-	  <SpawnInfo actor="Demon" position="5.0,7.0,0.0" orientation="270.0,0.0,0.0" />
-	  <SpawnInfo actor="Demon" position="7.0,7.0,0.0" orientation="270.0,0.0,0.0" />
-	  <SpawnInfo actor="FoodPickup" position="4.5,4.5,0.0" orientation="0.0,0.0,0.0" />
-	  <SpawnInfo actor="CleaningPickup" position="5.5,4.5,0.0" orientation="0.0,0.0,0.0" />
-	  <SpawnInfo actor="ToyPickup" position="6.5,4.5,0.0" orientation="0.0,0.0,0.0" />
+	<SpawnInfos>
+	  <SpawnInfo actor="SpawnPoint" position="5.0,3.5,0.0" orientation="90.0,0.0,0.0" />
+	  <SpawnInfo actor="SpawnPoint" position="6.0,3.5,0.0" orientation="90.0,0.0,0.0" />
+      <SpawnInfo actor="Demon" position="5.0,7.0,0.0" orientation="270.0,0.0,0.0" />
+      <SpawnInfo actor="Demon" position="7.0,7.0,0.0" orientation="270.0,0.0,0.0" />
+      <SpawnInfo actor="FoodPickup" position="4.5,4.5,0.0" orientation="0.0,0.0,0.0" />
+      <SpawnInfo actor="CleaningPickup" position="5.5,4.5,0.0" orientation="0.0,0.0,0.0" />
+      <SpawnInfo actor="ToyPickup" position="6.5,4.5,0.0" orientation="0.0,0.0,0.0" />
 	</SpawnInfos>
   </MapDefinition>
 </Definitions>

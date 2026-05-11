@@ -85,6 +85,8 @@ private:
 	bool IsCurrentAnimationGroupComplete() const;
 	AABB2 GetUVsForFrameIndex( int frameIndex ) const;
 
+	void CheckVirtualPetDeath();
+
 	void AppendBillboardVerts( std::vector<Vertex>& outVerts, AABB2 const& uvs ) const;
 	void AppendQuad( std::vector<Vertex>& outVerts, Vec3 const& bl, Vec3 const& br, Vec3 const& tr, Vec3 const& tl, AABB2 const& uvs, Vec3 const& normal ) const;
 	void AppendQuadWithVertexNormals( std::vector<Vertex>& outVerts, Vec3 const& bl, Vec3 const& br, Vec3 const& tr, Vec3 const& tl, AABB2 const& uvs, Vec3 const& nbl, Vec3 const& nbr, Vec3 const& ntr, Vec3 const& ntl ) const;
@@ -136,13 +138,13 @@ public:
 	float m_cleanliness = 100.f;
 	float m_happiness = 100.f;
 
-	float m_hungerDecayRate = 2.f;
-	float m_cleanlinessDecayRate = 1.f;
-	float m_happinessDecayRate = 0.5f;
+	float m_hungerDecayRate = 2.5f;
+	float m_cleanlinessDecayRate = 2.f;
+	float m_happinessDecayRate = 1.5f;
 
 	float m_messSpawnTimer = 0.f;
-	float m_messSpawnInterval = 8.f;
-	float m_messCleanlinessThreshold = 60.f;
+	float m_messCleanlinessThreshold = 70.f;
+	float m_messSpawnInterval = 5.f;
 	int m_maxMessCount = 3;
 
 	bool m_isPickup = false;
@@ -153,20 +155,20 @@ public:
 	bool m_isMisbehaving = false;
 
 	float m_misbehaviourTimer = 0.f;
-	float m_misbehaviourCheckInterval = 5.f;
+	float m_misbehaviourCheckInterval = 3.f;
 
 	float m_disciplineCooldownTimer = 0.f;
-	float m_disciplineCooldownSeconds = 8.f;
+	float m_disciplineCooldownSeconds = 6.f;
 
 	float m_misbehaveSoundTimer = 0.f;
 
 	PetEvolutionStage m_petEvolutionStage = PetEvolutionStage::Baby;
 
 	float m_evolutionCheckTimer = 0.f;
-	float m_evolutionCheckInterval = 5.f;
+	float m_evolutionCheckInterval = 2.f;
 
 	float m_evolutionTimer = 0.f;
-	float m_evolutionTimeRequired = 10.f;
+	float m_evolutionTimeRequired = 20.f;
 
 	int m_goodCareScore = 0;
 	int m_badCareScore = 0;

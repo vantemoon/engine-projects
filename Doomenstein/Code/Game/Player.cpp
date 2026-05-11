@@ -540,16 +540,6 @@ void Player::UpdateFirstPersonFromKeyboard( Actor* actor, float deltaSeconds )
 	{
 		SelectWeaponBySlot( actor, 2 );
 	}
-
-	// Discipline
-	if ( g_engine->m_inputSystem->WasKeyJustPressed( 'R' ) )
-	{
-		Actor* pet = GetLookedAtVirtualPetActor();
-		if ( pet != nullptr )
-		{
-			pet->Discipline();
-		}
-	}
 }
 
 

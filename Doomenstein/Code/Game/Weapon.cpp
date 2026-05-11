@@ -199,6 +199,12 @@ void Weapon::Fire( Actor* owner )
 	}
 
 	// Rays
+	bool shouldSpawnHitEffects = true;
+	if ( m_definition->m_name == "CleaningTool" )
+	{
+		shouldSpawnHitEffects = false;
+	}
+
 	for ( int rayIndex = 0; rayIndex < m_definition->m_rayCount; ++rayIndex )
 	{
 		Vec3 rayDir = GetRandomDirectionInCone( correctedForward, m_definition->m_rayCone );
@@ -228,28 +234,31 @@ void Weapon::Fire( Actor* owner )
 				continue;
 			}
 
-			SpawnInfo hitSpawnInfo;
-
-			if ( rayHitActor != nullptr )
+			if ( shouldSpawnHitEffects )
 			{
-				hitSpawnInfo.m_actor = "BloodSplatter";
+				SpawnInfo hitSpawnInfo;
+
+				if ( rayHitActor != nullptr )
+				{
+					hitSpawnInfo.m_actor = "BloodSplatter";
+				}
+				else
+				{
+					hitSpawnInfo.m_actor = "BulletHit";
+				}
+
+				hitSpawnInfo.m_position = rayResult.m_impactPos;
+
+				float yaw = Atan2Degrees( rayResult.m_impactNormal.y, rayResult.m_impactNormal.x );
+				float pitch = Atan2Degrees(
+					rayResult.m_impactNormal.z,
+					Vec2( rayResult.m_impactNormal.x, rayResult.m_impactNormal.y ).GetLength()
+				);
+
+				hitSpawnInfo.m_orientation = Vec3( yaw, pitch, 0.f );
+
+				owner->m_map->SpawnActor( hitSpawnInfo );
 			}
-			else
-			{
-				hitSpawnInfo.m_actor = "BulletHit";
-			}
-
-			hitSpawnInfo.m_position = rayResult.m_impactPos;
-
-			float yaw = Atan2Degrees( rayResult.m_impactNormal.y, rayResult.m_impactNormal.x );
-			float pitch = Atan2Degrees(
-				rayResult.m_impactNormal.z,
-				Vec2( rayResult.m_impactNormal.x, rayResult.m_impactNormal.y ).GetLength()
-			);
-
-			hitSpawnInfo.m_orientation = Vec3( yaw, pitch, 0.f );
-
-			owner->m_map->SpawnActor( hitSpawnInfo );
 		}
 
 		if ( rayHitActor != nullptr )
@@ -349,6 +358,7 @@ void Weapon::Fire( Actor* owner )
 			if ( meleeTarget->m_isVirtualPet )
 			{
 				meleeTarget->Discipline();
+				meleeTarget->PlaySoundByType( "Hurt" );
 			}
 
 			continue;

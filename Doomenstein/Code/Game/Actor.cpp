@@ -467,7 +467,7 @@ void Actor::OnCollide( Actor* otherActor, Vec3 const& collisionNormal )
 		{
 			if ( IsActorNamed( "FoodPickup" ) )
 			{
-				player->m_foodAmmo += 5;
+				player->m_foodAmmo += 15;
 				PlaySoundByType( "Pickup" );
 				CollectPickup();
 				return;
@@ -475,7 +475,7 @@ void Actor::OnCollide( Actor* otherActor, Vec3 const& collisionNormal )
 
 			if ( IsActorNamed( "CleaningPickup" ) )
 			{
-				player->m_cleaningCharges += 3;
+				player->m_cleaningCharges += 10;
 				PlaySoundByType( "Pickup" );
 				CollectPickup();
 				return;
@@ -1190,6 +1190,28 @@ Mat44 Actor::GetModelMatrix() const
 
 
 //-----------------------------------------------------------------------------------------------
+void Actor::CheckVirtualPetDeath()
+{
+	if ( !m_isVirtualPet || m_isDead || m_isDestroyed )
+	{
+		return;
+	}
+
+	if ( m_hunger <= 0.f || m_cleanliness <= 0.f || m_happiness <= 0.f )
+	{
+		if ( m_currentHealth > 0 )
+		{
+			TakeDamage( m_currentHealth );
+		}
+		else
+		{
+			DestroyImmediately();
+		}
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
 void Actor::UpdateVirtualPet( float deltaSeconds )
 {
 	if ( !m_isVirtualPet ) return;
@@ -1197,6 +1219,12 @@ void Actor::UpdateVirtualPet( float deltaSeconds )
 	m_hunger = GetClamped( m_hunger - ( m_hungerDecayRate * deltaSeconds ), 0.f, 100.f );
 	m_cleanliness = GetClamped( m_cleanliness - ( m_cleanlinessDecayRate * deltaSeconds ), 0.f, 100.f );
 	m_happiness = GetClamped( m_happiness - ( m_happinessDecayRate * deltaSeconds ), 0.f, 100.f );
+
+	CheckVirtualPetDeath();
+	if ( m_isDead )
+	{
+		return;
+	}
 
  	UpdatePetMessSpawning( deltaSeconds );
 	UpdatePetMisbehavior( deltaSeconds );
@@ -1222,17 +1250,19 @@ void Actor::UpdateVirtualPet( float deltaSeconds )
 void Actor::AddHunger( float amount )
 {
 	m_hunger = GetClamped( m_hunger + amount, 0.f, 100.f );
+	CheckVirtualPetDeath();
 }
 
 
-//-----------------------------------------------------------------------------------------------
+///-----------------------------------------------------------------------------------------------
 void Actor::AddCleanliness( float amount )
 {
 	m_cleanliness = GetClamped( m_cleanliness + amount, 0.f, 100.f );
+	CheckVirtualPetDeath();
 }
 
 
-//-----------------------------------------------------------------------------------------------
+///-----------------------------------------------------------------------------------------------
 void Actor::AddHappiness( float amount )
 {
 	m_happiness = GetClamped( m_happiness + amount, 0.f, 100.f );
@@ -1486,6 +1516,22 @@ void Actor::EvolvePet()
 		m_cleanlinessDecayRate *= 1.25f;
 		m_happinessDecayRate *= 1.25f;
 		m_messSpawnInterval *= 0.75f;
+	}
+
+	if ( m_map != nullptr && IsActorNamed( "Demon" ) )
+	{
+		SpawnInfo spawnInfo;
+		spawnInfo.m_actor = "Demon";
+
+		RandomNumberGenerator rng;
+		float angle = rng.RollRandomFloatInRange( 0.f, 360.f );
+		float radius = rng.RollRandomFloatInRange( 0.35f, 0.65f );
+		Vec2 offset = Vec2::MakeFromPolarDegrees( angle, radius );
+
+		spawnInfo.m_position = m_position + Vec3( offset.x, offset.y, 0.f );
+		spawnInfo.m_orientation = Vec3::ZERO;
+
+		m_map->SpawnActor( spawnInfo );
 	}
 
 	PlaySoundByType( "Evolve" );
