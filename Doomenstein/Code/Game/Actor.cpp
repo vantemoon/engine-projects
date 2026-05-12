@@ -325,6 +325,7 @@ void Actor::Update()
 	if ( m_isVirtualPet )
 	{
 		UpdateVirtualPet( deltaSeconds );
+		UpdateFloatingPetTexts( deltaSeconds );
 	}
 
 	UpdatePhysics();
@@ -1113,16 +1114,29 @@ void Actor::Render() const
 	{
 		g_engine->m_renderer->BindShader( nullptr );
 	}
+
 	g_engine->m_renderer->SetSamplerMode( SamplerMode::POINT_CLAMP );
 	g_engine->m_renderer->BindTexture( m_visualTexture );
 
 	g_engine->m_renderer->SetModelConstants( modelMatrix, modelTint );
+
+	g_engine->m_renderer->SetBlendMode( BlendMode::ALPHA );
+	g_engine->m_renderer->SetDepthMode( DepthMode::READ_WRITE_LESS_EQUAL );
 	g_engine->m_renderer->SetRasterizerMode( RasterizerMode::SOLID_CULL_NONE );
+
 	g_engine->m_renderer->DrawVertexArray( billboardVerts );
+
 	g_engine->m_renderer->SetRasterizerMode( RasterizerMode::SOLID_CULL_BACK );
 
 	g_engine->m_renderer->BindShader( nullptr );
 	g_engine->m_renderer->BindTexture( nullptr );
+
+	if ( m_isVirtualPet )
+	{
+		RenderFloatingPetTexts();
+
+		g_engine->m_renderer->SetDepthMode( DepthMode::READ_WRITE_LESS_EQUAL );
+	}
 }
 
 
@@ -1324,6 +1338,12 @@ void Actor::UpdateVirtualPet( float deltaSeconds )
 void Actor::AddHunger( float amount )
 {
 	m_hunger = GetClamped( m_hunger + amount, 0.f, 100.f );
+
+	if ( amount > 0.f )
+	{
+		AddFloatingPetText( "+Food!", Rgba8( 255, 220, 120, 255 ) );
+	}
+
 	CheckVirtualPetDeath();
 }
 
@@ -1332,6 +1352,12 @@ void Actor::AddHunger( float amount )
 void Actor::AddCleanliness( float amount )
 {
 	m_cleanliness = GetClamped( m_cleanliness + amount, 0.f, 100.f );
+
+	if ( amount > 0.f )
+	{
+		AddFloatingPetText( "Clean!", Rgba8( 120, 220, 255, 255 ) );
+	}
+
 	CheckVirtualPetDeath();
 }
 
@@ -1340,6 +1366,11 @@ void Actor::AddCleanliness( float amount )
 void Actor::AddHappiness( float amount )
 {
 	m_happiness = GetClamped( m_happiness + amount, 0.f, 100.f );
+
+	if ( amount > 0.f )
+	{
+		AddFloatingPetText( "Happy!", Rgba8( 255, 180, 255, 255 ) );
+	}
 }
 
 
@@ -1510,19 +1541,15 @@ void Actor::Discipline()
 		m_isMisbehaving = false;
 		m_disciplineCooldownTimer = m_disciplineCooldownSeconds;
 
-		AddHappiness( 50.f );
-		AddHunger( 50.f );
-		AddCleanliness( 50.f );
+		AddHappiness( 8.f );
+		AddCleanliness( 5.f );
 
-		m_petCriticalTimer = 0.f;
-		m_misbehaviourTimer = m_misbehaviourCheckInterval;
-		m_misbehaveSoundTimer = 0.f;
+		AddFloatingPetText( "Calmed!", Rgba8( 180, 255, 180, 255 ) );
 	}
 	else
 	{
-		RandomNumberGenerator rng;
-		float disciplinePenalty = rng.RollRandomFloatInRange( 2.f, 10.f );
-		AddHappiness( -disciplinePenalty );
+		AddHappiness( -10.f );
+		AddFloatingPetText( "WTF!", Rgba8( 255, 120, 120, 255 ) );
 	}
 }
 
@@ -1736,4 +1763,161 @@ void Actor::SetVisualSpriteSheet( char const* spriteSheetPath )
 	}
 
 	m_visualTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( spriteSheetPath );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Actor::AddFloatingPetText( std::string const& text, Rgba8 const& color )
+{
+	if ( text.empty() )
+	{
+		return;
+	}
+
+	FloatingPetText floatingText;
+	floatingText.m_text = text;
+	floatingText.m_color = color;
+	floatingText.m_age = 0.f;
+	floatingText.m_lifetime = 0.45f;
+
+	float stackOffset = ( float ) m_floatingPetTexts.size() * 0.18f;
+	floatingText.m_worldOffset = Vec3( 0.f, 0.f, stackOffset );
+
+	m_floatingPetTexts.push_back( floatingText );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Actor::UpdateFloatingPetTexts( float deltaSeconds )
+{
+	for ( int textIndex = ( int ) m_floatingPetTexts.size() - 1; textIndex >= 0; --textIndex )
+	{
+		FloatingPetText& floatingText = m_floatingPetTexts[textIndex];
+
+		floatingText.m_age += deltaSeconds;
+		floatingText.m_worldOffset.z += deltaSeconds * 0.45f;
+
+		if ( floatingText.m_age >= floatingText.m_lifetime )
+		{
+			m_floatingPetTexts.erase( m_floatingPetTexts.begin() + textIndex );
+		}
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Actor::RenderFloatingPetTexts() const
+{
+	if ( m_floatingPetTexts.empty() || m_definition == nullptr )
+	{
+		return;
+	}
+
+	if ( g_engine == nullptr || g_engine->m_renderer == nullptr )
+	{
+		return;
+	}
+
+	if ( g_app == nullptr || g_app->m_game == nullptr )
+	{
+		return;
+	}
+
+	Player* renderingPlayer = g_app->m_game->m_currentRenderingPlayer;
+	if ( renderingPlayer == nullptr || renderingPlayer->m_playerWorldCamera == nullptr )
+	{
+		return;
+	}
+
+	BitmapFont* font = g_engine->m_renderer->CreateOrGetBitmapFontFromFile( "Data/Fonts/SquirrelFixedFont" );
+	if ( font == nullptr )
+	{
+		return;
+	}
+
+	Vec3 cameraPos = renderingPlayer->m_playerWorldCamera->GetPosition();
+
+	Vec3 basePos = m_position;
+	basePos.z += m_definition->m_physicsHeight - 0.4f;
+
+	Vec3 toCamera = cameraPos - basePos;
+	toCamera.z = 0.f;
+
+	if ( toCamera == Vec3::ZERO )
+	{
+		toCamera = Vec3( 1.f, 0.f, 0.f );
+	}
+
+	toCamera = toCamera.GetNormalized();
+
+	Vec3 worldUp( 0.f, 0.f, 1.f );
+	Vec3 billboardRight = CrossProduct3D( worldUp, toCamera );
+
+	if ( billboardRight == Vec3::ZERO )
+	{
+		billboardRight = Vec3( 0.f, 1.f, 0.f );
+	}
+
+	billboardRight = billboardRight.GetNormalized();
+
+	std::vector<Vertex> worldTextVerts;
+
+	for ( int textIndex = 0; textIndex < ( int ) m_floatingPetTexts.size(); ++textIndex )
+	{
+		FloatingPetText const& floatingText = m_floatingPetTexts[textIndex];
+
+		float lifeFraction = floatingText.m_age / floatingText.m_lifetime;
+		lifeFraction = GetClamped( lifeFraction, 0.f, 1.f );
+
+		unsigned char alpha = ( unsigned char ) GetClamped( 255.f * ( 1.f - lifeFraction ), 0.f, 255.f );
+
+		Rgba8 textColor = floatingText.m_color;
+		textColor.a = alpha;
+
+		std::vector<Vertex> localTextVerts;
+
+		AABB2 textBounds(
+			Vec2( 0.f, 0.f ),
+			Vec2( 1.6f, 0.3f )
+		);
+
+		font->AddVertsForTextInBox2D(
+			localTextVerts,
+			floatingText.m_text,
+			textBounds,
+			0.16f,
+			textColor,
+			1.f,
+			Vec2( 0.5f, 0.5f )
+		);
+
+		Vec3 anchor = basePos + floatingText.m_worldOffset;
+
+		for ( int vertIndex = 0; vertIndex < ( int ) localTextVerts.size(); ++vertIndex )
+		{
+			Vertex vert = localTextVerts[vertIndex];
+
+			Vec3 localPos = vert.m_position;
+			localPos.x -= 0.8f;
+			localPos.y -= 0.15f;
+
+			vert.m_position =
+				anchor +
+				( billboardRight * localPos.x ) +
+				( worldUp * localPos.y );
+
+			worldTextVerts.push_back( vert );
+		}
+	}
+
+	g_engine->m_renderer->SetBlendMode( BlendMode::ALPHA );
+	g_engine->m_renderer->SetDepthMode( DepthMode::DISABLED );
+	g_engine->m_renderer->SetRasterizerMode( RasterizerMode::SOLID_CULL_NONE );
+
+	g_engine->m_renderer->BindTexture( &font->GetTexture() );
+	g_engine->m_renderer->SetModelConstants();
+	g_engine->m_renderer->DrawVertexArray( worldTextVerts );
+	g_engine->m_renderer->BindTexture( nullptr );
+
+	g_engine->m_renderer->SetRasterizerMode( RasterizerMode::SOLID_CULL_BACK );
 }

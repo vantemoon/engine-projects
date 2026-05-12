@@ -33,6 +33,17 @@ enum class PetEvolutionStage
 
 
 //-----------------------------------------------------------------------------------------------
+struct FloatingPetText
+{
+	std::string m_text;
+	Vec3 m_worldOffset = Vec3::ZERO;
+	float m_age = 0.f;
+	float m_lifetime = 1.25f;
+	Rgba8 m_color = Rgba8::WHITE;
+};
+
+
+//-----------------------------------------------------------------------------------------------
 class Actor
 {
 public:
@@ -77,6 +88,10 @@ public:
 	void EvolvePet();
 	std::string GetPetEvolutionStageText() const;
 	void SetVisualSpriteSheet( char const* spriteSheetPath );
+
+	void AddFloatingPetText( std::string const& text, Rgba8 const& color = Rgba8::WHITE );
+	void UpdateFloatingPetTexts( float deltaSeconds );
+	void RenderFloatingPetTexts() const;
 
 	bool IsActorNamed( std::string const& name ) const;
 	void DestroyImmediately();
@@ -190,4 +205,6 @@ public:
 
 	float m_petCriticalTimer = 0.f;
 	float m_petCriticalDeathGraceSeconds = 20.f;
+
+	std::vector<FloatingPetText> m_floatingPetTexts;
 };
