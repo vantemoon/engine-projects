@@ -61,6 +61,14 @@ Actor::Actor( ActorHandle handle, ActorDefinition const* definition, Map* map )
 	m_pickupRespawnSeconds = m_definition->m_pickupRespawnSeconds;
 	m_deadTimer.m_period = m_definition->corpseLifetime;
 
+	if ( m_isVirtualPet )
+	{
+		static RandomNumberGenerator rng;
+		m_lifetimeSecondsRemaining = rng.RollRandomFloatInRange( m_lifetimeMinSeconds, m_lifetimeMaxSeconds );
+
+		m_visualScale = 0.65f;
+	}
+
 	m_maxHealth = m_definition->m_health;
 	m_currentHealth = m_maxHealth;
 
@@ -171,7 +179,7 @@ void Actor::PlayAnimationByName( std::string const& animationGroupName )
 
 
 //-----------------------------------------------------------------------------------------------
-void Actor::PlaySoundByType( std::string const& soundType )
+void Actor::PlaySoundByType( std::string const& soundType, float volume )
 {
 	if ( soundType.empty() || g_engine == nullptr || g_engine->m_audioSystem == nullptr )
 	{
@@ -182,7 +190,7 @@ void Actor::PlaySoundByType( std::string const& soundType )
 	{
 		if ( m_soundTypes[soundIndex] == soundType )
 		{
-			SoundPlaybackID playbackID = g_engine->m_audioSystem->StartSoundAt( m_soundIDs[soundIndex], m_position, false, 1.0f );
+			SoundPlaybackID playbackID = g_engine->m_audioSystem->StartSoundAt( m_soundIDs[soundIndex], m_position, false, volume );
 			m_currentPlayingSounds.push_back( playbackID );
 			return;
 		}
@@ -314,7 +322,10 @@ void Actor::Update()
 		return;
 	}
 
-	if ( m_isVirtualPet ) UpdateVirtualPet( deltaSeconds );
+	if ( m_isVirtualPet )
+	{
+		UpdateVirtualPet( deltaSeconds );
+	}
 
 	UpdatePhysics();
 }
@@ -512,6 +523,24 @@ void Actor::OnCollide( Actor* otherActor, Vec3 const& collisionNormal )
 	if ( impulseDirection != Vec3::ZERO )
 	{
 		impulseDirection = impulseDirection.GetNormalized();
+	}
+
+	if ( m_isVirtualPet && otherActor == nullptr )
+	{
+		if ( impulseDirection != Vec3::ZERO )
+		{
+			static RandomNumberGenerator rng;
+
+			float newYaw = impulseDirection.GetOrientationAboutZDegrees();
+			newYaw += rng.RollRandomFloatInRange( -45.f, 45.f );
+
+			m_orientation.m_yawDegrees = newYaw;
+			m_velocity = Vec3::ZERO;
+			m_acceleration = Vec3::ZERO;
+		}
+
+		PlaySoundByType( "Collide" );
+		return;
 	}
 
 	if ( m_definition != nullptr && m_definition->m_name == "FoodProjectile"
@@ -985,7 +1014,7 @@ void Actor::AppendQuadWithVertexNormals( std::vector<Vertex>& outVerts, Vec3 con
 //-----------------------------------------------------------------------------------------------
 void Actor::AppendBillboardVerts( std::vector<Vertex>& outVerts, AABB2 const& uvs ) const
 {
-	Vec2 const size = m_definition->m_visualSize;
+	Vec2 const size = m_definition->m_visualSize * m_visualScale;
 	Vec2 const pivot = m_definition->m_visualPivot;
 
 	float const left = -pivot.x * size.x;
@@ -1197,16 +1226,39 @@ void Actor::CheckVirtualPetDeath()
 		return;
 	}
 
-	if ( m_hunger <= 0.f || m_cleanliness <= 0.f || m_happiness <= 0.f )
+	bool isCritical =
+		m_hunger <= 0.f ||
+		m_cleanliness <= 0.f ||
+		m_happiness <= 0.f;
+
+	if ( !isCritical )
 	{
-		if ( m_currentHealth > 0 )
+		return;
+	}
+
+	if ( !m_hasEvolved )
+	{
+		m_badCareScore += 3;
+
+		if ( m_evolutionTimer >= m_evolutionTimeRequired * 0.5f )
 		{
-			TakeDamage( m_currentHealth );
+			EvolvePet();
+			return;
 		}
-		else
-		{
-			DestroyImmediately();
-		}
+
+		m_hunger = GetClamped( m_hunger, 20.f, 100.f );
+		m_cleanliness = GetClamped( m_cleanliness, 20.f, 100.f );
+		m_happiness = GetClamped( m_happiness, 20.f, 100.f );
+		return;
+	}
+
+	if ( m_currentHealth > 0 )
+	{
+		TakeDamage( m_currentHealth );
+	}
+	else
+	{
+		DestroyImmediately();
 	}
 }
 
@@ -1216,9 +1268,30 @@ void Actor::UpdateVirtualPet( float deltaSeconds )
 {
 	if ( !m_isVirtualPet ) return;
 
+	m_lifetimeSecondsRemaining -= deltaSeconds;
+	if ( m_lifetimeSecondsRemaining <= 0.f )
+	{
+		TakeDamage( m_currentHealth );
+		return;
+	}
+
 	m_hunger = GetClamped( m_hunger - ( m_hungerDecayRate * deltaSeconds ), 0.f, 100.f );
 	m_cleanliness = GetClamped( m_cleanliness - ( m_cleanlinessDecayRate * deltaSeconds ), 0.f, 100.f );
 	m_happiness = GetClamped( m_happiness - ( m_happinessDecayRate * deltaSeconds ), 0.f, 100.f );
+
+	bool isCritical =
+		m_hunger <= 0.f ||
+		m_cleanliness <= 0.f ||
+		m_happiness <= 0.f;
+
+	if ( isCritical )
+	{
+		m_petCriticalTimer += deltaSeconds;
+	}
+	else
+	{
+		m_petCriticalTimer = 0.f;
+	}
 
 	CheckVirtualPetDeath();
 	if ( m_isDead )
@@ -1226,17 +1299,18 @@ void Actor::UpdateVirtualPet( float deltaSeconds )
 		return;
 	}
 
- 	UpdatePetMessSpawning( deltaSeconds );
+	UpdatePetMessSpawning( deltaSeconds );
 	UpdatePetMisbehavior( deltaSeconds );
 	UpdatePetEvolution( deltaSeconds );
+	UpdatePetReproduction( deltaSeconds );
 
 	if ( m_isMisbehaving )
 	{
 		m_misbehaveSoundTimer -= deltaSeconds;
 		if ( m_misbehaveSoundTimer <= 0.f )
 		{
-			PlaySoundByType( "Misbehave" );
-			m_misbehaveSoundTimer = 2.f;
+			PlaySoundByType( "Misbehave", 2.f );
+			m_misbehaveSoundTimer = 0.75f;
 		}
 	}
 	else
@@ -1435,11 +1509,20 @@ void Actor::Discipline()
 	{
 		m_isMisbehaving = false;
 		m_disciplineCooldownTimer = m_disciplineCooldownSeconds;
-		AddHappiness( -5.f );
+
+		AddHappiness( 50.f );
+		AddHunger( 50.f );
+		AddCleanliness( 50.f );
+
+		m_petCriticalTimer = 0.f;
+		m_misbehaviourTimer = m_misbehaviourCheckInterval;
+		m_misbehaveSoundTimer = 0.f;
 	}
 	else
 	{
-		AddHappiness( -15.f );
+		RandomNumberGenerator rng;
+		float disciplinePenalty = rng.RollRandomFloatInRange( 2.f, 10.f );
+		AddHappiness( -disciplinePenalty );
 	}
 }
 
@@ -1465,9 +1548,9 @@ void Actor::UpdatePetEvolution( float deltaSeconds )
 			m_happiness >= 60.f;
 
 		bool badCare =
-			m_hunger <= 30.f ||
-			m_cleanliness <= 30.f ||
-			m_happiness <= 30.f;
+			m_hunger <= 40.f ||
+			m_cleanliness <= 40.f ||
+			m_happiness <= 40.f;
 
 		if ( goodCare )
 		{
@@ -1475,6 +1558,11 @@ void Actor::UpdatePetEvolution( float deltaSeconds )
 		}
 
 		if ( badCare )
+		{
+			m_badCareScore++;
+		}
+
+		if ( m_hunger <= 15.f || m_cleanliness <= 15.f || m_happiness <= 15.f )
 		{
 			m_badCareScore++;
 		}
@@ -1488,6 +1576,70 @@ void Actor::UpdatePetEvolution( float deltaSeconds )
 
 
 //-----------------------------------------------------------------------------------------------
+void Actor::UpdatePetReproduction( float deltaSeconds )
+{
+	if ( !m_isVirtualPet || m_map == nullptr || !m_hasEvolved )
+	{
+		return;
+	}
+
+	if ( m_reproductionCount >= m_maxReproductionCount )
+	{
+		return;
+	}
+
+	bool healthyEnough =
+		m_hunger >= 60.f &&
+		m_cleanliness >= 60.f &&
+		m_happiness >= 60.f;
+
+	if ( !healthyEnough )
+	{
+		return;
+	}
+
+	m_reproductionTimer += deltaSeconds;
+
+	if ( m_reproductionTimer >= m_reproductionInterval )
+	{
+		m_reproductionTimer = 0.f;
+		ReproducePet();
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Actor::ReproducePet()
+{
+	if ( !m_isVirtualPet || m_map == nullptr )
+	{
+		return;
+	}
+
+	SpawnInfo spawnInfo;
+	spawnInfo.m_actor = "Demon";
+
+	static RandomNumberGenerator rng;
+	float angle = rng.RollRandomFloatInRange( 0.f, 360.f );
+	float radius = rng.RollRandomFloatInRange( 0.75f, 1.25f );
+	Vec2 offset = Vec2::MakeFromPolarDegrees( angle, radius );
+
+	spawnInfo.m_position = m_position + Vec3( offset.x, offset.y, 0.f );
+	spawnInfo.m_orientation = Vec3::ZERO;
+
+	m_map->SpawnActor( spawnInfo );
+
+	m_reproductionCount++;
+
+	AddHunger( -15.f );
+	AddCleanliness( -10.f );
+	AddHappiness( -5.f );
+
+	PlaySoundByType( "Evolve" );
+}
+
+
+//-----------------------------------------------------------------------------------------------
 void Actor::EvolvePet()
 {
 	if ( !m_isVirtualPet || m_hasEvolved )
@@ -1496,12 +1648,19 @@ void Actor::EvolvePet()
 	}
 
 	m_hasEvolved = true;
+	m_visualScale = 1.f;
 
-	if ( m_goodCareScore >= m_badCareScore )
+	bool shouldBecomeGoodCare =
+		m_goodCareScore > m_badCareScore &&
+		m_goodCareScore >= 3 &&
+		m_hunger >= 50.f &&
+		m_cleanliness >= 50.f &&
+		m_happiness >= 50.f;
+
+	if ( shouldBecomeGoodCare )
 	{
 		m_petEvolutionStage = PetEvolutionStage::GoodCare;
 
-		// Good evolution bonus
 		m_hungerDecayRate *= 0.75f;
 		m_cleanlinessDecayRate *= 0.75f;
 		m_happinessDecayRate *= 0.75f;
@@ -1511,11 +1670,19 @@ void Actor::EvolvePet()
 	{
 		m_petEvolutionStage = PetEvolutionStage::Neglected;
 
-		// Neglected evolution drawback
 		m_hungerDecayRate *= 1.25f;
 		m_cleanlinessDecayRate *= 1.25f;
 		m_happinessDecayRate *= 1.25f;
 		m_messSpawnInterval *= 0.75f;
+
+		m_hunger = 45.f;
+		m_cleanliness = 35.f;
+		m_happiness = 35.f;
+
+		m_isMisbehaving = false;
+		m_disciplineCooldownTimer = 8.f;
+
+		SetVisualSpriteSheet( "Data/Images/Actor_Neglected_8x9.png" );
 	}
 
 	if ( m_map != nullptr && IsActorNamed( "Demon" ) )
@@ -1543,13 +1710,30 @@ std::string Actor::GetPetEvolutionStageText() const
 {
 	if ( m_petEvolutionStage == PetEvolutionStage::GoodCare )
 	{
-		return "Good Care";
+		return "Happy Demon";
 	}
 
 	if ( m_petEvolutionStage == PetEvolutionStage::Neglected )
 	{
-		return "Neglected";
+		return "Emo Demon";
 	}
 
-	return "Baby";
+	return "Baby Demon";
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Actor::SetVisualSpriteSheet( char const* spriteSheetPath )
+{
+	if ( spriteSheetPath == nullptr || spriteSheetPath[0] == '\0' )
+	{
+		return;
+	}
+
+	if ( g_engine == nullptr || g_engine->m_renderer == nullptr )
+	{
+		return;
+	}
+
+	m_visualTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( spriteSheetPath );
 }

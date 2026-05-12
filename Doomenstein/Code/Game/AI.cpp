@@ -3,6 +3,7 @@
 #include "Game/Map.hpp"
 #include "Game/WeaponDefinition.hpp"
 #include "Engine/Math/MathUtils.hpp"
+#include "Engine/Math/RandomNumberGenerator.hpp"
 
 
 //-----------------------------------------------------------------------------------------------
@@ -144,6 +145,8 @@ void AI::UpdateVirtualPetAI( Actor* self, float deltaSeconds )
 		return;
 	}
 
+	static RandomNumberGenerator s_rng;
+
 	int petType = ( int ) ( self->m_handle.GetIndex() % 3 );
 
 	float moveSpeed = self->m_definition->m_walkSpeed * 0.4f;
@@ -157,31 +160,43 @@ void AI::UpdateVirtualPetAI( Actor* self, float deltaSeconds )
 
 	if ( petType == 0 )
 	{
-		// Lazy pet: slow and calm
 		moveSpeed *= 0.5f;
 		turnSpeed *= 0.5f;
 	}
 	else if ( petType == 1 )
 	{
-		// Playful pet: moves more actively
 		moveSpeed *= 1.25f;
 		turnSpeed *= 1.5f;
 	}
 	else if ( petType == 2 )
 	{
-		// Restless pet: turns more often
 		moveSpeed *= 0.8f;
 		turnSpeed *= 2.5f;
 	}
 
+	float turnDirection = ( petType == 1 ) ? -1.f : 1.f;
+
 	if ( self->m_isMisbehaving )
 	{
-		moveSpeed *= 1.5f;
-		turnSpeed *= 2.f;
-	}
+		float runSpeed = self->m_definition->m_runSpeed;
+		if ( runSpeed <= 0.f )
+		{
+			runSpeed = self->m_definition->m_walkSpeed * 1.5f;
+		}
 
-	float turnDirection = ( petType == 1 ) ? -1.f : 1.f;
-	self->m_orientation.m_yawDegrees += turnDirection * turnSpeed * deltaSeconds;
+		moveSpeed = runSpeed * 0.9f;
+		turnSpeed *= 3.f;
+
+		float randomTurnDegrees = s_rng.RollRandomFloatInRange( -180.f, 180.f );
+		self->m_orientation.m_yawDegrees += randomTurnDegrees * deltaSeconds;
+
+		float zigzagDegrees = SinDegrees( ( float ) Clock::GetSystemClock().GetTotalSeconds() * 720.f ) * 90.f;
+		self->m_orientation.m_yawDegrees += zigzagDegrees * deltaSeconds;
+	}
+	else
+	{
+		self->m_orientation.m_yawDegrees += turnDirection * turnSpeed * deltaSeconds;
+	}
 
 	Vec3 forwardDir = Vec3::MakeFromPolarDegrees( 0.f, self->m_orientation.m_yawDegrees );
 	self->MoveInDirection( forwardDir, moveSpeed );

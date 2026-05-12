@@ -54,7 +54,7 @@ public:
 	void EquipWeapon( Weapon* weapon );
 
 	void PlayAnimationByName( std::string const& animationGroupName );
-	void PlaySoundByType( std::string const& soundType );
+	void PlaySoundByType( std::string const& soundType, float volume = 1.0f );
 	void UpdateSoundPositions();
 
 	void Render() const;
@@ -66,6 +66,8 @@ public:
 	void UpdatePickupRespawn( float deltaSeconds );
 	void UpdatePetMisbehavior( float deltaSeconds );
 	void UpdatePetEvolution( float deltaSeconds );
+	void UpdatePetReproduction( float deltaSeconds );
+	void ReproducePet();
 	void AddHunger( float amount );
 	void AddCleanliness( float amount );
 	void AddHappiness( float amount );
@@ -74,6 +76,7 @@ public:
 	bool ShouldMisbehave() const;
 	void EvolvePet();
 	std::string GetPetEvolutionStageText() const;
+	void SetVisualSpriteSheet( char const* spriteSheetPath );
 
 	bool IsActorNamed( std::string const& name ) const;
 	void DestroyImmediately();
@@ -127,6 +130,7 @@ public:
 
 	Texture* m_visualTexture = nullptr;
 	Shader* m_visualShader = nullptr;
+	float m_visualScale = 1.f;
 
 	std::vector<std::string> m_soundTypes;
 	std::vector<SoundID> m_soundIDs;
@@ -138,8 +142,8 @@ public:
 	float m_cleanliness = 100.f;
 	float m_happiness = 100.f;
 
-	float m_hungerDecayRate = 2.5f;
-	float m_cleanlinessDecayRate = 2.f;
+	float m_hungerDecayRate = 2.f;
+	float m_cleanlinessDecayRate = 1.5f;
 	float m_happinessDecayRate = 1.5f;
 
 	float m_messSpawnTimer = 0.f;
@@ -158,7 +162,7 @@ public:
 	float m_misbehaviourCheckInterval = 3.f;
 
 	float m_disciplineCooldownTimer = 0.f;
-	float m_disciplineCooldownSeconds = 6.f;
+	float m_disciplineCooldownSeconds = 15.f;
 
 	float m_misbehaveSoundTimer = 0.f;
 
@@ -168,10 +172,22 @@ public:
 	float m_evolutionCheckInterval = 2.f;
 
 	float m_evolutionTimer = 0.f;
-	float m_evolutionTimeRequired = 20.f;
+	float m_evolutionTimeRequired = 30.f;
 
 	int m_goodCareScore = 0;
 	int m_badCareScore = 0;
 
 	bool m_hasEvolved = false;
+
+	float m_lifetimeSecondsRemaining = 0.f;
+	float m_lifetimeMinSeconds = 120.f;
+	float m_lifetimeMaxSeconds = 180.f;
+
+	float m_reproductionTimer = 0.f;
+	float m_reproductionInterval = 90.f;
+	int m_reproductionCount = 0;
+	int m_maxReproductionCount = 3;
+
+	float m_petCriticalTimer = 0.f;
+	float m_petCriticalDeathGraceSeconds = 20.f;
 };

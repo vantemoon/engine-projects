@@ -1219,13 +1219,13 @@ Actor* Game::GetLookedAtVirtualPetActor() const
 void Game::RenderVirtualPetHUD() const
 {
 	Actor* pet = GetLookedAtVirtualPetActor();
-	if ( pet == nullptr )
+	if ( pet == nullptr || pet->m_definition == nullptr )
 	{
 		return;
 	}
 
 	Player* renderingPlayer = m_currentRenderingPlayer;
-	if ( renderingPlayer == nullptr || renderingPlayer->m_playerScreenCamera == nullptr )
+	if ( renderingPlayer == nullptr || renderingPlayer->m_playerWorldCamera == nullptr )
 	{
 		return;
 	}
@@ -1235,16 +1235,6 @@ void Game::RenderVirtualPetHUD() const
 	{
 		return;
 	}
-
-	Camera screenCamera = *renderingPlayer->m_playerScreenCamera;
-
-	g_engine->m_renderer->BeginCamera( screenCamera );
-	g_engine->m_renderer->SetBlendMode( BlendMode::ALPHA );
-	g_engine->m_renderer->SetDepthMode( DepthMode::DISABLED );
-
-	std::vector<Vertex> textVerts;
-
-	float screenHeight = SCREEN_SIZE_Y * renderingPlayer->m_playerScreenCamera->GetViewport().GetDimensions().y;
 
 	std::string behaviourText = pet->m_isMisbehaving ? "Misbehaving" : "Calm";
 	std::string petStats = Stringf(
@@ -1256,27 +1246,85 @@ void Game::RenderVirtualPetHUD() const
 		pet->GetPetEvolutionStageText().c_str()
 	);
 
+	Camera worldCamera = *renderingPlayer->m_playerWorldCamera;
+
+	Vec3 cameraPos = worldCamera.GetPosition();
+
+	Vec3 petTop = pet->m_position;
+	petTop.z += pet->m_definition->m_physicsHeight + 0.1f;
+
+	Vec3 toCamera = cameraPos - petTop;
+	toCamera.z = 0.f;
+
+	if ( toCamera == Vec3::ZERO )
+	{
+		toCamera = Vec3( 1.f, 0.f, 0.f );
+	}
+
+	toCamera = toCamera.GetNormalized();
+
+	Vec3 worldUp = Vec3( 0.f, 0.f, 1.f );
+	Vec3 billboardRight = CrossProduct3D( worldUp, toCamera );
+
+	if ( billboardRight == Vec3::ZERO )
+	{
+		billboardRight = Vec3( 0.f, -1.f, 0.f );
+	}
+
+	billboardRight = billboardRight.GetNormalized();
+
+	Vec3 billboardUp = worldUp;
+
+	Vec3 hudAnchor = petTop + billboardRight * 0.75f;
+
+	std::vector<Vertex> localTextVerts;
+
 	AABB2 textBounds(
-		Vec2( 20.f, screenHeight - 140.f ),
-		Vec2( 500.f, screenHeight - 20.f )
+		Vec2( 0.f, 0.f ),
+		Vec2( 2.3f, 0.8f )
 	);
 
 	font->AddVertsForTextInBox2D(
-		textVerts,
+		localTextVerts,
 		petStats,
 		textBounds,
-		24.f,
+		0.1f,
 		Rgba8::WHITE,
 		1.f,
 		Vec2( 0.f, 1.f )
 	);
 
+	std::vector<Vertex> worldTextVerts;
+	worldTextVerts.reserve( localTextVerts.size() );
+
+	for ( int vertIndex = 0; vertIndex < ( int ) localTextVerts.size(); ++vertIndex )
+	{
+		Vertex vert = localTextVerts[vertIndex];
+
+		Vec3 localPos = vert.m_position;
+
+		localPos.x -= 1.4f;
+		localPos.y -= 0.5f;
+
+		vert.m_position =
+			hudAnchor +
+			( billboardRight * localPos.x ) +
+			( billboardUp * localPos.y );
+
+		worldTextVerts.push_back( vert );
+	}
+
+	g_engine->m_renderer->BeginCamera( worldCamera );
+	g_engine->m_renderer->SetBlendMode( BlendMode::ALPHA );
+
+	g_engine->m_renderer->SetDepthMode( DepthMode::DISABLED );
+
 	g_engine->m_renderer->BindTexture( &font->GetTexture() );
 	g_engine->m_renderer->SetModelConstants();
-	g_engine->m_renderer->DrawVertexArray( textVerts );
+	g_engine->m_renderer->DrawVertexArray( worldTextVerts );
 	g_engine->m_renderer->BindTexture( nullptr );
 
-	g_engine->m_renderer->EndCamera( screenCamera );
+	g_engine->m_renderer->EndCamera( worldCamera );
 }
 
 

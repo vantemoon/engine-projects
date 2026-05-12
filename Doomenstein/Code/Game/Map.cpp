@@ -906,6 +906,19 @@ void Map::AddToAmbientIntensity( float delta )
 	m_ambientIntensity = GetClamped( m_ambientIntensity + delta, 0.f, 1.f );
 }
 
+
+//-----------------------------------------------------------------------------------------------
+bool Map::IsTileSolid(IntVec2 const& tileCoords) const
+{
+	Tile* tile = GetTileAtCoords(tileCoords.x, tileCoords.y);
+	if (tile == nullptr)
+	{
+		return false;
+	}
+	return tile->IsSolid();
+}
+
+
 //-----------------------------------------------------------------------------------------------
 bool Map::IsPositionInBounds( Vec3 const& position ) const
 {
@@ -1117,6 +1130,42 @@ Actor* Map::SpawnActor( SpawnInfo const& spawnInfo )
 	m_actors[actorIndex] = newActor;
 
 	return newActor;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool Map::HasLineOfSightToPosition( Vec3 const& startPos, Vec3 const& endPos ) const
+{
+	Vec2 startXY( startPos.x, startPos.y );
+	Vec2 endXY( endPos.x, endPos.y );
+
+	Vec2 displacement = endXY - startXY;
+	float distance = displacement.GetLength();
+
+	if ( distance <= 0.f )
+	{
+		return true;
+	}
+
+	Vec2 direction = displacement.GetNormalized();
+
+	float stepDistance = 0.1f;
+	int stepCount = ( int ) ( distance / stepDistance );
+
+	for ( int stepIndex = 1; stepIndex <= stepCount; ++stepIndex )
+	{
+		float currentDistance = ( float ) stepIndex * stepDistance;
+		Vec2 currentPos = startXY + ( direction * currentDistance );
+
+		IntVec2 tileCoords( ( int ) RoundDownToInt( currentPos.x ), ( int ) RoundDownToInt( currentPos.y ) );
+
+		if ( IsTileSolid( tileCoords ) )
+		{
+			return false;
+		}
+	}
+
+	return true;
 }
 
 
@@ -1334,6 +1383,11 @@ Actor* Map::GetClosestVirtualPetInSector(
 			continue;
 		}
 
+		if ( !HasLineOfSightToPosition( startPos, actorCentre ) )
+		{
+			continue;
+		}
+
 		if ( distSq < closestDistSq )
 		{
 			closestDistSq = distSq;
@@ -1368,12 +1422,22 @@ Actor* Map::GetClosestVirtualPetToPosition( Vec3 const& position, float maxDista
 			continue;
 		}
 
-		float distSq = ( actor->m_position - position ).GetLengthSquared();
-		if ( distSq < closestDistSq )
+		Vec3 actorCentre = actor->m_position;
+		actorCentre.z += actor->m_definition->m_physicsHeight * 0.5f;
+
+		float distSq = ( actorCentre - position ).GetLengthSquared();
+		if ( distSq >= closestDistSq )
 		{
-			closestDistSq = distSq;
-			closestPet = actor;
+			continue;
 		}
+
+		if ( !HasLineOfSightToPosition( position, actorCentre ) )
+		{
+			continue;
+		}
+
+		closestDistSq = distSq;
+		closestPet = actor;
 	}
 
 	return closestPet;

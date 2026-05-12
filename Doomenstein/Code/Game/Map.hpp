@@ -33,6 +33,7 @@ public:
 	void AddGeometryForCeiling( AABB3 const& bounds, AABB2 const& uvCoords );
 	void CreateBuffers();
 
+	bool IsTileSolid( IntVec2 const& tileCoords ) const;
 	bool IsPositionInBounds( Vec3 const& position ) const;
 	bool AreCoordsInBounds( int x, int y ) const;
 	Tile* const GetTileAtCoords( int x, int y ) const;
@@ -62,6 +63,7 @@ public:
 	void RespawnPlayer( Player* player );
 	Actor* SpawnActor( SpawnInfo const& spawnInfo );
 
+	bool HasLineOfSightToPosition( Vec3 const& startPos, Vec3 const& endPos ) const;
 	Actor* GetClosestVisibleEnemy( Actor* seeker );
 	Actor* GetClosestVirtualPetInSector( Vec3 const& startPos,Vec3 const& forwardNormal, float maxLength, float arcDegrees, Actor* owner = nullptr ) const;
 	Actor* GetClosestVirtualPetToPosition( Vec3 const& position, float maxDistance ) const;
