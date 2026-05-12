@@ -29,13 +29,38 @@
   </MapDefinition>
   <MapDefinition name="PetRoom" image="Data/Maps/PetRoom.png" shader="Data/Shaders/Diffuse" spriteSheetTexture="Data/Images/Terrain_8x8.png" spriteSheetCellCount="8,8">
 	<SpawnInfos>
-	  <SpawnInfo actor="SpawnPoint" position="5.0,3.5,0.0" orientation="90.0,0.0,0.0" />
-	  <SpawnInfo actor="SpawnPoint" position="6.0,3.5,0.0" orientation="90.0,0.0,0.0" />
-      <SpawnInfo actor="Demon" position="5.0,7.0,0.0" orientation="270.0,0.0,0.0" />
-      <SpawnInfo actor="Demon" position="7.0,7.0,0.0" orientation="270.0,0.0,0.0" />
-      <SpawnInfo actor="FoodPickup" position="4.5,4.5,0.0" orientation="0.0,0.0,0.0" />
-      <SpawnInfo actor="CleaningPickup" position="5.5,4.5,0.0" orientation="0.0,0.0,0.0" />
-      <SpawnInfo actor="ToyPickup" position="6.5,4.5,0.0" orientation="0.0,0.0,0.0" />
+	  <!-- Player spawn points: lower-left grass yard -->
+	  <SpawnInfo actor="SpawnPoint" position="3.5,2.5,0.0" orientation="90.0,0.0,0.0" />
+	  <SpawnInfo actor="SpawnPoint" position="4.5,2.5,0.0" orientation="90.0,0.0,0.0" />
+
+	  <!-- Pets: main open yard, not too close to the player -->
+	  <SpawnInfo actor="Demon" position="10.5,7.5,0.0" orientation="270.0,0.0,0.0" />
+	  <SpawnInfo actor="Demon" position="13.5,8.5,0.0" orientation="270.0,0.0,0.0" />
+
+	  <!-- Care room: cleaning supply storage -->
+	  <SpawnInfo actor="CleaningPickup" position="2.5,12.5,0.0" orientation="0.0,0.0,0.0" />
+	  <SpawnInfo actor="CleaningPickup" position="4.5,12.5,0.0" orientation="0.0,0.0,0.0" />
+	  <SpawnInfo actor="CleaningPickup" position="2.5,10.5,0.0" orientation="0.0,0.0,0.0" />
+	  <SpawnInfo actor="FoodPickup" position="4.5,10.5,0.0" orientation="0.0,0.0,0.0" />
+
+	  <!-- Upper dirt patch: feeding / messy play area -->
+	  <SpawnInfo actor="FoodPickup" position="12.5,10.5,0.0" orientation="0.0,0.0,0.0" />
+	  <SpawnInfo actor="FoodPickup" position="14.5,10.5,0.0" orientation="0.0,0.0,0.0" />
+	  <SpawnInfo actor="CleaningPickup" position="12.5,9.5,0.0" orientation="0.0,0.0,0.0" />
+	  <SpawnInfo actor="CleaningPickup" position="14.5,9.5,0.0" orientation="0.0,0.0,0.0" />
+
+	  <!-- Fenced dirt pen: litter/training area, mostly cleaning supplies -->
+	  <SpawnInfo actor="CleaningPickup" position="8.5,5.5,0.0" orientation="0.0,0.0,0.0" />
+	  <SpawnInfo actor="CleaningPickup" position="10.5,5.5,0.0" orientation="0.0,0.0,0.0" />
+	  <SpawnInfo actor="FoodPickup" position="9.5,4.5,0.0" orientation="0.0,0.0,0.0" />
+
+	  <!-- Grass yard: play rewards -->
+	  <SpawnInfo actor="ToyPickup" position="7.5,8.5,0.0" orientation="0.0,0.0,0.0" />
+	  <SpawnInfo actor="ToyPickup" position="16.5,5.5,0.0" orientation="0.0,0.0,0.0" />
+
+	  <!-- Far yard backup supplies: reward exploration -->
+	  <SpawnInfo actor="CleaningPickup" position="17.5,8.5,0.0" orientation="0.0,0.0,0.0" />
+	  <SpawnInfo actor="FoodPickup" position="16.5,12.5,0.0" orientation="0.0,0.0,0.0" />
 	</SpawnInfos>
   </MapDefinition>
 </Definitions>

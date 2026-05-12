@@ -124,11 +124,6 @@ void Game::LoadMaps()
 	{
 		m_currentMap = m_maps[0];
 	}
-
-	/*if ( m_currentMap != nullptr && m_player != nullptr )
-	{
-		m_currentMap->SpawnPlayer( m_player );
-	}*/
 }
 
 
