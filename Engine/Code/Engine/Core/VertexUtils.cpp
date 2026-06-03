@@ -262,9 +262,34 @@ void AddVertsForArrow2D( std::vector<Vertex>& verts, Vec2 const& startTail, Vec2
 void AddVertsForTriangle3D( std::vector<Vertex>& verts, Vec3 const& ccw0, Vec3 const& ccw1, Vec3 const& ccw2, Rgba8 const& color,
 							Vec2 const& uv0, Vec2 const& uv1, Vec2 const& uv2 )
 {
-	verts.emplace_back( ccw0, color, uv0 );
-	verts.emplace_back( ccw1, color, uv1 );
-	verts.emplace_back( ccw2, color, uv2 );
+	Vec3 tangent = ( ccw1 - ccw0 ).GetNormalized();
+	Vec3 bitangent = ( ccw2 - ccw0 ).GetNormalized();
+	Vec3 normal = CrossProduct3D( tangent, bitangent ).GetNormalized();
+
+	verts.push_back( Vertex( ccw0, color, uv0, tangent, bitangent, normal ) );
+	verts.push_back( Vertex( ccw1, color, uv1, tangent, bitangent, normal ) );
+	verts.push_back( Vertex( ccw2, color, uv2, tangent, bitangent, normal ) );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void AddVertsForTriangle3D( std::vector<Vertex>& verts, std::vector<unsigned int>& indices, 
+						Vec3 const& ccw0, Vec3 const& ccw1, Vec3 const& ccw2, Rgba8 const& color,
+						Vec2 const& uv0, Vec2 const& uv1, Vec2 const& uv2 )
+{
+	Vec3 tangent = ( ccw1 - ccw0 ).GetNormalized();
+	Vec3 bitangent = ( ccw2 - ccw0 ).GetNormalized();
+	Vec3 normal = CrossProduct3D( tangent, bitangent ).GetNormalized();
+
+	unsigned int baseIndex = static_cast<unsigned int>( verts.size() );
+
+	verts.push_back( Vertex( ccw0, color, uv0, tangent, bitangent, normal ) );
+	verts.push_back( Vertex( ccw1, color, uv1, tangent, bitangent, normal ) );
+	verts.push_back( Vertex( ccw2, color, uv2, tangent, bitangent, normal ) );
+
+	indices.push_back( baseIndex + 0 );
+	indices.push_back( baseIndex + 1 );
+	indices.push_back( baseIndex + 2 );
 }
 
 
@@ -273,12 +298,16 @@ void AddVertsForQuad3D( std::vector<Vertex>& verts,
 						Vec3 const& bottomLeft, Vec3 const& bottomRight, Vec3 const& topRight, Vec3 const& topLeft, 
 						Rgba8 const& color, AABB2 const& UVs )
 {
-	verts.push_back( Vertex( bottomLeft, color, Vec2( UVs.m_mins.x, UVs.m_mins.y ) ) );
-	verts.push_back( Vertex( bottomRight, color, Vec2( UVs.m_maxs.x, UVs.m_mins.y ) ) );
-	verts.push_back( Vertex( topRight, color, Vec2( UVs.m_maxs.x, UVs.m_maxs.y ) ) );
-	verts.push_back( Vertex( bottomLeft, color, Vec2( UVs.m_mins.x, UVs.m_mins.y ) ) );
-	verts.push_back( Vertex( topRight, color, Vec2( UVs.m_maxs.x, UVs.m_maxs.y ) ) );
-	verts.push_back( Vertex( topLeft, color, Vec2( UVs.m_mins.x, UVs.m_maxs.y ) ) );
+	Vec3 tangent = ( bottomRight - bottomLeft ).GetNormalized();
+	Vec3 bitangent = ( topLeft - bottomLeft ).GetNormalized();
+	Vec3 normal = CrossProduct3D( tangent, bitangent ).GetNormalized();
+
+	verts.push_back( Vertex( bottomLeft, color, Vec2( UVs.m_mins.x, UVs.m_mins.y ), tangent, bitangent, normal ) );
+	verts.push_back( Vertex( bottomRight, color, Vec2( UVs.m_maxs.x, UVs.m_mins.y ), tangent, bitangent, normal ) );
+	verts.push_back( Vertex( topRight, color, Vec2( UVs.m_maxs.x, UVs.m_maxs.y ), tangent, bitangent, normal ) );
+	verts.push_back( Vertex( bottomLeft, color, Vec2( UVs.m_mins.x, UVs.m_mins.y ), tangent, bitangent, normal ) );
+	verts.push_back( Vertex( topRight, color, Vec2( UVs.m_maxs.x, UVs.m_maxs.y ), tangent, bitangent, normal ) );
+	verts.push_back( Vertex( topLeft, color, Vec2( UVs.m_mins.x, UVs.m_maxs.y ), tangent, bitangent, normal ) );
 }
 
 
@@ -289,14 +318,16 @@ void AddVertsForQuad3D( std::vector<Vertex>& verts, std::vector<unsigned int>& i
 {
 	Vec3 uBottom = bottomRight - bottomLeft;
 	Vec3 vRight = topLeft - bottomLeft;
+	Vec3 tangent = uBottom.GetNormalized();
+	Vec3 bitangent = vRight.GetNormalized();
 	Vec3 normal = CrossProduct3D( uBottom, vRight ).GetNormalized();
 
 	unsigned int baseIndex = static_cast<unsigned int>( verts.size() );
 
-	verts.push_back( Vertex( bottomLeft,  color, Vec2( UVs.m_mins.x, UVs.m_mins.y ), Vec3::ZERO, Vec3::ZERO, normal ) );
-	verts.push_back( Vertex( bottomRight, color, Vec2( UVs.m_maxs.x, UVs.m_mins.y ), Vec3::ZERO, Vec3::ZERO, normal ) );
-	verts.push_back( Vertex( topRight,    color, Vec2( UVs.m_maxs.x, UVs.m_maxs.y ), Vec3::ZERO, Vec3::ZERO, normal ) );
-	verts.push_back( Vertex( topLeft,     color, Vec2( UVs.m_mins.x, UVs.m_maxs.y ), Vec3::ZERO, Vec3::ZERO, normal ) );
+	verts.push_back( Vertex( bottomLeft, color, Vec2( UVs.m_mins.x, UVs.m_mins.y ), tangent, bitangent, normal ) );
+	verts.push_back( Vertex( bottomRight, color, Vec2( UVs.m_maxs.x, UVs.m_mins.y ), tangent, bitangent, normal ) );
+	verts.push_back( Vertex( topRight, color, Vec2( UVs.m_maxs.x, UVs.m_maxs.y ), tangent, bitangent, normal ) );
+	verts.push_back( Vertex( topLeft, color, Vec2( UVs.m_mins.x, UVs.m_maxs.y ), tangent, bitangent, normal ) );
 
 	indices.push_back( baseIndex + 0 );
 	indices.push_back( baseIndex + 1 );
