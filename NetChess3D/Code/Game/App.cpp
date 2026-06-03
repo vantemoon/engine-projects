@@ -25,7 +25,7 @@ App::App()
 
 	EngineConfig engineConfig;
 	engineConfig.m_windowConfig.m_clientAspect = 2.0f;
-	engineConfig.m_windowConfig.m_windowTitle = "Protogame3D";
+	engineConfig.m_windowConfig.m_windowTitle = "NetChess3D";
 	engineConfig.m_devConsoleConfig.m_camera = m_devConsoleCamera;
 
 	g_engine = new Engine( engineConfig );
