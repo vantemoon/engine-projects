@@ -262,8 +262,28 @@ void AddVertsForArrow2D( std::vector<Vertex>& verts, Vec2 const& startTail, Vec2
 void AddVertsForTriangle3D( std::vector<Vertex>& verts, Vec3 const& ccw0, Vec3 const& ccw1, Vec3 const& ccw2, Rgba8 const& color,
 							Vec2 const& uv0, Vec2 const& uv1, Vec2 const& uv2 )
 {
-	Vec3 tangent = ( ccw1 - ccw0 ).GetNormalized();
-	Vec3 bitangent = ( ccw2 - ccw0 ).GetNormalized();
+	Vec3 edge1 = ccw1 - ccw0;
+	Vec3 edge2 = ccw2 - ccw0;
+
+	Vec2 deltaUV1 = uv1 - uv0;
+	Vec2 deltaUV2 = uv2 - uv0;
+	float determinant = ( deltaUV1.x * deltaUV2.y ) - ( deltaUV2.x * deltaUV1.y );
+
+	Vec3 tangent;
+	Vec3 bitangent;
+
+	if ( determinant != 0.f )
+	{
+		float r = 1.f / determinant;
+		tangent = ( edge1 * deltaUV2.y - edge2 * deltaUV1.y ) * r;
+		bitangent = ( edge2 * deltaUV1.x - edge1 * deltaUV2.x ) * r;
+	}
+	else
+	{
+		tangent = edge1.GetNormalized();
+		bitangent = edge2.GetNormalized();
+	}
+
 	Vec3 normal = CrossProduct3D( tangent, bitangent ).GetNormalized();
 
 	verts.push_back( Vertex( ccw0, color, uv0, tangent, bitangent, normal ) );
@@ -273,12 +293,32 @@ void AddVertsForTriangle3D( std::vector<Vertex>& verts, Vec3 const& ccw0, Vec3 c
 
 
 //-----------------------------------------------------------------------------------------------
-void AddVertsForTriangle3D( std::vector<Vertex>& verts, std::vector<unsigned int>& indices, 
+void AddVertsForIndexedTriangle3D( std::vector<Vertex>& verts, std::vector<unsigned int>& indices, 
 						Vec3 const& ccw0, Vec3 const& ccw1, Vec3 const& ccw2, Rgba8 const& color,
 						Vec2 const& uv0, Vec2 const& uv1, Vec2 const& uv2 )
 {
-	Vec3 tangent = ( ccw1 - ccw0 ).GetNormalized();
-	Vec3 bitangent = ( ccw2 - ccw0 ).GetNormalized();
+	Vec3 edge1 = ccw1 - ccw0;
+	Vec3 edge2 = ccw2 - ccw0;
+
+	Vec2 deltaUV1 = uv1 - uv0;
+	Vec2 deltaUV2 = uv2 - uv0;
+	float determinant = ( deltaUV1.x * deltaUV2.y ) - ( deltaUV2.x * deltaUV1.y );
+
+	Vec3 tangent;
+	Vec3 bitangent;
+
+	if ( determinant != 0.f )
+	{
+		float r = 1.f / determinant;
+		tangent = ( edge1 * deltaUV2.y - edge2 * deltaUV1.y ) * r;
+		bitangent = ( edge2 * deltaUV1.x - edge1 * deltaUV2.x ) * r;
+	}
+	else
+	{
+		tangent = edge1.GetNormalized();
+		bitangent = edge2.GetNormalized();
+	}
+
 	Vec3 normal = CrossProduct3D( tangent, bitangent ).GetNormalized();
 
 	unsigned int baseIndex = static_cast<unsigned int>( verts.size() );
@@ -298,36 +338,84 @@ void AddVertsForQuad3D( std::vector<Vertex>& verts,
 						Vec3 const& bottomLeft, Vec3 const& bottomRight, Vec3 const& topRight, Vec3 const& topLeft, 
 						Rgba8 const& color, AABB2 const& UVs )
 {
-	Vec3 tangent = ( bottomRight - bottomLeft ).GetNormalized();
-	Vec3 bitangent = ( topLeft - bottomLeft ).GetNormalized();
+	Vec2 uvBottomLeft( UVs.m_mins.x, UVs.m_mins.y );
+	Vec2 uvBottomRight( UVs.m_maxs.x, UVs.m_mins.y );
+	Vec2 uvTopRight( UVs.m_maxs.x, UVs.m_maxs.y );
+	Vec2 uvTopLeft( UVs.m_mins.x, UVs.m_maxs.y );
+
+	Vec3 edge1 = bottomRight - bottomLeft;
+	Vec3 edge2 = topLeft - bottomLeft;
+
+	Vec2 deltaUV1 = uvBottomRight - uvBottomLeft;
+	Vec2 deltaUV2 = uvTopLeft - uvBottomLeft;
+	float determinant = ( deltaUV1.x * deltaUV2.y ) - ( deltaUV2.x * deltaUV1.y );
+
+	Vec3 tangent;
+	Vec3 bitangent;
+
+	if ( determinant != 0.f )
+	{
+		float r = 1.f / determinant;
+		tangent = ( edge1 * deltaUV2.y - edge2 * deltaUV1.y ) * r;
+		bitangent = ( edge2 * deltaUV1.x - edge1 * deltaUV2.x ) * r;
+	}
+	else
+	{
+		tangent = edge1.GetNormalized();
+		bitangent = edge2.GetNormalized();
+	}
+
 	Vec3 normal = CrossProduct3D( tangent, bitangent ).GetNormalized();
 
-	verts.push_back( Vertex( bottomLeft, color, Vec2( UVs.m_mins.x, UVs.m_mins.y ), tangent, bitangent, normal ) );
-	verts.push_back( Vertex( bottomRight, color, Vec2( UVs.m_maxs.x, UVs.m_mins.y ), tangent, bitangent, normal ) );
-	verts.push_back( Vertex( topRight, color, Vec2( UVs.m_maxs.x, UVs.m_maxs.y ), tangent, bitangent, normal ) );
-	verts.push_back( Vertex( bottomLeft, color, Vec2( UVs.m_mins.x, UVs.m_mins.y ), tangent, bitangent, normal ) );
-	verts.push_back( Vertex( topRight, color, Vec2( UVs.m_maxs.x, UVs.m_maxs.y ), tangent, bitangent, normal ) );
-	verts.push_back( Vertex( topLeft, color, Vec2( UVs.m_mins.x, UVs.m_maxs.y ), tangent, bitangent, normal ) );
+	verts.push_back( Vertex( bottomLeft, color, uvBottomLeft, tangent, bitangent, normal ) );
+	verts.push_back( Vertex( bottomRight, color, uvBottomRight, tangent, bitangent, normal ) );
+	verts.push_back( Vertex( topRight, color, uvTopRight, tangent, bitangent, normal ) );
+	verts.push_back( Vertex( bottomLeft, color, uvBottomLeft, tangent, bitangent, normal ) );
+	verts.push_back( Vertex( topRight, color, uvTopRight, tangent, bitangent, normal ) );
+	verts.push_back( Vertex( topLeft, color, uvTopLeft, tangent, bitangent, normal ) );
 }
 
 
 //-----------------------------------------------------------------------------------------------
-void AddVertsForQuad3D( std::vector<Vertex>& verts, std::vector<unsigned int>& indices,
+void AddVertsForIndexedQuad3D( std::vector<Vertex>& verts, std::vector<unsigned int>& indices,
 						Vec3 const& bottomLeft, Vec3 const& bottomRight, Vec3 const& topRight, Vec3 const& topLeft,
 						Rgba8 const& color, AABB2 const& UVs )
 {
-	Vec3 uBottom = bottomRight - bottomLeft;
-	Vec3 vRight = topLeft - bottomLeft;
-	Vec3 tangent = uBottom.GetNormalized();
-	Vec3 bitangent = vRight.GetNormalized();
-	Vec3 normal = CrossProduct3D( uBottom, vRight ).GetNormalized();
+	Vec2 uvBottomLeft( UVs.m_mins.x, UVs.m_mins.y );
+	Vec2 uvBottomRight( UVs.m_maxs.x, UVs.m_mins.y );
+	Vec2 uvTopRight( UVs.m_maxs.x, UVs.m_maxs.y );
+	Vec2 uvTopLeft( UVs.m_mins.x, UVs.m_maxs.y );
+
+	Vec3 edge1 = bottomRight - bottomLeft;
+	Vec3 edge2 = topLeft - bottomLeft;
+
+	Vec2 deltaUV1 = uvBottomRight - uvBottomLeft;
+	Vec2 deltaUV2 = uvTopLeft - uvBottomLeft;
+	float determinant = ( deltaUV1.x * deltaUV2.y ) - ( deltaUV2.x * deltaUV1.y );
+
+	Vec3 tangent;
+	Vec3 bitangent;
+
+	if ( determinant != 0.f )
+	{
+		float r = 1.f / determinant;
+		tangent = ( edge1 * deltaUV2.y - edge2 * deltaUV1.y ) * r;
+		bitangent = ( edge2 * deltaUV1.x - edge1 * deltaUV2.x ) * r;
+	}
+	else
+	{
+		tangent = edge1.GetNormalized();
+		bitangent = edge2.GetNormalized();
+	}
+
+	Vec3 normal = CrossProduct3D( tangent, bitangent ).GetNormalized();
 
 	unsigned int baseIndex = static_cast<unsigned int>( verts.size() );
 
-	verts.push_back( Vertex( bottomLeft, color, Vec2( UVs.m_mins.x, UVs.m_mins.y ), tangent, bitangent, normal ) );
-	verts.push_back( Vertex( bottomRight, color, Vec2( UVs.m_maxs.x, UVs.m_mins.y ), tangent, bitangent, normal ) );
-	verts.push_back( Vertex( topRight, color, Vec2( UVs.m_maxs.x, UVs.m_maxs.y ), tangent, bitangent, normal ) );
-	verts.push_back( Vertex( topLeft, color, Vec2( UVs.m_mins.x, UVs.m_maxs.y ), tangent, bitangent, normal ) );
+	verts.push_back( Vertex( bottomLeft, color, uvBottomLeft, tangent, bitangent, normal ) );
+	verts.push_back( Vertex( bottomRight, color, uvBottomRight, tangent, bitangent, normal ) );
+	verts.push_back( Vertex( topRight, color, uvTopRight, tangent, bitangent, normal ) );
+	verts.push_back( Vertex( topLeft, color, uvTopLeft, tangent, bitangent, normal ) );
 
 	indices.push_back( baseIndex + 0 );
 	indices.push_back( baseIndex + 1 );
@@ -357,6 +445,28 @@ void AddVertsForAABB3D( std::vector<Vertex>& verts, AABB3 const& bounds, Rgba8 c
 	AddVertsForQuad3D( verts, topRightFront, topLeftFront, topLeftBack, topRightBack, color, UVs );
 	AddVertsForQuad3D( verts, topLeftFront, bottomLeftFront, bottomLeftBack, topLeftBack, color, UVs );
 	AddVertsForQuad3D( verts, bottomRightFront, topRightFront, topRightBack, bottomRightBack, color, UVs );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void AddVertsForIndexedAABB3D( std::vector<Vertex>& verts, std::vector<unsigned int>& indices, AABB3 const& bounds, Rgba8 const& color, AABB2 const& UVs )
+{
+	Vec3 bottomLeftFront( bounds.m_mins.x, bounds.m_mins.y, bounds.m_mins.z );
+	Vec3 bottomRightFront( bounds.m_maxs.x, bounds.m_mins.y, bounds.m_mins.z );
+	Vec3 topRightFront( bounds.m_maxs.x, bounds.m_maxs.y, bounds.m_mins.z );
+	Vec3 topLeftFront( bounds.m_mins.x, bounds.m_maxs.y, bounds.m_mins.z );
+
+	Vec3 bottomLeftBack( bounds.m_mins.x, bounds.m_mins.y, bounds.m_maxs.z );
+	Vec3 bottomRightBack( bounds.m_maxs.x, bounds.m_mins.y, bounds.m_maxs.z );
+	Vec3 topRightBack( bounds.m_maxs.x, bounds.m_maxs.y, bounds.m_maxs.z );
+	Vec3 topLeftBack( bounds.m_mins.x, bounds.m_maxs.y, bounds.m_maxs.z );
+
+	AddVertsForIndexedQuad3D( verts, indices, bottomRightFront, bottomLeftFront, topLeftFront, topRightFront, color, UVs );
+	AddVertsForIndexedQuad3D( verts, indices, bottomLeftBack, bottomRightBack, topRightBack, topLeftBack, color, UVs );
+	AddVertsForIndexedQuad3D( verts, indices, bottomLeftFront, bottomRightFront, bottomRightBack, bottomLeftBack, color, UVs );
+	AddVertsForIndexedQuad3D( verts, indices, topRightFront, topLeftFront, topLeftBack, topRightBack, color, UVs );
+	AddVertsForIndexedQuad3D( verts, indices, topLeftFront, bottomLeftFront, bottomLeftBack, topLeftBack, color, UVs );
+	AddVertsForIndexedQuad3D( verts, indices, bottomRightFront, topRightFront, topRightBack, bottomRightBack, color, UVs );
 }
 
 
@@ -433,14 +543,12 @@ void AddVertsForSphere3D( std::vector<Vertex>& verts, Vec3 const& center, float 
 			Vec3 topLeft = center + Vec3::MakeFromPolarDegrees( topDegrees, leftDegrees, radius );
 			Vec3 topRight = center + Vec3::MakeFromPolarDegrees( topDegrees, rightDegrees, radius );
 
-			// Side-wrap UVs (cylindrical mapping)
-			float uMin = UVs.m_mins.x + ( UVs.m_maxs.x - UVs.m_mins.x ) * ( static_cast<float>( j ) / static_cast< float >( numSlices ) );
-			float uMax = UVs.m_mins.x + ( UVs.m_maxs.x - UVs.m_mins.x ) * ( static_cast<float>( j + 1 ) / static_cast< float >( numSlices ) );
+			float uMin = UVs.m_mins.x + ( UVs.m_maxs.x - UVs.m_mins.x ) * ( static_cast<float>( j ) / static_cast<float>( numSlices ) );
+			float uMax = UVs.m_mins.x + ( UVs.m_maxs.x - UVs.m_mins.x ) * ( static_cast<float>( j + 1 ) / static_cast<float>( numSlices ) );
 
 			float vTop = UVs.m_mins.y + ( UVs.m_maxs.y - UVs.m_mins.y ) * ( ( topLeft.z - center.z + radius ) / ( 2.f * radius ) );
 			float vBottom = UVs.m_mins.y + ( UVs.m_maxs.y - UVs.m_mins.y ) * ( ( bottomLeft.z - center.z + radius ) / ( 2.f * radius ) );
 
-			// Cap UVs: project to the largest inscribed circle in UV rect
 			Vec3 localTopLeft = topLeft - center;
 			Vec3 localTopRight = topRight - center;
 			Vec3 localBottomLeft = bottomLeft - center;
@@ -465,6 +573,73 @@ void AddVertsForSphere3D( std::vector<Vertex>& verts, Vec3 const& center, float 
 			else
 			{
 				AddVertsForQuad3D( verts, bottomLeft, bottomRight, topRight, topLeft, color, AABB2( Vec2( uMin, vBottom ), Vec2( uMax, vTop ) ) );
+			}
+		}
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void AddVertsForIndexedSphere3D( std::vector<Vertex>& verts, std::vector<unsigned int>& indices, Vec3 const& center, float radius, Rgba8 const& color,
+	AABB2 const& UVs, int numSlices, int numStacks )
+{
+	if ( numSlices <= 0 || numStacks <= 0 || radius <= 0.f )
+	{
+		return;
+	}
+
+	float degreesPerStack = 180.f / static_cast< float >( numStacks );
+	float degreesPerSlice = 360.f / static_cast< float >( numSlices );
+
+	float uCenter = 0.5f * ( UVs.m_mins.x + UVs.m_maxs.x );
+	float vCenter = 0.5f * ( UVs.m_mins.y + UVs.m_maxs.y );
+	float uHalf = 0.5f * ( UVs.m_maxs.x - UVs.m_mins.x );
+	float vHalf = 0.5f * ( UVs.m_maxs.y - UVs.m_mins.y );
+
+	for ( int i = 0; i < numStacks; ++i )
+	{
+		for ( int j = 0; j < numSlices; ++j )
+		{
+			float leftDegrees = degreesPerSlice * static_cast<float>( j );
+			float rightDegrees = degreesPerSlice * static_cast<float>( j + 1 );
+			float topDegrees = degreesPerStack * static_cast<float>( i ) - 90.f;
+			float bottomDegrees = degreesPerStack * static_cast<float>( i + 1 ) - 90.f;
+
+			Vec3 bottomLeft = center + Vec3::MakeFromPolarDegrees( bottomDegrees, leftDegrees, radius );
+			Vec3 bottomRight = center + Vec3::MakeFromPolarDegrees( bottomDegrees, rightDegrees, radius );
+			Vec3 topLeft = center + Vec3::MakeFromPolarDegrees( topDegrees, leftDegrees, radius );
+			Vec3 topRight = center + Vec3::MakeFromPolarDegrees( topDegrees, rightDegrees, radius );
+
+			float uMin = UVs.m_mins.x + ( UVs.m_maxs.x - UVs.m_mins.x ) * ( static_cast<float>( j ) / static_cast<float>( numSlices ) );
+			float uMax = UVs.m_mins.x + ( UVs.m_maxs.x - UVs.m_mins.x ) * ( static_cast<float>( j + 1 ) / static_cast<float>( numSlices ) );
+
+			float vTop = UVs.m_mins.y + ( UVs.m_maxs.y - UVs.m_mins.y ) * ( ( topLeft.z - center.z + radius ) / ( 2.f * radius ) );
+			float vBottom = UVs.m_mins.y + ( UVs.m_maxs.y - UVs.m_mins.y ) * ( ( bottomLeft.z - center.z + radius ) / ( 2.f * radius ) );
+
+			Vec3 localTopLeft = topLeft - center;
+			Vec3 localTopRight = topRight - center;
+			Vec3 localBottomLeft = bottomLeft - center;
+			Vec3 localBottomRight = bottomRight - center;
+
+			Vec2 uvPole( uCenter, vCenter );
+			Vec2 uvTopLeft( uCenter + ( localTopLeft.x / radius ) * uHalf, vCenter + ( localTopLeft.y / radius ) * vHalf );
+			Vec2 uvTopRight( uCenter + ( localTopRight.x / radius ) * uHalf, vCenter + ( localTopRight.y / radius ) * vHalf );
+			Vec2 uvBottomLeft( uCenter + ( localBottomLeft.x / radius ) * uHalf, vCenter + ( localBottomLeft.y / radius ) * vHalf );
+			Vec2 uvBottomRight( uCenter + ( localBottomRight.x / radius ) * uHalf, vCenter + ( localBottomRight.y / radius ) * vHalf );
+
+			if ( i == 0 )
+			{
+				Vec3 pole = topLeft;
+				AddVertsForIndexedTriangle3D( verts, indices, pole, bottomLeft, bottomRight, color, uvPole, uvBottomLeft, uvBottomRight );
+			}
+			else if ( i == numStacks - 1 )
+			{
+				Vec3 pole = bottomLeft;
+				AddVertsForIndexedTriangle3D( verts, indices, pole, topRight, topLeft, color, uvPole, uvTopRight, uvTopLeft );
+			}
+			else
+			{
+				AddVertsForIndexedQuad3D( verts, indices, bottomLeft, bottomRight, topRight, topLeft, color, AABB2( Vec2( uMin, vBottom ), Vec2( uMax, vTop ) ) );
 			}
 		}
 	}
@@ -639,9 +814,9 @@ void AddvertsForXYGrid3D( std::vector<Vertex>& verts, Vec3 const& center, float 
 
 //-----------------------------------------------------------------------------------------------
 void AddVertsForCylinderZ3D( std::vector<Vertex>& verts, Vec3 const& start, Vec3 const& end, float radius, Rgba8 const& color,
-							AABB2 const& UVs, int numSlices )
+							AABB2 const& UVs, int numSides )
 {
-	if ( numSlices <= 0 || radius <= 0.f || start == end )
+	if ( numSides <= 0 || radius <= 0.f || start == end )
 	{
 		return;
 	}
@@ -669,10 +844,10 @@ void AddVertsForCylinderZ3D( std::vector<Vertex>& verts, Vec3 const& start, Vec3
 	float uHalf = 0.5f * ( UVs.m_maxs.x - UVs.m_mins.x );
 	float vHalf = 0.5f * ( UVs.m_maxs.y - UVs.m_mins.y );
 
-	for ( int sliceIndex = 0; sliceIndex < numSlices; ++sliceIndex )
+	for ( int sliceIndex = 0; sliceIndex < numSides; ++sliceIndex )
 	{
-		float tA = static_cast< float >( sliceIndex ) / static_cast< float >( numSlices );
-		float tB = static_cast< float >( sliceIndex + 1 ) / static_cast< float >( numSlices );
+		float tA = static_cast<float>( sliceIndex ) / static_cast<float>( numSides );
+		float tB = static_cast<float>( sliceIndex + 1 ) / static_cast<float>( numSides );
 		float degreesA = 360.f * tA;
 		float degreesB = 360.f * tB;
 
@@ -702,10 +877,72 @@ void AddVertsForCylinderZ3D( std::vector<Vertex>& verts, Vec3 const& start, Vec3
 
 
 //-----------------------------------------------------------------------------------------------
-void AddVertsForCylinderZWireframe3D( std::vector<Vertex>& verts, Vec3 const& start, Vec3 const& end, float radius, Rgba8 const& color,
-	int numSlices )
+void AddVertsForIndexedCylinderZ3D( std::vector<Vertex>& verts, std::vector<unsigned int>& indices, Vec3 const& start, Vec3 const& end, float radius, Rgba8 const& color, AABB2 const& UVs, int numSides )
 {
-	if ( numSlices <= 0 || radius <= 0.f || start == end )
+	if ( numSides <= 0 || radius <= 0.f || start == end )
+	{
+		return;
+	}
+
+	Vec3 lookAtForwardI = ( end - start ).GetNormalized();
+	Vec3 lookAtLeftJ;
+	Vec3 lookAtUpK;
+
+	Vec3 worldZAxis( 0.f, 0.f, 1.f );
+	Vec3 worldYAxis( 0.f, 1.f, 0.f );
+
+	if ( abs( DotProduct3D( lookAtForwardI, worldZAxis ) ) < 0.99999f )
+	{
+		lookAtLeftJ = CrossProduct3D( worldZAxis, lookAtForwardI ).GetNormalized();
+		lookAtUpK = CrossProduct3D( lookAtForwardI, lookAtLeftJ ).GetNormalized();
+	}
+	else
+	{
+		lookAtUpK = CrossProduct3D( lookAtForwardI, worldYAxis ).GetNormalized();
+		lookAtLeftJ = CrossProduct3D( lookAtUpK, lookAtForwardI ).GetNormalized();
+	}
+
+	float uCenter = 0.5f * ( UVs.m_mins.x + UVs.m_maxs.x );
+	float vCenter = 0.5f * ( UVs.m_mins.y + UVs.m_maxs.y );
+	float uHalf = 0.5f * ( UVs.m_maxs.x - UVs.m_mins.x );
+	float vHalf = 0.5f * ( UVs.m_maxs.y - UVs.m_mins.y );
+
+	for ( int sliceIndex = 0; sliceIndex < numSides; ++sliceIndex )
+	{
+		float tA = static_cast<float>( sliceIndex ) / static_cast<float>( numSides );
+		float tB = static_cast<float>( sliceIndex + 1 ) / static_cast<float>( numSides );
+		float degreesA = 360.f * tA;
+		float degreesB = 360.f * tB;
+
+		Vec3 left = radius * CosDegrees( degreesA ) * lookAtLeftJ + radius * SinDegrees( degreesA ) * lookAtUpK;
+		Vec3 right = radius * CosDegrees( degreesB ) * lookAtLeftJ + radius * SinDegrees( degreesB ) * lookAtUpK;
+
+		Vec3 bottomLeft = start + left;
+		Vec3 bottomRight = start + right;
+		Vec3 topLeft = end + left;
+		Vec3 topRight = end + right;
+
+		float uMin = UVs.m_mins.x + ( UVs.m_maxs.x - UVs.m_mins.x ) * tA;
+		float uMax = UVs.m_mins.x + ( UVs.m_maxs.x - UVs.m_mins.x ) * tB;
+		float vMin = UVs.m_mins.y;
+		float vMax = UVs.m_maxs.y;
+
+		AddVertsForIndexedQuad3D( verts, indices, bottomLeft, bottomRight, topRight, topLeft, color, AABB2( Vec2( uMin, vMin ), Vec2( uMax, vMax ) ) );
+
+		Vec2 uvLeft( uCenter + uHalf * CosDegrees( degreesA ), vCenter + vHalf * SinDegrees( degreesA ) );
+		Vec2 uvRight( uCenter + uHalf * CosDegrees( degreesB ), vCenter + vHalf * SinDegrees( degreesB ) );
+		Vec2 uvCenter( uCenter, vCenter );
+
+		AddVertsForIndexedTriangle3D( verts, indices, start, bottomRight, bottomLeft, color, uvCenter, uvRight, uvLeft );
+		AddVertsForIndexedTriangle3D( verts, indices, end, topLeft, topRight, color, uvCenter, uvLeft, uvRight );
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void AddVertsForCylinderZWireframe3D( std::vector<Vertex>& verts, Vec3 const& start, Vec3 const& end, float radius, Rgba8 const& color, int numSides )
+{
+	if ( numSides <= 0 || radius <= 0.f || start == end )
 	{
 		return;
 	}
@@ -741,10 +978,10 @@ void AddVertsForCylinderZWireframe3D( std::vector<Vertex>& verts, Vec3 const& st
 		thickness = 0.01f;
 	}
 
-	for ( int sliceIndex = 0; sliceIndex < numSlices; ++sliceIndex )
+	for ( int sliceIndex = 0; sliceIndex < numSides; ++sliceIndex )
 	{
-		float tA = static_cast< float >( sliceIndex ) / static_cast< float >( numSlices );
-		float tB = static_cast< float >( sliceIndex + 1 ) / static_cast< float >( numSlices );
+		float tA = static_cast<float>( sliceIndex ) / static_cast<float>( numSides );
+		float tB = static_cast<float>( sliceIndex + 1 ) / static_cast<float>( numSides );
 		float degreesA = 360.f * tA;
 		float degreesB = 360.f * tB;
 
@@ -768,10 +1005,10 @@ void AddVertsForCylinderZWireframe3D( std::vector<Vertex>& verts, Vec3 const& st
 
 
 //-----------------------------------------------------------------------------------------------
-void AddVertsForCone3D( std::vector<Vertex>& verts, Vec3 const& start, Vec3 const& end, float baseRadius, Rgba8 const& color,
+void AddVertsForCone3D( std::vector<Vertex>& verts, Vec3 const& start, Vec3 const& end, float radius, Rgba8 const& color,
 						AABB2 const& UVs, int numSlices )
 {
-	if ( numSlices <= 0 || baseRadius <= 0.f || start == end )
+	if ( numSlices <= 0 || radius <= 0.f || start == end )
 	{
 		return;
 	}
@@ -806,8 +1043,8 @@ void AddVertsForCone3D( std::vector<Vertex>& verts, Vec3 const& start, Vec3 cons
 		float degreesA = 360.f * tA;
 		float degreesB = 360.f * tB;
 
-		Vec3 left = baseRadius * CosDegrees( degreesA ) * lookAtLeftJ + baseRadius * SinDegrees( degreesA ) * lookAtUpK;
-		Vec3 right = baseRadius * CosDegrees( degreesB ) * lookAtLeftJ + baseRadius * SinDegrees( degreesB ) * lookAtUpK;
+		Vec3 left = radius * CosDegrees( degreesA ) * lookAtLeftJ + radius * SinDegrees( degreesA ) * lookAtUpK;
+		Vec3 right = radius * CosDegrees( degreesB ) * lookAtLeftJ + radius * SinDegrees( degreesB ) * lookAtUpK;
 
 		Vec3 baseLeft = start + left;
 		Vec3 baseRight = start + right;
@@ -823,6 +1060,65 @@ void AddVertsForCone3D( std::vector<Vertex>& verts, Vec3 const& start, Vec3 cons
 		Vec2 uvCenter( uCenter, vCenter );
 
 		AddVertsForTriangle3D( verts, start, baseRight, baseLeft, color, uvCenter, uvRight, uvLeft );
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void AddVertsForIndexedCone3D( std::vector<Vertex>& verts, std::vector<unsigned int>& indices, Vec3 const& start, Vec3 const& end, float radius, Rgba8 const& color, AABB2 const& UVs, int numSlices )
+{
+	if ( numSlices <= 0 || radius <= 0.f || start == end )
+	{
+		return;
+	}
+
+	Vec3 lookAtForwardI = ( end - start ).GetNormalized();
+	Vec3 lookAtLeftJ;
+	Vec3 lookAtUpK;
+
+	Vec3 worldZAxis( 0.f, 0.f, 1.f );
+	Vec3 worldYAxis( 0.f, 1.f, 0.f );
+
+	if ( abs( DotProduct3D( lookAtForwardI, worldZAxis ) ) < 0.99999f )
+	{
+		lookAtLeftJ = CrossProduct3D( worldZAxis, lookAtForwardI ).GetNormalized();
+		lookAtUpK = CrossProduct3D( lookAtForwardI, lookAtLeftJ ).GetNormalized();
+	}
+	else
+	{
+		lookAtUpK = CrossProduct3D( lookAtForwardI, worldYAxis ).GetNormalized();
+		lookAtLeftJ = CrossProduct3D( lookAtUpK, lookAtForwardI ).GetNormalized();
+	}
+
+	float uCenter = 0.5f * ( UVs.m_mins.x + UVs.m_maxs.x );
+	float vCenter = 0.5f * ( UVs.m_mins.y + UVs.m_maxs.y );
+	float uHalf = 0.5f * ( UVs.m_maxs.x - UVs.m_mins.x );
+	float vHalf = 0.5f * ( UVs.m_maxs.y - UVs.m_mins.y );
+
+	for ( int sliceIndex = 0; sliceIndex < numSlices; ++sliceIndex )
+	{
+		float tA = static_cast< float >( sliceIndex ) / static_cast< float >( numSlices );
+		float tB = static_cast< float >( sliceIndex + 1 ) / static_cast< float >( numSlices );
+		float degreesA = 360.f * tA;
+		float degreesB = 360.f * tB;
+
+		Vec3 left = radius * CosDegrees( degreesA ) * lookAtLeftJ + radius * SinDegrees( degreesA ) * lookAtUpK;
+		Vec3 right = radius * CosDegrees( degreesB ) * lookAtLeftJ + radius * SinDegrees( degreesB ) * lookAtUpK;
+
+		Vec3 baseLeft = start + left;
+		Vec3 baseRight = start + right;
+
+		float uMin = UVs.m_mins.x + ( UVs.m_maxs.x - UVs.m_mins.x ) * tA;
+		float uMax = UVs.m_mins.x + ( UVs.m_maxs.x - UVs.m_mins.x ) * tB;
+		float uTip = 0.5f * ( uMin + uMax );
+
+		AddVertsForIndexedTriangle3D( verts, indices, end, baseLeft, baseRight, color, Vec2( uTip, UVs.m_maxs.y ), Vec2( uMin, UVs.m_mins.y ), Vec2( uMax, UVs.m_mins.y ) );
+
+		Vec2 uvLeft( uCenter + uHalf * CosDegrees( degreesA ), vCenter + vHalf * SinDegrees( degreesA ) );
+		Vec2 uvRight( uCenter + uHalf * CosDegrees( degreesB ), vCenter + vHalf * SinDegrees( degreesB ) );
+		Vec2 uvCenter( uCenter, vCenter );
+
+		AddVertsForIndexedTriangle3D( verts, indices, start, baseRight, baseLeft, color, uvCenter, uvRight, uvLeft );
 	}
 }
 
@@ -910,6 +1206,28 @@ void AddVertsForArrow3D( std::vector<Vertex>& verts, Vec3 const& start, Vec3 con
 
 
 //-----------------------------------------------------------------------------------------------
+void AddVertsForIndexedArrow3D( std::vector<Vertex>& verts, std::vector<unsigned int>& indices, Vec3 const& start, Vec3 const& end, float radius, Rgba8 const& color, int numSlices )
+{
+	if ( numSlices <= 0 || radius <= 0.f || start == end )
+	{
+		return;
+	}
+
+	Vec3 direction = end - start;
+	float totalLength = direction.GetLength();
+	Vec3 forward = direction / totalLength;
+
+	float headLength = 0.25f * totalLength;
+	float headRadius = 1.75f * radius;
+
+	Vec3 shaftEnd = end - ( forward * headLength );
+
+	AddVertsForIndexedCylinderZ3D( verts, indices, start, shaftEnd, radius, color, AABB2::ZERO_TO_ONE, numSlices );
+	AddVertsForIndexedCone3D( verts, indices, shaftEnd, end, headRadius, color, AABB2::ZERO_TO_ONE, numSlices );
+}
+
+
+//-----------------------------------------------------------------------------------------------
 void AddVertsForLineSegment3D( std::vector<Vertex>& verts, Vec3 const& start, Vec3 const& end, float thickness, Rgba8 const& color )
 {
 	if ( thickness <= 0.f || start == end )
@@ -959,20 +1277,68 @@ void AddVertsForLineSegment3D( std::vector<Vertex>& verts, Vec3 const& start, Ve
 
 
 //-----------------------------------------------------------------------------------------------
+void AddVertsForIndexedLineSegment3D( std::vector<Vertex>& verts, std::vector<unsigned int>& indices, Vec3 const& start, Vec3 const& end, float thickness, Rgba8 const& color )
+{
+	if ( thickness <= 0.f || start == end )
+	{
+		return;
+	}
+
+	Vec3 forward = ( end - start ).GetNormalized();
+	Vec3 left;
+	Vec3 up;
+
+	Vec3 worldZAxis( 0.f, 0.f, 1.f );
+	Vec3 worldYAxis( 0.f, 1.f, 0.f );
+
+	if ( abs( DotProduct3D( forward, worldZAxis ) ) < 0.99999f )
+	{
+		left = CrossProduct3D( worldZAxis, forward ).GetNormalized();
+		up = CrossProduct3D( forward, left ).GetNormalized();
+	}
+	else
+	{
+		up = CrossProduct3D( forward, worldYAxis ).GetNormalized();
+		left = CrossProduct3D( up, forward ).GetNormalized();
+	}
+
+	float halfThickness = 0.5f * thickness;
+	Vec3 leftOffset = left * halfThickness;
+	Vec3 upOffset = up * halfThickness;
+
+	Vec3 startBottomLeft = start - leftOffset - upOffset;
+	Vec3 startBottomRight = start + leftOffset - upOffset;
+	Vec3 startTopRight = start + leftOffset + upOffset;
+	Vec3 startTopLeft = start - leftOffset + upOffset;
+
+	Vec3 endBottomLeft = end - leftOffset - upOffset;
+	Vec3 endBottomRight = end + leftOffset - upOffset;
+	Vec3 endTopRight = end + leftOffset + upOffset;
+	Vec3 endTopLeft = end - leftOffset + upOffset;
+
+	AddVertsForIndexedQuad3D( verts, indices, startBottomRight, startBottomLeft, startTopLeft, startTopRight, color );
+	AddVertsForIndexedQuad3D( verts, indices, endBottomLeft, endBottomRight, endTopRight, endTopLeft, color );
+	AddVertsForIndexedQuad3D( verts, indices, startBottomLeft, endBottomLeft, endTopLeft, startTopLeft, color );
+	AddVertsForIndexedQuad3D( verts, indices, endBottomRight, startBottomRight, startTopRight, endTopRight, color );
+	AddVertsForIndexedQuad3D( verts, indices, endTopLeft, endTopRight, startTopRight, startTopLeft, color );
+	AddVertsForIndexedQuad3D( verts, indices, startBottomLeft, startBottomRight, endBottomRight, endBottomLeft, color );
+}
+
+
+//-----------------------------------------------------------------------------------------------
 void AddVertsForOBB3D( std::vector<Vertex>& verts, OBB3 const& orientedBox, Rgba8 const& color )
 {
 	Vec3 corners[8];
 	orientedBox.GetCornerPoints( corners );
 
-	Vec3 const& backTopRight = corners[0];
-	Vec3 const& backTopLeft = corners[1];
-	Vec3 const& backBottomLeft = corners[2];
-	Vec3 const& backBottomRight = corners[3];
-
-	Vec3 const& frontTopRight = corners[4];
-	Vec3 const& frontTopLeft = corners[5];
-	Vec3 const& frontBottomLeft = corners[6];
-	Vec3 const& frontBottomRight = corners[7];
+	Vec3 const& frontTopRight = corners[0];
+	Vec3 const& frontTopLeft = corners[1];
+	Vec3 const& frontBottomLeft = corners[2];
+	Vec3 const& frontBottomRight = corners[3];
+	Vec3 const& backTopRight = corners[4];
+	Vec3 const& backTopLeft = corners[5];
+	Vec3 const& backBottomLeft = corners[6];
+	Vec3 const& backBottomRight = corners[7];
 
 	AABB2 const UVs = AABB2::ZERO_TO_ONE;
 
@@ -986,7 +1352,33 @@ void AddVertsForOBB3D( std::vector<Vertex>& verts, OBB3 const& orientedBox, Rgba
 
 
 //-----------------------------------------------------------------------------------------------
-void AddVertsForOBBWireframe3D( std::vector<Vertex>& verts, OBB3 const& orientedBox, Rgba8 const& color /* = Rgba8::WHITE */ )
+void AddVertsForIndexedOBB3D( std::vector<Vertex>& verts, std::vector<unsigned int>& indices, OBB3 const& orientedBox, Rgba8 const& color )
+{
+	Vec3 corners[8];
+	orientedBox.GetCornerPoints( corners );
+
+	Vec3 const& frontTopRight = corners[0];
+	Vec3 const& frontTopLeft = corners[1];
+	Vec3 const& frontBottomLeft = corners[2];
+	Vec3 const& frontBottomRight = corners[3];
+	Vec3 const& backTopRight = corners[4];
+	Vec3 const& backTopLeft = corners[5];
+	Vec3 const& backBottomLeft = corners[6];
+	Vec3 const& backBottomRight = corners[7];
+
+	AABB2 const UVs = AABB2::ZERO_TO_ONE;
+
+	AddVertsForIndexedQuad3D( verts, indices, frontBottomRight, frontBottomLeft, frontTopLeft, frontTopRight, color, UVs );
+	AddVertsForIndexedQuad3D( verts, indices, backBottomLeft, backBottomRight, backTopRight, backTopLeft, color, UVs );
+	AddVertsForIndexedQuad3D( verts, indices, frontBottomLeft, frontBottomRight, backBottomRight, backBottomLeft, color, UVs );
+	AddVertsForIndexedQuad3D( verts, indices, frontTopRight, frontTopLeft, backTopLeft, backTopRight, color, UVs );
+	AddVertsForIndexedQuad3D( verts, indices, frontTopLeft, frontBottomLeft, backBottomLeft, backTopLeft, color, UVs );
+	AddVertsForIndexedQuad3D( verts, indices, frontBottomRight, frontTopRight, backTopRight, backBottomRight, color, UVs );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void AddVertsForOBBWireframe3D( std::vector<Vertex>& verts, OBB3 const& orientedBox, Rgba8 const& color )
 {
 	Vec3 corners[8];
 	orientedBox.GetCornerPoints( corners );
@@ -1017,10 +1409,12 @@ void AddVertsForOBBWireframe3D( std::vector<Vertex>& verts, OBB3 const& oriented
 	AddVertsForLineSegment3D( verts, frontBottomRight, frontTopRight, thickness, color );
 	AddVertsForLineSegment3D( verts, frontTopRight, frontTopLeft, thickness, color );
 	AddVertsForLineSegment3D( verts, frontTopLeft, frontBottomLeft, thickness, color );
+
 	AddVertsForLineSegment3D( verts, backBottomLeft, backBottomRight, thickness, color );
 	AddVertsForLineSegment3D( verts, backBottomRight, backTopRight, thickness, color );
 	AddVertsForLineSegment3D( verts, backTopRight, backTopLeft, thickness, color );
 	AddVertsForLineSegment3D( verts, backTopLeft, backBottomLeft, thickness, color );
+
 	AddVertsForLineSegment3D( verts, frontBottomLeft, backBottomLeft, thickness, color );
 	AddVertsForLineSegment3D( verts, frontBottomRight, backBottomRight, thickness, color );
 	AddVertsForLineSegment3D( verts, frontTopRight, backTopRight, thickness, color );
