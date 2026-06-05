@@ -2,8 +2,9 @@
 
 
 //-----------------------------------------------------------------------------------------------
-ChessPiece::ChessPiece( ChessPieceDefinition const& definition )
+ChessPiece::ChessPiece( ChessPieceDefinition const& definition, bool isWhite /*= true*/ )
 	: m_definition( definition )
+	, m_isWhite( isWhite )
 {
 }
 

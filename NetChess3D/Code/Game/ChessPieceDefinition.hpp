@@ -1,4 +1,6 @@
 #pragma once
+#include <map>
+#include <string>
 
 
 //-----------------------------------------------------------------------------------------------
@@ -9,7 +11,8 @@ enum class ChessPieceType
 	KNIGHT,
 	BISHOP,
 	QUEEN,
-	KING
+	KING,
+	NUM_TYPES
 };
 
 
@@ -17,9 +20,13 @@ enum class ChessPieceType
 class ChessPieceDefinition
 {
 public:
-	ChessPieceDefinition();
-	~ChessPieceDefinition();
+	static std::map<std::string, ChessPieceDefinition*> s_definitions;
+
+	static void InitializeDefinitions();
+	static void ClearDefinitions();
+	static ChessPieceDefinition const* GetDefinitionByType( ChessPieceType type );
 
 public:
-	ChessPieceType m_type;
+	ChessPieceType m_type = ChessPieceType::PAWN;
+	char m_symbol = '?';
 };

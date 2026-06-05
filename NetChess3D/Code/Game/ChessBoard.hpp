@@ -16,6 +16,7 @@ public:
 
 	void Update() override;
 	void Render() const override;
+	void Reset();
 
 public:
 	ChessPiece* m_squares[8][8] = { nullptr };
