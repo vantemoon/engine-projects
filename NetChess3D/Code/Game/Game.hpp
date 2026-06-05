@@ -7,12 +7,12 @@
 
 
 //-----------------------------------------------------------------------------------------------
-class  Camera;     // Forward declaration
-class  Entity;     // Forward declaration
-class  Player;     // Forward declaration
-class  Prop;       // Forward declaration
-struct Vec3;       // Forward declaration
-struct Vertex;     // Forward declaration
+class  Camera;
+class  Entity;
+class  Player;
+class  Prop;  
+struct Vec3;  
+struct Vertex;
 
 
 //-----------------------------------------------------------------------------------------------
@@ -21,15 +21,10 @@ class Game
 public:
 	std::vector<Entity*> m_entities;
 	Player*		m_player = nullptr;
-
 	Camera*     m_screenCamera = nullptr;
-
 	GameState   m_currentGameState;
-
 	bool        m_isDebugFeaturesOn = false;
-
 	Clock*		m_gameClock = nullptr;
-
 	bool        m_hasControlsBeenShown = false;
 
 public:
