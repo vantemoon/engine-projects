@@ -21,16 +21,8 @@ class Game
 public:
 	std::vector<Entity*> m_entities;
 	Player*		m_player = nullptr;
-	Prop*		m_cube1 = nullptr;
-	Prop*		m_cube2 = nullptr;
-	Prop*		m_sphere = nullptr;
 
 	Camera*     m_screenCamera = nullptr;
-
-	bool        m_isScreenShaking = false;
-	float	    m_screenShakeIntensity = 0.f;
-	float       m_screenShakeDuration = 0.f;
-	float       m_screenShakeStartTime = 0.f;
 
 	GameState   m_currentGameState;
 
@@ -50,7 +42,6 @@ public:
 	void UpdateEntities();
 	void UpdateFromKeyboard();
 	void UpdateFromController();
-	void ScreenShake( float intensity );
 	void Render()													  const;
 	void RenderEntities()											  const;
 	void RenderHUD()												  const;

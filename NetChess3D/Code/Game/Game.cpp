@@ -64,59 +64,6 @@ void Game::Startup()
 	player->m_position = Vec3( -2.f, 0.f, 1.f );
 	m_entities.push_back( player );
 	m_player = player;
-
-	Prop* cube1 = new Prop( this );
-	cube1->m_position = Vec3( 2.f, 2.f, 0.f );
-	AddVertsForCube( cube1->m_verts, 1.f );
-	m_entities.push_back( cube1 );
-	m_cube1 = cube1;
-
-	Prop* cube2 = new Prop( this );
-	cube2->m_position = Vec3( -2.f, -2.f, 0.f );
-	AddVertsForCube( cube2->m_verts, 1.f );
-	m_entities.push_back( cube2 );
-	m_cube2 = cube2;
-
-	Prop* sphere = new Prop( this );
-	sphere->m_position = Vec3( 10.f, -5.f, 1.f );
-	sphere->m_texture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/TestUV.png" );
-	AddVertsForSphere3D( sphere->m_verts, Vec3::ZERO, 1.f, Rgba8::WHITE, AABB2::ZERO_TO_ONE, 32, 16 );
-	m_entities.push_back( sphere );
-	m_sphere = sphere;
-
-	Prop* grid = new Prop( this );
-	grid->m_position = Vec3( 0.f, 0.f, 0.f );
-	AddvertsForXYGrid3D( grid->m_verts, Vec3::ZERO, 1.f, 100, 100 );
-	m_entities.push_back( grid );
-
-	DebugAddWorldBasis( Mat44(), -1.f, DebugRenderMode::USE_DEPTH );
-
-	float offset = 0.2f;
-
-	Mat44 xLabelTransform(
-		Vec3( 0.f, -1.f, 0.f ),
-		Vec3( 1.f, 0.f, 0.f ),
-		Vec3( 0.f, 0.f, 1.f ),
-		Vec3( 0.2f, 0.f, offset )
-	);
-
-	Mat44 yLabelTransform(
-		Vec3( -1.f, 0.f, 0.f ),
-		Vec3( 0.f, -1.f, 0.f ),
-		Vec3( 0.f, 0.f, 1.f ),
-		Vec3( 0.f, 1.8f, offset )
-	);
-
-	Mat44 zLabelTransform(
-		Vec3( -1.f, 0.f, 0.f ),
-		Vec3( 0.f, 0.f, -1.f ),
-		Vec3( 0.f, -1.f, 0.f ),
-		Vec3( 0.f, -offset, 1.4f )
-	);
-
-	DebugAddWorldText( "x - forward", xLabelTransform, 0.2f, Vec2( 0.0f, 0.0f ), -1, Rgba8::RED, Rgba8::RED );
-	DebugAddWorldText( "y - left", yLabelTransform, 0.2f, Vec2( 0.0f, 0.0f ), -1, Rgba8::GREEN, Rgba8::GREEN );
-	DebugAddWorldText( "z - up", zLabelTransform, 0.2f, Vec2( 0.0f, 0.0f ), -1, Rgba8::BLUE, Rgba8::BLUE );
 }
 
 
@@ -162,38 +109,6 @@ void Game::Update()
 	g_app->m_game->DeleteGarbageEntities();
 
 	m_screenCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) );
-
-	if ( m_isScreenShaking )
-	{
-		float shakeElapsedTime = ( float ) m_gameClock->GetTotalSeconds() - m_screenShakeStartTime;
-		if ( shakeElapsedTime < m_screenShakeDuration )
-		{
-			float t = shakeElapsedTime / m_screenShakeDuration;
-			float currentIntensity = m_screenShakeIntensity * ( 1.f - t );
-			ScreenShake( currentIntensity );
-		}
-		else
-		{
-			m_isScreenShaking = false;
-			m_screenShakeIntensity = 0.f;
-			m_screenShakeDuration = 0.f;
-			m_screenShakeStartTime = 0.f;
-			m_player->m_playerCamera->SetPerspectiveView( g_engine->m_window->m_config.m_clientAspect, 60.f, 0.1f, 100.f );
-		}
-	}
-}
-
-
-//-----------------------------------------------------------------------------------------------
-void Game::ScreenShake( float intensity )
-{
-	if ( m_player->m_playerCamera == nullptr || intensity <= 0.f )
-		return;
-
-	RandomNumberGenerator rng;
-	float offsetX = rng.RollRandomFloatInRange( -intensity, intensity );
-	float offsetY = rng.RollRandomFloatInRange( -intensity, intensity );
-	m_player->m_playerCamera->Translate2D( Vec2( offsetX, offsetY ) );
 }
 
 
@@ -225,72 +140,6 @@ void Game::UpdateFromKeyboard()
 	}
 	else
 	{
-		// 1
-		if ( g_engine->m_inputSystem->WasKeyJustPressed( '1' ) )
-		{
-			Vec3 start = m_player->m_position;
-			Vec3 forward = m_player->m_orientation.GetForwardDir_IFwd_JLeft_KUp();
-			Vec3 end = start + forward * 20.f;
-			DebugAddWorldCylinder( start, end, 0.0625f, 10.f, Rgba8::YELLOW, Rgba8::YELLOW, DebugRenderMode::X_RAY );
-		}
-
-		// 2
-		if ( g_engine->m_inputSystem->IsKeyDown( '2' ) )
-		{
-			Vec3 center = Vec3( m_player->m_position.x, m_player->m_position.y, 0.f );
-			DebugAddWorldSphere( center, 0.25f, 60.f, Rgba8( 150, 75, 0 ), Rgba8( 150, 75, 0 ), DebugRenderMode::USE_DEPTH );
-		}
-
-		// 3
-		if ( g_engine->m_inputSystem->WasKeyJustPressed( '3' ) )
-		{
-			Vec3 center = m_player->m_position;
-			Vec3 forward = m_player->m_orientation.GetForwardDir_IFwd_JLeft_KUp();
-			center += forward * 2.f;
-			DebugAddWorldWireSphere( center, 1.f, 5.f, Rgba8::GREEN, Rgba8::RED, DebugRenderMode::USE_DEPTH );
-		}
-
-		// 4
-		if ( g_engine->m_inputSystem->WasKeyJustPressed( '4' ) )
-		{
-			DebugAddBasis( m_player->GetModelToWorldTransform(), 20.f, 1.f, 0.08f, 1.f, 1.f, DebugRenderMode::USE_DEPTH );
-		}
-
-		// 5
-		if ( g_engine->m_inputSystem->WasKeyJustPressed( '5' ) )
-		{
-			std::string debugText = Stringf(
-				"Position: %.2f, %.2f, %.2f\nOrientation: %.1f, %.1f, %.1f",
-				m_player->m_position.x, m_player->m_position.y, m_player->m_position.z,
-				m_player->m_orientation.m_yawDegrees, m_player->m_orientation.m_pitchDegrees, m_player->m_orientation.m_rollDegrees );
-			Vec3 textPosition = m_player->m_position + m_player->m_orientation.GetForwardDir_IFwd_JLeft_KUp() * 2.f;
-
-			DebugAddWorldBillboardText( debugText, textPosition, 0.125f, Vec2( 0.5f, 0.5f ), 10.f, Rgba8::WHITE, Rgba8::RED );
-		}
-
-		// 6
-		if ( g_engine->m_inputSystem->WasKeyJustPressed( '6' ) )
-		{
-			Vec3 start = m_player->m_position;
-			Vec3 end = start + Vec3( 0.f, 0.f, 1.f );
-			DebugAddWorldWireCylinder( start, end, 0.5f, 10.f, Rgba8::WHITE, Rgba8::RED, DebugRenderMode::USE_DEPTH );
-		}
-
-		// 7 
-		if ( g_engine->m_inputSystem->WasKeyJustPressed( '7' ) )
-		{
-			EulerAngles cameraOrientation = m_player->m_playerCamera->GetOrientation();
-			float yaw = cameraOrientation.m_yawDegrees;
-			float pitch = cameraOrientation.m_pitchDegrees;
-			float roll = cameraOrientation.m_rollDegrees;
-
-			std::string debugText = Stringf(
-				"Camera Orientation: %.2f, %.2f, %.2f",
-				yaw, pitch, roll );
-
-			DebugAddMessage( debugText, 5.f );
-		}
-
 		// Return to attract mode
 		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_ESCAPE ) )
 		{
@@ -370,26 +219,6 @@ void Game::UpdateFromController()
 //-----------------------------------------------------------------------------------------------
 void Game::UpdateEntities()
 {
-	float deltaSeconds = ( float ) m_gameClock->GetDeltaSeconds();
-	float time = ( float ) m_gameClock->GetTotalSeconds();
-
-	if (m_cube1 != nullptr ) // Cube 1
-	{
-		m_entities[1]->m_orientation.m_rollDegrees += 30.f * deltaSeconds;
-		m_entities[1]->m_orientation.m_pitchDegrees += 30.f * deltaSeconds;
-	}
-
-	if ( m_cube2 != nullptr ) // Cube 2
-	{
-		float fraction = ( float ) ( sin( time * M_PI ) + 1.f ) / 2.f;
-		m_entities[2]->m_color = Rgba8::WHITE.Interpolate( Rgba8::WHITE, Rgba8::BLACK, fraction );
-	}
-
-	if ( m_sphere != nullptr ) // Sphere
-	{
-		m_entities[3]->m_orientation.m_yawDegrees += 45.f * deltaSeconds;
-	}
-
 	for ( Entity* entity : m_entities )
 	{
 		entity->Update( ( float ) m_gameClock->GetDeltaSeconds() );
@@ -557,7 +386,6 @@ void Game::Reset()
 {
 	m_entities.clear();
 	Startup();
-	m_isScreenShaking = false;
 	m_isDebugFeaturesOn = false;
 }
 
