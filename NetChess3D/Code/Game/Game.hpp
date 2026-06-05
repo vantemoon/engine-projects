@@ -8,6 +8,7 @@
 
 //-----------------------------------------------------------------------------------------------
 class  Camera;
+class  ChessMatch;
 class  Entity;
 class  Player;
 class  Prop;  
@@ -26,6 +27,8 @@ public:
 	bool        m_isDebugFeaturesOn = false;
 	Clock*		m_gameClock = nullptr;
 	bool        m_hasControlsBeenShown = false;
+
+	ChessMatch* m_chessMatch = nullptr;
 
 public:
 	Game();

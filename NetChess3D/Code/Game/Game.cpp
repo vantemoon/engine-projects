@@ -1,5 +1,6 @@
 #include "Game/Game.hpp"
 #include "Game/App.hpp"
+#include "Game/ChessMatch.hpp"
 #include "Game/Entity.hpp"
 #include "Game/GameCommon.hpp"
 #include "Game/Player.hpp"
@@ -64,6 +65,8 @@ void Game::Startup()
 	player->m_position = Vec3( -2.f, 0.f, 1.f );
 	m_entities.push_back( player );
 	m_player = player;
+
+	m_chessMatch = new ChessMatch();
 }
 
 
