@@ -23,6 +23,7 @@ public:
 
 	bool IsWhitePlayerTurn() const;
 	void SwitchPlayerTurn();
+	static std::string GetPlayerName( bool isWhite );
 
 	static bool Command_MovePiece( EventArgs& args );
 	void MovePiece( ChessPiece* piece, IntVec2 const& from, IntVec2 const& to );

@@ -28,5 +28,6 @@ public:
 
 public:
 	ChessPieceType m_type = ChessPieceType::PAWN;
+	std::string m_name = "Unknown";
 	char m_symbol = '?';
 };

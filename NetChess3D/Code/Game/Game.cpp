@@ -391,9 +391,11 @@ bool Game::IsOnScreen( Vec2 const& worldPosition, float cosmeticRadius ) const
 //-----------------------------------------------------------------------------------------------
 void Game::Reset()
 {
+	g_engine->m_eventSystem->FireEvent( "Clear" );
 	m_entities.clear();
 	Startup();
 	m_isDebugFeaturesOn = false;
+	PrintBoardStateToDevConsole();
 }
 
 

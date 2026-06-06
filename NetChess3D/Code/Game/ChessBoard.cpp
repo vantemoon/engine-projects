@@ -120,12 +120,13 @@ void ChessBoard::Reset()
 
 
 //-----------------------------------------------------------------------------------------------
-IntVec2 ChessBoard::ParseSquareCoords( char const* text )
+IntVec2 ChessBoard::ParseSquareCoords( std::string const& text, std::string const& paramName )
 {
-	if ( text == nullptr || strlen( text ) < 2 )
+	if ( text.length() != 2 )
 	{
-		g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 255, 0, 0 ), "Error: Invalid square coordinates string: " + std::string( text ? text : "null" ) );
-		return IntVec2::ZERO;
+		g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 255, 0, 0 ), "Illegal \"" + paramName + "=\" square \"" + text + "\"; must be a two-letter [Column][Rank]" );
+		g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 255, 128, 0 ), "Examples:  E2, E4; A1 is bottom left and H8 is top-right" );
+		return IntVec2( -1, -1 );
 	}
 
 	char file = text[0];
@@ -140,8 +141,9 @@ IntVec2 ChessBoard::ParseSquareCoords( char const* text )
 
 	if ( col < 0 || col > 7 || row < 0 || row > 7 )
 	{
-		g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 255, 0, 0 ), "Error: Square coordinates out of bounds: " + std::string( text ) );
-		return IntVec2::ZERO;
+		g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 255, 0, 0 ), "Illegal \"" + paramName + "=\" square \"" + text + "\"; must be a two-letter [Column][Rank]" );
+		g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 255, 128, 0 ), " Examples:  E2, E4; A1 is bottom left and H8 is top-right" );
+		return IntVec2( -1, -1 );
 	}
 
 	return IntVec2( col, row );
@@ -152,6 +154,22 @@ IntVec2 ChessBoard::ParseSquareCoords( char const* text )
 void ChessBoard::MovePiece( ChessPiece* piece, IntVec2 const& from, IntVec2 const& to )
 {
 	if ( piece == nullptr ) return;
+
+	m_squares[from.y][from.x] = nullptr;
+	m_squares[to.y][to.x] = piece;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void ChessBoard::CapturePiece( ChessPiece* piece, IntVec2 const& from, IntVec2 const& to )
+{
+	if ( piece == nullptr ) return;
+
+	ChessPiece* capturedPiece = m_squares[to.y][to.x];
+	if ( capturedPiece )
+	{
+		capturedPiece->m_isCaptured = true;
+	}
 
 	m_squares[from.y][from.x] = nullptr;
 	m_squares[to.y][to.x] = piece;
