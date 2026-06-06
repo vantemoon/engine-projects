@@ -18,6 +18,8 @@ public:
 	void Render() const;
 	void Reset();
 
+	bool IsWhitePlayerTurn() const;
+
 public:
 	ChessBoard* m_board = nullptr;
 

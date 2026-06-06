@@ -2,7 +2,8 @@
 
 
 //-----------------------------------------------------------------------------------------------
-ChessPlayer::ChessPlayer()
+ChessPlayer::ChessPlayer( bool isWhite )
+	: m_isWhite( isWhite )
 {
 }
 

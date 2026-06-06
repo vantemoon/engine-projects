@@ -1,6 +1,8 @@
 #include "Game/Game.hpp"
 #include "Game/App.hpp"
+#include "Game/ChessBoard.hpp"
 #include "Game/ChessMatch.hpp"
+#include "Game/ChessPiece.hpp"
 #include "Game/Entity.hpp"
 #include "Game/GameCommon.hpp"
 #include "Game/Player.hpp"
@@ -43,6 +45,7 @@ Game::Game()
 
 	// Register console commands
 	g_engine->m_eventSystem->SubscribeEventCallbackFunction( "Controls", Command_Controls );
+	g_engine->m_eventSystem->SubscribeEventCallbackFunction( "PrintBoard", Command_PrintBoard );
 
 	Startup();
 }
@@ -86,7 +89,8 @@ void Game::Update()
 	if ( !m_hasControlsBeenShown )
 	{
 		g_engine->m_devConsole->ToggleMode( DevConsoleMode::OPEN_FULL );
-		AddInstructionsToDevConsole();
+		// AddInstructionsToDevConsole();
+		PrintBoardStateToDevConsole();
 		m_hasControlsBeenShown = true;
 	}
 
@@ -513,4 +517,74 @@ void Game::AddVertsForCube( std::vector<Vertex>& verts, float size ) const
 		Vec3( -halfSize, halfSize, -halfSize ),
 		Vec3( halfSize, halfSize, -halfSize ),
 		Rgba8::YELLOW );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool Game::Command_PrintBoard( EventArgs& args )
+{
+	UNUSED( args );
+	if ( g_engine && g_engine->m_devConsole && g_app->m_game )
+	{
+		g_app->m_game->PrintBoardStateToDevConsole();
+		return true;
+	}
+	return false;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game::PrintBoardStateToDevConsole() const
+{
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 255, 128, 0 ), "============================================" );
+
+	if ( m_chessMatch->IsWhitePlayerTurn() )
+	{
+		g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 255, 128, 0 ), "Player #0 (Green) -- it's your move!" );
+		g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 100, 150, 255 ), "Game state is : First Player's Turn" );
+	}
+	else
+	{
+		g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 255, 128, 0 ), "Player #1 (Red) -- it's your move!" );
+		g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 100, 150, 255 ), "Game state is : Second Player's Turn" );
+	}
+
+	if ( m_chessMatch && m_chessMatch->m_board )
+	{
+		ChessBoard* board = m_chessMatch->m_board;
+
+		g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 100, 150, 255 ), "  ABCDEFGH" );
+		g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 100, 150, 255 ), " +--------+" );
+
+		for ( int row = 7; row >= 0; --row )
+		{
+			std::string line = Stringf( "%d|", row + 1 );
+			for ( int col = 0; col < 8; ++col )
+			{
+				ChessPiece* piece = board->m_squares[row][col];
+				if ( piece )
+				{
+					char symbol = piece->m_definition.m_symbol;
+					if ( piece->m_isWhite && symbol >= 'a' && symbol <= 'z' )
+					{
+						symbol = symbol - 'a' + 'A';
+					}
+					line += symbol;
+				}
+				else
+				{
+					line += '.';
+				}
+			}
+			line += Stringf( "|%d", row + 1 );
+			g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 100, 150, 255 ), line );
+		}
+
+		g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 100, 150, 255 ), " +--------+" );
+		g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 100, 150, 255 ), "  ABCDEFGH" );
+	}
+	else
+	{
+		g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "No active chess board currently initialized." );
+	}
 }

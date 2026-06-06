@@ -47,6 +47,7 @@ public:
 	void Reset();
 
 	static bool Command_Controls( EventArgs& args );
+	static bool Command_PrintBoard( EventArgs& args );
 
 private:
 	void DeleteGarbageEntities();
@@ -55,4 +56,5 @@ private:
 	bool IsOnScreen( Vec2 const& worldPosition, float cosmeticRadius ) const;
 	void AddInstructionsToDevConsole()								   const;
 	void AddVertsForCube( std::vector<Vertex>& verts, float size) const;
+	void PrintBoardStateToDevConsole()								   const;
 };

@@ -6,7 +6,7 @@
 class ChessPlayer
 {
 public:
-	ChessPlayer();
+	ChessPlayer( bool isWhite = true );
 	~ChessPlayer();
 
 	void Update();
