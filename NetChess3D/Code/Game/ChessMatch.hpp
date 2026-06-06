@@ -1,9 +1,12 @@
 #pragma once
+#include "Engine/Math/IntVec2.hpp"
+#include "Engine/Core/EventSystem.hpp"
 
 
 //-----------------------------------------------------------------------------------------------
 class ChessBoard;
 class ChessPlayer;
+class ChessPiece;
 
 
 //-----------------------------------------------------------------------------------------------
@@ -19,6 +22,10 @@ public:
 	void Reset();
 
 	bool IsWhitePlayerTurn() const;
+	void SwitchPlayerTurn();
+
+	static bool Command_MovePiece( EventArgs& args );
+	void MovePiece( ChessPiece* piece, IntVec2 const& from, IntVec2 const& to );
 
 public:
 	ChessBoard* m_board = nullptr;

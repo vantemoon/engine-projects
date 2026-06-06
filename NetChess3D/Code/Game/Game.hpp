@@ -48,13 +48,13 @@ public:
 
 	static bool Command_Controls( EventArgs& args );
 	static bool Command_PrintBoard( EventArgs& args );
+	void PrintBoardStateToDevConsole()								   const;
 
 private:
 	void DeleteGarbageEntities();
 	void DebugDraw()												   const;
 	Vec3 TransformWorldToScreen( Vec3 const& worldPosition )		   const;
 	bool IsOnScreen( Vec2 const& worldPosition, float cosmeticRadius ) const;
-	void AddInstructionsToDevConsole()								   const;
-	void AddVertsForCube( std::vector<Vertex>& verts, float size) const;
-	void PrintBoardStateToDevConsole()								   const;
+	void AddVertsForCube( std::vector<Vertex>& verts, float size)	   const;
+	void PrintInstructionsToDevConsole()							   const;
 };

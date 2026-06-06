@@ -403,7 +403,7 @@ bool Game::Command_Controls( EventArgs& args )
 	UNUSED( args );
 	if ( g_engine && g_engine->m_devConsole )
 	{
-		g_app->m_game->AddInstructionsToDevConsole();
+		g_app->m_game->PrintInstructionsToDevConsole();
 		return true;
 	}
 	return false;
@@ -411,7 +411,7 @@ bool Game::Command_Controls( EventArgs& args )
 
 
 //-----------------------------------------------------------------------------------------------
-void Game::AddInstructionsToDevConsole() const
+void Game::PrintInstructionsToDevConsole() const
 {
 	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::MAGENTA, "Controls" );
 	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, "" );
@@ -538,19 +538,19 @@ void Game::PrintBoardStateToDevConsole() const
 {
 	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 255, 128, 0 ), "============================================" );
 
-	if ( m_chessMatch->IsWhitePlayerTurn() )
-	{
-		g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 255, 128, 0 ), "Player #0 (Green) -- it's your move!" );
-		g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 100, 150, 255 ), "Game state is : First Player's Turn" );
-	}
-	else
-	{
-		g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 255, 128, 0 ), "Player #1 (Red) -- it's your move!" );
-		g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 100, 150, 255 ), "Game state is : Second Player's Turn" );
-	}
-
 	if ( m_chessMatch && m_chessMatch->m_board )
 	{
+		if ( m_chessMatch->IsWhitePlayerTurn() )
+		{
+			g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 255, 128, 0 ), "Player #0 (Green) -- it's your move!" );
+			g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 100, 150, 255 ), "Game state is : First Player's Turn" );
+		}
+		else
+		{
+			g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 255, 128, 0 ), "Player #1 (Red) -- it's your move!" );
+			g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 100, 150, 255 ), "Game state is : Second Player's Turn" );
+		}
+
 		ChessBoard* board = m_chessMatch->m_board;
 
 		g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 100, 150, 255 ), "  ABCDEFGH" );

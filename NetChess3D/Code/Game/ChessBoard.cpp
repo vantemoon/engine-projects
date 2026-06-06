@@ -1,6 +1,8 @@
 #include "Game/ChessBoard.hpp"
 #include "Game/ChessPiece.hpp"
 #include "Game/ChessPieceDefinition.hpp"
+#include "Engine/Core/Engine.hpp"
+#include "Engine/Core/DevConsole.hpp"
 
 
 //-----------------------------------------------------------------------------------------------
@@ -114,4 +116,43 @@ void ChessBoard::Reset()
 	m_pieces.push_back( m_squares[7][5] );
 	m_pieces.push_back( m_squares[7][6] );
 	m_pieces.push_back( m_squares[7][7] );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+IntVec2 ChessBoard::ParseSquareCoords( char const* text )
+{
+	if ( text == nullptr || strlen( text ) < 2 )
+	{
+		g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 255, 0, 0 ), "Error: Invalid square coordinates string: " + std::string( text ? text : "null" ) );
+		return IntVec2::ZERO;
+	}
+
+	char file = text[0];
+	char rank = text[1];
+
+	int col = file - 'A';
+	if ( file >= 'a' && file <= 'z' )
+	{
+		col = file - 'a';
+	}
+	int row = rank - '1';
+
+	if ( col < 0 || col > 7 || row < 0 || row > 7 )
+	{
+		g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 255, 0, 0 ), "Error: Square coordinates out of bounds: " + std::string( text ) );
+		return IntVec2::ZERO;
+	}
+
+	return IntVec2( col, row );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void ChessBoard::MovePiece( ChessPiece* piece, IntVec2 const& from, IntVec2 const& to )
+{
+	if ( piece == nullptr ) return;
+
+	m_squares[from.y][from.x] = nullptr;
+	m_squares[to.y][to.x] = piece;
 }
