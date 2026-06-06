@@ -86,14 +86,6 @@ void Game::DeleteGarbageEntities()
 //-----------------------------------------------------------------------------------------------
 void Game::Update()
 {
-	if ( !m_hasControlsBeenShown )
-	{
-		g_engine->m_devConsole->ToggleMode( DevConsoleMode::OPEN_FULL );
-		// AddInstructionsToDevConsole();
-		PrintBoardStateToDevConsole();
-		m_hasControlsBeenShown = true;
-	}
-
 	if ( m_currentGameState == GameState::ATTRACT_MODE )
 	{
 		UpdateAttractMode();
@@ -258,7 +250,6 @@ void Game::Render() const
 		return;
 	};
 
-	// Per-frame screen debug text/message
 	AABB2 screenBounds( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) );
 	std::string clockText = Stringf(
 		"Time: %.2f FPS: %.1f Scale: %.2f",
@@ -286,7 +277,6 @@ void Game::Render() const
 		DebugAddMessage( playerPosText, 0.f );
 	}
 
-	// Clear screen
 	g_engine->m_renderer->ClearScreen( Rgba8( 50, 50, 50 ) );
 
 	if ( m_player == nullptr || m_player->m_playerCamera == nullptr )
@@ -297,7 +287,6 @@ void Game::Render() const
 	g_engine->m_renderer->BeginCamera( *m_player->m_playerCamera );
 
 	RenderEntities();
-	// RenderHUD();
 
 	DebugRenderWorld( *m_player->m_playerCamera );
 	DebugRenderScreen( *m_screenCamera );
