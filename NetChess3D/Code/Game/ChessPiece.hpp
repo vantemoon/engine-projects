@@ -8,7 +8,7 @@
 class ChessPiece : public ChessObject
 {
 public:
-	ChessPiece( ChessPieceDefinition const& definition, bool isWhite = true );
+	ChessPiece( ChessPieceDefinition const& definition, bool isWhite = true, IntVec2 boardCoord = IntVec2( -1, -1 ) );
 	~ChessPiece();
 
 	void Update() override;
@@ -19,4 +19,6 @@ public:
 
 	bool m_isWhite = true;
 	bool m_isCaptured = false;
+
+	IntVec2 m_boardCoords = IntVec2( -1, -1 );
 };

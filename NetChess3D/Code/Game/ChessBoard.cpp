@@ -42,8 +42,8 @@ void ChessBoard::Render() const
 	constexpr float boardTopZ = 0.f;
 	constexpr float boardBottomZ = -marginSize;
 
-	Rgba8 const lightSquareColor = Rgba8( 190, 175, 145, 255 );
-	Rgba8 const darkSquareColor = Rgba8( 95, 75, 55, 255 );
+	Rgba8 const lightSquareColor = Rgba8( 225, 215, 185, 255 );
+	Rgba8 const darkSquareColor = Rgba8( 55, 45, 38, 255 );
 	Rgba8 const frameColor = Rgba8( 120, 80, 45, 255 );
 
 	std::vector<Vertex> boardVerts;
@@ -163,7 +163,7 @@ void ChessBoard::Render() const
 		AABB2( Vec2( 0.f, 0.f ), Vec2( 1.f, 1.f ) )
 	);
 
-	Texture* boardTexture = renderer->CreateOrGetTextureFromFile( "Data/Images/Wood.jpg" );
+	Texture* boardTexture = renderer->CreateOrGetTextureFromFile( "Data/Images/Wood-Light.jpg" );
 
 	renderer->BindShader( renderer->CreateOrGetShader( "Default", VertexType::VERTEX_PCUTBN ) );
 	renderer->BindTexture( boardTexture );
@@ -174,6 +174,11 @@ void ChessBoard::Render() const
 	renderer->SetDepthMode( DepthMode::READ_WRITE_LESS_EQUAL );
 
 	renderer->DrawVertexArray( boardVerts );
+
+	for ( ChessPiece* piece : m_pieces )
+	{
+		piece->Render();
+	}
 }
 
 
@@ -196,14 +201,14 @@ void ChessBoard::Reset()
 	ChessPieceDefinition const* queenDef = ChessPieceDefinition::GetDefinitionByType( ChessPieceType::QUEEN );
 	ChessPieceDefinition const* kingDef = ChessPieceDefinition::GetDefinitionByType( ChessPieceType::KING );
 
-	m_squares[1][0] = new ChessPiece( *pawnDef, true );
-	m_squares[1][1] = new ChessPiece( *pawnDef, true );
-	m_squares[1][2] = new ChessPiece( *pawnDef, true );
-	m_squares[1][3] = new ChessPiece( *pawnDef, true );
-	m_squares[1][4] = new ChessPiece( *pawnDef, true );
-	m_squares[1][5] = new ChessPiece( *pawnDef, true );
-	m_squares[1][6] = new ChessPiece( *pawnDef, true );
-	m_squares[1][7] = new ChessPiece( *pawnDef, true );
+	m_squares[1][0] = new ChessPiece( *pawnDef, true, IntVec2( 0, 1 ) );
+	m_squares[1][1] = new ChessPiece( *pawnDef, true, IntVec2( 1, 1 ) );
+	m_squares[1][2] = new ChessPiece( *pawnDef, true, IntVec2( 2, 1 ) );
+	m_squares[1][3] = new ChessPiece( *pawnDef, true, IntVec2( 3, 1 ) );
+	m_squares[1][4] = new ChessPiece( *pawnDef, true, IntVec2( 4, 1 ) );
+	m_squares[1][5] = new ChessPiece( *pawnDef, true, IntVec2( 5, 1 ) );
+	m_squares[1][6] = new ChessPiece( *pawnDef, true, IntVec2( 6, 1 ) );
+	m_squares[1][7] = new ChessPiece( *pawnDef, true, IntVec2( 7, 1 ) );
 	m_pieces.push_back( m_squares[1][0] );
 	m_pieces.push_back( m_squares[1][1] );
 	m_pieces.push_back( m_squares[1][2] );
@@ -213,14 +218,14 @@ void ChessBoard::Reset()
 	m_pieces.push_back( m_squares[1][6] );
 	m_pieces.push_back( m_squares[1][7] );
 
-	m_squares[0][0] = new ChessPiece( *rookDef, true );
-	m_squares[0][1] = new ChessPiece( *knightDef, true );
-	m_squares[0][2] = new ChessPiece( *bishopDef, true );
-	m_squares[0][3] = new ChessPiece( *queenDef, true );
-	m_squares[0][4] = new ChessPiece( *kingDef, true );
-	m_squares[0][5] = new ChessPiece( *bishopDef, true );
-	m_squares[0][6] = new ChessPiece( *knightDef, true );
-	m_squares[0][7] = new ChessPiece( *rookDef, true );
+	m_squares[0][0] = new ChessPiece( *rookDef, true, IntVec2( 0, 0 ) );
+	m_squares[0][1] = new ChessPiece( *knightDef, true, IntVec2( 1, 0 ) );
+	m_squares[0][2] = new ChessPiece( *bishopDef, true, IntVec2( 2, 0 ) );
+	m_squares[0][3] = new ChessPiece( *queenDef, true, IntVec2( 3, 0 ) );
+	m_squares[0][4] = new ChessPiece( *kingDef, true, IntVec2( 4, 0 ) );
+	m_squares[0][5] = new ChessPiece( *bishopDef, true, IntVec2( 5, 0 ) );
+	m_squares[0][6] = new ChessPiece( *knightDef, true, IntVec2( 6, 0 ) );
+	m_squares[0][7] = new ChessPiece( *rookDef, true, IntVec2( 7, 0 ) );
 	m_pieces.push_back( m_squares[0][0] );
 	m_pieces.push_back( m_squares[0][1] );
 	m_pieces.push_back( m_squares[0][2] );
@@ -230,14 +235,14 @@ void ChessBoard::Reset()
 	m_pieces.push_back( m_squares[0][6] );
 	m_pieces.push_back( m_squares[0][7] );
 
-	m_squares[6][0] = new ChessPiece( *pawnDef, false );
-	m_squares[6][1] = new ChessPiece( *pawnDef, false );
-	m_squares[6][2] = new ChessPiece( *pawnDef, false );
-	m_squares[6][3] = new ChessPiece( *pawnDef, false );
-	m_squares[6][4] = new ChessPiece( *pawnDef, false );
-	m_squares[6][5] = new ChessPiece( *pawnDef, false );
-	m_squares[6][6] = new ChessPiece( *pawnDef, false );
-	m_squares[6][7] = new ChessPiece( *pawnDef, false );
+	m_squares[6][0] = new ChessPiece( *pawnDef, false, IntVec2( 0, 6 ) );
+	m_squares[6][1] = new ChessPiece( *pawnDef, false, IntVec2( 1, 6 ) );
+	m_squares[6][2] = new ChessPiece( *pawnDef, false, IntVec2( 2, 6 ) );
+	m_squares[6][3] = new ChessPiece( *pawnDef, false, IntVec2( 3, 6 ) );
+	m_squares[6][4] = new ChessPiece( *pawnDef, false, IntVec2( 4, 6 ) );
+	m_squares[6][5] = new ChessPiece( *pawnDef, false, IntVec2( 5, 6 ) );
+	m_squares[6][6] = new ChessPiece( *pawnDef, false, IntVec2( 6, 6 ) );
+	m_squares[6][7] = new ChessPiece( *pawnDef, false, IntVec2( 7, 6 ) );
 	m_pieces.push_back( m_squares[6][0] );
 	m_pieces.push_back( m_squares[6][1] );
 	m_pieces.push_back( m_squares[6][2] );
@@ -247,14 +252,14 @@ void ChessBoard::Reset()
 	m_pieces.push_back( m_squares[6][6] );
 	m_pieces.push_back( m_squares[6][7] );
 
-	m_squares[7][0] = new ChessPiece( *rookDef, false );
-	m_squares[7][1] = new ChessPiece( *knightDef, false );
-	m_squares[7][2] = new ChessPiece( *bishopDef, false );
-	m_squares[7][3] = new ChessPiece( *queenDef, false );
-	m_squares[7][4] = new ChessPiece( *kingDef, false );
-	m_squares[7][5] = new ChessPiece( *bishopDef, false );
-	m_squares[7][6] = new ChessPiece( *knightDef, false );
-	m_squares[7][7] = new ChessPiece( *rookDef, false );
+	m_squares[7][0] = new ChessPiece( *rookDef, false, IntVec2( 0, 7 ) );
+	m_squares[7][1] = new ChessPiece( *knightDef, false, IntVec2( 1, 7 ) );
+	m_squares[7][2] = new ChessPiece( *bishopDef, false, IntVec2( 2, 7 ) );
+	m_squares[7][3] = new ChessPiece( *queenDef, false, IntVec2( 3, 7 ) );
+	m_squares[7][4] = new ChessPiece( *kingDef, false, IntVec2( 4, 7 ) );
+	m_squares[7][5] = new ChessPiece( *bishopDef, false, IntVec2( 5, 7 ) );
+	m_squares[7][6] = new ChessPiece( *knightDef, false, IntVec2( 6, 7 ) );
+	m_squares[7][7] = new ChessPiece( *rookDef, false, IntVec2( 7, 7 ) );
 	m_pieces.push_back( m_squares[7][0] );
 	m_pieces.push_back( m_squares[7][1] );
 	m_pieces.push_back( m_squares[7][2] );
@@ -304,6 +309,7 @@ void ChessBoard::MovePiece( ChessPiece* piece, IntVec2 const& from, IntVec2 cons
 
 	m_squares[from.y][from.x] = nullptr;
 	m_squares[to.y][to.x] = piece;
+	piece->m_boardCoords = to;
 }
 
 
@@ -320,4 +326,5 @@ void ChessBoard::CapturePiece( ChessPiece* piece, IntVec2 const& from, IntVec2 c
 
 	m_squares[from.y][from.x] = nullptr;
 	m_squares[to.y][to.x] = piece;
+	piece->m_boardCoords = to;
 }
