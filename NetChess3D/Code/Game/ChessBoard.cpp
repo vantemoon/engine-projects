@@ -3,6 +3,8 @@
 #include "Game/ChessPieceDefinition.hpp"
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/DevConsole.hpp"
+#include "Engine/Core/VertexUtils.hpp"
+#include "Engine/Math/AABB3.hpp"
 
 
 //-----------------------------------------------------------------------------------------------
@@ -27,6 +29,151 @@ void ChessBoard::Update()
 //-----------------------------------------------------------------------------------------------
 void ChessBoard::Render() const
 {
+	if ( g_engine == nullptr || g_engine->m_renderer == nullptr )
+	{
+		return;
+	}
+
+	Renderer* renderer = g_engine->m_renderer;
+
+	constexpr float squareSize = 1.f;
+	constexpr float boardSize = 8.f * squareSize;
+	constexpr float marginSize = squareSize / 3.f;
+	constexpr float boardTopZ = 0.f;
+	constexpr float boardBottomZ = -marginSize;
+
+	Rgba8 const lightSquareColor = Rgba8( 190, 175, 145, 255 );
+	Rgba8 const darkSquareColor = Rgba8( 95, 75, 55, 255 );
+	Rgba8 const frameColor = Rgba8( 120, 80, 45, 255 );
+
+	std::vector<Vertex> boardVerts;
+	boardVerts.reserve( 64 * 6 + 10 * 6 );
+
+	AddVertsForQuad3D(
+		boardVerts,
+		Vec3( -marginSize, -marginSize, boardTopZ ),
+		Vec3( boardSize + marginSize, -marginSize, boardTopZ ),
+		Vec3( boardSize + marginSize, 0.f, boardTopZ ),
+		Vec3( -marginSize, 0.f, boardTopZ ),
+		frameColor,
+		AABB2( Vec2( 0.f, 0.f ), Vec2( boardSize + 2.f * marginSize, marginSize ) )
+	);
+
+	AddVertsForQuad3D(
+		boardVerts,
+		Vec3( -marginSize, boardSize, boardTopZ ),
+		Vec3( boardSize + marginSize, boardSize, boardTopZ ),
+		Vec3( boardSize + marginSize, boardSize + marginSize, boardTopZ ),
+		Vec3( -marginSize, boardSize + marginSize, boardTopZ ),
+		frameColor,
+		AABB2( Vec2( 0.f, boardSize ), Vec2( boardSize + 2.f * marginSize, boardSize + marginSize ) )
+	);
+
+	AddVertsForQuad3D(
+		boardVerts,
+		Vec3( -marginSize, 0.f, boardTopZ ),
+		Vec3( 0.f, 0.f, boardTopZ ),
+		Vec3( 0.f, boardSize, boardTopZ ),
+		Vec3( -marginSize, boardSize, boardTopZ ),
+		frameColor,
+		AABB2( Vec2( 0.f, 0.f ), Vec2( marginSize, boardSize ) )
+	);
+
+	AddVertsForQuad3D(
+		boardVerts,
+		Vec3( boardSize, 0.f, boardTopZ ),
+		Vec3( boardSize + marginSize, 0.f, boardTopZ ),
+		Vec3( boardSize + marginSize, boardSize, boardTopZ ),
+		Vec3( boardSize, boardSize, boardTopZ ),
+		frameColor,
+		AABB2( Vec2( boardSize, 0.f ), Vec2( boardSize + marginSize, boardSize ) )
+	);
+
+	for ( int row = 0; row < 8; ++row )
+	{
+		for ( int col = 0; col < 8; ++col )
+		{
+			float minX = static_cast< float >( col ) * squareSize;
+			float minY = static_cast< float >( row ) * squareSize;
+			float maxX = minX + squareSize;
+			float maxY = minY + squareSize;
+
+			bool isLightSquare = ( ( row + col ) % 2 ) == 0;
+			Rgba8 squareColor = isLightSquare ? lightSquareColor : darkSquareColor;
+
+			AddVertsForQuad3D(
+				boardVerts,
+				Vec3( minX, minY, boardTopZ ),
+				Vec3( maxX, minY, boardTopZ ),
+				Vec3( maxX, maxY, boardTopZ ),
+				Vec3( minX, maxY, boardTopZ ),
+				squareColor,
+				AABB2( Vec2( minX, minY ), Vec2( maxX, maxY ) )
+			);
+		}
+	}
+
+	AddVertsForQuad3D(
+		boardVerts,
+		Vec3( -marginSize, boardSize + marginSize, boardBottomZ ),
+		Vec3( boardSize + marginSize, boardSize + marginSize, boardBottomZ ),
+		Vec3( boardSize + marginSize, -marginSize, boardBottomZ ),
+		Vec3( -marginSize, -marginSize, boardBottomZ ),
+		frameColor,
+		AABB2( Vec2( 0.f, 0.f ), Vec2( 1.f, 1.f ) )
+	);
+
+	AddVertsForQuad3D(
+		boardVerts,
+		Vec3( -marginSize, -marginSize, boardBottomZ ),
+		Vec3( boardSize + marginSize, -marginSize, boardBottomZ ),
+		Vec3( boardSize + marginSize, -marginSize, boardTopZ ),
+		Vec3( -marginSize, -marginSize, boardTopZ ),
+		frameColor,
+		AABB2( Vec2( 0.f, 0.f ), Vec2( 1.f, 1.f ) )
+	);
+
+	AddVertsForQuad3D(
+		boardVerts,
+		Vec3( boardSize + marginSize, boardSize + marginSize, boardBottomZ ),
+		Vec3( -marginSize, boardSize + marginSize, boardBottomZ ),
+		Vec3( -marginSize, boardSize + marginSize, boardTopZ ),
+		Vec3( boardSize + marginSize, boardSize + marginSize, boardTopZ ),
+		frameColor,
+		AABB2( Vec2( 0.f, 0.f ), Vec2( 1.f, 1.f ) )
+	);
+
+	AddVertsForQuad3D(
+		boardVerts,
+		Vec3( -marginSize, boardSize + marginSize, boardBottomZ ),
+		Vec3( -marginSize, -marginSize, boardBottomZ ),
+		Vec3( -marginSize, -marginSize, boardTopZ ),
+		Vec3( -marginSize, boardSize + marginSize, boardTopZ ),
+		frameColor,
+		AABB2( Vec2( 0.f, 0.f ), Vec2( 1.f, 1.f ) )
+	);
+
+	AddVertsForQuad3D(
+		boardVerts,
+		Vec3( boardSize + marginSize, -marginSize, boardBottomZ ),
+		Vec3( boardSize + marginSize, boardSize + marginSize, boardBottomZ ),
+		Vec3( boardSize + marginSize, boardSize + marginSize, boardTopZ ),
+		Vec3( boardSize + marginSize, -marginSize, boardTopZ ),
+		frameColor,
+		AABB2( Vec2( 0.f, 0.f ), Vec2( 1.f, 1.f ) )
+	);
+
+	Texture* boardTexture = renderer->CreateOrGetTextureFromFile( "Data/Images/Wood.jpg" );
+
+	renderer->BindShader( renderer->CreateOrGetShader( "Default", VertexType::VERTEX_PCUTBN ) );
+	renderer->BindTexture( boardTexture );
+	renderer->SetModelConstants();
+	renderer->SetBlendMode( BlendMode::OPAQUE );
+	renderer->SetSamplerMode( SamplerMode::BILINEAR_WRAP );
+	renderer->SetRasterizerMode( RasterizerMode::SOLID_CULL_BACK );
+	renderer->SetDepthMode( DepthMode::READ_WRITE_LESS_EQUAL );
+
+	renderer->DrawVertexArray( boardVerts );
 }
 
 

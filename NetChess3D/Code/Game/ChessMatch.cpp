@@ -54,6 +54,7 @@ void ChessMatch::Update()
 //-----------------------------------------------------------------------------------------------
 void ChessMatch::Render() const
 {
+	m_board->Render();
 }
 
 

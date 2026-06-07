@@ -287,6 +287,7 @@ void Game::Render() const
 	g_engine->m_renderer->BeginCamera( *m_player->m_playerCamera );
 
 	RenderEntities();
+	m_chessMatch->Render();
 
 	DebugRenderWorld( *m_player->m_playerCamera );
 	DebugRenderScreen( *m_screenCamera );
