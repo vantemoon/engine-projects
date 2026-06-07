@@ -10,6 +10,16 @@ class ChessPiece;
 
 
 //-----------------------------------------------------------------------------------------------
+enum class ChessGameState
+{
+	WHITE_PLAYER_TURN,
+	BLACK_PLAYER_TURN,
+	VICTORY,
+	NUM_GAME_STATES
+};
+
+
+//-----------------------------------------------------------------------------------------------
 class ChessMatch
 {
 public:
@@ -34,4 +44,6 @@ public:
 	ChessPlayer* m_whitePlayer = nullptr;
 	ChessPlayer* m_blackPlayer = nullptr;
 	ChessPlayer* m_currentPlayer = nullptr;
+
+	ChessGameState m_gameState = ChessGameState::WHITE_PLAYER_TURN;
 };

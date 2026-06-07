@@ -66,19 +66,21 @@ void ChessMatch::Reset()
 //-----------------------------------------------------------------------------------------------
 bool ChessMatch::IsWhitePlayerTurn() const
 {
-	return m_currentPlayer == m_whitePlayer;
+	return m_gameState == ChessGameState::WHITE_PLAYER_TURN;
 }
 
 
 //-----------------------------------------------------------------------------------------------
 void ChessMatch::SwitchPlayerTurn()
 {
-	if ( m_currentPlayer == m_whitePlayer )
+	if ( m_gameState == ChessGameState::WHITE_PLAYER_TURN )
 	{
+		m_gameState = ChessGameState::BLACK_PLAYER_TURN;
 		m_currentPlayer = m_blackPlayer;
 	}
-	else
+	else if ( m_gameState == ChessGameState::BLACK_PLAYER_TURN )
 	{
+		m_gameState = ChessGameState::WHITE_PLAYER_TURN;
 		m_currentPlayer = m_whitePlayer;
 	}
 }
@@ -126,32 +128,38 @@ bool ChessMatch::Command_MovePiece( EventArgs& args )
 		return false;
 	}
 
+	if ( match->m_gameState == ChessGameState::VICTORY )
+	{
+		g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MAJOR, "The match is already over; no more moves can be made." );
+		return true;
+	}
+
 	std::string from = args.GetValue( "from", "" );
 	std::string to = args.GetValue( "to", "" );
 
 	IntVec2 fromCoords = ChessBoard::ParseSquareCoords( from, "from" );
 	if ( fromCoords == IntVec2( -1, -1 ) )
 	{
-		return false;
+		return true;
 	}
 
 	IntVec2 toCoords = ChessBoard::ParseSquareCoords( to, "to" );
 	if ( toCoords == IntVec2( -1, -1 ) )
 	{
-		return false;
+		return true;
 	}
 
 	if ( fromCoords == toCoords )
 	{
 		g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::ERROR, "Error: The to=" + to + " square must be different from the from=" + from + " square." );
-		return false;
+		return true;
 	}
 
 	ChessPiece* pieceToMove = board->m_squares[fromCoords.y][fromCoords.x];
 	if ( pieceToMove == nullptr )
 	{
 		g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::ERROR, "Error: The from=" + from + " square is empty; there is no piece to move." );
-		return false;
+		return true;
 	}
 
 	bool isWhiteTurn = match->IsWhitePlayerTurn();
@@ -160,14 +168,14 @@ bool ChessMatch::Command_MovePiece( EventArgs& args )
 		std::string currentPlayerName = ChessMatch::GetPlayerName( isWhiteTurn );
 
 		g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::ERROR, "Error: Attempted to move a piece not belonging to the current player (" + currentPlayerName + ")." );
-		return false;
+		return true;
 	}
 
 	ChessPiece* targetPiece = board->m_squares[toCoords.y][toCoords.x];
 	if ( targetPiece != nullptr && targetPiece->m_isWhite == pieceToMove->m_isWhite )
 	{
 		g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::ERROR, "Error: The to=" + to + " square is occupied by a piece belonging to the current player." );
-		return false;
+		return true;
 	}
 
 	std::string movingPlayerName = ChessMatch::GetPlayerName( pieceToMove->m_isWhite );
@@ -190,7 +198,7 @@ bool ChessMatch::Command_MovePiece( EventArgs& args )
 			g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 255, 128, 0 ), movingPlayerName + " has won the match!" );
 			g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 255, 128, 0 ), "######################################################################" );
 
-			game->m_currentGameState = GameState::VICTORY;
+			match->m_gameState = ChessGameState::VICTORY;
 			return true;
 		}
 

@@ -531,15 +531,16 @@ void Game::PrintBoardStateToDevConsole() const
 
 	if ( m_chessMatch && m_chessMatch->m_board )
 	{
-		if ( m_chessMatch->IsWhitePlayerTurn() )
-		{
-			g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 255, 128, 0 ), "Player #0 (Green) -- it's your move!" );
-			g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 100, 150, 255 ), "Game state is : First Player's Turn" );
-		}
-		else
-		{
-			g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 255, 128, 0 ), "Player #1 (Red) -- it's your move!" );
-			g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 100, 150, 255 ), "Game state is : Second Player's Turn" );
+		switch ( m_chessMatch->m_gameState )
+		{	
+			case ChessGameState::WHITE_PLAYER_TURN:
+				g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 100, 150, 255 ), "Game state is: First Player's Turn" );
+				break;
+			case ChessGameState::BLACK_PLAYER_TURN:
+				g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 100, 150, 255 ), "Game state is: Second Player's Turn" );
+				break;
+			default:
+				break;
 		}
 
 		ChessBoard* board = m_chessMatch->m_board;
