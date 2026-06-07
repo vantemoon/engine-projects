@@ -1,9 +1,11 @@
 #include "Game/Player.hpp"
+#include "Game/ChessMatch.hpp"
 #include "Game/Game.hpp"
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Input/InputSystem.hpp"
 #include "Engine/Math/MathUtils.hpp"
 #include "Engine/Renderer/Camera.hpp"
+#include <math.h>
 
 
 //-----------------------------------------------------------------------------------------------
@@ -37,6 +39,15 @@ Player::~Player()
 void Player::Update( float deltaSeconds )
 {
 	UNUSED( deltaSeconds );
+	if ( g_engine == nullptr || g_engine->m_inputSystem == nullptr )
+	{
+		return;
+	}
+
+	if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_F4 ) )
+	{
+		m_cameraMode = ( CameraMode ) ( ( ( int ) m_cameraMode + 1 ) % ( int ) CameraMode::NUM_CAMERA_MODES );
+	}
 	UpdateCamera();
 }
 
@@ -45,17 +56,93 @@ void Player::Update( float deltaSeconds )
 void Player::UpdateCamera()
 {
 	m_playerCamera->SetPerspectiveView( g_engine->m_window->m_config.m_clientAspect, 60.f, 0.1f, 100.f );
-	m_playerCamera->SetPositionAndOrientation( m_position, m_orientation );
 
-	float systemDeltaSeconds = ( float ) Clock::GetSystemClock().GetDeltaSeconds();
-	UpdateFromMouse();
-	UpdateFromKeyboard( systemDeltaSeconds );
-	UpdateFromController( systemDeltaSeconds );
+	switch ( m_cameraMode )
+	{
+		case CameraMode::POV:
+		{
+			UpdatePOVCamera();
+			break;
+		}
+
+		case CameraMode::OVERHEAD:
+		{
+			UpdateOverheadCamera();
+			break;
+		}
+
+		case CameraMode::FREE_FLY:
+		{
+			UpdateFreeFlyCamera();
+			break;
+		}
+
+		case CameraMode::NUM_CAMERA_MODES:
+		default:
+		{
+			break;
+		}
+	}
+
+	m_playerCamera->SetPositionAndOrientation( m_position, m_orientation );
 }
 
 
 //-----------------------------------------------------------------------------------------------
-void Player::UpdateFromMouse()
+void Player::UpdatePOVCamera()
+{
+	Vec3 boardCenter = Vec3( 4.f, 4.f, 0.f );
+
+	bool isMatchOver = false;
+	bool isWhiteTurn = true;
+
+	if ( m_game != nullptr && m_game->m_chessMatch != nullptr )
+	{
+		isMatchOver = m_game->m_chessMatch->m_gameState == ChessGameState::VICTORY;
+		isWhiteTurn = m_game->m_chessMatch->IsWhitePlayerTurn();
+	}
+
+	if ( isMatchOver )
+	{
+		SetCameraLookAt( Vec3( 4.f, 4.f, 10.f ), boardCenter );
+		return;
+	}
+
+	if ( isWhiteTurn )
+	{
+		SetCameraLookAt( Vec3( 4.f, -4.f, 5.f ), boardCenter );
+	}
+	else
+	{
+		SetCameraLookAt( Vec3( 4.f, 12.f, 5.f ), boardCenter );
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Player::UpdateOverheadCamera()
+{
+	SetCameraLookAt( Vec3( 4.f, 4.f, 10.f ), Vec3( 4.f, 4.f, 0.f ) );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Player::UpdateFreeFlyCamera()
+{
+	m_position = m_freeFlyPosition;
+	m_orientation = m_freeFlyOrientation;
+
+	UpdateFreeFlyCameraFromMouse();
+	UpdateFreeFlyCameraFromKeyboard( ( float ) Clock::GetSystemClock().GetDeltaSeconds() );
+	UpdateFreeFlyCameraFromController( ( float ) Clock::GetSystemClock().GetDeltaSeconds() );
+
+	m_freeFlyPosition = m_position;
+	m_freeFlyOrientation = m_orientation;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Player::UpdateFreeFlyCameraFromMouse()
 {
 	float sensitivity = 0.125f;
 
@@ -73,7 +160,7 @@ void Player::UpdateFromMouse()
 
 
 //-----------------------------------------------------------------------------------------------
-void Player::UpdateFromKeyboard( float deltaSeconds )
+void Player::UpdateFreeFlyCameraFromKeyboard( float deltaSeconds )
 {
 	float movementSpeed = 2.f;
 	float rotationSpeed = 90.f;
@@ -143,7 +230,7 @@ void Player::UpdateFromKeyboard( float deltaSeconds )
 
 
 //-----------------------------------------------------------------------------------------------
-void Player::UpdateFromController( float deltaSeconds )
+void Player::UpdateFreeFlyCameraFromController( float deltaSeconds )
 {
 	XboxController const& controller = g_engine->m_inputSystem->GetController( 0 );
 	Vec2 rightStickPosition = controller.GetRightJoystick().GetPosition();
@@ -198,6 +285,22 @@ void Player::UpdateFromController( float deltaSeconds )
 		m_position = Vec3::ZERO;
 		m_orientation = EulerAngles::ZERO;
 	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Player::SetCameraLookAt( Vec3 const& position, Vec3 const& target )
+{
+	Vec3 forward = ( target - position ).GetNormalized();
+
+	float yawDegrees = Atan2Degrees( forward.y, forward.x );
+
+	float horizontalLength = sqrtf( forward.x * forward.x + forward.y * forward.y );
+	float pitchDegrees = -Atan2Degrees( forward.z, horizontalLength );
+
+	m_position = position;
+	m_orientation = EulerAngles( yawDegrees, pitchDegrees, 0.f );
+	if ( m_cameraMode == CameraMode::OVERHEAD ) m_orientation = EulerAngles( yawDegrees, pitchDegrees, -90.f );
 }
 
 

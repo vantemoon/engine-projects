@@ -54,11 +54,11 @@ void ChessPiece::Render() const
 	Rgba8 pieceTint;
 	if ( m_isWhite )
 	{
-		pieceTint = Rgba8( 180, 80, 80, 255 );
+		pieceTint = Rgba8( 80, 180, 120, 255 );
 	}
 	else
 	{
-		pieceTint = Rgba8( 80, 180, 120, 255 );
+		pieceTint = Rgba8( 180, 80, 80, 255 );
 	}
 
 	Vec3 pieceWorldPos(
