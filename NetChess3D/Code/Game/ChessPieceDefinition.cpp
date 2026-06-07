@@ -12,31 +12,37 @@ void ChessPieceDefinition::InitializeDefinitions()
 	s_definitions["PAWN"]->m_type = ChessPieceType::PAWN;
 	s_definitions["PAWN"]->m_name = "Pawn";
 	s_definitions["PAWN"]->m_symbol = 'p';
+	AddVertsAndIndicesForPawn();
 
 	s_definitions["ROOK"] = new ChessPieceDefinition();
 	s_definitions["ROOK"]->m_type = ChessPieceType::ROOK;
 	s_definitions["ROOK"]->m_name = "Rook";
 	s_definitions["ROOK"]->m_symbol = 'r';
+	AddVertsAndIndicesForRook();
 
 	s_definitions["KNIGHT"] = new ChessPieceDefinition();
 	s_definitions["KNIGHT"]->m_type = ChessPieceType::KNIGHT;
 	s_definitions["KNIGHT"]->m_name = "Knight";
 	s_definitions["KNIGHT"]->m_symbol = 'n';
+	AddVertsAndIndicesForKnight();
 
 	s_definitions["BISHOP"] = new ChessPieceDefinition();
 	s_definitions["BISHOP"]->m_type = ChessPieceType::BISHOP;
 	s_definitions["BISHOP"]->m_name = "Bishop";
 	s_definitions["BISHOP"]->m_symbol = 'b';
+	AddVertsAndIndicesForBishop();
 
 	s_definitions["QUEEN"] = new ChessPieceDefinition();
 	s_definitions["QUEEN"]->m_type = ChessPieceType::QUEEN;
 	s_definitions["QUEEN"]->m_name = "Queen";
 	s_definitions["QUEEN"]->m_symbol = 'q';
+	AddVertsAndIndicesForQueen();
 
 	s_definitions["KING"] = new ChessPieceDefinition();
 	s_definitions["KING"]->m_type = ChessPieceType::KING;
 	s_definitions["KING"]->m_name = "King";
 	s_definitions["KING"]->m_symbol = 'k';
+	AddVertsAndIndicesForKing();
 }
 
 
@@ -62,4 +68,40 @@ ChessPieceDefinition const* ChessPieceDefinition::GetDefinitionByType( ChessPiec
 		}
 	}
 	return nullptr;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void ChessPieceDefinition::AddVertsAndIndicesForPawn()
+{
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void ChessPieceDefinition::AddVertsAndIndicesForRook()
+{
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void ChessPieceDefinition::AddVertsAndIndicesForKnight()
+{
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void ChessPieceDefinition::AddVertsAndIndicesForBishop()
+{
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void ChessPieceDefinition::AddVertsAndIndicesForQueen()
+{
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void ChessPieceDefinition::AddVertsAndIndicesForKing()
+{
 }

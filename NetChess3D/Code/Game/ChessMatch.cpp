@@ -92,10 +92,10 @@ std::string ChessMatch::GetPlayerName( bool isWhite )
 {
 	if ( isWhite )
 	{
-		return "Player #0 (Green)";
+		return "Player #0 (White)";
 	}
 
-	return "Player #1 (Red)";
+	return "Player #1 (Black)";
 }
 
 
