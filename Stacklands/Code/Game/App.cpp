@@ -22,7 +22,7 @@ App::App()
 
 	EngineConfig engineConfig;
 	engineConfig.m_windowConfig.m_clientAspect = 2.0f;
-	engineConfig.m_windowConfig.m_windowTitle = "Protogame2D";
+	engineConfig.m_windowConfig.m_windowTitle = "Stacklands";
 	engineConfig.m_devConsoleConfig.m_camera = m_devConsoleCamera;
 
 	g_engine = new Engine( engineConfig );
