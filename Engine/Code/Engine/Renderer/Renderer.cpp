@@ -160,7 +160,7 @@ void Renderer::Startup()
 #endif
 
 	// Create and bind default shader
-	m_defaultShader = CreateShader( "Default", g_shaderSource );
+	m_defaultShader = CreateShader( "EngineDefault", g_shaderSource );
 	BindShader( m_defaultShader );
 
 	// Create vertex buffer
@@ -1146,5 +1146,4 @@ void Renderer::SetLightingConstants( Vec3 const& sunDirection, float sunIntensit
 
 	CopyCPUToGPU( &lightingData, sizeof( LightingConstants ), m_lightingCBO );
 	BindConstantBuffer( k_lightingConstantsSlot, m_lightingCBO );
-
 }

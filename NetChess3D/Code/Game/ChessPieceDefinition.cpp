@@ -174,9 +174,9 @@ void ChessPieceDefinition::CopyDefinitionToGPU( ChessPieceDefinition& definition
 //-----------------------------------------------------------------------------------------------
 void ChessPieceDefinition::AddVertsAndIndicesForPawn( ChessPieceDefinition& definition )
 {
-	AddVertsForIndexedCylinderZ3D( definition.m_whiteVerts, definition.m_whiteIndices, Vec3( 0.f, 0.f, 0.f ), Vec3( 0.f, 0.f, 0.12f ), 0.30f, Rgba8::WHITE, AABB2::ZERO_TO_ONE, 24 );
-	AddVertsForIndexedCylinderZ3D( definition.m_whiteVerts, definition.m_whiteIndices, Vec3( 0.f, 0.f, 0.12f ), Vec3( 0.f, 0.f, 0.55f ), 0.18f, Rgba8::WHITE, AABB2::ZERO_TO_ONE, 24 );
-	AddVertsForIndexedSphere3D( definition.m_whiteVerts, definition.m_whiteIndices, Vec3( 0.f, 0.f, 0.72f ), 0.22f, Rgba8::WHITE, AABB2::ZERO_TO_ONE, 24, 12 );
+	AddVertsForIndexedCylinderZ3D( definition.m_whiteVerts, definition.m_whiteIndices, Vec3( 0.f, 0.f, 0.f ), Vec3( 0.f, 0.f, 0.12f ), 0.30f, Rgba8::WHITE, AABB2::ZERO_TO_ONE, 64 );
+	AddVertsForIndexedCylinderZ3D( definition.m_whiteVerts, definition.m_whiteIndices, Vec3( 0.f, 0.f, 0.12f ), Vec3( 0.f, 0.f, 0.55f ), 0.18f, Rgba8::WHITE, AABB2::ZERO_TO_ONE, 64 );
+	AddVertsForIndexedSphere3D( definition.m_whiteVerts, definition.m_whiteIndices, Vec3( 0.f, 0.f, 0.72f ), 0.22f, Rgba8::WHITE, AABB2::ZERO_TO_ONE, 64, 32 );
 }
 
 //-----------------------------------------------------------------------------------------------
@@ -199,31 +199,31 @@ void ChessPieceDefinition::AddVertsAndIndicesForKnight( ChessPieceDefinition& de
 //-----------------------------------------------------------------------------------------------
 void ChessPieceDefinition::AddVertsAndIndicesForBishop( ChessPieceDefinition& definition )
 {
-	AddVertsForIndexedCylinderZ3D( definition.m_whiteVerts, definition.m_whiteIndices, Vec3( 0.f, 0.f, 0.f ), Vec3( 0.f, 0.f, 0.12f ), 0.30f, Rgba8::WHITE, AABB2::ZERO_TO_ONE, 24 );
-	AddVertsForIndexedCylinderZ3D( definition.m_whiteVerts, definition.m_whiteIndices, Vec3( 0.f, 0.f, 0.12f ), Vec3( 0.f, 0.f, 0.70f ), 0.16f, Rgba8::WHITE, AABB2::ZERO_TO_ONE, 24 );
-	AddVertsForIndexedSphere3D( definition.m_whiteVerts, definition.m_whiteIndices, Vec3( 0.f, 0.f, 0.86f ), 0.21f, Rgba8::WHITE, AABB2::ZERO_TO_ONE, 24, 12 );
+	AddVertsForIndexedCylinderZ3D( definition.m_whiteVerts, definition.m_whiteIndices, Vec3( 0.f, 0.f, 0.f ), Vec3( 0.f, 0.f, 0.12f ), 0.30f, Rgba8::WHITE, AABB2::ZERO_TO_ONE, 64 );
+	AddVertsForIndexedCylinderZ3D( definition.m_whiteVerts, definition.m_whiteIndices, Vec3( 0.f, 0.f, 0.12f ), Vec3( 0.f, 0.f, 0.70f ), 0.16f, Rgba8::WHITE, AABB2::ZERO_TO_ONE, 64 );
+	AddVertsForIndexedSphere3D( definition.m_whiteVerts, definition.m_whiteIndices, Vec3( 0.f, 0.f, 0.86f ), 0.21f, Rgba8::WHITE, AABB2::ZERO_TO_ONE, 64, 32 );
 	AddVertsForIndexedAABB3D( definition.m_whiteVerts, definition.m_whiteIndices, AABB3( Vec3( -0.04f, -0.26f, 0.72f ), Vec3( 0.04f, 0.26f, 0.98f ) ), Rgba8::WHITE, AABB2::ZERO_TO_ONE );
 }
 
 //-----------------------------------------------------------------------------------------------
 void ChessPieceDefinition::AddVertsAndIndicesForQueen( ChessPieceDefinition& definition )
 {
-	AddVertsForIndexedCylinderZ3D( definition.m_whiteVerts, definition.m_whiteIndices, Vec3( 0.f, 0.f, 0.f ), Vec3( 0.f, 0.f, 0.14f ), 0.34f, Rgba8::WHITE, AABB2::ZERO_TO_ONE, 24 );
-	AddVertsForIndexedCylinderZ3D( definition.m_whiteVerts, definition.m_whiteIndices, Vec3( 0.f, 0.f, 0.14f ), Vec3( 0.f, 0.f, 0.82f ), 0.20f, Rgba8::WHITE, AABB2::ZERO_TO_ONE, 24 );
-	AddVertsForIndexedSphere3D( definition.m_whiteVerts, definition.m_whiteIndices, Vec3( 0.f, 0.f, 1.00f ), 0.18f, Rgba8::WHITE, AABB2::ZERO_TO_ONE, 24, 12 );
+	AddVertsForIndexedCylinderZ3D( definition.m_whiteVerts, definition.m_whiteIndices, Vec3( 0.f, 0.f, 0.f ), Vec3( 0.f, 0.f, 0.14f ), 0.34f, Rgba8::WHITE, AABB2::ZERO_TO_ONE, 64 );
+	AddVertsForIndexedCylinderZ3D( definition.m_whiteVerts, definition.m_whiteIndices, Vec3( 0.f, 0.f, 0.14f ), Vec3( 0.f, 0.f, 0.82f ), 0.20f, Rgba8::WHITE, AABB2::ZERO_TO_ONE, 64 );
+	AddVertsForIndexedSphere3D( definition.m_whiteVerts, definition.m_whiteIndices, Vec3( 0.f, 0.f, 1.00f ), 0.18f, Rgba8::WHITE, AABB2::ZERO_TO_ONE, 64, 32 );
 
-	AddVertsForIndexedSphere3D( definition.m_whiteVerts, definition.m_whiteIndices, Vec3( -0.20f, 0.f, 0.92f ), 0.09f, Rgba8::WHITE, AABB2::ZERO_TO_ONE, 12, 6 );
-	AddVertsForIndexedSphere3D( definition.m_whiteVerts, definition.m_whiteIndices, Vec3( 0.20f, 0.f, 0.92f ), 0.09f, Rgba8::WHITE, AABB2::ZERO_TO_ONE, 12, 6 );
-	AddVertsForIndexedSphere3D( definition.m_whiteVerts, definition.m_whiteIndices, Vec3( 0.f, -0.20f, 0.92f ), 0.09f, Rgba8::WHITE, AABB2::ZERO_TO_ONE, 12, 6 );
-	AddVertsForIndexedSphere3D( definition.m_whiteVerts, definition.m_whiteIndices, Vec3( 0.f, 0.20f, 0.92f ), 0.09f, Rgba8::WHITE, AABB2::ZERO_TO_ONE, 12, 6 );
+	AddVertsForIndexedSphere3D( definition.m_whiteVerts, definition.m_whiteIndices, Vec3( -0.20f, 0.f, 0.92f ), 0.09f, Rgba8::WHITE, AABB2::ZERO_TO_ONE, 64, 32 );
+	AddVertsForIndexedSphere3D( definition.m_whiteVerts, definition.m_whiteIndices, Vec3( 0.20f, 0.f, 0.92f ), 0.09f, Rgba8::WHITE, AABB2::ZERO_TO_ONE, 64, 32 );
+	AddVertsForIndexedSphere3D( definition.m_whiteVerts, definition.m_whiteIndices, Vec3( 0.f, -0.20f, 0.92f ), 0.09f, Rgba8::WHITE, AABB2::ZERO_TO_ONE, 64, 32 );
+	AddVertsForIndexedSphere3D( definition.m_whiteVerts, definition.m_whiteIndices, Vec3( 0.f, 0.20f, 0.92f ), 0.09f, Rgba8::WHITE, AABB2::ZERO_TO_ONE, 64, 32 );
 }
 
 //-----------------------------------------------------------------------------------------------
 void ChessPieceDefinition::AddVertsAndIndicesForKing( ChessPieceDefinition& definition )
 {
-	AddVertsForIndexedCylinderZ3D( definition.m_whiteVerts, definition.m_whiteIndices, Vec3( 0.f, 0.f, 0.f ), Vec3( 0.f, 0.f, 0.14f ), 0.34f, Rgba8::WHITE, AABB2::ZERO_TO_ONE, 24 );
-	AddVertsForIndexedCylinderZ3D( definition.m_whiteVerts, definition.m_whiteIndices, Vec3( 0.f, 0.f, 0.14f ), Vec3( 0.f, 0.f, 0.85f ), 0.19f, Rgba8::WHITE, AABB2::ZERO_TO_ONE, 24 );
-	AddVertsForIndexedSphere3D( definition.m_whiteVerts, definition.m_whiteIndices, Vec3( 0.f, 0.f, 0.96f ), 0.15f, Rgba8::WHITE, AABB2::ZERO_TO_ONE, 24, 12 );
+	AddVertsForIndexedCylinderZ3D( definition.m_whiteVerts, definition.m_whiteIndices, Vec3( 0.f, 0.f, 0.f ), Vec3( 0.f, 0.f, 0.14f ), 0.34f, Rgba8::WHITE, AABB2::ZERO_TO_ONE, 64 );
+	AddVertsForIndexedCylinderZ3D( definition.m_whiteVerts, definition.m_whiteIndices, Vec3( 0.f, 0.f, 0.14f ), Vec3( 0.f, 0.f, 0.85f ), 0.19f, Rgba8::WHITE, AABB2::ZERO_TO_ONE, 64 );
+	AddVertsForIndexedSphere3D( definition.m_whiteVerts, definition.m_whiteIndices, Vec3( 0.f, 0.f, 0.96f ), 0.15f, Rgba8::WHITE, AABB2::ZERO_TO_ONE, 64, 32 );
 
 	AddVertsForIndexedAABB3D( definition.m_whiteVerts, definition.m_whiteIndices, AABB3( Vec3( -0.05f, -0.05f, 1.00f ), Vec3( 0.05f, 0.05f, 1.28f ) ), Rgba8::WHITE, AABB2::ZERO_TO_ONE );
 	AddVertsForIndexedAABB3D( definition.m_whiteVerts, definition.m_whiteIndices, AABB3( Vec3( -0.17f, -0.04f, 1.10f ), Vec3( 0.17f, 0.04f, 1.20f ) ), Rgba8::WHITE, AABB2::ZERO_TO_ONE );

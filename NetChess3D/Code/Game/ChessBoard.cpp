@@ -165,13 +165,8 @@ void ChessBoard::Render() const
 
 	Texture* boardTexture = renderer->CreateOrGetTextureFromFile( "Data/Images/Wood-Light.jpg" );
 
-	renderer->BindShader( renderer->CreateOrGetShader( "Default", VertexType::VERTEX_PCUTBN ) );
 	renderer->BindTexture( boardTexture );
 	renderer->SetModelConstants();
-	renderer->SetBlendMode( BlendMode::OPAQUE );
-	renderer->SetSamplerMode( SamplerMode::BILINEAR_WRAP );
-	renderer->SetRasterizerMode( RasterizerMode::SOLID_CULL_BACK );
-	renderer->SetDepthMode( DepthMode::READ_WRITE_LESS_EQUAL );
 
 	renderer->DrawVertexArray( boardVerts );
 

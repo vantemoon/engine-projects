@@ -5,14 +5,14 @@
 const char* g_shaderSource = R"(	
 cbuffer CameraConstants : register( b2 )
 {
-	float4x4 WorldToCameraTransform;  // View transform
-	float4x4 CameraToRenderTransform; // Non-standard transform from game to DirectX conventions
-	float4x4 RenderToClipTransform;   // Projection transform
+	float4x4 WorldToCameraTransform;
+	float4x4 CameraToRenderTransform;
+	float4x4 RenderToClipTransform;
 };
 
 cbuffer ModelConstants : register( b3 )
 {
-	float4x4 ModelToCameraTransform;  // Model transform
+	float4x4 ModelToCameraTransform;
 	float4 modelColor;
 };
 

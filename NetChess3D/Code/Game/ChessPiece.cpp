@@ -70,8 +70,8 @@ void ChessPiece::Render() const
 	Mat44 modelMatrix = Mat44::MakeTranslation3D( pieceWorldPos );
 	Texture* pieceTexture = renderer->CreateOrGetTextureFromFile( "Data/Images/Marble.jpg" );
 
-	renderer->BindShader( renderer->CreateOrGetShader( "Default", VertexType::VERTEX_PCUTBN ) );
 	renderer->BindTexture( pieceTexture );
 	renderer->SetModelConstants( modelMatrix, pieceTint );
+
 	renderer->DrawIndexedVertexBuffer( vbo, ibo, indexCount );
 }

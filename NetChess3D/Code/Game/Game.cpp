@@ -286,6 +286,15 @@ void Game::Render() const
 
 	g_engine->m_renderer->BeginCamera( *m_player->m_playerCamera );
 
+	g_engine->m_renderer->SetLightingConstants( Vec3( 3.f, 1.f, -2.f ), 1.f, 0.2f );
+
+	Shader* defaultShader = g_engine->m_renderer->CreateOrGetShader( "Data/Shaders/Default", VertexType::VERTEX_PCUTBN );
+	g_engine->m_renderer->BindShader( defaultShader );
+	g_engine->m_renderer->SetBlendMode( BlendMode::OPAQUE );
+	g_engine->m_renderer->SetDepthMode( DepthMode::READ_WRITE_LESS_EQUAL );
+	g_engine->m_renderer->SetSamplerMode( SamplerMode::BILINEAR_WRAP );
+	g_engine->m_renderer->SetRasterizerMode( RasterizerMode::SOLID_CULL_BACK );
+
 	RenderEntities();
 	m_chessMatch->Render();
 

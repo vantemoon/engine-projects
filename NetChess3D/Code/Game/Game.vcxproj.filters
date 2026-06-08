@@ -8,6 +8,9 @@
     <Filter Include="Gameplay">
       <UniqueIdentifier>{7b6b75cb-8cd0-43ff-8c38-ebc826d155b4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{ec8cd585-2d77-483a-a7c2-8e3cc98e55ed}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main_Windows.cpp">
@@ -90,5 +93,10 @@
     <ClInclude Include="ChessObject.hpp">
       <Filter>Gameplay</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="..\..\Run\Data\Shaders\Default.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>
