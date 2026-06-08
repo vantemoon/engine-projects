@@ -560,11 +560,11 @@ void Game::PrintBoardStateToDevConsole() const
 		switch ( m_chessMatch->m_gameState )
 		{	
 			case ChessGameState::WHITE_PLAYER_TURN:
-				g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 255, 128, 0 ), "Player #1 (White) is your turn!" );
+				g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 255, 128, 0 ), "Player #1 (Green) is your turn!" );
 				g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 100, 150, 255 ), "Game state is: First Player's Turn" );
 				break;
 			case ChessGameState::BLACK_PLAYER_TURN:
-				g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 255, 128, 0 ), "Player #2 (Black) is your turn!" );
+				g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 255, 128, 0 ), "Player #2 (Red) is your turn!" );
 				g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 100, 150, 255 ), "Game state is: Second Player's Turn" );
 				break;
 			default:
