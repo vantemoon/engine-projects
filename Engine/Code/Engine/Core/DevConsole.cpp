@@ -230,6 +230,9 @@ void DevConsole::Render( AABB2 const& bound ) const
 	}
 	if ( m_mode == DevConsoleMode::OPEN_FULL )
 	{
+		Shader* shader = g_engine->m_renderer->CreateOrGetShader( "EngineDefault" );
+		g_engine->m_renderer->BindTexture( nullptr );
+		g_engine->m_renderer->BindShader( shader );
 		g_engine->m_renderer->SetBlendMode( BlendMode::ALPHA );
 		g_engine->m_renderer->SetSamplerMode( SamplerMode::POINT_CLAMP );
 		g_engine->m_renderer->SetRasterizerMode( RasterizerMode::SOLID_CULL_BACK );

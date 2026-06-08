@@ -251,31 +251,47 @@ void Game::Render() const
 	};
 
 	AABB2 screenBounds( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) );
-	std::string clockText = Stringf(
-		"Time: %.2f FPS: %.1f Scale: %.2f",
-		m_gameClock->GetTotalSeconds(),
-		m_gameClock->GetFrameRate(),
-		m_gameClock->GetTimeScale() );
+	DebugAddMessage("Use the DevConsole(~) to enter commands.", 0.f, Rgba8::YELLOW, Rgba8::YELLOW );
 
-	DebugAddScreenText(
-		clockText,
-		screenBounds,
-		15.f,
-		Vec2( 1.f, 1.f ),
-		0.f,
-		Rgba8::WHITE,
-		Rgba8::WHITE );
+	std::string cameraModeString;
+	std::string gameStateString;
 
-	if ( m_player != nullptr )
+	switch ( m_player->m_cameraMode )
 	{
-		std::string playerPosText = Stringf(
-			"Player Position: (%.2f, %.2f, %.2f)",
-			m_player->m_position.x,
-			m_player->m_position.y,
-			m_player->m_position.z );
+		case CameraMode::POV:
+			cameraModeString = "POV";
+			break;
 
-		DebugAddMessage( playerPosText, 0.f );
+		case CameraMode::OVERHEAD:
+			cameraModeString = "Overhead";
+			break;
+
+		case CameraMode::FREE_FLY:
+			cameraModeString = "Free Fly";
+			break;
+
+		default:
+			cameraModeString = "UNKNOWN";
+			break;
 	}
+
+	switch ( m_chessMatch->m_gameState )
+	{
+		case ChessGameState::WHITE_PLAYER_TURN:
+			gameStateString = "First Player's Turn";
+			break;
+		case ChessGameState::BLACK_PLAYER_TURN:
+			gameStateString = "Second Player's Turn";
+			break;
+		case ChessGameState::VICTORY:
+			gameStateString = "Victory";
+			break;
+		default:
+			gameStateString = "UNKNOWN";
+			break;
+	}
+	std::string stateString = Stringf( "Camera Mode (F4): %s | Game State: %s", cameraModeString.c_str(), gameStateString.c_str() );
+	DebugAddMessage( stateString, 0.f, Rgba8( 0, 255, 255 ), Rgba8( 0, 255, 255 ) );
 
 	g_engine->m_renderer->ClearScreen( Rgba8( 50, 50, 50 ) );
 

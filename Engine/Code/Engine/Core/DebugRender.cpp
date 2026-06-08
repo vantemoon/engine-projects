@@ -347,7 +347,9 @@ void DebugRenderWorld( Camera const& camera )
 		}
 	}
 
+	Shader* shader = g_engine->m_renderer->CreateOrGetShader( "EngineDefault" );
 	g_engine->m_renderer->BindTexture( nullptr );
+	g_engine->m_renderer->BindShader( shader );
 	g_engine->m_renderer->SetBlendMode( BlendMode::OPAQUE );
 	g_engine->m_renderer->SetDepthMode( DepthMode::READ_WRITE_LESS_EQUAL );
 	g_engine->m_renderer->SetRasterizerMode( RasterizerMode::SOLID_CULL_BACK );
@@ -433,7 +435,9 @@ void DebugRenderScreen( Camera const& camera )
 		}
 	}
 
+	Shader* shader = g_engine->m_renderer->CreateOrGetShader( "EngineDefault" );
 	g_engine->m_renderer->BindTexture( nullptr );
+	g_engine->m_renderer->BindShader( shader );
 	g_engine->m_renderer->SetBlendMode( BlendMode::OPAQUE );
 	g_engine->m_renderer->SetDepthMode( DepthMode::READ_WRITE_LESS_EQUAL );
 	g_engine->m_renderer->SetRasterizerMode( RasterizerMode::SOLID_CULL_BACK );
