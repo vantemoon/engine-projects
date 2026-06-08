@@ -1,0 +1,144 @@
+#include "Game/App.hpp"
+#include "Game/Game.hpp"
+#include "Engine/Core/Clock.hpp"
+#include "Engine/Core/Engine.hpp"
+#include "Engine/Core/Rgba8.hpp"
+#include "Engine/Input/InputSystem.hpp"
+#include "Engine/Math/RandomNumberGenerator.hpp"
+#include "Engine/Math/MathUtils.hpp"
+#include "Engine/Renderer/Camera.hpp"
+#include "Engine/Renderer/Renderer.hpp"
+
+
+//-----------------------------------------------------------------------------------------------
+App* g_app = nullptr;
+
+
+//-----------------------------------------------------------------------------------------------
+App::App()
+{
+	m_devConsoleCamera = new Camera();
+	m_devConsoleCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) );
+
+	EngineConfig engineConfig;
+	engineConfig.m_windowConfig.m_clientAspect = 2.0f;
+	engineConfig.m_windowConfig.m_windowTitle = "Protogame2D";
+	engineConfig.m_devConsoleConfig.m_camera = m_devConsoleCamera;
+
+	g_engine = new Engine( engineConfig );
+
+	m_game = new Game();
+
+	g_engine->m_eventSystem->SubscribeEventCallbackFunction( "Quit", Command_Quit );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+App::~App()
+{
+	delete m_game;
+	m_game = nullptr;
+
+	delete g_engine;
+	g_engine = nullptr;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void App::RunMainLoop()
+{
+	while ( !IsQuitting() )
+	{
+		RunFrame();
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void App::RunFrame()
+{
+	Clock::TickSystemClock();
+
+	g_engine->BeginFrame();
+
+	Update();
+	Render(); // Draw the current state of the game
+
+	g_engine->EndFrame(); // Allow engine subsystems to do post-frame stuff
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void App::UpdateFromKeyboard()
+{
+	if ( !m_game->m_currentGameState == GameState::ATTRACT_MODE )
+	{
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_F8 ) )
+		{
+			HardReset();
+		}
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void App::UpdateFromController()
+{
+	// Currently no global controller actions
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void App::HardReset()
+{
+	if ( m_game != nullptr )
+	{
+		delete m_game;
+		m_game = nullptr;
+	}
+
+	m_game = new Game();
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void App::Update()
+{
+	UpdateFromKeyboard();
+
+	m_game->Update();
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void App::Render() const
+{
+	m_game->Render();
+	m_game->RenderDevConsole();
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool App::Command_Quit( EventArgs& args )
+{
+	UNUSED( args );
+	if ( g_app && !g_app->m_isQuitting )
+	{
+		g_app->SetIsQuitting();
+	}
+	return false;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void App::SetIsQuitting()
+{
+	m_isQuitting = true;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool App::IsQuitting() const
+{
+	return m_isQuitting;
+}
