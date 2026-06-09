@@ -6,9 +6,9 @@
 
 
 //-----------------------------------------------------------------------------------------------
-class  Camera;     // Forward declaration
-class  Entity;     // Forward declaration
-struct Vec3;       // Forward declaration
+class  Camera;
+class  Entity;
+struct Vec3;
 
 
 //-----------------------------------------------------------------------------------------------
@@ -44,13 +44,10 @@ public:
 	void RenderHUD()												  const;
 	void RenderAttractMode()										  const;
 	void RenderDevConsole()											  const;
-	Vec2 GetRandomOffscreenPosition( float cosmeticRadius )		      const;
 	void Reset();
-	void KillAllEnemies(); // For testing and debugging
 
 private:
 	void DeleteGarbageEntities();
 	void DebugDraw()												   const;
 	Vec3 TransformWorldToScreen( Vec3 const& worldPosition )		   const;
-	bool IsOnScreen( Vec2 const& worldPosition, float cosmeticRadius ) const;
 };

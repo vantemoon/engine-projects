@@ -82,7 +82,6 @@ void Game::Update()
 
 	if ( m_isScreenShaking )
 	{
-		// float shakeElapsedTime = ( float ) GetCurrentTimeSeconds() - m_screenShakeStartTime;
 		float shakeElapsedTime = ( float ) m_gameClock->GetTotalSeconds() - m_screenShakeStartTime;
 		if ( shakeElapsedTime < m_screenShakeDuration )
 		{
@@ -184,12 +183,6 @@ void Game::UpdateFromKeyboard()
 			m_gameClock->StepSingleFrame();
 			m_currentGameState = GameState::PAUSED;
 		}
-
-		// Kill all enemies (for debugging)
-		if ( m_isDebugFeaturesOn && g_engine->m_inputSystem->WasKeyJustPressed( 'K' ) )
-		{
-			KillAllEnemies();
-		}
 	}
 }
 
@@ -273,64 +266,11 @@ void Game::Render() const
 void Game::RenderAttractMode() const
 {
 	// Clear screen
-	g_engine->m_renderer->ClearScreen( Rgba8::BLACK );
+	g_engine->m_renderer->ClearScreen( Rgba8(80, 80, 80) );
 
 	g_engine->m_renderer->BeginCamera( *m_screenCamera );
 
-	// Colors
-	const Rgba8 brightYellow = Rgba8( 253, 239, 3 );
-	const Rgba8 brightCyan = Rgba8( 87, 231, 239 );
-	const Rgba8 dimCyan = Rgba8( 87, 231, 239, 80 );
-	const Rgba8 dimYellow = Rgba8( 253, 239, 3, 80 );
-	const Rgba8 neonPink = Rgba8( 248, 21, 98 );
-
-	float flicker = 0.9f + 0.1f * SinDegrees( ( float ) m_gameClock->GetTotalSeconds() * 720.f );
-	Rgba8 flickerCol = Rgba8(
-		( unsigned char ) ( brightCyan.r * flicker ),
-		( unsigned char ) ( brightCyan.g * flicker ),
-		( unsigned char ) ( brightCyan.b * flicker )
-	);
-
-	const float currentTime = ( float ) m_gameClock->GetTotalSeconds();
-	const float centerX = SCREEN_SIZE_X * 0.5f;
-	const float centerY = SCREEN_SIZE_Y * 0.5f;
-
-	// Play triangle
-	float triBase = SCREEN_SIZE_X * 0.05f;
-	float triPulse = 1.f + 0.06f * SinDegrees( currentTime * 180.f );
-	float triSize = triBase * triPulse;
-
-	Vertex triangleVertexArray[3];
-	triangleVertexArray[0].m_position = Vec3( centerX - triSize, centerY - triSize, 0.f );
-	triangleVertexArray[1].m_position = Vec3( centerX + triSize, centerY, 0.f );
-	triangleVertexArray[2].m_position = Vec3( centerX - triSize, centerY + triSize, 0.f );
-
-	float triAlpha = 0.55f + 0.45f * SinDegrees( currentTime * 180.f );
-	Rgba8 triangleColor = Rgba8( 0, 153, 0, ( unsigned char ) ( triAlpha * 255.f ) );
-	triangleVertexArray[0].m_color = triangleColor;
-	triangleVertexArray[1].m_color = triangleColor;
-	triangleVertexArray[2].m_color = triangleColor;
-
-	// Text
-	std::vector<Vertex> verts;
-	AddVertsForTextTriangles2D( verts, "PROTOGAME2D", Vec2( 10.f, SCREEN_SIZE_Y - 30.f ), 24.f, Rgba8( 255, 255, 255 ) );
-
-	// Texture
-	Texture* testTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/Test_StbiFlippedAndOpenGL.png" );
-	std::vector<Vertex> testTextureVerts;
-	AABB2 texturedAABB2( 300.f, 100.f, 800.f, 600.f );
-	AddVertsForAABB2D( testTextureVerts, texturedAABB2, Rgba8( 255, 255, 255, 255 ) ); // This should now set UVs on each Vertex!!
-	g_engine->m_renderer->BindTexture( testTexture );
-	g_engine->m_renderer->DrawVertexArray( testTextureVerts );
-
-	std::vector<Vertex> ringVerts;
-	AddVertsForRing2D( ringVerts, Vec2( SCREEN_CENTER_X, SCREEN_CENTER_Y ), 200.f, 20.f, Rgba8( 255, 0, 255 ), 32 );
-	g_engine->m_renderer->BindTexture( nullptr ); // NOTE: We now have to do this before rendering anything UN-textured!
-	g_engine->m_renderer->DrawVertexArray( ringVerts );
-
 	// Render 
-	g_engine->m_renderer->DrawVertexArray( 3, triangleVertexArray );
-	g_engine->m_renderer->DrawVertexArray( ( int ) verts.size(), verts.data() );
 
 	g_engine->m_renderer->EndCamera( *m_screenCamera );
 }
@@ -375,11 +315,6 @@ void Game::RenderHUD() const
 
 	// #ToDo: Render HUD elements (health, score, etc.)
 
-	std::vector<Vertex> verts;
-	AddVertsForTextTriangles2D( verts, "GAME MODE", Vec2( 10.f, SCREEN_SIZE_Y - 30.f ), 24.f, Rgba8( 255, 255, 255 ) );
-
-	g_engine->m_renderer->DrawVertexArray( ( int ) verts.size(), verts.data() );
-
 	g_engine->m_renderer->EndCamera( *m_screenCamera );
 }
 
@@ -414,54 +349,6 @@ Vec3 Game::TransformWorldToScreen( Vec3 const& worldPosition ) const
 	float screenY = screenBottomLeft.y + normY * screenHeight;
 
 	return Vec3( screenX, screenY, worldPosition.z );
-}
-
-
-//-----------------------------------------------------------------------------------------------
-bool Game::IsOnScreen( Vec2 const& worldPosition, float cosmeticRadius ) const
-{
-	Vec2 worldBottomLeft = m_worldCamera->GetOrthoBottomLeft();
-	Vec2 worldTopRight = m_worldCamera->GetOrthoTopRight();
-	if ( worldPosition.x + cosmeticRadius < worldBottomLeft.x ) return false;
-	if ( worldPosition.x - cosmeticRadius > worldTopRight.x ) return false;
-	if ( worldPosition.y + cosmeticRadius < worldBottomLeft.y ) return false;
-	if ( worldPosition.y - cosmeticRadius > worldTopRight.y ) return false;
-	return true;
-}
-
-
-//-----------------------------------------------------------------------------------------------
-Vec2 Game::GetRandomOffscreenPosition( float cosmeticRadius ) const
-{
-	RandomNumberGenerator rng;
-	float randomX = rng.RollRandomFloatInRange( -cosmeticRadius, WORLD_SIZE_X + cosmeticRadius );
-	float randomY = rng.RollRandomFloatInRange( -cosmeticRadius, WORLD_SIZE_Y + cosmeticRadius );
-	int side = rng.RollRandomIntLessThan( 4 ); // 0: left, 1: right, 2: bottom, 3: top
-	switch ( side )
-	{
-		case 0: // left
-			randomX = -cosmeticRadius;
-			break;
-		case 1: // right
-			randomX = WORLD_SIZE_X + cosmeticRadius;
-			break;
-		case 2: // bottom
-			randomY = -cosmeticRadius;
-			break;
-		case 3: // top
-			randomY = WORLD_SIZE_Y + cosmeticRadius;
-			break;
-		default:
-			break;
-	}
-	return Vec2( randomX, randomY );
-}
-
-
-//-----------------------------------------------------------------------------------------------
-void Game::KillAllEnemies()
-{
-	// #ToDo: Kill all enemy entities in the game world
 }
 
 
