@@ -12,13 +12,8 @@ class CardDefinition
 {
 public:
 	std::string m_name = "Card";
-	std::string m_category = "None";
-	std::string m_description = "";
-	std::string m_texturePath = "";
-
+	std::string m_textureFilePath = "";
 	Texture* m_texture = nullptr;
-
-	int m_maxStackSize = 1;
 
 	static std::map<std::string, CardDefinition*> s_definitions;
 

@@ -91,7 +91,10 @@ void Game::Update()
 
 	if ( m_board != nullptr )
 	{
-		m_board->Update( ( float ) m_gameClock->GetDeltaSeconds() );
+		float deltaSeconds = ( float ) m_gameClock->GetDeltaSeconds();
+		Vec2 mouseWorldPosition = GetMouseWorldPosition();
+
+		m_board->Update( deltaSeconds, mouseWorldPosition );
 	}
 
 	g_app->m_game->DeleteGarbageEntities();
