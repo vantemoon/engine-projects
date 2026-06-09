@@ -65,4 +65,5 @@ private:
 	void DebugDraw()												   const;
 	Vec3 TransformWorldToScreen( Vec3 const& worldPosition )		   const;
 	Vec2 GetMouseWorldPosition()                                       const;
+	void ClampTargetCameraToWorld();
 };

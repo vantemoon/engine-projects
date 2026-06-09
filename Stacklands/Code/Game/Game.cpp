@@ -28,7 +28,9 @@ Game::Game()
 	m_screenCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) );
 	
 	m_cameraCenter = Vec2( WORLD_SIZE_X * 0.5f, WORLD_SIZE_Y * 0.5f );
+	m_targetCameraCenter = m_cameraCenter;
 	m_cameraZoom = 1.f;
+	m_targetCameraZoom = 1.f;
 	ApplyWorldCameraView();
 
 	m_currentGameState = ATTRACT_MODE;
@@ -117,13 +119,23 @@ void Game::Update()
 //-----------------------------------------------------------------------------------------------
 void Game::UpdateCamera()
 {
+	float deltaSeconds = ( float ) m_gameClock->GetDeltaSeconds();
+
 	int mouseWheelDelta = g_engine->m_inputSystem->GetMouseWheelDelta();
 
 	if ( mouseWheelDelta != 0 )
 	{
 		Vec2 mouseWorldBeforeZoom = GetMouseWorldPosition();
 
-		float oldTargetZoom = m_targetCameraZoom;
+		Vec2 currentViewSize = Vec2(
+			WORLD_SIZE_X / m_cameraZoom,
+			WORLD_SIZE_Y / m_cameraZoom
+		);
+
+		Vec2 currentBottomLeft = m_cameraCenter - currentViewSize * 0.5f;
+
+		float mousePercentX = ( mouseWorldBeforeZoom.x - currentBottomLeft.x ) / currentViewSize.x;
+		float mousePercentY = ( mouseWorldBeforeZoom.y - currentBottomLeft.y ) / currentViewSize.y;
 
 		if ( mouseWheelDelta > 0 )
 		{
@@ -136,26 +148,52 @@ void Game::UpdateCamera()
 
 		m_targetCameraZoom = GetClamped( m_targetCameraZoom, m_minCameraZoom, m_maxCameraZoom );
 
-		float oldViewWidth = WORLD_SIZE_X / oldTargetZoom;
-		float oldViewHeight = WORLD_SIZE_Y / oldTargetZoom;
-
-		float newViewWidth = WORLD_SIZE_X / m_targetCameraZoom;
-		float newViewHeight = WORLD_SIZE_Y / m_targetCameraZoom;
-
-		Vec2 oldBottomLeft = m_targetCameraCenter - Vec2( oldViewWidth * 0.5f, oldViewHeight * 0.5f );
-
-		float mousePercentX = ( mouseWorldBeforeZoom.x - oldBottomLeft.x ) / oldViewWidth;
-		float mousePercentY = ( mouseWorldBeforeZoom.y - oldBottomLeft.y ) / oldViewHeight;
-
-		Vec2 newBottomLeft = mouseWorldBeforeZoom - Vec2(
-			newViewWidth * mousePercentX,
-			newViewHeight * mousePercentY
+		Vec2 targetViewSize = Vec2(
+			WORLD_SIZE_X / m_targetCameraZoom,
+			WORLD_SIZE_Y / m_targetCameraZoom
 		);
 
-		m_targetCameraCenter = newBottomLeft + Vec2( newViewWidth * 0.5f, newViewHeight * 0.5f );
+		Vec2 targetBottomLeft = mouseWorldBeforeZoom - Vec2(
+			targetViewSize.x * mousePercentX,
+			targetViewSize.y * mousePercentY
+		);
+
+		m_targetCameraCenter = targetBottomLeft + targetViewSize * 0.5f;
 	}
 
-	float deltaSeconds = ( float ) m_gameClock->GetDeltaSeconds();
+	// Pan only when zoomed in
+	if ( m_targetCameraZoom > m_minCameraZoom + 0.01f )
+	{
+		Vec2 moveDirection = Vec2::ZERO;
+
+		if ( g_engine->m_inputSystem->IsKeyDown( 'W' ) )
+		{
+			moveDirection.y += 1.f;
+		}
+		if ( g_engine->m_inputSystem->IsKeyDown( 'S' ) )
+		{
+			moveDirection.y -= 1.f;
+		}
+		if ( g_engine->m_inputSystem->IsKeyDown( 'A' ) )
+		{
+			moveDirection.x -= 1.f;
+		}
+		if ( g_engine->m_inputSystem->IsKeyDown( 'D' ) )
+		{
+			moveDirection.x += 1.f;
+		}
+
+		if ( moveDirection != Vec2::ZERO )
+		{
+			moveDirection.Normalize();
+
+			float adjustedMoveSpeed = m_cameraMoveSpeed / m_targetCameraZoom;
+			m_targetCameraCenter += moveDirection * adjustedMoveSpeed * deltaSeconds;
+		}
+	}
+
+	ClampTargetCameraToWorld();
+
 	float lerpFraction = m_cameraZoomLerpSpeed * deltaSeconds;
 	lerpFraction = GetClamped( lerpFraction, 0.f, 1.f );
 
@@ -169,19 +207,12 @@ void Game::UpdateCamera()
 //-----------------------------------------------------------------------------------------------
 void Game::ApplyWorldCameraView()
 {
-	float viewWidth = WORLD_SIZE_X / m_cameraZoom;
-	float viewHeight = WORLD_SIZE_Y / m_cameraZoom;
+	Vec2 viewSize = Vec2(
+		WORLD_SIZE_X / m_cameraZoom,
+		WORLD_SIZE_Y / m_cameraZoom
+	);
 
-	Vec2 halfViewSize = Vec2( viewWidth * 0.5f, viewHeight * 0.5f );
-
-	float minCenterX = halfViewSize.x;
-	float maxCenterX = WORLD_SIZE_X - halfViewSize.x;
-
-	float minCenterY = halfViewSize.y;
-	float maxCenterY = WORLD_SIZE_Y - halfViewSize.y;
-
-	m_cameraCenter.x = GetClamped( m_cameraCenter.x, minCenterX, maxCenterX );
-	m_cameraCenter.y = GetClamped( m_cameraCenter.y, minCenterY, maxCenterY );
+	Vec2 halfViewSize = viewSize * 0.5f;
 
 	Vec2 bottomLeft = m_cameraCenter - halfViewSize;
 	Vec2 topRight = m_cameraCenter + halfViewSize;
@@ -442,4 +473,40 @@ Vec2 Game::GetMouseWorldPosition() const
 		cameraBottomLeft.x + cameraSize.x * mouseUVX,
 		cameraBottomLeft.y + cameraSize.y * mouseUVY
 	);
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game::ClampTargetCameraToWorld()
+{
+	Vec2 targetViewSize = Vec2(
+		WORLD_SIZE_X / m_targetCameraZoom,
+		WORLD_SIZE_Y / m_targetCameraZoom
+	);
+
+	Vec2 halfViewSize = targetViewSize * 0.5f;
+
+	float minCenterX = halfViewSize.x;
+	float maxCenterX = WORLD_SIZE_X - halfViewSize.x;
+
+	float minCenterY = halfViewSize.y;
+	float maxCenterY = WORLD_SIZE_Y - halfViewSize.y;
+
+	if ( minCenterX >= maxCenterX )
+	{
+		m_targetCameraCenter.x = WORLD_SIZE_X * 0.5f;
+	}
+	else
+	{
+		m_targetCameraCenter.x = GetClamped( m_targetCameraCenter.x, minCenterX, maxCenterX );
+	}
+
+	if ( minCenterY >= maxCenterY )
+	{
+		m_targetCameraCenter.y = WORLD_SIZE_Y * 0.5f;
+	}
+	else
+	{
+		m_targetCameraCenter.y = GetClamped( m_targetCameraCenter.y, minCenterY, maxCenterY );
+	}
 }
