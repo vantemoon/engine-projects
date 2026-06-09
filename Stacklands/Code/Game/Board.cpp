@@ -1,6 +1,7 @@
 #include "Game/Board.hpp"
 #include "Game/Card.hpp"
 #include "Game/CardDefinition.hpp"
+#include "Game/CardStack.hpp"
 #include "Game/GameCommon.hpp"
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/ErrorWarningAssert.hpp"
@@ -26,86 +27,15 @@ Board::Board()
 //-----------------------------------------------------------------------------------------------
 Board::~Board()
 {
-	for ( Card* card : m_cards )
+	for ( CardStack* stack : m_cardStacks )
 	{
-		delete card;
+		delete stack;
 	}
-	m_cards.clear();
+
+	m_cardStacks.clear();
+	m_draggedStack = nullptr;
 
 	CardDefinition::ClearDefinitions();
-}
-
-
-//-----------------------------------------------------------------------------------------------
-void Board::Update( float deltaSeconds, Vec2 const& mouseWorldPosition )
-{
-	UNUSED( deltaSeconds );
-
-	bool wasLeftMouseJustPressed = g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_LBUTTON );
-	bool isLeftMouseDown = g_engine->m_inputSystem->IsKeyDown( KEYCODE_LBUTTON );
-	bool wasLeftMouseJustReleased = g_engine->m_inputSystem->WasKeyJustReleased( KEYCODE_LBUTTON );
-
-	if ( wasLeftMouseJustPressed )
-	{
-		int clickedCardIndex = GetTopCardIndexAtPosition( mouseWorldPosition );
-
-		if ( clickedCardIndex >= 0 )
-		{
-			BeginDraggingCardStack( clickedCardIndex, mouseWorldPosition );
-		}
-		else
-		{
-			ClearCardSelection();
-			EndDraggingCardStack();
-		}
-	}
-
-	if ( isLeftMouseDown && m_isDraggingCard )
-	{
-		UpdateDraggingCardStack( mouseWorldPosition );
-	}
-
-	if ( wasLeftMouseJustReleased )
-	{
-		EndDraggingCardStack();
-	}
-
-	for ( Card* card : m_cards )
-	{
-		card->Update();
-	}
-}
-
-
-//-----------------------------------------------------------------------------------------------
-void Board::Render() const
-{
-	std::vector<Vertex> verts;
-
-	Rgba8 boardTint( 230, 240, 215, 180 );
-	Rgba8 borderTint( 0, 0, 0, 255 );
-
-	AddVertsForQuad2D(
-		verts,
-		m_bottomLeft,
-		m_bottomRight,
-		m_topRight,
-		m_topLeft,
-		boardTint
-	);
-
-	g_engine->m_renderer->BindTexture( nullptr );
-	g_engine->m_renderer->DrawVertexArray( verts );
-
-	DebugDrawLine( m_bottomLeft, m_bottomRight, 0.4f, borderTint, borderTint );
-	DebugDrawLine( m_bottomRight, m_topRight, 0.4f, borderTint, borderTint );
-	DebugDrawLine( m_topRight, m_topLeft, 0.4f, borderTint, borderTint );
-	DebugDrawLine( m_topLeft, m_bottomLeft, 0.4f, borderTint, borderTint );
-
-	for ( Card* card : m_cards )
-	{
-		card->Render();
-	}
 }
 
 
@@ -115,106 +45,196 @@ void Board::CreateTestCards()
 	CardDefinition const* villagerDef = CardDefinition::GetCardDefinitionByName( "Villager" );
 	GUARANTEE_OR_DIE( villagerDef != nullptr, "Could not find CardDefinition: Villager" );
 
-	Vec2 firstCardPosition = Vec2( WORLD_SIZE_X * 0.5f, WORLD_SIZE_Y * 0.5f );
-	Card* firstCard = new Card( villagerDef, firstCardPosition );
+	CardStack* testStack = new CardStack();
+
+	Vec2 firstCardPos = Vec2( WORLD_SIZE_X * 0.5f, WORLD_SIZE_Y * 0.5f );
+	Card* firstCard = new Card( villagerDef, firstCardPos );
 	Card* secondCard = new Card( villagerDef, firstCard->GetNextPosition() );
 	Card* thirdCard = new Card( villagerDef, secondCard->GetNextPosition() );
-	m_cards.push_back( firstCard );
-	m_cards.push_back( secondCard );
-	m_cards.push_back( thirdCard );
+
+	testStack->AddCard( firstCard );
+	testStack->AddCard( secondCard );
+	testStack->AddCard( thirdCard );
+
+	m_cardStacks.push_back( testStack );
 }
 
 
 //-----------------------------------------------------------------------------------------------
-int Board::GetTopCardIndexAtPosition( Vec2 const& worldPosition ) const
+void Board::Update( Vec2 const& mouseWorldPosition )
 {
-	for ( int cardIndex = ( int ) m_cards.size() - 1; cardIndex >= 0; --cardIndex )
+	for ( CardStack* stack : m_cardStacks )
 	{
-		Card* card = m_cards[cardIndex];
-
-		if ( card != nullptr && card->IsPointInside( worldPosition ) )
+		if ( stack != nullptr )
 		{
-			return cardIndex;
+			stack->Update();
 		}
 	}
 
-	return -1;
+	bool wasLeftMouseJustPressed = g_engine->m_inputSystem->WasKeyJustPressed( KEYCODE_LBUTTON );
+	bool isLeftMouseDown = g_engine->m_inputSystem->IsKeyDown( KEYCODE_LBUTTON );
+	bool wasLeftMouseJustReleased = g_engine->m_inputSystem->WasKeyJustReleased( KEYCODE_LBUTTON );
+
+	if ( wasLeftMouseJustPressed )
+	{
+		CardHitResult hitResult = GetTopCardHitAtPosition( mouseWorldPosition );
+
+		if ( hitResult.IsValid() )
+		{
+			BeginDraggingStackFromHit( hitResult );
+			m_lastMouseWorldPosition = mouseWorldPosition;
+		}
+		else
+		{
+			ClearCardSelection();
+			EndDraggingStack();
+		}
+	}
+
+	if ( isLeftMouseDown && m_isDraggingCardStack && m_draggedStack != nullptr )
+	{
+		UpdateDraggedStack( mouseWorldPosition );
+	}
+
+	if ( wasLeftMouseJustReleased )
+	{
+		EndDraggingStack();
+	}
+
+	RemoveEmptyStacks();
 }
 
 
 //-----------------------------------------------------------------------------------------------
-void Board::BeginDraggingCardStack( int cardIndex, Vec2 const& mouseWorldPosition )
+void Board::Render() const
 {
-	m_draggedCards.clear();
-	m_dragOffsets.clear();
+	std::vector<Vertex> boardVerts;
 
-	if ( cardIndex < 0 || cardIndex >= ( int ) m_cards.size() )
+	Rgba8 boardTint( 230, 240, 215, 180 );
+
+	boardVerts.push_back( Vertex( Vec3( m_bottomLeft.x, m_bottomLeft.y, 0.f ), boardTint, Vec2( 0.f, 0.f ) ) );
+	boardVerts.push_back( Vertex( Vec3( m_bottomRight.x, m_bottomRight.y, 0.f ), boardTint, Vec2( 1.f, 0.f ) ) );
+	boardVerts.push_back( Vertex( Vec3( m_topRight.x, m_topRight.y, 0.f ), boardTint, Vec2( 1.f, 1.f ) ) );
+
+	boardVerts.push_back( Vertex( Vec3( m_bottomLeft.x, m_bottomLeft.y, 0.f ), boardTint, Vec2( 0.f, 0.f ) ) );
+	boardVerts.push_back( Vertex( Vec3( m_topRight.x, m_topRight.y, 0.f ), boardTint, Vec2( 1.f, 1.f ) ) );
+	boardVerts.push_back( Vertex( Vec3( m_topLeft.x, m_topLeft.y, 0.f ), boardTint, Vec2( 0.f, 1.f ) ) );
+
+	g_engine->m_renderer->BindTexture( nullptr );
+	g_engine->m_renderer->DrawVertexArray( boardVerts );
+
+	for ( CardStack* stack : m_cardStacks )
+	{
+		if ( stack != nullptr )
+		{
+			stack->Render();
+		}
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+CardHitResult Board::GetTopCardHitAtPosition( Vec2 const& worldPosition ) const
+{
+	for ( int stackIndex = ( int ) m_cardStacks.size() - 1; stackIndex >= 0; --stackIndex )
+	{
+		CardStack* stack = m_cardStacks[stackIndex];
+
+		if ( stack == nullptr )
+		{
+			continue;
+		}
+
+		int cardIndex = stack->GetTopCardIndexAtPosition( worldPosition );
+
+		if ( cardIndex >= 0 )
+		{
+			CardHitResult result;
+			result.m_stackIndex = stackIndex;
+			result.m_cardIndex = cardIndex;
+			return result;
+		}
+	}
+
+	return CardHitResult();
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Board::BeginDraggingStackFromHit( CardHitResult const& hitResult )
+{
+	if ( !hitResult.IsValid() )
+	{
+		return;
+	}
+
+	CardStack* sourceStack = m_cardStacks[hitResult.m_stackIndex];
+	if ( sourceStack == nullptr )
 	{
 		return;
 	}
 
 	ClearCardSelection();
 
-	for ( int index = cardIndex; index < ( int ) m_cards.size(); ++index )
-	{
-		Card* card = m_cards[index];
+	std::vector<Card*> draggedCards = sourceStack->RemoveCardsFromIndex( hitResult.m_cardIndex );
 
-		if ( card == nullptr )
-		{
-			continue;
-		}
+	CardStack* newDraggedStack = new CardStack();
+	newDraggedStack->AddCards( draggedCards );
+	newDraggedStack->SetCardsSelected( true );
 
-		card->SetIsSelected( true );
+	m_cardStacks.push_back( newDraggedStack );
 
-		m_draggedCards.push_back( card );
-		m_dragOffsets.push_back( card->GetPosition() - mouseWorldPosition );
-	}
-
-	m_isDraggingCard = !m_draggedCards.empty();
+	m_draggedStack = newDraggedStack;
+	m_isDraggingCardStack = true;
 }
 
 
 //-----------------------------------------------------------------------------------------------
-void Board::UpdateDraggingCardStack( Vec2 const& mouseWorldPosition )
+void Board::UpdateDraggedStack( Vec2 const& mouseWorldPosition )
 {
-	for ( int index = 0; index < ( int ) m_draggedCards.size(); ++index )
+	Vec2 mouseDelta = mouseWorldPosition - m_lastMouseWorldPosition;
+
+	if ( m_draggedStack != nullptr )
 	{
-		Card* card = m_draggedCards[index];
-
-		if ( card == nullptr )
-		{
-			continue;
-		}
-
-		card->SetPosition( mouseWorldPosition + m_dragOffsets[index] );
+		m_draggedStack->MoveByOffset( mouseDelta );
 	}
+
+	m_lastMouseWorldPosition = mouseWorldPosition;
 }
 
 
 //-----------------------------------------------------------------------------------------------
-void Board::EndDraggingCardStack()
+void Board::EndDraggingStack()
 {
-	m_isDraggingCard = false;
-	for ( Card* card : m_draggedCards )
-	{
-		if ( card != nullptr )
-		{
-			card->SetIsSelected( false );
-		}
-	}
-	m_draggedCards.clear();
-	m_dragOffsets.clear();
+	m_isDraggingCardStack = false;
+	m_draggedStack = nullptr;
 }
 
 
 //-----------------------------------------------------------------------------------------------
 void Board::ClearCardSelection()
 {
-	for ( Card* card : m_cards )
+	for ( CardStack* stack : m_cardStacks )
 	{
-		if ( card != nullptr )
+		if ( stack != nullptr )
 		{
-			card->SetIsSelected( false );
+			stack->SetCardsSelected( false );
+		}
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Board::RemoveEmptyStacks()
+{
+	for ( int stackIndex = ( int ) m_cardStacks.size() - 1; stackIndex >= 0; --stackIndex )
+	{
+		CardStack* stack = m_cardStacks[stackIndex];
+
+		if ( stack != nullptr && stack->IsEmpty() )
+		{
+			delete stack;
+			m_cardStacks.erase( m_cardStacks.begin() + stackIndex );
 		}
 	}
 }

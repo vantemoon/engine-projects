@@ -4,7 +4,20 @@
 
 
 //-----------------------------------------------------------------------------------------------
-class Card;
+class CardStack;
+
+
+//-----------------------------------------------------------------------------------------------
+struct CardHitResult
+{
+	int m_stackIndex = -1;
+	int m_cardIndex = -1;
+
+	bool IsValid() const
+	{
+		return m_stackIndex >= 0 && m_cardIndex >= 0;
+	}
+};
 
 
 //-----------------------------------------------------------------------------------------------
@@ -14,19 +27,21 @@ public:
 	Board();
 	~Board();
 
-	void Update( float deltaSeconds, Vec2 const& mouseWorldPosition );
+	void Update( Vec2 const& mouseWorldPosition );
 	void Render() const;
 
 private:
 	void CreateTestCards();
 
-	int GetTopCardIndexAtPosition( Vec2 const& worldPosition ) const;
+	CardHitResult GetTopCardHitAtPosition( Vec2 const& worldPosition ) const;
 
-	void BeginDraggingCardStack( int cardIndex, Vec2 const& mouseWorldPosition );
-	void UpdateDraggingCardStack( Vec2 const& mouseWorldPosition );
-	void EndDraggingCardStack();
+	void BeginDraggingStackFromHit( CardHitResult const& hitResult );
+	void UpdateDraggedStack( Vec2 const& mouseWorldPosition );
+	void EndDraggingStack();
 
 	void ClearCardSelection();
+
+	void RemoveEmptyStacks();
 
 private:
 	Vec2 m_bottomLeft;
@@ -34,10 +49,10 @@ private:
 	Vec2 m_topRight;
 	Vec2 m_topLeft;
 
-	std::vector<Card*> m_cards;
+	std::vector<CardStack*> m_cardStacks;
 
-	std::vector<Card*> m_draggedCards;
-	std::vector<Vec2> m_dragOffsets;
+	CardStack* m_draggedStack = nullptr;
+	Vec2 m_lastMouseWorldPosition = Vec2::ZERO;
 
-	bool m_isDraggingCard = false;
+	bool m_isDraggingCardStack = false;
 };

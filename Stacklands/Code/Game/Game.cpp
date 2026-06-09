@@ -91,10 +91,8 @@ void Game::Update()
 
 	if ( m_board != nullptr )
 	{
-		float deltaSeconds = ( float ) m_gameClock->GetDeltaSeconds();
 		Vec2 mouseWorldPosition = GetMouseWorldPosition();
-
-		m_board->Update( deltaSeconds, mouseWorldPosition );
+		m_board->Update( mouseWorldPosition );
 	}
 
 	g_app->m_game->DeleteGarbageEntities();
@@ -456,6 +454,14 @@ void Game::Reset()
 {
 	m_isScreenShaking = false;
 	m_isDebugFeaturesOn = false;
+
+	if ( m_board != nullptr )
+	{
+		delete m_board;
+		m_board = nullptr;
+	}
+
+	m_board = new Board();
 }
 
 

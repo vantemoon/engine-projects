@@ -37,6 +37,9 @@
     <ClCompile Include="CardDefinition.cpp">
       <Filter>Gameplay\Cards</Filter>
     </ClCompile>
+    <ClCompile Include="CardStack.cpp">
+      <Filter>Gameplay\Cards</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.hpp">
@@ -58,6 +61,9 @@
       <Filter>Gameplay\Cards</Filter>
     </ClInclude>
     <ClInclude Include="CardDefinition.hpp">
+      <Filter>Gameplay\Cards</Filter>
+    </ClInclude>
+    <ClInclude Include="CardStack.hpp">
       <Filter>Gameplay\Cards</Filter>
     </ClInclude>
   </ItemGroup>
