@@ -1,5 +1,6 @@
 #pragma once
 #include "Game/GameCommon.hpp"
+#include "Game/Board.hpp"
 #include "Engine/Audio/AudioSystem.hpp"
 #include "Engine/Core/Clock.hpp"
 #include "Engine/Core/Rgba8.hpp"
@@ -29,6 +30,8 @@ public:
 
 	Clock*		m_gameClock = nullptr;
 
+	Board*		m_board = nullptr;
+
 public:
 	Game();
 	~Game();
@@ -40,7 +43,6 @@ public:
 	void UpdateFromController();
 	void ScreenShake( float intensity );
 	void Render()													  const;
-	void RenderEntities()											  const;
 	void RenderHUD()												  const;
 	void RenderAttractMode()										  const;
 	void RenderDevConsole()											  const;

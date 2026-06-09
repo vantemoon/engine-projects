@@ -136,6 +136,18 @@ void AddVertsForAABB2D( std::vector<Vertex>& verts, AABB2 const& alignedBox, Rgb
 
 
 //-----------------------------------------------------------------------------------------------
+void AddVertsForQuad2D( std::vector<Vertex>& verts, Vec2 const& bottomLeft, Vec2 const& bottomRight, Vec2 const& topRight, Vec2 const& topLeft, Rgba8 const& color )
+{
+	verts.push_back( Vertex( Vec3( bottomLeft.x, bottomLeft.y, 0.f ), color, Vec2( 0.f, 0.f ) ) );
+	verts.push_back( Vertex( Vec3( bottomRight.x, bottomRight.y, 0.f ), color, Vec2( 1.f, 0.f ) ) );
+	verts.push_back( Vertex( Vec3( topRight.x, topRight.y, 0.f ), color, Vec2( 1.f, 1.f ) ) );
+	verts.push_back( Vertex( Vec3( bottomLeft.x, bottomLeft.y, 0.f ), color, Vec2( 0.f, 0.f ) ) );
+	verts.push_back( Vertex( Vec3( topRight.x, topRight.y, 0.f ), color, Vec2( 1.f, 1.f ) ) );
+	verts.push_back( Vertex( Vec3( topLeft.x, topLeft.y, 0.f ), color, Vec2( 0.f, 1.f ) ) );
+}
+
+
+//-----------------------------------------------------------------------------------------------
 void AddVertsForOBB2D( std::vector<Vertex>& verts, OBB2 const& orientedBox, Rgba8 const& color )
 {
 	Vec2 corners[4];

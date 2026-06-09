@@ -8,6 +8,9 @@
     <Filter Include="Gameplay">
       <UniqueIdentifier>{7b6b75cb-8cd0-43ff-8c38-ebc826d155b4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Gameplay\Board">
+      <UniqueIdentifier>{664d0d06-d415-4155-a44b-a33a0562a952}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main_Windows.cpp">
@@ -22,6 +25,9 @@
     <ClCompile Include="GameCommon.cpp">
       <Filter>Framework</Filter>
     </ClCompile>
+    <ClCompile Include="Board.cpp">
+      <Filter>Gameplay\Board</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.hpp">
@@ -35,6 +41,9 @@
     </ClInclude>
     <ClInclude Include="EngineBuildPreferences.hpp">
       <Filter>Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="Board.hpp">
+      <Filter>Gameplay\Board</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

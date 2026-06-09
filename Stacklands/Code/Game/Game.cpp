@@ -31,6 +31,8 @@ Game::Game()
 	m_currentGameState = ATTRACT_MODE;
 
 	m_gameClock = new Clock();
+
+	m_board = new Board();
 }
 
 
@@ -42,6 +44,12 @@ Game::~Game()
 
 	delete m_screenCamera;
 	m_screenCamera = nullptr;
+
+	delete m_gameClock;
+	m_gameClock = nullptr;
+
+	delete m_board;
+	m_board = nullptr;
 }
 
 
@@ -74,6 +82,11 @@ void Game::Update()
 	UpdateFromKeyboard();
 	UpdateFromController();
 	UpdateEntities();
+
+	if ( m_board != nullptr )
+	{
+		m_board->Update( ( float ) m_gameClock->GetDeltaSeconds() );
+	}
 
 	g_app->m_game->DeleteGarbageEntities();
 
@@ -250,7 +263,21 @@ void Game::Render() const
 
 	g_engine->m_renderer->BeginCamera( *m_worldCamera );
 
-	RenderEntities();
+	// Render background
+	std::vector<Vertex> backgroundVerts;
+
+	AABB2 worldBounds = AABB2( Vec2( 0.f, 0.f ), Vec2( WORLD_SIZE_X, WORLD_SIZE_Y ) );
+	Texture* backgroundTexture = g_engine->m_renderer->CreateOrGetTextureFromFile( "Data/Images/Background.png" );
+	AddVertsForAABB2D( backgroundVerts, worldBounds, Rgba8::WHITE );
+
+	g_engine->m_renderer->BindTexture( backgroundTexture );
+	g_engine->m_renderer->DrawVertexArray( backgroundVerts );
+
+	if ( m_board != nullptr )
+	{
+		m_board->Render();
+	}
+
 	RenderHUD();
 
 	if ( m_isDebugFeaturesOn )
@@ -273,17 +300,6 @@ void Game::RenderAttractMode() const
 	// Render 
 
 	g_engine->m_renderer->EndCamera( *m_screenCamera );
-}
-
-
-//-----------------------------------------------------------------------------------------------
-void Game::RenderEntities() const
-{
-	g_engine->m_renderer->BeginCamera( *m_worldCamera );
-
-	// #ToDo: Render all entities in the game world
-
-	g_engine->m_renderer->EndCamera( *m_worldCamera );
 }
 
 
