@@ -2,7 +2,17 @@
 	<CardDefinition
 		name="Villager"
 		category="Villager"
-		description="A basic worker who can gather resources."
+		description="A hard-working pioneer."
 		texture="Data/Images/Cards/Villager.png"
-		maxStackSize="99" />
+		maxStackSize="99">
+		<Villager food="2"/>
+		<Combat 
+			combatLevel="14" 
+			health="15" 
+			attackType="Melee" 
+			attackSpeed="3" 
+			hitChance="70" 
+			damage="2" 
+			defense="1"/>
+	</CardDefinition>
 </CardDefinitions>
