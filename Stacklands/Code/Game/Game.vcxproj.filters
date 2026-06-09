@@ -11,6 +11,9 @@
     <Filter Include="Gameplay\Board">
       <UniqueIdentifier>{664d0d06-d415-4155-a44b-a33a0562a952}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Gameplay\Cards">
+      <UniqueIdentifier>{909508df-9b9b-459b-84f3-785f6fddace6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main_Windows.cpp">
@@ -28,6 +31,9 @@
     <ClCompile Include="Board.cpp">
       <Filter>Gameplay\Board</Filter>
     </ClCompile>
+    <ClCompile Include="Card.cpp">
+      <Filter>Gameplay\Cards</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.hpp">
@@ -44,6 +50,9 @@
     </ClInclude>
     <ClInclude Include="Board.hpp">
       <Filter>Gameplay\Board</Filter>
+    </ClInclude>
+    <ClInclude Include="Card.hpp">
+      <Filter>Gameplay\Cards</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -26,6 +26,7 @@
   <ItemGroup>
     <ClCompile Include="App.cpp" />
     <ClCompile Include="Board.cpp" />
+    <ClCompile Include="Card.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameCommon.cpp" />
     <ClCompile Include="Main_Windows.cpp" />
@@ -33,6 +34,7 @@
   <ItemGroup>
     <ClInclude Include="App.hpp" />
     <ClInclude Include="Board.hpp" />
+    <ClInclude Include="Card.hpp" />
     <ClInclude Include="EngineBuildPreferences.hpp" />
     <ClInclude Include="Game.hpp" />
     <ClInclude Include="GameCommon.hpp" />

@@ -1,5 +1,7 @@
 #pragma once
+#include "Game/Card.hpp"
 #include "Engine/Math/Vec2.hpp"
+#include <vector>
 
 
 //-----------------------------------------------------------------------------------------------
@@ -17,4 +19,6 @@ private:
 	Vec2 m_bottomRight;
 	Vec2 m_topRight;
 	Vec2 m_topLeft;
+
+	std::vector<Card*> m_cards;
 };
