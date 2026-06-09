@@ -111,17 +111,24 @@ void Board::Render() const
 	std::vector<Vertex> boardVerts;
 
 	Rgba8 boardTint( 230, 240, 215, 180 );
+	Rgba8 borderTint( 0, 0, 0, 255 );
 
-	boardVerts.push_back( Vertex( Vec3( m_bottomLeft.x, m_bottomLeft.y, 0.f ), boardTint, Vec2( 0.f, 0.f ) ) );
-	boardVerts.push_back( Vertex( Vec3( m_bottomRight.x, m_bottomRight.y, 0.f ), boardTint, Vec2( 1.f, 0.f ) ) );
-	boardVerts.push_back( Vertex( Vec3( m_topRight.x, m_topRight.y, 0.f ), boardTint, Vec2( 1.f, 1.f ) ) );
-
-	boardVerts.push_back( Vertex( Vec3( m_bottomLeft.x, m_bottomLeft.y, 0.f ), boardTint, Vec2( 0.f, 0.f ) ) );
-	boardVerts.push_back( Vertex( Vec3( m_topRight.x, m_topRight.y, 0.f ), boardTint, Vec2( 1.f, 1.f ) ) );
-	boardVerts.push_back( Vertex( Vec3( m_topLeft.x, m_topLeft.y, 0.f ), boardTint, Vec2( 0.f, 1.f ) ) );
+	AddVertsForQuad2D(
+		boardVerts,
+		m_bottomLeft,
+		m_bottomRight,
+		m_topRight,
+		m_topLeft,
+		boardTint
+	);
 
 	g_engine->m_renderer->BindTexture( nullptr );
 	g_engine->m_renderer->DrawVertexArray( boardVerts );
+
+	DebugDrawLine( m_bottomLeft, m_bottomRight, 0.4f, borderTint, borderTint );
+	DebugDrawLine( m_bottomRight, m_topRight, 0.4f, borderTint, borderTint );
+	DebugDrawLine( m_topRight, m_topLeft, 0.4f, borderTint, borderTint );
+	DebugDrawLine( m_topLeft, m_bottomLeft, 0.4f, borderTint, borderTint );
 
 	for ( CardStack* stack : m_cardStacks )
 	{
