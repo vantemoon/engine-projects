@@ -160,6 +160,16 @@ LRESULT CALLBACK WindowsMessageHandlingProcedure( HWND windowHandle, UINT wmMess
 			}
 			return 0;
 		}
+
+		case WM_MOUSEWHEEL:
+		{
+			if ( g_engine->m_inputSystem )
+			{
+				int wheelDelta = GET_WHEEL_DELTA_WPARAM( wParam );
+				g_engine->m_inputSystem->HandleMouseWheelScrolled( wheelDelta );
+			}
+			return 0;
+		}
 	}
 
 	// Send back to Windows any unhandled/unconsumed messages we want other apps to see (e.g. play/pause in music apps, etc.)

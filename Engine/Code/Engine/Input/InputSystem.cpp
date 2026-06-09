@@ -144,6 +144,8 @@ void InputSystem::EndFrame()
 	{
 		m_keyStates[keyIndex].m_wasPressedLastFrame = m_keyStates[keyIndex].m_isPressed;
 	}
+
+	m_mouseWheelDelta = 0;
 }
 
 
@@ -221,6 +223,20 @@ IntVec2 InputSystem::GetCursorNormalizedPosition() const
 	IntVec2 cursorPosition = GetCursorClientPosition();
 	IntVec2 normalizedPosition = IntVec2( cursorPosition.x * 1000 / clientDimensions.x, cursorPosition.y * 1000 / clientDimensions.y );
 	return normalizedPosition;
+}
+
+
+//----------------------------------------------------------------
+int InputSystem::GetMouseWheelDelta() const
+{
+	return m_mouseWheelDelta;
+}
+
+
+//----------------------------------------------------------------
+void InputSystem::HandleMouseWheelScrolled( int wheelDelta )
+{
+	m_mouseWheelDelta += wheelDelta;
 }
 
 

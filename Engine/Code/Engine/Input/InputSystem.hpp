@@ -90,6 +90,8 @@ public:
 	IntVec2 GetCursorClientPosition() const;
 	IntVec2 GetCursorNormalizedPosition() const;
 
+	int GetMouseWheelDelta() const;
+	void HandleMouseWheelScrolled( int wheelDelta );
 
 	static bool Event_KeyPressed( EventArgs& args );
 	static bool Event_KeyReleased( EventArgs& args );
@@ -107,4 +109,6 @@ protected:
 		XboxController( 2 ), 
 		XboxController( 3 ) 
 	};
+
+	int m_mouseWheelDelta = 0;
 };

@@ -25,9 +25,11 @@ Game::Game()
 	m_worldCamera = new Camera();
 	m_screenCamera = new Camera();
 
-	m_worldCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( WORLD_SIZE_X, WORLD_SIZE_Y ) );
 	m_screenCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) );
-	m_worldCameraPosition = Vec2( WORLD_SIZE_X * 0.5f, WORLD_SIZE_Y * 0.5f );
+	
+	m_cameraCenter = Vec2( WORLD_SIZE_X * 0.5f, WORLD_SIZE_Y * 0.5f );
+	m_cameraZoom = 1.f;
+	ApplyWorldCameraView();
 
 	m_currentGameState = ATTRACT_MODE;
 
@@ -82,6 +84,7 @@ void Game::Update()
 
 	UpdateFromKeyboard();
 	UpdateFromController();
+
 	UpdateCamera();
 
 	if ( m_board != nullptr )
@@ -114,34 +117,93 @@ void Game::Update()
 //-----------------------------------------------------------------------------------------------
 void Game::UpdateCamera()
 {
-	Vec2 moveDirection = Vec2::ZERO;
-	float cameraMoveSpeed = 50.f;
-	float deltaSeconds = ( float ) m_gameClock->GetDeltaSeconds();
+	float mouseWheelDelta = ( float ) g_engine->m_inputSystem->GetMouseWheelDelta();
 
-	if ( g_engine->m_inputSystem->IsKeyDown( 'W' ) ) 
+	if ( mouseWheelDelta > 0.f )
 	{
-		moveDirection.y += 1.f;
+		m_cameraZoom += m_cameraZoomStep;
 	}
-	if ( g_engine->m_inputSystem->IsKeyDown( 'S' ) ) 
+	else if ( mouseWheelDelta < 0.f )
 	{
-		moveDirection.y -= 1.f;
-	}
-	if ( g_engine->m_inputSystem->IsKeyDown( 'A' ) ) 
-	{
-		moveDirection.x -= 1.f;
-	}
-	if ( g_engine->m_inputSystem->IsKeyDown( 'D' ) ) 
-	{
-		moveDirection.x += 1.f;
+		m_cameraZoom -= m_cameraZoomStep;
 	}
 
-	if ( moveDirection.GetLengthSquared() > 0.f )
+	m_cameraZoom = GetClamped( m_cameraZoom, m_minCameraZoom, m_maxCameraZoom );
+
+	if ( m_cameraZoom > m_minCameraZoom )
 	{
-		moveDirection.Normalize();
+		Vec2 moveDirection = Vec2::ZERO;
+
+		if ( g_engine->m_inputSystem->IsKeyDown( 'W' ) )
+		{
+			moveDirection.y += 1.f;
+		}
+
+		if ( g_engine->m_inputSystem->IsKeyDown( 'S' ) )
+		{
+			moveDirection.y -= 1.f;
+		}
+
+		if ( g_engine->m_inputSystem->IsKeyDown( 'A' ) )
+		{
+			moveDirection.x -= 1.f;
+		}
+
+		if ( g_engine->m_inputSystem->IsKeyDown( 'D' ) )
+		{
+			moveDirection.x += 1.f;
+		}
+
+		if ( moveDirection.GetLengthSquared() > 0.f )
+		{
+			moveDirection.Normalize();
+
+			float deltaSeconds = ( float ) m_gameClock->GetDeltaSeconds();
+			float adjustedMoveSpeed = m_cameraMoveSpeed / m_cameraZoom;
+			m_cameraCenter += moveDirection * adjustedMoveSpeed * deltaSeconds;
+		}
 	}
 
-	Vec2 translation = moveDirection * cameraMoveSpeed * deltaSeconds;
-	m_worldCamera->Translate2D( translation );
+	ApplyWorldCameraView();
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game::ApplyWorldCameraView()
+{
+	float viewWidth = WORLD_SIZE_X / m_cameraZoom;
+	float viewHeight = WORLD_SIZE_Y / m_cameraZoom;
+
+	Vec2 halfViewSize = Vec2( viewWidth * 0.5f, viewHeight * 0.5f );
+
+	float minCenterX = halfViewSize.x;
+	float maxCenterX = WORLD_SIZE_X - halfViewSize.x;
+
+	float minCenterY = halfViewSize.y;
+	float maxCenterY = WORLD_SIZE_Y - halfViewSize.y;
+
+	if ( minCenterX > maxCenterX )
+	{
+		m_cameraCenter.x = WORLD_SIZE_X * 0.5f;
+	}
+	else
+	{
+		m_cameraCenter.x = GetClamped( m_cameraCenter.x, minCenterX, maxCenterX );
+	}
+
+	if ( minCenterY > maxCenterY )
+	{
+		m_cameraCenter.y = WORLD_SIZE_Y * 0.5f;
+	}
+	else
+	{
+		m_cameraCenter.y = GetClamped( m_cameraCenter.y, minCenterY, maxCenterY );
+	}
+
+	Vec2 bottomLeft = m_cameraCenter - halfViewSize;
+	Vec2 topRight = m_cameraCenter + halfViewSize;
+
+	m_worldCamera->SetOrthoView( bottomLeft, topRight );
 }
 
 
