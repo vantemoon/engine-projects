@@ -117,57 +117,50 @@ void Game::Update()
 //-----------------------------------------------------------------------------------------------
 void Game::UpdateCamera()
 {
+	int mouseWheelDelta = g_engine->m_inputSystem->GetMouseWheelDelta();
+
+	if ( mouseWheelDelta != 0 )
+	{
+		Vec2 mouseWorldBeforeZoom = GetMouseWorldPosition();
+
+		float oldTargetZoom = m_targetCameraZoom;
+
+		if ( mouseWheelDelta > 0 )
+		{
+			m_targetCameraZoom += m_cameraZoomStep;
+		}
+		else
+		{
+			m_targetCameraZoom -= m_cameraZoomStep;
+		}
+
+		m_targetCameraZoom = GetClamped( m_targetCameraZoom, m_minCameraZoom, m_maxCameraZoom );
+
+		float oldViewWidth = WORLD_SIZE_X / oldTargetZoom;
+		float oldViewHeight = WORLD_SIZE_Y / oldTargetZoom;
+
+		float newViewWidth = WORLD_SIZE_X / m_targetCameraZoom;
+		float newViewHeight = WORLD_SIZE_Y / m_targetCameraZoom;
+
+		Vec2 oldBottomLeft = m_targetCameraCenter - Vec2( oldViewWidth * 0.5f, oldViewHeight * 0.5f );
+
+		float mousePercentX = ( mouseWorldBeforeZoom.x - oldBottomLeft.x ) / oldViewWidth;
+		float mousePercentY = ( mouseWorldBeforeZoom.y - oldBottomLeft.y ) / oldViewHeight;
+
+		Vec2 newBottomLeft = mouseWorldBeforeZoom - Vec2(
+			newViewWidth * mousePercentX,
+			newViewHeight * mousePercentY
+		);
+
+		m_targetCameraCenter = newBottomLeft + Vec2( newViewWidth * 0.5f, newViewHeight * 0.5f );
+	}
+
 	float deltaSeconds = ( float ) m_gameClock->GetDeltaSeconds();
-	float mouseWheelDelta = ( float ) g_engine->m_inputSystem->GetMouseWheelDelta();
-
-	if ( mouseWheelDelta > 0 )
-	{
-		m_targetCameraZoom += m_cameraZoomStep;
-	}
-	else if ( mouseWheelDelta < 0 )
-	{
-		m_targetCameraZoom -= m_cameraZoomStep;
-	}
-
-	m_targetCameraZoom = GetClamped( m_targetCameraZoom, m_minCameraZoom, m_maxCameraZoom );
-
 	float lerpFraction = m_cameraZoomLerpSpeed * deltaSeconds;
 	lerpFraction = GetClamped( lerpFraction, 0.f, 1.f );
 
-	m_cameraZoom = Interpolate( m_cameraZoom, m_targetCameraZoom, lerpFraction );
-
-	if ( m_cameraZoom > m_minCameraZoom )
-	{
-		Vec2 moveDirection = Vec2::ZERO;
-
-		if ( g_engine->m_inputSystem->IsKeyDown( 'W' ) )
-		{
-			moveDirection.y += 1.f;
-		}
-
-		if ( g_engine->m_inputSystem->IsKeyDown( 'S' ) )
-		{
-			moveDirection.y -= 1.f;
-		}
-
-		if ( g_engine->m_inputSystem->IsKeyDown( 'A' ) )
-		{
-			moveDirection.x -= 1.f;
-		}
-
-		if ( g_engine->m_inputSystem->IsKeyDown( 'D' ) )
-		{
-			moveDirection.x += 1.f;
-		}
-
-		if ( moveDirection.GetLengthSquared() > 0.f )
-		{
-			moveDirection.Normalize();
-
-			float adjustedMoveSpeed = m_cameraMoveSpeed / m_cameraZoom;
-			m_cameraCenter += moveDirection * adjustedMoveSpeed * deltaSeconds;
-		}
-	}
+	m_cameraZoom = m_cameraZoom + ( m_targetCameraZoom - m_cameraZoom ) * lerpFraction;
+	m_cameraCenter = m_cameraCenter + ( m_targetCameraCenter - m_cameraCenter ) * lerpFraction;
 
 	ApplyWorldCameraView();
 }
@@ -187,23 +180,8 @@ void Game::ApplyWorldCameraView()
 	float minCenterY = halfViewSize.y;
 	float maxCenterY = WORLD_SIZE_Y - halfViewSize.y;
 
-	if ( minCenterX > maxCenterX )
-	{
-		m_cameraCenter.x = WORLD_SIZE_X * 0.5f;
-	}
-	else
-	{
-		m_cameraCenter.x = GetClamped( m_cameraCenter.x, minCenterX, maxCenterX );
-	}
-
-	if ( minCenterY > maxCenterY )
-	{
-		m_cameraCenter.y = WORLD_SIZE_Y * 0.5f;
-	}
-	else
-	{
-		m_cameraCenter.y = GetClamped( m_cameraCenter.y, minCenterY, maxCenterY );
-	}
+	m_cameraCenter.x = GetClamped( m_cameraCenter.x, minCenterX, maxCenterX );
+	m_cameraCenter.y = GetClamped( m_cameraCenter.y, minCenterY, maxCenterY );
 
 	Vec2 bottomLeft = m_cameraCenter - halfViewSize;
 	Vec2 topRight = m_cameraCenter + halfViewSize;
@@ -442,7 +420,26 @@ Vec3 Game::TransformWorldToScreen( Vec3 const& worldPosition ) const
 //-----------------------------------------------------------------------------------------------
 void Game::Reset()
 {
-	// #ToDo: Delete all entities and reset game state
 	m_isScreenShaking = false;
 	m_isDebugFeaturesOn = false;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+Vec2 Game::GetMouseWorldPosition() const
+{
+	IntVec2 mouseClientPos = g_engine->m_inputSystem->GetCursorClientPosition();
+
+	float mouseUVX = static_cast<float>( mouseClientPos.x ) / static_cast<float>( g_engine->m_window->GetClientDimensions().x );
+	float mouseUVY = 1.f - ( static_cast<float>( mouseClientPos.y ) / static_cast<float>( g_engine->m_window->GetClientDimensions().y ) );
+
+	Vec2 cameraBottomLeft = m_worldCamera->GetOrthoBottomLeft();
+	Vec2 cameraTopRight = m_worldCamera->GetOrthoTopRight();
+
+	Vec2 cameraSize = cameraTopRight - cameraBottomLeft;
+
+	return Vec2(
+		cameraBottomLeft.x + cameraSize.x * mouseUVX,
+		cameraBottomLeft.y + cameraSize.y * mouseUVY
+	);
 }

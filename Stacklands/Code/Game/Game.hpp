@@ -20,10 +20,11 @@ public:
 	Camera*     m_screenCamera = nullptr;
 	
 	Vec2		m_cameraCenter = Vec2::ZERO;
+	Vec2		m_targetCameraCenter = Vec2::ZERO;
 	float		m_cameraMoveSpeed = 50.f;
 	float		m_cameraZoom = 1.f;
 	float		m_targetCameraZoom = 1.f;
-	float		m_cameraZoomLerpSpeed = 10.f;
+	float		m_cameraZoomLerpSpeed = 8.f;
 	float		m_minCameraZoom = 1.f;
 	float		m_maxCameraZoom = 3.f;
 	float		m_cameraZoomStep = 0.25f;
@@ -63,4 +64,5 @@ private:
 	void DeleteGarbageEntities();
 	void DebugDraw()												   const;
 	Vec3 TransformWorldToScreen( Vec3 const& worldPosition )		   const;
+	Vec2 GetMouseWorldPosition()                                       const;
 };
