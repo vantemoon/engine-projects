@@ -18,6 +18,7 @@ class Game
 public:
 	Camera*     m_worldCamera = nullptr;
 	Camera*     m_screenCamera = nullptr;
+	Vec2        m_worldCameraPosition;
 
 	bool        m_isScreenShaking = false;
 	float	    m_screenShakeIntensity = 0.f;
@@ -37,8 +38,8 @@ public:
 	~Game();
 
 	void Update();
+	void UpdateCamera();
 	void UpdateAttractMode();
-	void UpdateEntities();
 	void UpdateFromKeyboard();
 	void UpdateFromController();
 	void ScreenShake( float intensity );

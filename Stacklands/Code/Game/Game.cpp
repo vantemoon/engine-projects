@@ -27,6 +27,7 @@ Game::Game()
 
 	m_worldCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( WORLD_SIZE_X, WORLD_SIZE_Y ) );
 	m_screenCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) );
+	m_worldCameraPosition = Vec2( WORLD_SIZE_X * 0.5f, WORLD_SIZE_Y * 0.5f );
 
 	m_currentGameState = ATTRACT_MODE;
 
@@ -81,7 +82,7 @@ void Game::Update()
 
 	UpdateFromKeyboard();
 	UpdateFromController();
-	UpdateEntities();
+	UpdateCamera();
 
 	if ( m_board != nullptr )
 	{
@@ -89,9 +90,6 @@ void Game::Update()
 	}
 
 	g_app->m_game->DeleteGarbageEntities();
-
-	m_worldCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( WORLD_SIZE_X, WORLD_SIZE_Y ) );
-	m_screenCamera->SetOrthoView( Vec2( 0.f, 0.f ), Vec2( SCREEN_SIZE_X, SCREEN_SIZE_Y ) );
 
 	if ( m_isScreenShaking )
 	{
@@ -110,6 +108,40 @@ void Game::Update()
 			m_screenShakeStartTime = 0.f;
 		}
 	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void Game::UpdateCamera()
+{
+	Vec2 moveDirection = Vec2::ZERO;
+	float cameraMoveSpeed = 50.f;
+	float deltaSeconds = ( float ) m_gameClock->GetDeltaSeconds();
+
+	if ( g_engine->m_inputSystem->IsKeyDown( 'W' ) ) 
+	{
+		moveDirection.y += 1.f;
+	}
+	if ( g_engine->m_inputSystem->IsKeyDown( 'S' ) ) 
+	{
+		moveDirection.y -= 1.f;
+	}
+	if ( g_engine->m_inputSystem->IsKeyDown( 'A' ) ) 
+	{
+		moveDirection.x -= 1.f;
+	}
+	if ( g_engine->m_inputSystem->IsKeyDown( 'D' ) ) 
+	{
+		moveDirection.x += 1.f;
+	}
+
+	if ( moveDirection.GetLengthSquared() > 0.f )
+	{
+		moveDirection.Normalize();
+	}
+
+	Vec2 translation = moveDirection * cameraMoveSpeed * deltaSeconds;
+	m_worldCamera->Translate2D( translation );
 }
 
 
@@ -231,13 +263,6 @@ void Game::UpdateFromController()
 
 
 //-----------------------------------------------------------------------------------------------
-void Game::UpdateEntities()
-{
-	// #ToDo: Update all entities in the game world
-}
-
-
-//-----------------------------------------------------------------------------------------------
 void Game::DebugDraw() const
 {
 	g_engine->m_renderer->BeginCamera( *m_worldCamera );
@@ -278,14 +303,14 @@ void Game::Render() const
 		m_board->Render();
 	}
 
-	RenderHUD();
-
 	if ( m_isDebugFeaturesOn )
 	{
 		DebugDraw();
 	}
 
 	g_engine->m_renderer->EndCamera( *m_worldCamera );
+
+	RenderHUD();
 }
 
 
