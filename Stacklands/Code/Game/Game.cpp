@@ -117,18 +117,24 @@ void Game::Update()
 //-----------------------------------------------------------------------------------------------
 void Game::UpdateCamera()
 {
+	float deltaSeconds = ( float ) m_gameClock->GetDeltaSeconds();
 	float mouseWheelDelta = ( float ) g_engine->m_inputSystem->GetMouseWheelDelta();
 
-	if ( mouseWheelDelta > 0.f )
+	if ( mouseWheelDelta > 0 )
 	{
-		m_cameraZoom += m_cameraZoomStep;
+		m_targetCameraZoom += m_cameraZoomStep;
 	}
-	else if ( mouseWheelDelta < 0.f )
+	else if ( mouseWheelDelta < 0 )
 	{
-		m_cameraZoom -= m_cameraZoomStep;
+		m_targetCameraZoom -= m_cameraZoomStep;
 	}
 
-	m_cameraZoom = GetClamped( m_cameraZoom, m_minCameraZoom, m_maxCameraZoom );
+	m_targetCameraZoom = GetClamped( m_targetCameraZoom, m_minCameraZoom, m_maxCameraZoom );
+
+	float lerpFraction = m_cameraZoomLerpSpeed * deltaSeconds;
+	lerpFraction = GetClamped( lerpFraction, 0.f, 1.f );
+
+	m_cameraZoom = Interpolate( m_cameraZoom, m_targetCameraZoom, lerpFraction );
 
 	if ( m_cameraZoom > m_minCameraZoom )
 	{
@@ -158,7 +164,6 @@ void Game::UpdateCamera()
 		{
 			moveDirection.Normalize();
 
-			float deltaSeconds = ( float ) m_gameClock->GetDeltaSeconds();
 			float adjustedMoveSpeed = m_cameraMoveSpeed / m_cameraZoom;
 			m_cameraCenter += moveDirection * adjustedMoveSpeed * deltaSeconds;
 		}
