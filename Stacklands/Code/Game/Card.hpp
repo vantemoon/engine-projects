@@ -1,4 +1,5 @@
 #pragma once
+#include "Game/CardDefinition.hpp"
 #include "Engine/Math/Vec2.hpp"
 #include "Engine/Math/AABB2.hpp"
 #include "Engine/Core/Rgba8.hpp"
@@ -9,7 +10,7 @@
 class Card
 {
 public:
-	Card( Vec2 const& position, std::string const& name );
+	Card( Vec2 const& position, CardDefinition const* definition );
 
 	void Update( float deltaSeconds );
 	void Render() const;
@@ -20,11 +21,8 @@ public:
 	AABB2 GetBounds() const;
 
 private:
+	CardDefinition const* m_definition = nullptr;
+
 	Vec2 m_position = Vec2::ZERO;
-	Vec2 m_size = Vec2( 10.f, 14.f );
-
-	std::string m_name = "Card";
-
-	Rgba8 m_bodyTint = Rgba8( 245, 235, 210, 255 );
-	Rgba8 m_borderTint = Rgba8( 40, 35, 30, 255 );
+	Vec2 m_size = Vec2( 12.f, 14.5f );
 };

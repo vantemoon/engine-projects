@@ -1,4 +1,6 @@
 #include "Game/Board.hpp"
+#include "Game/Card.hpp"
+#include "Game/CardDefinition.hpp"
 #include "Game/GameCommon.hpp"
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/VertexUtils.hpp"
@@ -13,7 +15,11 @@ Board::Board()
 	m_topRight = Vec2( WORLD_SIZE_X * 0.825f, WORLD_SIZE_Y * 0.80f );
 	m_topLeft = Vec2( WORLD_SIZE_X * 0.175f, WORLD_SIZE_Y * 0.80f );
 
-	m_cards.push_back( new Card( Vec2( WORLD_SIZE_X * 0.5f, WORLD_SIZE_Y * 0.45f ), "Villager" ) );
+	CardDefinition::InitializeDefinitions();
+
+	CardDefinition const* villagerDef = CardDefinition::GetCardDefinitionByName( "Villager" );
+	Card* card = new Card( Vec2( WORLD_SIZE_X * 0.5f, WORLD_SIZE_Y * 0.5f ), villagerDef );
+	m_cards.push_back( card );
 }
 
 
@@ -25,6 +31,8 @@ Board::~Board()
 		delete card;
 	}
 	m_cards.clear();
+
+	CardDefinition::ClearDefinitions();
 }
 
 

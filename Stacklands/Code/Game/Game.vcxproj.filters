@@ -34,6 +34,9 @@
     <ClCompile Include="Card.cpp">
       <Filter>Gameplay\Cards</Filter>
     </ClCompile>
+    <ClCompile Include="CardDefinition.cpp">
+      <Filter>Gameplay\Cards</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.hpp">
@@ -54,5 +57,13 @@
     <ClInclude Include="Card.hpp">
       <Filter>Gameplay\Cards</Filter>
     </ClInclude>
+    <ClInclude Include="CardDefinition.hpp">
+      <Filter>Gameplay\Cards</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Xml Include="..\..\Run\Data\Definitions\CardDefinitions.xml">
+      <Filter>Gameplay\Cards</Filter>
+    </Xml>
   </ItemGroup>
 </Project>

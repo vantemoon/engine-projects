@@ -6,9 +6,9 @@
 
 
 //-----------------------------------------------------------------------------------------------
-Card::Card( Vec2 const& position, std::string const& name )
+Card::Card( Vec2 const& position, CardDefinition const* definition )
 	: m_position( position )
-	, m_name( name )
+	, m_definition( definition )
 {
 }
 
@@ -27,15 +27,10 @@ void Card::Render() const
 
 	std::vector<Vertex> verts;
 
-	AddVertsForAABB2D( verts, bounds, m_bodyTint );
+	AddVertsForAABB2D( verts, bounds, Rgba8::WHITE );
 
-	g_engine->m_renderer->BindTexture( nullptr );
+	g_engine->m_renderer->BindTexture( m_definition->m_texture );
 	g_engine->m_renderer->DrawVertexArray( verts );
-
-	DebugDrawLine( Vec2( bounds.m_maxs.x, bounds.m_mins.y ), bounds.m_maxs, 0.4f, m_borderTint, m_borderTint );
-	DebugDrawLine( bounds.m_maxs, Vec2( bounds.m_mins.x, bounds.m_maxs.y ), 0.4f, m_borderTint, m_borderTint );
-	DebugDrawLine( Vec2( bounds.m_mins.x, bounds.m_maxs.y ), bounds.m_mins, 0.4f, m_borderTint, m_borderTint );
-	DebugDrawLine( bounds.m_mins, Vec2( bounds.m_maxs.x, bounds.m_mins.y ), 0.4f, m_borderTint, m_borderTint );
 }
 
 

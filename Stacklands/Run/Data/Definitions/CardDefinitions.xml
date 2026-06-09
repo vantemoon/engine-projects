@@ -1,0 +1,8 @@
+<CardDefinitions>
+	<CardDefinition
+		name="Villager"
+		category="Villager"
+		description="A basic worker who can gather resources."
+		texture="Data/Images/Cards/Villager.png"
+		maxStackSize="99" />
+</CardDefinitions>
