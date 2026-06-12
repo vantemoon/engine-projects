@@ -1,5 +1,6 @@
 #pragma once
 #include "Game/ChessObject.hpp"
+#include "Game/ChessPieceDefinition.hpp"
 #include "Engine/Math/IntVec2.hpp"
 #include <vector>
 #include <string>
@@ -21,8 +22,13 @@ public:
 	void Reset();
 
 	static IntVec2 ParseSquareCoords( std::string const& text, std::string const& paramName );
-	void MovePiece( ChessPiece* piece, IntVec2 const& from, IntVec2 const& to );
-	void CapturePiece( ChessPiece* piece, IntVec2 const& from, IntVec2 const& to );
+
+	bool MovePiece( ChessPiece* piece, IntVec2 const& from, IntVec2 const& to, bool teleport = false );
+	bool CapturePiece( ChessPiece* piece, IntVec2 const& from, IntVec2 const& to, bool teleport = false );
+	bool OverrideBoard( std::string const& boardText );
+
+	void CreatePiece( ChessPieceDefinition const& definition, bool isWhite, IntVec2 const& boardCoords );
+	void DestroyPiece( ChessPiece* piece );
 
 public:
 	ChessPiece* m_squares[8][8] = { nullptr };

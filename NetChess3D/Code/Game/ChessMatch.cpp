@@ -16,7 +16,10 @@ ChessMatch::ChessMatch()
 	Startup();
 
 	g_engine->m_eventSystem->SubscribeEventCallbackFunction( "ChessMove", Command_MovePiece );
-	g_engine->m_eventSystem->SetEventRequiredArgs( "ChessMove", { "from=<string>", "to=<string>" } );
+	g_engine->m_eventSystem->SetEventRequiredArgs( "ChessMove", { "from=<string>", "to=<string>", "teleport=<bool>" } );
+
+	g_engine->m_eventSystem->SubscribeEventCallbackFunction( "ChessOverride", Command_OverrideBoard );
+	g_engine->m_eventSystem->SetEventRequiredArgs( "ChessOverride", { "board=<string>" } );
 }
 
 
@@ -100,19 +103,6 @@ std::string ChessMatch::GetPlayerName( bool isWhite )
 
 
 //-----------------------------------------------------------------------------------------------
-void ChessMatch::MovePiece( ChessPiece* piece, IntVec2 const& from, IntVec2 const& to )
-{
-	if ( piece == nullptr ) 
-	{
-		g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 255, 0, 0 ), "Error: Attempted to move a null piece!" );
-		return;
-	}
-
-	m_board->MovePiece( piece, from, to );
-}
-
-
-//-----------------------------------------------------------------------------------------------
 bool ChessMatch::Command_MovePiece( EventArgs& args )
 {
 	if ( g_app == nullptr || g_app->m_game == nullptr || g_app->m_game->m_chessMatch == nullptr )
@@ -137,6 +127,7 @@ bool ChessMatch::Command_MovePiece( EventArgs& args )
 
 	std::string from = args.GetValue( "from", "" );
 	std::string to = args.GetValue( "to", "" );
+	bool teleport = args.GetValue( "teleport", false );
 
 	IntVec2 fromCoords = ChessBoard::ParseSquareCoords( from, "from" );
 	if ( fromCoords == IntVec2( -1, -1 ) )
@@ -182,35 +173,94 @@ bool ChessMatch::Command_MovePiece( EventArgs& args )
 	std::string movingPlayerName = ChessMatch::GetPlayerName( pieceToMove->m_isWhite );
 	std::string movingPieceName = pieceToMove->m_definition.m_name;
 
-	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 100, 150, 255 ), "Moved " + movingPlayerName + "'s " + movingPieceName + " from " + from + " to " + to );
-
 	if ( targetPiece != nullptr )
 	{
 		std::string targetPlayerName = ChessMatch::GetPlayerName( targetPiece->m_isWhite );
 		std::string targetPieceName = targetPiece->m_definition.m_name;
 
-		g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 255, 128, 0 ), movingPlayerName + " captured " + targetPlayerName + "'s " + targetPieceName + " at " + to );
+		bool successfullyCaptured = board->CapturePiece( pieceToMove, fromCoords, toCoords, teleport );
 
-		board->CapturePiece( pieceToMove, fromCoords, toCoords );
-
-		if ( targetPiece->m_definition.m_type == ChessPieceType::KING )
+		if ( successfullyCaptured )
 		{
-			g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 255, 128, 0 ), "######################################################################" );
-			g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 255, 128, 0 ), movingPlayerName + " has won the match!" );
-			g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 255, 128, 0 ), "######################################################################" );
+			g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 255, 128, 0 ), movingPlayerName + " captured " + targetPlayerName + "'s " + targetPieceName + " at " + to );
 
-			match->m_gameState = ChessGameState::VICTORY;
+			if ( targetPiece->m_definition.m_type == ChessPieceType::KING )
+			{
+				g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 255, 128, 0 ), "######################################################################" );
+				g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 255, 128, 0 ), movingPlayerName + " has won the match!" );
+				g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 255, 128, 0 ), "######################################################################" );
+
+				match->m_gameState = ChessGameState::VICTORY;
+				return true;
+			}
+
+			match->SwitchPlayerTurn();
+			game->PrintBoardStateToDevConsole();
 			return true;
 		}
 
+		else
+		{
+			g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::ERROR, "Error: Failed to capture the piece at " + to + "; move was not completed." );
+			return true;
+		}
+	}
+
+	bool successfullyMoved = board->MovePiece( pieceToMove, fromCoords, toCoords, teleport );
+	if ( successfullyMoved )
+	{
+		g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 100, 150, 255 ), "Moved " + movingPlayerName + "'s " + movingPieceName + " from " + from + " to " + to );
+
 		match->SwitchPlayerTurn();
 		game->PrintBoardStateToDevConsole();
+
 		return true;
 	}
 
-	match->MovePiece( pieceToMove, fromCoords, toCoords );
-	match->SwitchPlayerTurn();
-	game->PrintBoardStateToDevConsole();
+	else
+	{
+		g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::ERROR, "Error: Failed to move the piece to " + to + "; move was not completed." );
+		return true;
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool ChessMatch::Command_OverrideBoard( EventArgs& args )
+{
+	if ( g_app == nullptr || g_app->m_game == nullptr || g_app->m_game->m_chessMatch == nullptr )
+	{
+		return false;
+	}
+
+	Game* game = g_app->m_game;
+	ChessMatch* match = game->m_chessMatch;
+	ChessBoard* board = match->m_board;
+
+	if ( board == nullptr )
+	{
+		return false;
+	}
+
+	if ( match->m_gameState == ChessGameState::VICTORY )
+	{
+		g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MAJOR, "The match is already over; no more moves can be made." );
+		return true;
+	}
+
+	std::string boardText = args.GetValue( "board", "" );
+
+	bool successfullyOverridden = board->OverrideBoard( boardText );
+
+	if ( successfullyOverridden )
+	{
+		g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 100, 150, 255 ), "Successfully overridden the board to the provided configuration." );
+		game->PrintBoardStateToDevConsole();
+	}
+	else
+	{
+		g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::ERROR, "Error: Failed to override the board; the provided configuration was invalid." );
+	}
 
 	return true;
 }

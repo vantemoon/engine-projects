@@ -30,6 +30,7 @@ public:
 	static void InitializeDefinitions();
 	static void ClearDefinitions();
 	static ChessPieceDefinition const* GetDefinitionByType( ChessPieceType type );
+	static ChessPieceDefinition const* GetDefinitionBySymbol( char symbol );
 
 	VertexBuffer* GetVertexBufferForColor( bool isWhite ) const;
 	IndexBuffer* GetIndexBufferForColor( bool isWhite ) const;

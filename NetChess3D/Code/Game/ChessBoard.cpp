@@ -1,6 +1,5 @@
 #include "Game/ChessBoard.hpp"
 #include "Game/ChessPiece.hpp"
-#include "Game/ChessPieceDefinition.hpp"
 #include "Engine/Core/Engine.hpp"
 #include "Engine/Core/DevConsole.hpp"
 #include "Engine/Core/VertexUtils.hpp"
@@ -298,28 +297,122 @@ IntVec2 ChessBoard::ParseSquareCoords( std::string const& text, std::string cons
 
 
 //-----------------------------------------------------------------------------------------------
-void ChessBoard::MovePiece( ChessPiece* piece, IntVec2 const& from, IntVec2 const& to )
+bool ChessBoard::MovePiece( ChessPiece* piece, IntVec2 const& from, IntVec2 const& to, bool teleport /*= false */ )
 {
-	if ( piece == nullptr ) return;
+	if ( piece == nullptr ) return false;
 
-	m_squares[from.y][from.x] = nullptr;
-	m_squares[to.y][to.x] = piece;
-	piece->m_boardCoords = to;
+	if ( teleport )
+	{
+		m_squares[from.y][from.x] = nullptr;
+		m_squares[to.y][to.x] = piece;
+		piece->m_boardCoords = to;
+
+		return true;
+	}
+
+	return false;
 }
 
 
 //-----------------------------------------------------------------------------------------------
-void ChessBoard::CapturePiece( ChessPiece* piece, IntVec2 const& from, IntVec2 const& to )
+bool ChessBoard::CapturePiece( ChessPiece* piece, IntVec2 const& from, IntVec2 const& to, bool teleport /*= false */ )
 {
-	if ( piece == nullptr ) return;
+	if ( piece == nullptr ) return false;
 
 	ChessPiece* capturedPiece = m_squares[to.y][to.x];
-	if ( capturedPiece )
+	if ( teleport )
 	{
-		capturedPiece->m_isCaptured = true;
+		if ( capturedPiece )
+		{
+			capturedPiece->m_isCaptured = true;
+		}
+
+		m_squares[from.y][from.x] = nullptr;
+		m_squares[to.y][to.x] = piece;
+		piece->m_boardCoords = to;
+
+		return true;
 	}
 
-	m_squares[from.y][from.x] = nullptr;
-	m_squares[to.y][to.x] = piece;
-	piece->m_boardCoords = to;
+	return false;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool ChessBoard::OverrideBoard( std::string const& boardText )
+{
+	if ( boardText.length() != 64 )
+	{
+		g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 255, 0, 0 ), "Illegal board text; must be exactly 64 characters representing the pieces on the board." );
+		g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 255, 128, 0 ), "Example: board=RNBQKBNRPPPPPPPP................................pppppppprnbqkbnr" );
+		return false;
+	}
+
+	for ( int i = 0; i < 64; ++i )
+	{
+		char c = boardText[i];
+		bool isEmpty = c == '.';
+		
+		bool isCurrentlyEmpty = m_squares[i / 8][i % 8] == nullptr;
+		if ( isCurrentlyEmpty )
+		{
+			if ( !isEmpty )
+			{
+				ChessPieceDefinition const* def = ChessPieceDefinition::GetDefinitionBySymbol( c );
+				if ( def == nullptr )
+				{
+					g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 255, 0, 0 ), "Illegal board text; character '" + std::string( 1, c ) + "' is not a valid piece symbol." );
+					g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 255, 128, 0 ), "Example: board=RNBQKBNRPPPPPPPP................................pppppppprnbqkbnr" );
+					return false;
+				}
+
+				CreatePiece( *def, isupper( c ), IntVec2( i % 8, i / 8 ) );
+			}
+		}
+
+		else
+		{
+			ChessPiece* existingPiece = m_squares[i / 8][i % 8];
+			if ( isEmpty )
+			{
+				DestroyPiece( existingPiece );
+			}
+
+			char existingSymbol = existingPiece->m_definition.m_symbol;
+			existingSymbol = existingPiece->m_isWhite ? ( char ) toupper( existingSymbol ) : ( char ) tolower( existingSymbol );
+			if ( existingSymbol != c )
+			{
+				ChessPieceDefinition const* def = ChessPieceDefinition::GetDefinitionBySymbol( c );
+				if ( def == nullptr )
+				{
+					g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 255, 0, 0 ), "Illegal board text; character '" + std::string( 1, c ) + "' is not a valid piece symbol." );
+					g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 255, 128, 0 ), "Example: board=RNBQKBNRPPPPPPPP................................pppppppprnbqkbnr" );
+					return false;
+				}
+				
+				DestroyPiece( existingPiece );
+				CreatePiece( *def, isupper( c ), IntVec2( i % 8, i / 8 ) );
+			}
+		}
+	}
+
+	return true;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void ChessBoard::CreatePiece( ChessPieceDefinition const& definition, bool isWhite, IntVec2 const& boardCoords )
+{
+	ChessPiece* newPiece = new ChessPiece( definition, isWhite, boardCoords );
+	m_squares[boardCoords.y][boardCoords.x] = newPiece;
+	m_pieces.push_back( newPiece );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void ChessBoard::DestroyPiece( ChessPiece* piece )
+{
+	if ( piece == nullptr ) return;
+	m_squares[piece->m_boardCoords.y][piece->m_boardCoords.x] = nullptr;
+	m_pieces.erase( std::remove( m_pieces.begin(), m_pieces.end(), piece ), m_pieces.end() );
 }

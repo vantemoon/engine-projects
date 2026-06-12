@@ -7,8 +7,10 @@
 #include "Engine/Renderer/VertexBuffer.hpp"
 #include "Engine/Renderer/IndexBuffer.hpp"
 
+
 //-----------------------------------------------------------------------------------------------
 std::map<std::string, ChessPieceDefinition*> ChessPieceDefinition::s_definitions;
+
 
 //-----------------------------------------------------------------------------------------------
 ChessPieceDefinition::~ChessPieceDefinition()
@@ -25,6 +27,7 @@ ChessPieceDefinition::~ChessPieceDefinition()
 	delete m_blackIBO;
 	m_blackIBO = nullptr;
 }
+
 
 //-----------------------------------------------------------------------------------------------
 void ChessPieceDefinition::InitializeDefinitions()
@@ -72,6 +75,7 @@ void ChessPieceDefinition::InitializeDefinitions()
 	CopyDefinitionToGPU( *s_definitions["KING"] );
 }
 
+
 //-----------------------------------------------------------------------------------------------
 void ChessPieceDefinition::ClearDefinitions()
 {
@@ -82,6 +86,7 @@ void ChessPieceDefinition::ClearDefinitions()
 
 	s_definitions.clear();
 }
+
 
 //-----------------------------------------------------------------------------------------------
 ChessPieceDefinition const* ChessPieceDefinition::GetDefinitionByType( ChessPieceType type )
@@ -97,6 +102,22 @@ ChessPieceDefinition const* ChessPieceDefinition::GetDefinitionByType( ChessPiec
 	return nullptr;
 }
 
+
+//-----------------------------------------------------------------------------------------------
+ChessPieceDefinition const* ChessPieceDefinition::GetDefinitionBySymbol( char symbol )
+{
+	for ( std::map<std::string, ChessPieceDefinition*>::iterator it = s_definitions.begin(); it != s_definitions.end(); ++it )
+	{
+		symbol = static_cast<char>( tolower( symbol ) );
+		if ( it->second->m_symbol == symbol )
+		{
+			return it->second;
+		}
+	}
+	return nullptr;
+}
+
+
 //-----------------------------------------------------------------------------------------------
 VertexBuffer* ChessPieceDefinition::GetVertexBufferForColor( bool isWhite ) const
 {
@@ -107,6 +128,7 @@ VertexBuffer* ChessPieceDefinition::GetVertexBufferForColor( bool isWhite ) cons
 
 	return m_blackVBO;
 }
+
 
 //-----------------------------------------------------------------------------------------------
 IndexBuffer* ChessPieceDefinition::GetIndexBufferForColor( bool isWhite ) const
@@ -119,6 +141,7 @@ IndexBuffer* ChessPieceDefinition::GetIndexBufferForColor( bool isWhite ) const
 	return m_blackIBO;
 }
 
+
 //-----------------------------------------------------------------------------------------------
 unsigned int ChessPieceDefinition::GetIndexCountForColor( bool isWhite ) const
 {
@@ -130,12 +153,14 @@ unsigned int ChessPieceDefinition::GetIndexCountForColor( bool isWhite ) const
 	return m_blackIndexCount;
 }
 
+
 //-----------------------------------------------------------------------------------------------
 void ChessPieceDefinition::CopyWhiteGeometryToBlackGeometry( ChessPieceDefinition& definition )
 {
 	definition.m_blackVerts = definition.m_whiteVerts;
 	definition.m_blackIndices = definition.m_whiteIndices;
 }
+
 
 //-----------------------------------------------------------------------------------------------
 void ChessPieceDefinition::CopyDefinitionToGPU( ChessPieceDefinition& definition )
@@ -171,6 +196,7 @@ void ChessPieceDefinition::CopyDefinitionToGPU( ChessPieceDefinition& definition
 	renderer->CopyCPUToGPU( definition.m_blackIndices.data(), blackIndexBufferSize, definition.m_blackIBO );
 }
 
+
 //-----------------------------------------------------------------------------------------------
 void ChessPieceDefinition::AddVertsAndIndicesForPawn( ChessPieceDefinition& definition )
 {
@@ -179,6 +205,7 @@ void ChessPieceDefinition::AddVertsAndIndicesForPawn( ChessPieceDefinition& defi
 	AddVertsForIndexedSphere3D( definition.m_whiteVerts, definition.m_whiteIndices, Vec3( 0.f, 0.f, 0.72f ), 0.22f, Rgba8::WHITE, AABB2::ZERO_TO_ONE, 64, 32 );
 }
 
+
 //-----------------------------------------------------------------------------------------------
 void ChessPieceDefinition::AddVertsAndIndicesForRook( ChessPieceDefinition& definition )
 {
@@ -186,6 +213,7 @@ void ChessPieceDefinition::AddVertsAndIndicesForRook( ChessPieceDefinition& defi
 	AddVertsForIndexedAABB3D( definition.m_whiteVerts, definition.m_whiteIndices, AABB3( Vec3( -0.23f, -0.23f, 0.15f ), Vec3( 0.23f, 0.23f, 0.78f ) ), Rgba8::WHITE, AABB2::ZERO_TO_ONE );
 	AddVertsForIndexedAABB3D( definition.m_whiteVerts, definition.m_whiteIndices, AABB3( Vec3( -0.34f, -0.34f, 0.78f ), Vec3( 0.34f, 0.34f, 0.95f ) ), Rgba8::WHITE, AABB2::ZERO_TO_ONE );
 }
+
 
 //-----------------------------------------------------------------------------------------------
 void ChessPieceDefinition::AddVertsAndIndicesForKnight( ChessPieceDefinition& definition )
@@ -196,6 +224,7 @@ void ChessPieceDefinition::AddVertsAndIndicesForKnight( ChessPieceDefinition& de
 	AddVertsForIndexedAABB3D( definition.m_whiteVerts, definition.m_whiteIndices, AABB3( Vec3( 0.16f, -0.08f, 0.48f ), Vec3( 0.38f, 0.12f, 0.68f ) ), Rgba8::WHITE, AABB2::ZERO_TO_ONE );
 }
 
+
 //-----------------------------------------------------------------------------------------------
 void ChessPieceDefinition::AddVertsAndIndicesForBishop( ChessPieceDefinition& definition )
 {
@@ -204,6 +233,7 @@ void ChessPieceDefinition::AddVertsAndIndicesForBishop( ChessPieceDefinition& de
 	AddVertsForIndexedSphere3D( definition.m_whiteVerts, definition.m_whiteIndices, Vec3( 0.f, 0.f, 0.86f ), 0.21f, Rgba8::WHITE, AABB2::ZERO_TO_ONE, 64, 32 );
 	AddVertsForIndexedAABB3D( definition.m_whiteVerts, definition.m_whiteIndices, AABB3( Vec3( -0.04f, -0.26f, 0.72f ), Vec3( 0.04f, 0.26f, 0.98f ) ), Rgba8::WHITE, AABB2::ZERO_TO_ONE );
 }
+
 
 //-----------------------------------------------------------------------------------------------
 void ChessPieceDefinition::AddVertsAndIndicesForQueen( ChessPieceDefinition& definition )
@@ -217,6 +247,7 @@ void ChessPieceDefinition::AddVertsAndIndicesForQueen( ChessPieceDefinition& def
 	AddVertsForIndexedSphere3D( definition.m_whiteVerts, definition.m_whiteIndices, Vec3( 0.f, -0.20f, 0.92f ), 0.09f, Rgba8::WHITE, AABB2::ZERO_TO_ONE, 64, 32 );
 	AddVertsForIndexedSphere3D( definition.m_whiteVerts, definition.m_whiteIndices, Vec3( 0.f, 0.20f, 0.92f ), 0.09f, Rgba8::WHITE, AABB2::ZERO_TO_ONE, 64, 32 );
 }
+
 
 //-----------------------------------------------------------------------------------------------
 void ChessPieceDefinition::AddVertsAndIndicesForKing( ChessPieceDefinition& definition )
