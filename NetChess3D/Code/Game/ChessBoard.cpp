@@ -376,6 +376,7 @@ bool ChessBoard::OverrideBoard( std::string const& boardText )
 			if ( isEmpty )
 			{
 				DestroyPiece( existingPiece );
+				continue;
 			}
 
 			char existingSymbol = existingPiece->m_definition.m_symbol;
@@ -403,6 +404,16 @@ bool ChessBoard::OverrideBoard( std::string const& boardText )
 //-----------------------------------------------------------------------------------------------
 void ChessBoard::CreatePiece( ChessPieceDefinition const& definition, bool isWhite, IntVec2 const& boardCoords )
 {
+	if ( boardCoords.x < 0 || boardCoords.x >= 8 || boardCoords.y < 0 || boardCoords.y >= 8 )
+	{
+		return;
+	}
+
+	if ( m_squares[boardCoords.y][boardCoords.x] != nullptr )
+	{
+		DestroyPiece( m_squares[boardCoords.y][boardCoords.x] );
+	}
+
 	ChessPiece* newPiece = new ChessPiece( definition, isWhite, boardCoords );
 	m_squares[boardCoords.y][boardCoords.x] = newPiece;
 	m_pieces.push_back( newPiece );
@@ -412,7 +423,29 @@ void ChessBoard::CreatePiece( ChessPieceDefinition const& definition, bool isWhi
 //-----------------------------------------------------------------------------------------------
 void ChessBoard::DestroyPiece( ChessPiece* piece )
 {
-	if ( piece == nullptr ) return;
-	m_squares[piece->m_boardCoords.y][piece->m_boardCoords.x] = nullptr;
-	m_pieces.erase( std::remove( m_pieces.begin(), m_pieces.end(), piece ), m_pieces.end() );
+	if ( piece == nullptr )
+	{
+		return;
+	}
+
+	IntVec2 coords = piece->m_boardCoords;
+
+	if ( coords.x >= 0 && coords.x < 8 && coords.y >= 0 && coords.y < 8 )
+	{
+		if ( m_squares[coords.y][coords.x] == piece )
+		{
+			m_squares[coords.y][coords.x] = nullptr;
+		}
+	}
+
+	for ( int i = 0; i < ( int ) m_pieces.size(); ++i )
+	{
+		if ( m_pieces[i] == piece )
+		{
+			m_pieces.erase( m_pieces.begin() + i );
+			break;
+		}
+	}
+
+	delete piece;
 }
