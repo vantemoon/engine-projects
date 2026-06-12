@@ -297,17 +297,124 @@ IntVec2 ChessBoard::ParseSquareCoords( std::string const& text, std::string cons
 
 
 //-----------------------------------------------------------------------------------------------
-bool ChessBoard::MovePiece( ChessPiece* piece, IntVec2 const& from, IntVec2 const& to, bool teleport /*= false */ )
+bool ChessBoard::IsPathClear( IntVec2 const& from, IntVec2 const& to ) const
 {
-	if ( piece == nullptr ) return false;
+	int deltaX = to.x - from.x;
+	int deltaY = to.y - from.y;
 
-	if ( teleport )
+	int stepX = 0;
+	int stepY = 0;
+
+	if ( deltaX > 0 ) stepX = 1;
+	if ( deltaX < 0 ) stepX = -1;
+	if ( deltaY > 0 ) stepY = 1;
+	if ( deltaY < 0 ) stepY = -1;
+
+	IntVec2 currentSquare = from + IntVec2( stepX, stepY );
+
+	while ( currentSquare != to )
 	{
-		m_squares[from.y][from.x] = nullptr;
-		m_squares[to.y][to.x] = piece;
-		piece->m_boardCoords = to;
+		if ( m_squares[currentSquare.y][currentSquare.x] != nullptr )
+		{
+			return false;
+		}
 
-		return true;
+		currentSquare = currentSquare + IntVec2( stepX, stepY );
+	}
+
+	return true;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool ChessBoard::IsLegalPieceMove( ChessPiece* piece, IntVec2 const& from, IntVec2 const& to, bool isCapturing ) const
+{
+	if ( piece == nullptr )
+	{
+		return false;
+	}
+
+	int deltaX = to.x - from.x;
+	int deltaY = to.y - from.y;
+
+	int absDeltaX = abs( deltaX );
+	int absDeltaY = abs( deltaY );
+
+	ChessPieceType pieceType = piece->m_definition.m_type;
+	switch ( pieceType )
+	{
+		case ChessPieceType::PAWN:
+		{
+			int forwardDirection = piece->m_isWhite ? 1 : -1;
+			int startRow = piece->m_isWhite ? 1 : 6;
+
+			if ( isCapturing )
+			{
+				return absDeltaX == 1 && deltaY == forwardDirection;
+			}
+
+			if ( deltaX == 0 && deltaY == forwardDirection )
+			{
+				return m_squares[to.y][to.x] == nullptr;
+			}
+
+			if ( deltaX == 0 && from.y == startRow && deltaY == 2 * forwardDirection )
+			{
+				int middleRow = from.y + forwardDirection;
+				return m_squares[middleRow][from.x] == nullptr && m_squares[to.y][to.x] == nullptr;
+			}
+
+			break;
+		}
+
+		case ChessPieceType::ROOK:
+		{
+			if ( deltaX == 0 || deltaY == 0 )
+			{
+				return IsPathClear( from, to );
+			}
+
+			break;
+		}
+
+		case ChessPieceType::KNIGHT:
+		{
+			return ( absDeltaX == 1 && absDeltaY == 2 ) || ( absDeltaX == 2 && absDeltaY == 1 );
+		}
+
+		case ChessPieceType::BISHOP:
+		{
+			if ( absDeltaX == absDeltaY )
+			{
+				return IsPathClear( from, to );
+			}
+
+			break;
+		}
+
+		case ChessPieceType::QUEEN:
+		{
+			bool movesStraight = deltaX == 0 || deltaY == 0;
+			bool movesDiagonally = absDeltaX == absDeltaY;
+
+			if ( movesStraight || movesDiagonally )
+			{
+				return IsPathClear( from, to );
+			}
+
+			break;
+		}
+
+		case ChessPieceType::KING:
+		{
+			return absDeltaX <= 1 && absDeltaY <= 1;
+		}
+
+		case ChessPieceType::NUM_TYPES:
+			break;
+
+		default:
+			break;
 	}
 
 	return false;
@@ -315,26 +422,52 @@ bool ChessBoard::MovePiece( ChessPiece* piece, IntVec2 const& from, IntVec2 cons
 
 
 //-----------------------------------------------------------------------------------------------
-bool ChessBoard::CapturePiece( ChessPiece* piece, IntVec2 const& from, IntVec2 const& to, bool teleport /*= false */ )
+bool ChessBoard::MovePiece( ChessPiece* piece, IntVec2 const& from, IntVec2 const& to, bool teleport )
 {
-	if ( piece == nullptr ) return false;
-
-	ChessPiece* capturedPiece = m_squares[to.y][to.x];
-	if ( teleport )
+	if ( piece == nullptr )
 	{
-		if ( capturedPiece )
-		{
-			capturedPiece->m_isCaptured = true;
-		}
-
-		m_squares[from.y][from.x] = nullptr;
-		m_squares[to.y][to.x] = piece;
-		piece->m_boardCoords = to;
-
-		return true;
+		return false;
 	}
 
-	return false;
+	if ( !teleport && !IsLegalPieceMove( piece, from, to, false ) )
+	{
+		return false;
+	}
+
+	m_squares[from.y][from.x] = nullptr;
+	m_squares[to.y][to.x] = piece;
+	piece->m_boardCoords = to;
+
+	return true;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool ChessBoard::CapturePiece( ChessPiece* piece, IntVec2 const& from, IntVec2 const& to, bool teleport )
+{
+	if ( piece == nullptr )
+	{
+		return false;
+	}
+
+	ChessPiece* capturedPiece = m_squares[to.y][to.x];
+	if ( capturedPiece == nullptr )
+	{
+		return false;
+	}
+
+	if ( !teleport && !IsLegalPieceMove( piece, from, to, true ) )
+	{
+		return false;
+	}
+
+	DestroyPiece( capturedPiece );
+
+	m_squares[from.y][from.x] = nullptr;
+	m_squares[to.y][to.x] = piece;
+	piece->m_boardCoords = to;
+
+	return true;
 }
 
 
