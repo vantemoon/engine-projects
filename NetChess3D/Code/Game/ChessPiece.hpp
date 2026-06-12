@@ -15,7 +15,7 @@ public:
 	void Render() const override;
 
 public:
-	ChessPieceDefinition m_definition;
+	ChessPieceDefinition const* m_definition = nullptr;
 
 	bool m_isWhite = true;
 	bool m_isCaptured = false;

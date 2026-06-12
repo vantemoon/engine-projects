@@ -340,7 +340,7 @@ bool ChessBoard::IsLegalPieceMove( ChessPiece* piece, IntVec2 const& from, IntVe
 	int absDeltaX = abs( deltaX );
 	int absDeltaY = abs( deltaY );
 
-	ChessPieceType pieceType = piece->m_definition.m_type;
+	ChessPieceType pieceType = piece->m_definition->m_type;
 	switch ( pieceType )
 	{
 		case ChessPieceType::PAWN:
@@ -407,7 +407,9 @@ bool ChessBoard::IsLegalPieceMove( ChessPiece* piece, IntVec2 const& from, IntVe
 
 		case ChessPieceType::KING:
 		{
-			return absDeltaX <= 1 && absDeltaY <= 1;
+			IntVec2 king2Pos = GetKingPosition( !piece->m_isWhite );
+			bool kingsApart = AreKingsApart( to, king2Pos );
+			return kingsApart && absDeltaX <= 1 && absDeltaY <= 1;
 		}
 
 		case ChessPieceType::NUM_TYPES:
@@ -418,6 +420,49 @@ bool ChessBoard::IsLegalPieceMove( ChessPiece* piece, IntVec2 const& from, IntVe
 	}
 
 	return false;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool ChessBoard::AreKingsApart( IntVec2 const& king1PosToBeMoved, IntVec2 const& king2Pos ) const
+{
+	for ( int deltaY = -1; deltaY <= 1; ++deltaY )
+	{
+		for ( int deltaX = -1; deltaX <= 1; ++deltaX )
+		{
+			if ( deltaX == 0 && deltaY == 0 )
+			{
+				continue;
+			}
+
+			IntVec2 adjacentSquare = king1PosToBeMoved + IntVec2( deltaX, deltaY );
+			if ( adjacentSquare == king2Pos )
+			{
+				return false;
+			}
+		}
+	}
+
+	return true;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+IntVec2 ChessBoard::GetKingPosition( bool isWhite ) const
+{
+	for ( int row = 0; row < 8; ++row )
+	{
+		for ( int col = 0; col < 8; ++col )
+		{
+			ChessPiece* piece = m_squares[row][col];
+			if ( piece != nullptr && piece->m_definition->m_type == ChessPieceType::KING && piece->m_isWhite == isWhite )
+			{
+				return IntVec2( col, row );
+			}
+		}
+	}
+
+	return IntVec2( -1, -1 );
 }
 
 
@@ -512,7 +557,7 @@ bool ChessBoard::OverrideBoard( std::string const& boardText )
 				continue;
 			}
 
-			char existingSymbol = existingPiece->m_definition.m_symbol;
+			char existingSymbol = existingPiece->m_definition->m_symbol;
 			existingSymbol = existingPiece->m_isWhite ? ( char ) toupper( existingSymbol ) : ( char ) tolower( existingSymbol );
 			if ( existingSymbol != c )
 			{

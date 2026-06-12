@@ -24,6 +24,8 @@ public:
 	static IntVec2 ParseSquareCoords( std::string const& text, std::string const& paramName );
 	bool IsPathClear( IntVec2 const& from, IntVec2 const& to ) const;
 	bool IsLegalPieceMove( ChessPiece* piece, IntVec2 const& from, IntVec2 const& to, bool isCapturing ) const;
+	bool AreKingsApart( IntVec2 const& king1PosToBeMoved, IntVec2 const& king2Pos ) const;
+	IntVec2 GetKingPosition( bool isWhite ) const;
 
 	bool MovePiece( ChessPiece* piece, IntVec2 const& from, IntVec2 const& to, bool teleport = false );
 	bool CapturePiece( ChessPiece* piece, IntVec2 const& from, IntVec2 const& to, bool teleport = false );

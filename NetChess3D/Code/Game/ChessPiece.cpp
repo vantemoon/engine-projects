@@ -8,7 +8,7 @@
 
 //-----------------------------------------------------------------------------------------------
 ChessPiece::ChessPiece( ChessPieceDefinition const& definition, bool isWhite /*= true*/, IntVec2 boardCoords /*= IntVec2( -1, -1 )*/ )
-	: m_definition( definition )
+	: m_definition( &definition )
 	, m_isWhite( isWhite )
 	, m_boardCoords( boardCoords )
 {
@@ -42,9 +42,9 @@ void ChessPiece::Render() const
 
 	Renderer* renderer = g_engine->m_renderer;
 
-	VertexBuffer* vbo = m_definition.GetVertexBufferForColor( m_isWhite );
-	IndexBuffer* ibo = m_definition.GetIndexBufferForColor( m_isWhite );
-	unsigned int indexCount = m_definition.GetIndexCountForColor( m_isWhite );
+	VertexBuffer* vbo = m_definition->GetVertexBufferForColor( m_isWhite );
+	IndexBuffer* ibo = m_definition->GetIndexBufferForColor( m_isWhite );
+	unsigned int indexCount = m_definition->GetIndexCountForColor( m_isWhite );
 
 	if ( vbo == nullptr || ibo == nullptr || indexCount == 0 )
 	{
