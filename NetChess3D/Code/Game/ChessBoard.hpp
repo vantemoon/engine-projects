@@ -26,13 +26,17 @@ public:
 	bool IsLegalPieceMove( ChessPiece* piece, IntVec2 const& from, IntVec2 const& to, bool isCapturing ) const;
 	bool AreKingsApart( IntVec2 const& king1PosToBeMoved, IntVec2 const& king2Pos ) const;
 	IntVec2 GetKingPosition( bool isWhite ) const;
+	bool HasReachedEndRow( ChessPiece* piece, IntVec2 const& to ) const;
+	ChessPieceDefinition const* GetPromotionPieceDefinition( std::string const& promoteTo ) const;
+	bool IsLegalPromotion( ChessPiece* piece, IntVec2 const& to, std::string const& promoteTo ) const;
 
-	bool MovePiece( ChessPiece* piece, IntVec2 const& from, IntVec2 const& to, bool teleport = false );
-	bool CapturePiece( ChessPiece* piece, IntVec2 const& from, IntVec2 const& to, bool teleport = false );
+	bool MovePiece( ChessPiece* piece, IntVec2 const& from, IntVec2 const& to, bool teleport = false, std::string const& promoteTo = "" );
+	bool CapturePiece( ChessPiece* piece, IntVec2 const& from, IntVec2 const& to, bool teleport = false, std::string const& promoteTo = "" );
 	bool OverrideBoard( std::string const& boardText );
 
 	void CreatePiece( ChessPieceDefinition const& definition, bool isWhite, IntVec2 const& boardCoords );
 	void DestroyPiece( ChessPiece* piece );
+	void PromotePawn( ChessPiece* pawn, ChessPieceDefinition const& newDefinition );
 
 public:
 	ChessPiece* m_squares[8][8] = { nullptr };

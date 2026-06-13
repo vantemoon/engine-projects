@@ -152,8 +152,9 @@ void DevConsole::Execute( std::string const& consoleCommandText )
 			if ( argSplit.size() == 2 )
 			{
 				std::string key = argSplit[0];
+				std::string keyLower = ToLower( key );
 				std::string value = argSplit[1];
-				args.SetValue( key, value );
+				args.SetValue( keyLower, value );
 			}
 			else
 			{

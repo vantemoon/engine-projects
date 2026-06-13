@@ -16,7 +16,7 @@ ChessMatch::ChessMatch()
 	Startup();
 
 	g_engine->m_eventSystem->SubscribeEventCallbackFunction( "ChessMove", Command_MovePiece );
-	g_engine->m_eventSystem->SetEventRequiredArgs( "ChessMove", { "from=<string>", "to=<string>", "teleport=<bool>" } );
+	g_engine->m_eventSystem->SetEventRequiredArgs( "ChessMove", { "from=<string>", "to=<string>", "teleport=<bool>", "promoteTo=<string>"});
 
 	g_engine->m_eventSystem->SubscribeEventCallbackFunction( "ChessOverride", Command_OverrideBoard );
 	g_engine->m_eventSystem->SetEventRequiredArgs( "ChessOverride", { "board=<string>" } );
@@ -128,6 +128,7 @@ bool ChessMatch::Command_MovePiece( EventArgs& args )
 	std::string from = args.GetValue( "from", "" );
 	std::string to = args.GetValue( "to", "" );
 	bool teleport = args.GetValue( "teleport", false );
+	std::string promoteTo = args.GetValue( "promoteTo", "" );
 
 	IntVec2 fromCoords = ChessBoard::ParseSquareCoords( from, "from" );
 	if ( fromCoords == IntVec2( -1, -1 ) )
@@ -178,7 +179,7 @@ bool ChessMatch::Command_MovePiece( EventArgs& args )
 		std::string targetPlayerName = ChessMatch::GetPlayerName( targetPiece->m_isWhite );
 		std::string targetPieceName = targetPiece->m_definition->m_name;
 
-		bool successfullyCaptured = board->CapturePiece( pieceToMove, fromCoords, toCoords, teleport );
+		bool successfullyCaptured = board->CapturePiece( pieceToMove, fromCoords, toCoords, teleport, promoteTo );
 
 		if ( successfullyCaptured )
 		{
@@ -206,7 +207,7 @@ bool ChessMatch::Command_MovePiece( EventArgs& args )
 		}
 	}
 
-	bool successfullyMoved = board->MovePiece( pieceToMove, fromCoords, toCoords, teleport );
+	bool successfullyMoved = board->MovePiece( pieceToMove, fromCoords, toCoords, teleport, promoteTo );
 	if ( successfullyMoved )
 	{
 		g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 100, 150, 255 ), "Moved " + movingPlayerName + "'s " + movingPieceName + " from " + from + " to " + to );

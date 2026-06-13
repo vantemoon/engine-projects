@@ -270,7 +270,7 @@ IntVec2 ChessBoard::ParseSquareCoords( std::string const& text, std::string cons
 {
 	if ( text.length() != 2 )
 	{
-		g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 255, 0, 0 ), "Illegal \"" + paramName + "=\" square \"" + text + "\"; must be a two-letter [Column][Rank]" );
+		g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::ERROR, "Illegal \"" + paramName + "=\" square \"" + text + "\"; must be a two-letter [Column][Rank]" );
 		g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 255, 128, 0 ), "Examples:  E2, E4; A1 is bottom left and H8 is top-right" );
 		return IntVec2( -1, -1 );
 	}
@@ -287,7 +287,7 @@ IntVec2 ChessBoard::ParseSquareCoords( std::string const& text, std::string cons
 
 	if ( col < 0 || col > 7 || row < 0 || row > 7 )
 	{
-		g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 255, 0, 0 ), "Illegal \"" + paramName + "=\" square \"" + text + "\"; must be a two-letter [Column][Rank]" );
+		g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::ERROR, "Illegal \"" + paramName + "=\" square \"" + text + "\"; must be a two-letter [Column][Rank]" );
 		g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 255, 128, 0 ), " Examples:  E2, E4; A1 is bottom left and H8 is top-right" );
 		return IntVec2( -1, -1 );
 	}
@@ -316,6 +316,7 @@ bool ChessBoard::IsPathClear( IntVec2 const& from, IntVec2 const& to ) const
 	{
 		if ( m_squares[currentSquare.y][currentSquare.x] != nullptr )
 		{
+			g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::ERROR, "Illegal move; path is blocked." );
 			return false;
 		}
 
@@ -331,6 +332,7 @@ bool ChessBoard::IsLegalPieceMove( ChessPiece* piece, IntVec2 const& from, IntVe
 {
 	if ( piece == nullptr )
 	{
+		g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::ERROR, "Illegal move; no piece was provided." );
 		return false;
 	}
 
@@ -350,21 +352,41 @@ bool ChessBoard::IsLegalPieceMove( ChessPiece* piece, IntVec2 const& from, IntVe
 
 			if ( isCapturing )
 			{
-				return absDeltaX == 1 && deltaY == forwardDirection;
+				if ( absDeltaX == 1 && deltaY == forwardDirection )
+				{
+					return true;
+				}
+
+				g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::ERROR, "Illegal move; pawns can only capture one square diagonally forward." );
+				return false;
 			}
 
 			if ( deltaX == 0 && deltaY == forwardDirection )
 			{
-				return m_squares[to.y][to.x] == nullptr;
+				if ( m_squares[to.y][to.x] == nullptr )
+				{
+					return true;
+				}
+
+				g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::ERROR, "Illegal move; pawn cannot move forward into an occupied square." );
+				return false;
 			}
 
 			if ( deltaX == 0 && from.y == startRow && deltaY == 2 * forwardDirection )
 			{
 				int middleRow = from.y + forwardDirection;
-				return m_squares[middleRow][from.x] == nullptr && m_squares[to.y][to.x] == nullptr;
+
+				if ( m_squares[middleRow][from.x] == nullptr && m_squares[to.y][to.x] == nullptr )
+				{
+					return true;
+				}
+
+				g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::ERROR, "Illegal move; pawn's two-square move is blocked." );
+				return false;
 			}
 
-			break;
+			g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::ERROR, "Illegal move; pawn movement is invalid." );
+			return false;
 		}
 
 		case ChessPieceType::ROOK:
@@ -374,12 +396,19 @@ bool ChessBoard::IsLegalPieceMove( ChessPiece* piece, IntVec2 const& from, IntVe
 				return IsPathClear( from, to );
 			}
 
-			break;
+			g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::ERROR, "Illegal move; rooks must move horizontally or vertically." );
+			return false;
 		}
 
 		case ChessPieceType::KNIGHT:
 		{
-			return ( absDeltaX == 1 && absDeltaY == 2 ) || ( absDeltaX == 2 && absDeltaY == 1 );
+			if ( ( absDeltaX == 1 && absDeltaY == 2 ) || ( absDeltaX == 2 && absDeltaY == 1 ) )
+			{
+				return true;
+			}
+
+			g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::ERROR, "Illegal move; knights must move in an L shape." );
+			return false;
 		}
 
 		case ChessPieceType::BISHOP:
@@ -389,7 +418,8 @@ bool ChessBoard::IsLegalPieceMove( ChessPiece* piece, IntVec2 const& from, IntVe
 				return IsPathClear( from, to );
 			}
 
-			break;
+			g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::ERROR, "Illegal move; bishops must move diagonally." );
+			return false;
 		}
 
 		case ChessPieceType::QUEEN:
@@ -402,14 +432,26 @@ bool ChessBoard::IsLegalPieceMove( ChessPiece* piece, IntVec2 const& from, IntVe
 				return IsPathClear( from, to );
 			}
 
-			break;
+			g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::ERROR, "Illegal move; queens must move horizontally, vertically, or diagonally." );
+			return false;
 		}
 
 		case ChessPieceType::KING:
 		{
+			if ( absDeltaX > 1 || absDeltaY > 1 )
+			{
+				g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::ERROR, "Illegal move; kings can only move one square." );
+				return false;
+			}
+
 			IntVec2 king2Pos = GetKingPosition( !piece->m_isWhite );
-			bool kingsApart = AreKingsApart( to, king2Pos );
-			return kingsApart && absDeltaX <= 1 && absDeltaY <= 1;
+			if ( !AreKingsApart( to, king2Pos ) )
+			{
+				g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::ERROR, "Illegal move; kings cannot be adjacent." );
+				return false;
+			}
+
+			return true;
 		}
 
 		case ChessPieceType::NUM_TYPES:
@@ -419,6 +461,7 @@ bool ChessBoard::IsLegalPieceMove( ChessPiece* piece, IntVec2 const& from, IntVe
 			break;
 	}
 
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::ERROR, "Illegal move; unknown piece type." );
 	return false;
 }
 
@@ -467,14 +510,101 @@ IntVec2 ChessBoard::GetKingPosition( bool isWhite ) const
 
 
 //-----------------------------------------------------------------------------------------------
-bool ChessBoard::MovePiece( ChessPiece* piece, IntVec2 const& from, IntVec2 const& to, bool teleport )
+bool ChessBoard::HasReachedEndRow( ChessPiece* piece, IntVec2 const& to ) const
+{
+	if ( piece == nullptr )
+	{
+		return false;
+	}
+	return ( piece->m_isWhite && to.y == 7 ) || ( !piece->m_isWhite && to.y == 0 );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+ChessPieceDefinition const* ChessBoard::GetPromotionPieceDefinition( std::string const& promoteTo ) const
+{
+	if ( promoteTo == "queen" )
+	{
+		return ChessPieceDefinition::GetDefinitionByType( ChessPieceType::QUEEN );
+	}
+	else if ( promoteTo == "rook" )
+	{
+		return ChessPieceDefinition::GetDefinitionByType( ChessPieceType::ROOK );
+	}
+	else if ( promoteTo == "bishop" )
+	{
+		return ChessPieceDefinition::GetDefinitionByType( ChessPieceType::BISHOP );
+	}
+	else if ( promoteTo == "knight" )
+	{
+		return ChessPieceDefinition::GetDefinitionByType( ChessPieceType::KNIGHT );
+	}
+	return nullptr;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool ChessBoard::IsLegalPromotion( ChessPiece* piece, IntVec2 const& to, std::string const& promoteTo ) const
 {
 	if ( piece == nullptr )
 	{
 		return false;
 	}
 
-	if ( !teleport && !IsLegalPieceMove( piece, from, to, false ) )
+	if ( piece->m_definition->m_type != ChessPieceType::PAWN )
+	{
+		if ( promoteTo != "" )
+		{
+			g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::ERROR, "Illegal move; promoteTo can only be used by pawns." );
+			return false;
+		}
+
+		return true;
+	}
+
+	bool reachesEndRow = HasReachedEndRow( piece, to );
+
+	if ( reachesEndRow )
+	{
+		if ( promoteTo == "" )
+		{
+			g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::ERROR, "Illegal move; pawn promotion requires promoteTo=queen, bishop, rook, or knight." );
+			return false;
+		}
+
+		if ( GetPromotionPieceDefinition( promoteTo ) == nullptr )
+		{
+			g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::ERROR, "Illegal move; promoteTo must be queen, bishop, rook, or knight." );
+			return false;
+		}
+
+		return true;
+	}
+
+	if ( promoteTo != "" )
+	{
+		g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::ERROR, "Illegal move; promoteTo can only be used when a pawn reaches the far end row." );
+		return false;
+	}
+
+	return true;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool ChessBoard::MovePiece( ChessPiece* piece, IntVec2 const& from, IntVec2 const& to, bool teleport, std::string const& promoteTo )
+{
+	if ( piece == nullptr )
+	{
+		return false;
+	}
+
+	if ( !teleport &&!IsLegalPieceMove( piece, from, to, false ) )
+	{
+		return false;
+	}
+
+	if ( !IsLegalPromotion( piece, to, promoteTo ) )
 	{
 		return false;
 	}
@@ -483,12 +613,22 @@ bool ChessBoard::MovePiece( ChessPiece* piece, IntVec2 const& from, IntVec2 cons
 	m_squares[to.y][to.x] = piece;
 	piece->m_boardCoords = to;
 
+	bool reachesEndRow = HasReachedEndRow( piece, to );
+	if ( reachesEndRow && piece->m_definition->m_type == ChessPieceType::PAWN )
+	{
+		ChessPieceDefinition const* newDef = GetPromotionPieceDefinition( promoteTo );
+		if ( newDef != nullptr )
+		{
+			PromotePawn( piece, *newDef );
+		}
+	}
+
 	return true;
 }
 
 
 //-----------------------------------------------------------------------------------------------
-bool ChessBoard::CapturePiece( ChessPiece* piece, IntVec2 const& from, IntVec2 const& to, bool teleport )
+bool ChessBoard::CapturePiece( ChessPiece* piece, IntVec2 const& from, IntVec2 const& to, bool teleport, std::string const& promoteTo )
 {
 	if ( piece == nullptr )
 	{
@@ -501,7 +641,12 @@ bool ChessBoard::CapturePiece( ChessPiece* piece, IntVec2 const& from, IntVec2 c
 		return false;
 	}
 
-	if ( !teleport && !IsLegalPieceMove( piece, from, to, true ) )
+	if ( !teleport &&!IsLegalPieceMove(piece, from, to, true ) )
+	{
+		return false;
+	}
+
+	if ( !IsLegalPromotion( piece, to, promoteTo ) )
 	{
 		return false;
 	}
@@ -512,6 +657,16 @@ bool ChessBoard::CapturePiece( ChessPiece* piece, IntVec2 const& from, IntVec2 c
 	m_squares[to.y][to.x] = piece;
 	piece->m_boardCoords = to;
 
+	bool reachesEndRow = HasReachedEndRow( piece, to );
+	if ( reachesEndRow && piece->m_definition->m_type == ChessPieceType::PAWN )
+	{
+		ChessPieceDefinition const* newDef = GetPromotionPieceDefinition( promoteTo );
+		if ( newDef != nullptr )
+		{
+			PromotePawn( piece, *newDef );
+		}
+	}
+
 	return true;
 }
 
@@ -521,7 +676,7 @@ bool ChessBoard::OverrideBoard( std::string const& boardText )
 {
 	if ( boardText.length() != 64 )
 	{
-		g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 255, 0, 0 ), "Illegal board text; must be exactly 64 characters representing the pieces on the board." );
+		g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::ERROR, "Illegal board text; must be exactly 64 characters representing the pieces on the board." );
 		g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 255, 128, 0 ), "Example: board=RNBQKBNRPPPPPPPP................................pppppppprnbqkbnr" );
 		return false;
 	}
@@ -539,7 +694,7 @@ bool ChessBoard::OverrideBoard( std::string const& boardText )
 				ChessPieceDefinition const* def = ChessPieceDefinition::GetDefinitionBySymbol( c );
 				if ( def == nullptr )
 				{
-					g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 255, 0, 0 ), "Illegal board text; character '" + std::string( 1, c ) + "' is not a valid piece symbol." );
+					g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::ERROR, "Illegal board text; character '" + std::string( 1, c ) + "' is not a valid piece symbol." );
 					g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 255, 128, 0 ), "Example: board=RNBQKBNRPPPPPPPP................................pppppppprnbqkbnr" );
 					return false;
 				}
@@ -564,7 +719,7 @@ bool ChessBoard::OverrideBoard( std::string const& boardText )
 				ChessPieceDefinition const* def = ChessPieceDefinition::GetDefinitionBySymbol( c );
 				if ( def == nullptr )
 				{
-					g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 255, 0, 0 ), "Illegal board text; character '" + std::string( 1, c ) + "' is not a valid piece symbol." );
+					g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::ERROR, "Illegal board text; character '" + std::string( 1, c ) + "' is not a valid piece symbol." );
 					g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 255, 128, 0 ), "Example: board=RNBQKBNRPPPPPPPP................................pppppppprnbqkbnr" );
 					return false;
 				}
@@ -626,4 +781,20 @@ void ChessBoard::DestroyPiece( ChessPiece* piece )
 	}
 
 	delete piece;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void ChessBoard::PromotePawn( ChessPiece* pawn, ChessPieceDefinition const& newDefinition )
+{
+	if ( pawn == nullptr || pawn->m_definition->m_type != ChessPieceType::PAWN )
+	{
+		return;
+	}
+
+	IntVec2 coords = pawn->m_boardCoords;
+	bool isWhite = pawn->m_isWhite;
+
+	DestroyPiece( pawn );
+	CreatePiece( newDefinition, isWhite, coords );
 }

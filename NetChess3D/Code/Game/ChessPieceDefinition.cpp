@@ -98,7 +98,6 @@ ChessPieceDefinition const* ChessPieceDefinition::GetDefinitionByType( ChessPiec
 			return it->second;
 		}
 	}
-
 	return nullptr;
 }
 
