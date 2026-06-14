@@ -179,6 +179,8 @@ void ChessBoard::Render() const
 //-----------------------------------------------------------------------------------------------
 void ChessBoard::Reset()
 {
+	ClearEnPassantState();
+
 	for ( int row = 0; row < 8; row++ )
 	{
 		for ( int col = 0; col < 8; col++ )
@@ -348,7 +350,6 @@ bool ChessBoard::IsLegalPieceMove( ChessPiece* piece, IntVec2 const& from, IntVe
 		case ChessPieceType::PAWN:
 		{
 			int forwardDirection = piece->m_isWhite ? 1 : -1;
-			int startRow = piece->m_isWhite ? 1 : 6;
 
 			if ( isCapturing )
 			{
@@ -372,7 +373,7 @@ bool ChessBoard::IsLegalPieceMove( ChessPiece* piece, IntVec2 const& from, IntVe
 				return false;
 			}
 
-			if ( deltaX == 0 && from.y == startRow && deltaY == 2 * forwardDirection )
+			if ( deltaX == 0 && !piece->m_hasMoved && deltaY == 2 * forwardDirection )
 			{
 				int middleRow = from.y + forwardDirection;
 
@@ -639,6 +640,8 @@ bool ChessBoard::MovePiece( ChessPiece* piece, IntVec2 const& from, IntVec2 cons
 		piece->m_hasMoved = true;
 	}
 
+	UpdateEnPassantStateAfterMove( piece, from, to, teleport );
+
 	return true;
 }
 
@@ -651,7 +654,18 @@ bool ChessBoard::CapturePiece( ChessPiece* piece, IntVec2 const& from, IntVec2 c
 		return false;
 	}
 
-	ChessPiece* capturedPiece = m_squares[to.y][to.x];
+	bool isEnPassant = !teleport && IsEnPassantCapture( piece, from, to );
+
+	ChessPiece* capturedPiece = nullptr;
+	if ( isEnPassant )
+	{
+		capturedPiece = m_enPassantPawn;
+	}
+	else
+	{
+		capturedPiece = m_squares[to.y][to.x];
+	}
+
 	if ( capturedPiece == nullptr )
 	{
 		return false;
@@ -687,6 +701,8 @@ bool ChessBoard::CapturePiece( ChessPiece* piece, IntVec2 const& from, IntVec2 c
 	{
 		piece->m_hasMoved = true;
 	}
+
+	UpdateEnPassantStateAfterMove( piece, from, to, teleport );
 
 	return true;
 }
@@ -818,4 +834,101 @@ void ChessBoard::PromotePawn( ChessPiece* pawn, ChessPieceDefinition const& newD
 
 	DestroyPiece( pawn );
 	CreatePiece( newDefinition, isWhite, coords );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void ChessBoard::ClearEnPassantState()
+{
+	m_enPassantPawn = nullptr;
+	m_enPassantCaptureSquare = IntVec2( -1, -1 );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void ChessBoard::UpdateEnPassantStateAfterMove( ChessPiece* piece, IntVec2 const& from, IntVec2 const& to, bool teleport )
+{
+	ClearEnPassantState();
+
+	if ( piece == nullptr || teleport )
+	{
+		return;
+	}
+
+	if ( piece->m_definition->m_type != ChessPieceType::PAWN )
+	{
+		return;
+	}
+
+	int deltaY = to.y - from.y;
+	if ( abs( deltaY ) != 2 )
+	{
+		return;
+	}
+
+	m_enPassantPawn = piece;
+	m_enPassantCaptureSquare = IntVec2( from.x, ( from.y + to.y ) / 2 );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool ChessBoard::IsEnPassantCapture( ChessPiece* piece, IntVec2 const& from, IntVec2 const& to ) const
+{
+	if ( piece == nullptr )
+	{
+		return false;
+	}
+
+	if ( piece->m_definition->m_type != ChessPieceType::PAWN )
+	{
+		return false;
+	}
+
+	if ( m_enPassantPawn == nullptr )
+	{
+		return false;
+	}
+
+	if ( m_enPassantPawn->m_definition->m_type != ChessPieceType::PAWN )
+	{
+		return false;
+	}
+
+	if ( m_enPassantPawn->m_isWhite == piece->m_isWhite )
+	{
+		return false;
+	}
+
+	if ( to != m_enPassantCaptureSquare )
+	{
+		return false;
+	}
+
+	if ( m_squares[to.y][to.x] != nullptr )
+	{
+		return false;
+	}
+
+	int forwardDirection = piece->m_isWhite ? 1 : -1;
+	int deltaX = to.x - from.x;
+	int deltaY = to.y - from.y;
+
+	IntVec2 enPassantPawnPos = m_enPassantPawn->m_boardCoords;
+
+	if ( abs( deltaX ) != 1 || deltaY != forwardDirection )
+	{
+		return false;
+	}
+
+	if ( enPassantPawnPos.y != from.y )
+	{
+		return false;
+	}
+
+	if ( enPassantPawnPos.x != to.x )
+	{
+		return false;
+	}
+
+	return true;
 }

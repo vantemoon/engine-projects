@@ -208,6 +208,26 @@ bool ChessMatch::Command_MovePiece( EventArgs& args )
 		}
 	}
 
+	if ( board->IsEnPassantCapture( pieceToMove, fromCoords, toCoords ) )
+	{
+		bool successfullyCaptured = board->CapturePiece( pieceToMove, fromCoords, toCoords, teleport, promoteTo );
+
+		if ( successfullyCaptured )
+		{
+			g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 255, 128, 0 ), movingPlayerName + "'s " + movingPieceName + " captured en passant at " + to );
+
+			match->SwitchPlayerTurn();
+			game->PrintBoardStateToDevConsole();
+
+			return true;
+		}
+		else
+		{
+			g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::ERROR, "Error: Failed to capture en passant; move was not completed." );
+			return true;
+		}
+	}
+
 	bool successfullyMoved = board->MovePiece( pieceToMove, fromCoords, toCoords, teleport, promoteTo );
 	if ( successfullyMoved )
 	{
