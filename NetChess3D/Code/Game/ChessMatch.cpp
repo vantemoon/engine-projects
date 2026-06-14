@@ -16,7 +16,7 @@ ChessMatch::ChessMatch()
 	Startup();
 
 	g_engine->m_eventSystem->SubscribeEventCallbackFunction( "ChessMove", Command_MovePiece );
-	g_engine->m_eventSystem->SetEventRequiredArgs( "ChessMove", { "from=<string>", "to=<string>", "teleport=<bool>", "promoteTo=<string>"});
+	g_engine->m_eventSystem->SetEventRequiredArgs( "ChessMove", { "from=<string>", "to=<string>", "teleport=<bool>", "promoteto=<string>"});
 
 	g_engine->m_eventSystem->SubscribeEventCallbackFunction( "ChessOverride", Command_OverrideBoard );
 	g_engine->m_eventSystem->SetEventRequiredArgs( "ChessOverride", { "board=<string>" } );
@@ -128,7 +128,7 @@ bool ChessMatch::Command_MovePiece( EventArgs& args )
 	std::string from = args.GetValue( "from", "" );
 	std::string to = args.GetValue( "to", "" );
 	bool teleport = args.GetValue( "teleport", false );
-	std::string promoteTo = args.GetValue( "promoteTo", "" );
+	std::string promoteTo = args.GetValue( "promoteto", "" );
 
 	IntVec2 fromCoords = ChessBoard::ParseSquareCoords( from, "from" );
 	if ( fromCoords == IntVec2( -1, -1 ) )
@@ -184,13 +184,13 @@ bool ChessMatch::Command_MovePiece( EventArgs& args )
 
 		if ( successfullyCaptured )
 		{
-			g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 255, 128, 0 ), movingPlayerName + " captured " + targetPlayerName + "'s " + targetPieceName + " at " + to );
+			g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MINOR, movingPlayerName + " captured " + targetPlayerName + "'s " + targetPieceName + " at " + to );
 
 			if ( isTargetKing )
 			{
-				g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 255, 128, 0 ), "######################################################################" );
-				g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 255, 128, 0 ), movingPlayerName + " has won the match!" );
-				g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 255, 128, 0 ), "######################################################################" );
+				g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MAJOR, "######################################################################" );
+				g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MAJOR, movingPlayerName + " has won the match!" );
+				g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::INFO_MAJOR, "######################################################################" );
 
 				match->m_gameState = ChessGameState::VICTORY;
 				return true;
@@ -214,7 +214,7 @@ bool ChessMatch::Command_MovePiece( EventArgs& args )
 
 		if ( successfullyCaptured )
 		{
-			g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 255, 128, 0 ), movingPlayerName + "'s " + movingPieceName + " captured en passant at " + to );
+			g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::SUCCESS, movingPlayerName + "'s " + movingPieceName + " captured en passant at " + to );
 
 			match->SwitchPlayerTurn();
 			game->PrintBoardStateToDevConsole();
@@ -231,7 +231,7 @@ bool ChessMatch::Command_MovePiece( EventArgs& args )
 	bool successfullyMoved = board->MovePiece( pieceToMove, fromCoords, toCoords, teleport, promoteTo );
 	if ( successfullyMoved )
 	{
-		g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 100, 150, 255 ), "Moved " + movingPlayerName + "'s " + movingPieceName + " from " + from + " to " + to );
+		g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::SUCCESS, "Moved " + movingPlayerName + "'s " + movingPieceName + " from " + from + " to " + to );
 
 		match->SwitchPlayerTurn();
 		game->PrintBoardStateToDevConsole();
@@ -276,7 +276,7 @@ bool ChessMatch::Command_OverrideBoard( EventArgs& args )
 
 	if ( successfullyOverridden )
 	{
-		g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 100, 150, 255 ), "Successfully overridden the board to the provided configuration." );
+		g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::SUCCESS, "Overridden the board to the provided configuration." );
 		game->PrintBoardStateToDevConsole();
 	}
 	else

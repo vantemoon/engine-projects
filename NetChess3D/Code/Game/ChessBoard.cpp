@@ -647,7 +647,7 @@ bool ChessBoard::MovePiece( ChessPiece* piece, IntVec2 const& from, IntVec2 cons
 		ChessPieceDefinition const* newDef = GetPromotionPieceDefinition( promoteTo );
 		if ( newDef != nullptr )
 		{
-			PromotePawn( piece, *newDef );
+			piece =PromotePawn( piece, *newDef );
 		}
 	}
 
@@ -709,7 +709,7 @@ bool ChessBoard::CapturePiece( ChessPiece* piece, IntVec2 const& from, IntVec2 c
 		ChessPieceDefinition const* newDef = GetPromotionPieceDefinition( promoteTo );
 		if ( newDef != nullptr )
 		{
-			PromotePawn( piece, *newDef );
+			piece = PromotePawn( piece, *newDef );
 		}
 	}
 
@@ -838,11 +838,11 @@ void ChessBoard::DestroyPiece( ChessPiece* piece )
 
 
 //-----------------------------------------------------------------------------------------------
-void ChessBoard::PromotePawn( ChessPiece* pawn, ChessPieceDefinition const& newDefinition )
+ChessPiece* ChessBoard::PromotePawn( ChessPiece* pawn, ChessPieceDefinition const& newDefinition )
 {
 	if ( pawn == nullptr || pawn->m_definition->m_type != ChessPieceType::PAWN )
 	{
-		return;
+		return pawn;
 	}
 
 	IntVec2 coords = pawn->m_boardCoords;
@@ -850,6 +850,8 @@ void ChessBoard::PromotePawn( ChessPiece* pawn, ChessPieceDefinition const& newD
 
 	DestroyPiece( pawn );
 	CreatePiece( newDefinition, isWhite, coords );
+
+	return m_squares[coords.y][coords.x];
 }
 
 
@@ -1074,6 +1076,8 @@ bool ChessBoard::MoveRookForCastling( ChessPiece* king, IntVec2 const& from, Int
 
 	rook->m_boardCoords = IntVec2( rookToX, row );
 	rook->m_hasMoved = true;
+
+	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::SUCCESS, "Castling also moved rook from " + std::string( 1, ( char ) ( 'A' + rookFromX ) ) + std::to_string( row + 1 ) + " to " + std::string( 1, ( char ) ( 'A' + rookToX ) ) + std::to_string( row + 1 ) );
 
 	return true;
 }

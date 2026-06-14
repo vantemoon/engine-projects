@@ -45,7 +45,7 @@ public:
 
 	void CreatePiece( ChessPieceDefinition const& definition, bool isWhite, IntVec2 const& boardCoords );
 	void DestroyPiece( ChessPiece* piece );
-	void PromotePawn( ChessPiece* pawn, ChessPieceDefinition const& newDefinition );
+	ChessPiece* PromotePawn( ChessPiece* pawn, ChessPieceDefinition const& newDefinition );
 
 public:
 	ChessPiece* m_squares[8][8] = { nullptr };
