@@ -69,7 +69,11 @@ public:
 protected:
 	void Render_OpenFull( AABB2 const& bound, BitmapFont& font, float fontAspect = 1.f ) const;
 	void RenderInsertionPoint( float cellWidth, float cellHeight, int insertionPointPosition ) const;
+
 	void InsertCharacterAtInsertionPoint( char character );
+	void InsertStringAtInsertionPoint( std::string const& text );
+	std::string GetTextFromWindowsClipboard() const;
+
 	std::string GetPreviousCommand( int offsetFromCurrent ) const;
 	std::string GetNextCommand( int offsetFromCurrent ) const;
 

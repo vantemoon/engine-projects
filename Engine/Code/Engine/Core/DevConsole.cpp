@@ -13,6 +13,13 @@
 #include <algorithm>
 #include <math.h>
 
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+#include <windows.h>
+#undef ERROR
+#endif
+
 
 //-----------------------------------------------------------------------------------------------
 DevConsole::DevConsole( DevConsoleConfig const& config )
@@ -385,7 +392,20 @@ bool DevConsole::Command_KeyPressed( EventArgs& args )
 
 		if ( g_engine->m_devConsole->GetMode() != DevConsoleMode::HIDDEN )
 		{
-			// Console is open
+
+		#ifdef _WIN32
+			bool isCtrlDown = ( GetKeyState( VK_CONTROL ) & 0x8000 ) != 0;
+			if ( isCtrlDown && ( key == 'V' || key == 'v' ) )
+			{
+				std::string clipboardText = g_engine->m_devConsole->GetTextFromWindowsClipboard();
+				if ( !clipboardText.empty() )
+				{
+					g_engine->m_devConsole->InsertStringAtInsertionPoint( clipboardText );
+				}
+				return true;
+			}
+		#endif
+
 			if ( key == KEYCODE_ENTER )
 			{
 				if ( g_gameConfigBlackboard.GetValue( "currentCommand", "" ).empty() )
@@ -619,6 +639,70 @@ void DevConsole::InsertCharacterAtInsertionPoint( char character )
 	currentCommand.insert( m_insertionPointPosition, 1, character );
 	g_gameConfigBlackboard.SetValue( "currentCommand", currentCommand );
 	m_insertionPointPosition ++;
+}
+
+
+//------------------------------------------------------------------------------------------------
+void DevConsole::InsertStringAtInsertionPoint( std::string const& text )
+{
+	std::string currentCommand = g_gameConfigBlackboard.GetValue( "currentCommand", "" );
+
+	if ( m_insertionPointPosition < 0 )
+	{
+		m_insertionPointPosition = 0;
+	}
+	if ( m_insertionPointPosition > ( int ) currentCommand.size() )
+	{
+		m_insertionPointPosition = ( int ) currentCommand.size();
+	}
+
+	std::string cleanedText;
+	for ( char character : text )
+	{
+		if ( character >= 32 && character <= 126 )
+		{
+			cleanedText.push_back( character );
+		}
+	}
+
+	currentCommand.insert( m_insertionPointPosition, cleanedText );
+	g_gameConfigBlackboard.SetValue( "currentCommand", currentCommand );
+	m_insertionPointPosition += ( int ) cleanedText.size();
+}
+
+
+//------------------------------------------------------------------------------------------------
+std::string DevConsole::GetTextFromWindowsClipboard() const
+{
+#ifdef _WIN32
+	if ( !OpenClipboard( nullptr ) )
+	{
+		return "";
+	}
+
+	HANDLE clipboardHandle = GetClipboardData( CF_TEXT );
+	if ( clipboardHandle == nullptr )
+	{
+		CloseClipboard();
+		return "";
+	}
+
+	char const* clipboardText = static_cast< char const* >( GlobalLock( clipboardHandle ) );
+	if ( clipboardText == nullptr )
+	{
+		CloseClipboard();
+		return "";
+	}
+
+	std::string result = clipboardText;
+
+	GlobalUnlock( clipboardHandle );
+	CloseClipboard();
+
+	return result;
+#else
+	return "";
+#endif
 }
 
 
