@@ -439,6 +439,11 @@ bool ChessBoard::IsLegalPieceMove( ChessPiece* piece, IntVec2 const& from, IntVe
 
 		case ChessPieceType::KING:
 		{
+			if ( IsCastlingMove( piece, from, to ) )
+			{
+				return IsLegalCastlingMove( piece, from, to );
+			}
+
 			if ( absDeltaX > 1 || absDeltaY > 1 )
 			{
 				g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::ERROR, "Illegal move; kings can only move one square." );
@@ -611,6 +616,8 @@ bool ChessBoard::MovePiece( ChessPiece* piece, IntVec2 const& from, IntVec2 cons
 		return false;
 	}
 
+	bool isCastling = !teleport && IsCastlingMove( piece, from, to );
+
 	if ( !teleport &&!IsLegalPieceMove( piece, from, to, false ) )
 	{
 		return false;
@@ -624,6 +631,15 @@ bool ChessBoard::MovePiece( ChessPiece* piece, IntVec2 const& from, IntVec2 cons
 	m_squares[from.y][from.x] = nullptr;
 	m_squares[to.y][to.x] = piece;
 	piece->m_boardCoords = to;
+
+	if ( isCastling )
+	{
+		if ( !MoveRookForCastling( piece, from, to ) )
+		{
+			g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::ERROR, "Error: Failed to move rook while castling." );
+			return false;
+		}
+	}
 
 	bool reachesEndRow = HasReachedEndRow( piece, to );
 	if ( reachesEndRow && piece->m_definition->m_type == ChessPieceType::PAWN )
@@ -929,6 +945,135 @@ bool ChessBoard::IsEnPassantCapture( ChessPiece* piece, IntVec2 const& from, Int
 	{
 		return false;
 	}
+
+	return true;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool ChessBoard::IsCastlingMove( ChessPiece* piece, IntVec2 const& from, IntVec2 const& to ) const
+{
+	if ( piece == nullptr )
+	{
+		return false;
+	}
+
+	if ( piece->m_definition->m_type != ChessPieceType::KING )
+	{
+		return false;
+	}
+
+	int deltaX = to.x - from.x;
+	int deltaY = to.y - from.y;
+
+	return deltaY == 0 && abs( deltaX ) == 2;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool ChessBoard::IsLegalCastlingMove( ChessPiece* king, IntVec2 const& from, IntVec2 const& to ) const
+{
+	if ( king == nullptr )
+	{
+		g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::ERROR, "Illegal castle; no king was provided." );
+		return false;
+	}
+
+	if ( king->m_definition->m_type != ChessPieceType::KING )
+	{
+		g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::ERROR, "Illegal castle; only king can castle." );
+		return false;
+	}
+
+	if ( king->m_hasMoved )
+	{
+		g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::ERROR, "Illegal castle; the king has already moved." );
+		return false;
+	}
+
+	int deltaX = to.x - from.x;
+	int deltaY = to.y - from.y;
+
+	if ( deltaY != 0 || abs( deltaX ) != 2 )
+	{
+		g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::ERROR, "Illegal castle; the king must move exactly two squares horizontally." );
+		return false;
+	}
+
+	int rookCol = deltaX > 0 ? 7 : 0;
+	ChessPiece* rook = m_squares[from.y][rookCol];
+
+	if ( rook == nullptr )
+	{
+		g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::ERROR, "Illegal castle; there is no rook on that side of the board." );
+		return false;
+	}
+
+	if ( rook->m_definition->m_type != ChessPieceType::ROOK )
+	{
+		g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::ERROR, "Illegal castle; the piece on that side is not a rook." );
+		return false;
+	}
+
+	if ( rook->m_isWhite != king->m_isWhite )
+	{
+		g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::ERROR, "Illegal castle; the rook belongs to the opponent." );
+		return false;
+	}
+
+	if ( rook->m_hasMoved )
+	{
+		g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::ERROR, "Illegal castle; the rook has already moved." );
+		return false;
+	}
+
+	int stepX = deltaX > 0 ? 1 : -1;
+	int currentX = from.x + stepX;
+
+	while ( currentX != rookCol )
+	{
+		if ( m_squares[from.y][currentX] != nullptr )
+		{
+			g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::ERROR, "Illegal castle; there is a piece between the king and rook." );
+			return false;
+		}
+		currentX += stepX;
+	}
+
+	return true;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+bool ChessBoard::MoveRookForCastling( ChessPiece* king, IntVec2 const& from, IntVec2 const& to )
+{
+	if ( king == nullptr )
+	{
+		return false;
+	}
+
+	if ( !IsCastlingMove( king, from, to ) )
+	{
+		return false;
+	}
+
+	int row = from.y;
+	int deltaX = to.x - from.x;
+
+	int rookFromX = deltaX > 0 ? 7 : 0;
+	int rookToX = deltaX > 0 ? to.x - 1 : to.x + 1;
+
+	ChessPiece* rook = m_squares[row][rookFromX];
+	if ( rook == nullptr )
+	{
+		return false;
+	}
+
+	m_squares[row][rookFromX] = nullptr;
+	m_squares[row][rookToX] = rook;
+
+	rook->m_boardCoords = IntVec2( rookToX, row );
+	rook->m_hasMoved = true;
 
 	return true;
 }
