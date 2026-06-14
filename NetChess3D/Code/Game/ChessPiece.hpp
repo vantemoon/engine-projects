@@ -19,6 +19,7 @@ public:
 
 	bool m_isWhite = true;
 	bool m_isCaptured = false;
+	bool m_hasMoved = false;
 
 	IntVec2 m_boardCoords = IntVec2( -1, -1 );
 };

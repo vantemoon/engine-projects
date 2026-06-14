@@ -179,13 +179,14 @@ bool ChessMatch::Command_MovePiece( EventArgs& args )
 		std::string targetPlayerName = ChessMatch::GetPlayerName( targetPiece->m_isWhite );
 		std::string targetPieceName = targetPiece->m_definition->m_name;
 
+		bool isTargetKing = targetPiece->m_definition->m_type == ChessPieceType::KING;
 		bool successfullyCaptured = board->CapturePiece( pieceToMove, fromCoords, toCoords, teleport, promoteTo );
 
 		if ( successfullyCaptured )
 		{
 			g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 255, 128, 0 ), movingPlayerName + " captured " + targetPlayerName + "'s " + targetPieceName + " at " + to );
 
-			if ( targetPiece->m_definition->m_type == ChessPieceType::KING )
+			if ( isTargetKing )
 			{
 				g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 255, 128, 0 ), "######################################################################" );
 				g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8( 255, 128, 0 ), movingPlayerName + " has won the match!" );

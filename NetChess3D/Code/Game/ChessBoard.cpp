@@ -523,22 +523,33 @@ bool ChessBoard::HasReachedEndRow( ChessPiece* piece, IntVec2 const& to ) const
 //-----------------------------------------------------------------------------------------------
 ChessPieceDefinition const* ChessBoard::GetPromotionPieceDefinition( std::string const& promoteTo ) const
 {
-	if ( promoteTo == "queen" )
+	std::string promoteToLower = promoteTo;
+
+	for ( int i = 0; i < ( int ) promoteToLower.size(); ++i )
+	{
+		if ( promoteToLower[i] >= 'A' && promoteToLower[i] <= 'Z' )
+		{
+			promoteToLower[i] = promoteToLower[i] - 'A' + 'a';
+		}
+	}
+
+	if ( promoteToLower == "queen" )
 	{
 		return ChessPieceDefinition::GetDefinitionByType( ChessPieceType::QUEEN );
 	}
-	else if ( promoteTo == "rook" )
+	else if ( promoteToLower == "rook" )
 	{
 		return ChessPieceDefinition::GetDefinitionByType( ChessPieceType::ROOK );
 	}
-	else if ( promoteTo == "bishop" )
+	else if ( promoteToLower == "bishop" )
 	{
 		return ChessPieceDefinition::GetDefinitionByType( ChessPieceType::BISHOP );
 	}
-	else if ( promoteTo == "knight" )
+	else if ( promoteToLower == "knight" )
 	{
 		return ChessPieceDefinition::GetDefinitionByType( ChessPieceType::KNIGHT );
 	}
+
 	return nullptr;
 }
 
@@ -623,6 +634,11 @@ bool ChessBoard::MovePiece( ChessPiece* piece, IntVec2 const& from, IntVec2 cons
 		}
 	}
 
+	if ( !piece->m_hasMoved ) 
+	{
+		piece->m_hasMoved = true;
+	}
+
 	return true;
 }
 
@@ -665,6 +681,11 @@ bool ChessBoard::CapturePiece( ChessPiece* piece, IntVec2 const& from, IntVec2 c
 		{
 			PromotePawn( piece, *newDef );
 		}
+	}
+
+	if ( !piece->m_hasMoved )
+	{
+		piece->m_hasMoved = true;
 	}
 
 	return true;
