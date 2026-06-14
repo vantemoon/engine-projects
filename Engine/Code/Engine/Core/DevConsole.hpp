@@ -82,6 +82,7 @@ protected:
 	DevConsoleMode				m_mode = DevConsoleMode::HIDDEN;
 	std::vector<DevConsoleLine> m_lines;
 	int                         m_linesOnScreen = 40;
+	float                       m_fontSize = 18.f;
 	int                         m_maxCommandHistory = 128;
 	std::vector<std::string>	m_commandHistory;
 	int							m_commandHistorySearchOffset = 0;

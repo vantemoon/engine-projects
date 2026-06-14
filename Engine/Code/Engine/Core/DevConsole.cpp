@@ -289,8 +289,7 @@ void DevConsole::Render_OpenFull( AABB2 const& bound, BitmapFont& font, float fo
 
 	AddVertsForAABB2D( backgroundVerts, bound, Rgba8( 0, 0, 0, 150 ) );
 
-	float cellHeight = 20.f;
-	float cellWidth = cellHeight * fontAspect;
+	float cellWidth = m_fontSize * fontAspect;
 	float availableWidth = bound.m_maxs.x - bound.m_mins.x - 10.f;
 	int maxVisibleChars = static_cast<int>( availableWidth / cellWidth );
 	if ( maxVisibleChars < 0 )
@@ -298,7 +297,7 @@ void DevConsole::Render_OpenFull( AABB2 const& bound, BitmapFont& font, float fo
 		maxVisibleChars = 0;
 	}
 
-	float yOffset = bound.m_mins.y + 2.f + cellHeight;
+	float yOffset = bound.m_mins.y + 2.f + m_fontSize;
 	int linesRendered = 0;
 	for ( int lineIndex = static_cast< int >( m_lines.size() ) - 1; lineIndex >= 0; -- lineIndex )
 	{
@@ -306,15 +305,15 @@ void DevConsole::Render_OpenFull( AABB2 const& bound, BitmapFont& font, float fo
 		{
 			break;
 		}
-		if ( yOffset + cellHeight > bound.m_maxs.y )
+		if ( yOffset + m_fontSize > bound.m_maxs.y )
 		{
 			break;
 		}
 
 		DevConsoleLine const& line = m_lines[lineIndex];
 		Vec2 textMins = Vec2( bound.m_mins.x + 5.f, yOffset );
-		font.AddVertsForText2D( textVerts, textMins, cellHeight, line.second, line.first, fontAspect );
-		yOffset += cellHeight;
+		font.AddVertsForText2D( textVerts, textMins, m_fontSize, line.second, line.first, fontAspect );
+		yOffset += m_fontSize;
 		++ linesRendered;
 	}
 
@@ -339,7 +338,7 @@ void DevConsole::Render_OpenFull( AABB2 const& bound, BitmapFont& font, float fo
 	int visibleInsertionPoint = insertionPointPosition - startIndex;
 
 	Vec2 textMins = Vec2( bound.m_mins.x + 5.f, 2.f );
-	font.AddVertsForText2D( textVerts, textMins, cellHeight, visibleCommand, Rgba8::WHITE, fontAspect );
+	font.AddVertsForText2D( textVerts, textMins, m_fontSize, visibleCommand, Rgba8::WHITE, fontAspect );
 
 	g_engine->m_renderer->BindTexture( nullptr );
 	g_engine->m_renderer->DrawVertexArray( static_cast< int >( backgroundVerts.size() ), backgroundVerts.data() );
@@ -349,7 +348,7 @@ void DevConsole::Render_OpenFull( AABB2 const& bound, BitmapFont& font, float fo
 
 	if ( m_isInsertionPointVisible )
 	{
-		RenderInsertionPoint( cellWidth, cellHeight, visibleInsertionPoint );
+		RenderInsertionPoint( cellWidth, m_fontSize, visibleInsertionPoint );
 	}
 }
 
