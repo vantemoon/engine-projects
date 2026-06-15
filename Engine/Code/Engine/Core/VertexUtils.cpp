@@ -271,8 +271,9 @@ void AddVertsForArrow2D( std::vector<Vertex>& verts, Vec2 const& startTail, Vec2
 
 
 //-----------------------------------------------------------------------------------------------
-void AddVertsForTriangle3D( std::vector<Vertex>& verts, Vec3 const& ccw0, Vec3 const& ccw1, Vec3 const& ccw2, Rgba8 const& color,
-							Vec2 const& uv0, Vec2 const& uv1, Vec2 const& uv2 )
+void AddVertsForTriangle3D( std::vector<Vertex>& verts, 
+	Vec3 const& ccw0, Vec3 const& ccw1, Vec3 const& ccw2, Rgba8 const& color,
+	Vec2 const& uv0, Vec2 const& uv1, Vec2 const& uv2 )
 {
 	Vec3 edge1 = ccw1 - ccw0;
 	Vec3 edge2 = ccw2 - ccw0;
@@ -308,9 +309,21 @@ void AddVertsForTriangle3D( std::vector<Vertex>& verts, Vec3 const& ccw0, Vec3 c
 
 
 //-----------------------------------------------------------------------------------------------
+void AddVertsForTriangle3DExplicit( std::vector<Vertex>& verts, 
+	Vec3 const& ccw0, Vec3 const& ccw1, Vec3 const& ccw2, Rgba8 const& color, 
+	Vec2 const& uv0, Vec2 const& uv1, Vec2 const& uv2, 
+	Vec3 const& tangent, Vec3 const& bitangent, Vec3 const& normal )
+{
+	verts.push_back( Vertex( ccw0, color, uv0, tangent, bitangent, normal ) );
+	verts.push_back( Vertex( ccw1, color, uv1, tangent, bitangent, normal ) );
+	verts.push_back( Vertex( ccw2, color, uv2, tangent, bitangent, normal ) );
+}
+
+
+//-----------------------------------------------------------------------------------------------
 void AddVertsForIndexedTriangle3D( std::vector<Vertex>& verts, std::vector<unsigned int>& indices, 
-						Vec3 const& ccw0, Vec3 const& ccw1, Vec3 const& ccw2, Rgba8 const& color,
-						Vec2 const& uv0, Vec2 const& uv1, Vec2 const& uv2 )
+	Vec3 const& ccw0, Vec3 const& ccw1, Vec3 const& ccw2, Rgba8 const& color,
+	Vec2 const& uv0, Vec2 const& uv1, Vec2 const& uv2 )
 {
 	Vec3 edge1 = ccw1 - ccw0;
 	Vec3 edge2 = ccw2 - ccw0;
@@ -339,6 +352,24 @@ void AddVertsForIndexedTriangle3D( std::vector<Vertex>& verts, std::vector<unsig
 
 	Vec3 normal = CrossProduct3D( tangent, bitangent ).GetNormalized();
 
+	unsigned int baseIndex = static_cast<unsigned int>( verts.size() );
+
+	verts.push_back( Vertex( ccw0, color, uv0, tangent, bitangent, normal ) );
+	verts.push_back( Vertex( ccw1, color, uv1, tangent, bitangent, normal ) );
+	verts.push_back( Vertex( ccw2, color, uv2, tangent, bitangent, normal ) );
+
+	indices.push_back( baseIndex + 0 );
+	indices.push_back( baseIndex + 1 );
+	indices.push_back( baseIndex + 2 );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void AddVertsForIndexedTriangle3DExplicit( std::vector<Vertex>& verts, std::vector<unsigned int>& indices,
+	Vec3 const& ccw0, Vec3 const& ccw1, Vec3 const& ccw2, Rgba8 const& color,
+	Vec2 const& uv0, Vec2 const& uv1, Vec2 const& uv2,
+	Vec3 const& tangent, Vec3 const& bitangent, Vec3 const& normal )
+{
 	unsigned int baseIndex = static_cast<unsigned int>( verts.size() );
 
 	verts.push_back( Vertex( ccw0, color, uv0, tangent, bitangent, normal ) );
@@ -868,6 +899,12 @@ void AddVertsForCylinderZ3D( std::vector<Vertex>& verts, Vec3 const& start, Vec3
 	float uHalf = 0.5f * ( UVs.m_maxs.x - UVs.m_mins.x );
 	float vHalf = 0.5f * ( UVs.m_maxs.y - UVs.m_mins.y );
 
+	Vec3 capTangent = lookAtLeftJ;
+	Vec3 topCapBitangent = lookAtUpK;
+	Vec3 bottomCapBitangent = -lookAtUpK;
+	Vec3 topCapNormal = lookAtForwardI;
+	Vec3 bottomCapNormal = -lookAtForwardI;
+
 	for ( int sliceIndex = 0; sliceIndex < numSides; ++sliceIndex )
 	{
 		float tA = static_cast<float>( sliceIndex ) / static_cast<float>( numSides );
@@ -894,8 +931,21 @@ void AddVertsForCylinderZ3D( std::vector<Vertex>& verts, Vec3 const& start, Vec3
 		Vec2 uvRight( uCenter + uHalf * CosDegrees( degreesB ), vCenter + vHalf * SinDegrees( degreesB ) );
 		Vec2 uvCenter( uCenter, vCenter );
 
-		AddVertsForTriangle3D( verts, start, bottomRight, bottomLeft, color, uvCenter, uvRight, uvLeft );
-		AddVertsForTriangle3D( verts, end, topLeft, topRight, color, uvCenter, uvLeft, uvRight );
+		AddVertsForTriangle3DExplicit(
+			verts,
+			start, bottomRight, bottomLeft,
+			color,
+			uvCenter, uvRight, uvLeft,
+			capTangent, bottomCapBitangent, bottomCapNormal
+		);
+
+		AddVertsForTriangle3DExplicit(
+			verts,
+			end, topLeft, topRight,
+			color,
+			uvCenter, uvLeft, uvRight,
+			capTangent, topCapBitangent, topCapNormal
+		);
 	}
 }
 
@@ -931,6 +981,12 @@ void AddVertsForIndexedCylinderZ3D( std::vector<Vertex>& verts, std::vector<unsi
 	float uHalf = 0.5f * ( UVs.m_maxs.x - UVs.m_mins.x );
 	float vHalf = 0.5f * ( UVs.m_maxs.y - UVs.m_mins.y );
 
+	Vec3 capTangent = lookAtLeftJ;
+	Vec3 topCapBitangent = lookAtUpK;
+	Vec3 bottomCapBitangent = -lookAtUpK;
+	Vec3 topCapNormal = lookAtForwardI;
+	Vec3 bottomCapNormal = -lookAtForwardI;
+
 	for ( int sliceIndex = 0; sliceIndex < numSides; ++sliceIndex )
 	{
 		float tA = static_cast<float>( sliceIndex ) / static_cast<float>( numSides );
@@ -957,8 +1013,21 @@ void AddVertsForIndexedCylinderZ3D( std::vector<Vertex>& verts, std::vector<unsi
 		Vec2 uvRight( uCenter + uHalf * CosDegrees( degreesB ), vCenter + vHalf * SinDegrees( degreesB ) );
 		Vec2 uvCenter( uCenter, vCenter );
 
-		AddVertsForIndexedTriangle3D( verts, indices, start, bottomRight, bottomLeft, color, uvCenter, uvRight, uvLeft );
-		AddVertsForIndexedTriangle3D( verts, indices, end, topLeft, topRight, color, uvCenter, uvLeft, uvRight );
+		AddVertsForIndexedTriangle3DExplicit(
+			verts, indices,
+			start, bottomRight, bottomLeft,
+			color,
+			uvCenter, uvRight, uvLeft,
+			capTangent, bottomCapBitangent, bottomCapNormal
+		);
+
+		AddVertsForIndexedTriangle3DExplicit(
+			verts, indices,
+			end, topLeft, topRight,
+			color,
+			uvCenter, uvLeft, uvRight,
+			capTangent, topCapBitangent, topCapNormal
+		);
 	}
 }
 
@@ -1060,6 +1129,10 @@ void AddVertsForCone3D( std::vector<Vertex>& verts, Vec3 const& start, Vec3 cons
 	float uHalf = 0.5f * ( UVs.m_maxs.x - UVs.m_mins.x );
 	float vHalf = 0.5f * ( UVs.m_maxs.y - UVs.m_mins.y );
 
+	Vec3 capTangent = lookAtLeftJ;
+	Vec3 bottomCapBitangent = -lookAtUpK;
+	Vec3 bottomCapNormal = -lookAtForwardI;
+
 	for ( int sliceIndex = 0; sliceIndex < numSlices; ++sliceIndex )
 	{
 		float tA = static_cast< float >( sliceIndex ) / static_cast< float >( numSlices );
@@ -1083,7 +1156,7 @@ void AddVertsForCone3D( std::vector<Vertex>& verts, Vec3 const& start, Vec3 cons
 		Vec2 uvRight( uCenter + uHalf * CosDegrees( degreesB ), vCenter + vHalf * SinDegrees( degreesB ) );
 		Vec2 uvCenter( uCenter, vCenter );
 
-		AddVertsForTriangle3D( verts, start, baseRight, baseLeft, color, uvCenter, uvRight, uvLeft );
+		AddVertsForTriangle3DExplicit( verts, start, baseRight, baseLeft, color, uvCenter, uvRight, uvLeft, capTangent, bottomCapBitangent, bottomCapNormal );
 	}
 }
 
@@ -1119,6 +1192,10 @@ void AddVertsForIndexedCone3D( std::vector<Vertex>& verts, std::vector<unsigned 
 	float uHalf = 0.5f * ( UVs.m_maxs.x - UVs.m_mins.x );
 	float vHalf = 0.5f * ( UVs.m_maxs.y - UVs.m_mins.y );
 
+	Vec3 capTangent = lookAtLeftJ;
+	Vec3 bottomCapBitangent = -lookAtUpK;
+	Vec3 bottomCapNormal = -lookAtForwardI;
+
 	for ( int sliceIndex = 0; sliceIndex < numSlices; ++sliceIndex )
 	{
 		float tA = static_cast< float >( sliceIndex ) / static_cast< float >( numSlices );
@@ -1142,7 +1219,7 @@ void AddVertsForIndexedCone3D( std::vector<Vertex>& verts, std::vector<unsigned 
 		Vec2 uvRight( uCenter + uHalf * CosDegrees( degreesB ), vCenter + vHalf * SinDegrees( degreesB ) );
 		Vec2 uvCenter( uCenter, vCenter );
 
-		AddVertsForIndexedTriangle3D( verts, indices, start, baseRight, baseLeft, color, uvCenter, uvRight, uvLeft );
+		AddVertsForIndexedTriangle3DExplicit( verts, indices, start, baseRight, baseLeft, color, uvCenter, uvRight, uvLeft, capTangent, bottomCapBitangent, bottomCapNormal );
 	}
 }
 

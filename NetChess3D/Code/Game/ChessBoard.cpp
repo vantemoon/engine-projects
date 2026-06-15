@@ -192,9 +192,15 @@ void ChessBoard::Render() const
 		AABB2( Vec2( 0.f, 0.f ), Vec2( 1.f, 1.f ) )
 	);
 
-	Texture* boardTexture = renderer->CreateOrGetTextureFromFile( "Data/Images/Wood-Light.jpg" );
+	Texture* boardDiffuseTexture = renderer->CreateOrGetTextureFromFile( "Data/Images/oak_diffuse.png" );
+	Texture* boardNormalTexture = renderer->CreateOrGetTextureFromFile( "Data/Images/oak_normal.png" );
 
-	renderer->BindTexture( boardTexture );
+	renderer->BindTexture( 0, boardDiffuseTexture );
+	renderer->BindTexture( 1, boardNormalTexture );
+
+	renderer->BindSampler( 0, SamplerMode::BILINEAR_WRAP );
+	renderer->BindSampler( 1, SamplerMode::BILINEAR_WRAP );
+
 	renderer->SetModelConstants();
 
 	renderer->DrawVertexArray( boardVerts );

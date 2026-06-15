@@ -81,9 +81,16 @@ void ChessPiece::Render() const
 	Vec3 pieceWorldPos = GetCurrentPosition();
 
 	Mat44 modelMatrix = Mat44::MakeTranslation3D( pieceWorldPos );
-	Texture* pieceTexture = renderer->CreateOrGetTextureFromFile( "Data/Images/Marble.jpg" );
 
-	renderer->BindTexture( pieceTexture );
+	Texture* pieceDiffuseTexture = renderer->CreateOrGetTextureFromFile( "Data/Images/rock_diffuse.png" );
+	Texture* pieceNormalTexture = renderer->CreateOrGetTextureFromFile( "Data/Images/rock_normal.png" );
+
+	renderer->BindTexture( 0, pieceDiffuseTexture );
+	renderer->BindTexture( 1, pieceNormalTexture );
+
+	renderer->BindSampler( 0, SamplerMode::BILINEAR_WRAP );
+	renderer->BindSampler( 1, SamplerMode::BILINEAR_WRAP );
+
 	renderer->SetModelConstants( modelMatrix, pieceTint );
 
 	renderer->DrawIndexedVertexBuffer( vbo, ibo, indexCount );

@@ -186,6 +186,66 @@ void Game::UpdateFromKeyboard()
 			m_gameClock->StepSingleFrame();
 			m_currentGameState = GameState::PAUSED;
 		}
+
+		// DebugInt = 1
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( '1' ) )
+		{
+			g_engine->m_renderer->SetPerFrameConstants( 0.f, 1, 0.f );
+		}
+
+		// DebugInt = 2
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( '2' ) )
+		{
+			g_engine->m_renderer->SetPerFrameConstants( 0.f, 2, 0.f );
+		}
+
+		// DebugInt = 3
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( '3' ) )
+		{
+			g_engine->m_renderer->SetPerFrameConstants( 0.f, 3, 0.f );
+		}
+
+		// DebugInt = 4
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( '4' ) )
+		{
+			g_engine->m_renderer->SetPerFrameConstants( 0.f, 4, 0.f );
+		}
+
+		// DebugInt = 5
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( '5' ) )
+		{
+			g_engine->m_renderer->SetPerFrameConstants( 0.f, 5, 0.f );
+		}
+
+		// DebugInt = 6
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( '6' ) )
+		{
+			g_engine->m_renderer->SetPerFrameConstants( 0.f, 6, 0.f );
+		}
+
+		// DebugInt = 7
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( '7' ) )
+		{
+			g_engine->m_renderer->SetPerFrameConstants( 0.f, 7, 0.f );
+		}
+
+		// DebugInt = 8
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( '8' ) )
+		{
+			g_engine->m_renderer->SetPerFrameConstants( 0.f, 8, 0.f );
+		}
+
+		// DebugInt = 9
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( '9' ) )
+		{
+			g_engine->m_renderer->SetPerFrameConstants( 0.f, 9, 0.f );
+		}
+		
+		// DebugInt = 0
+		if ( g_engine->m_inputSystem->WasKeyJustPressed( '0' ) )
+		{
+			g_engine->m_renderer->SetPerFrameConstants( 0.f, 0, 0.f );
+		}
 	}
 }
 

@@ -39,9 +39,17 @@ void AddVertsForArrow2D( std::vector<Vertex>& verts, Vec2 const& startTail, Vec2
 void AddVertsForTriangle3D( std::vector<Vertex>& verts, 
 	Vec3 const& ccw0, Vec3 const& ccw1, Vec3 const& ccw2, Rgba8 const& color = Rgba8::WHITE, 
 	Vec2 const& uv0 = Vec2( 0.f, 0.f ), Vec2 const& uv1 = Vec2( 1.f, 0.f ), Vec2 const& uv2 = Vec2( 0.5f, 1.f ) );
+void AddVertsForTriangle3DExplicit( std::vector<Vertex>& verts,
+	Vec3 const& ccw0, Vec3 const& ccw1, Vec3 const& ccw2, Rgba8 const& color = Rgba8::WHITE,
+	Vec2 const& uv0 = Vec2( 0.f, 0.f ), Vec2 const& uv1 = Vec2( 1.f, 0.f ), Vec2 const& uv2 = Vec2( 0.5f, 1.f ),
+	Vec3 const& tangent = Vec3::ZERO, Vec3 const& bitangent = Vec3::ZERO, Vec3 const& normal = Vec3::ZERO );
 void AddVertsForIndexedTriangle3D( std::vector<Vertex>& verts, std::vector<unsigned int>& indices, 
 	Vec3 const& ccw0, Vec3 const& ccw1, Vec3 const& ccw2, Rgba8 const& color = Rgba8::WHITE,
 	Vec2 const& uv0 = Vec2( 0.f, 0.f ), Vec2 const& uv1 = Vec2( 1.f, 0.f ), Vec2 const& uv2 = Vec2( 0.5f, 1.f ) );
+void AddVertsForIndexedTriangle3DExplicit( std::vector<Vertex>& verts, std::vector<unsigned int>& indices,
+	Vec3 const& ccw0, Vec3 const& ccw1, Vec3 const& ccw2, Rgba8 const& color = Rgba8::WHITE,
+	Vec2 const& uv0 = Vec2( 0.f, 0.f ), Vec2 const& uv1 = Vec2( 1.f, 0.f ), Vec2 const& uv2 = Vec2( 0.5f, 1.f ),
+	Vec3 const& tangent = Vec3::ZERO, Vec3 const& bitangent = Vec3::ZERO, Vec3 const& normal = Vec3::ZERO );
 void AddVertsForQuad3D( std::vector<Vertex>& verts, 
 	Vec3 const& bottomLeft, Vec3 const& bottomRight, Vec3 const& topRight, Vec3 const& topLeft, 
 	Rgba8 const& color = Rgba8::WHITE, AABB2 const& UVs = AABB2::ZERO_TO_ONE );
