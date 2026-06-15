@@ -101,6 +101,11 @@ void Game::Update()
 		return;
 	};
 
+	if ( m_chessMatch != nullptr )
+	{
+		m_chessMatch->Update();
+	}
+
 	UpdateFromKeyboard();
 	UpdateFromController();
 	UpdateEntities();

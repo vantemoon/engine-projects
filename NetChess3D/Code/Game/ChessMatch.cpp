@@ -51,13 +51,20 @@ void ChessMatch::Startup()
 //-----------------------------------------------------------------------------------------------
 void ChessMatch::Update()
 {
+	if ( m_board != nullptr )
+	{
+		m_board->Update();
+	}
 }
 
 
 //-----------------------------------------------------------------------------------------------
 void ChessMatch::Render() const
 {
-	m_board->Render();
+	if ( m_board != nullptr )
+	{
+		m_board->Render();
+	}
 }
 
 

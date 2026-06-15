@@ -14,6 +14,10 @@ public:
 	void Update() override;
 	void Render() const override;
 
+	void StartMovementAnimation( IntVec2 const& from, IntVec2 const& to );
+	bool IsMovementAnimationComplete() const;
+	Vec3 GetCurrentPosition() const;
+
 public:
 	ChessPieceDefinition const* m_definition = nullptr;
 
@@ -22,4 +26,15 @@ public:
 	bool m_hasMoved = false;
 
 	IntVec2 m_boardCoords = IntVec2( -1, -1 );
+
+	bool m_hasPendingPromotion = false;
+	ChessPieceDefinition const* m_pendingPromotionDefinition = nullptr;
+
+private:
+	bool m_isMoving = false;
+	float m_moveAgeSeconds = 0.f;
+	float m_moveDurationSeconds = 0.35f;
+
+	IntVec2 m_moveStartCoords = IntVec2( -1, -1 );
+	IntVec2 m_moveEndCoords = IntVec2( -1, -1 );
 };

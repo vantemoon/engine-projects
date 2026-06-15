@@ -22,6 +22,36 @@ ChessBoard::~ChessBoard()
 //-----------------------------------------------------------------------------------------------
 void ChessBoard::Update()
 {
+	for ( ChessPiece* piece : m_pieces )
+	{
+		if ( piece != nullptr )
+		{
+			piece->Update();
+		}
+	}
+
+	for ( int i = 0; i < ( int ) m_pieces.size(); ++i )
+	{
+		ChessPiece* piece = m_pieces[i];
+		if ( piece == nullptr )
+		{
+			continue;
+		}
+
+		if ( !piece->m_hasPendingPromotion )
+		{
+			continue;
+		}
+
+		if ( !piece->IsMovementAnimationComplete() )
+		{
+			continue;
+		}
+
+		PromotePawn( piece, *piece->m_pendingPromotionDefinition );
+
+		break;
+	}
 }
 
 
@@ -632,6 +662,8 @@ bool ChessBoard::MovePiece( ChessPiece* piece, IntVec2 const& from, IntVec2 cons
 	m_squares[to.y][to.x] = piece;
 	piece->m_boardCoords = to;
 
+	piece->StartMovementAnimation( from, to );
+
 	if ( isCastling )
 	{
 		if ( !MoveRookForCastling( piece, from, to ) )
@@ -647,7 +679,8 @@ bool ChessBoard::MovePiece( ChessPiece* piece, IntVec2 const& from, IntVec2 cons
 		ChessPieceDefinition const* newDef = GetPromotionPieceDefinition( promoteTo );
 		if ( newDef != nullptr )
 		{
-			piece =PromotePawn( piece, *newDef );
+			piece->m_hasPendingPromotion = true;
+			piece->m_pendingPromotionDefinition = newDef;
 		}
 	}
 
@@ -703,13 +736,16 @@ bool ChessBoard::CapturePiece( ChessPiece* piece, IntVec2 const& from, IntVec2 c
 	m_squares[to.y][to.x] = piece;
 	piece->m_boardCoords = to;
 
+	piece->StartMovementAnimation( from, to );
+
 	bool reachesEndRow = HasReachedEndRow( piece, to );
 	if ( reachesEndRow && piece->m_definition->m_type == ChessPieceType::PAWN )
 	{
 		ChessPieceDefinition const* newDef = GetPromotionPieceDefinition( promoteTo );
 		if ( newDef != nullptr )
 		{
-			piece = PromotePawn( piece, *newDef );
+			piece->m_hasPendingPromotion = true;
+			piece->m_pendingPromotionDefinition = newDef;
 		}
 	}
 
@@ -1076,6 +1112,10 @@ bool ChessBoard::MoveRookForCastling( ChessPiece* king, IntVec2 const& from, Int
 
 	rook->m_boardCoords = IntVec2( rookToX, row );
 	rook->m_hasMoved = true;
+
+	IntVec2 rookFromCoords = IntVec2( rookFromX, row );
+	IntVec2 rookToCoords = IntVec2( rookToX, row );
+	rook->StartMovementAnimation( rookFromCoords, rookToCoords );
 
 	g_engine->m_devConsole->AddLineWithoutTimestamp( Rgba8::SUCCESS, "Castling also moved rook from " + std::string( 1, ( char ) ( 'A' + rookFromX ) ) + std::to_string( row + 1 ) + " to " + std::string( 1, ( char ) ( 'A' + rookToX ) ) + std::to_string( row + 1 ) );
 
