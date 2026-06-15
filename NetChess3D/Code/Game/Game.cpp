@@ -3,6 +3,7 @@
 #include "Game/ChessBoard.hpp"
 #include "Game/ChessMatch.hpp"
 #include "Game/ChessPiece.hpp"
+#include "Game/ChessPieceDefinition.hpp"
 #include "Game/Entity.hpp"
 #include "Game/GameCommon.hpp"
 #include "Game/Player.hpp"
@@ -649,11 +650,24 @@ void Game::PrintBoardStateToDevConsole() const
 				ChessPiece* piece = board->m_squares[row][col];
 				if ( piece )
 				{
-					char symbol = piece->m_definition->m_symbol;
+					ChessPieceDefinition const* printDefinition = piece->m_definition;
+
+					if ( piece->m_hasPendingPromotion && piece->m_pendingPromotionDefinition != nullptr )
+					{
+						printDefinition = piece->m_pendingPromotionDefinition;
+					}
+
+					char symbol = printDefinition->m_symbol;
+
 					if ( piece->m_isWhite && symbol >= 'a' && symbol <= 'z' )
 					{
 						symbol = symbol - 'a' + 'A';
 					}
+					else if ( !piece->m_isWhite && symbol >= 'A' && symbol <= 'Z' )
+					{
+						symbol = symbol - 'A' + 'a';
+					}
+
 					line += symbol;
 				}
 				else
