@@ -1,10 +1,9 @@
-cbuffer LightingConstants : register(b1)
+cbuffer PerFrameConstants : register(b1)
 {
-    float3 u_sunDirection;
-    float u_sunIntensity;
-
-    float u_ambientIntensity;
-    float3 u_lightingPadding;
+    float c_time;
+    int c_debugInt;
+    float c_debugFloat;
+    float c_perFramePadding;
 };
 
 cbuffer CameraConstants : register(b2)
@@ -18,6 +17,15 @@ cbuffer ModelConstants : register(b3)
 {
     float4x4 u_modelToWorld;
     float4 u_modelTint;
+};
+
+cbuffer LightingConstants : register(b4)
+{
+    float3 u_sunDirection;
+    float u_sunIntensity;
+
+    float u_ambientIntensity;
+    float3 u_lightingPadding;
 };
 
 struct vs_input_t
@@ -40,6 +48,16 @@ struct v2p_t
     float2 v_uv : TEXCOORD;
     float3 v_worldSpaceNormal : NORMAL;
 };
+
+float3 EncodeSignedVectorAsColor(float3 xyzVector)
+{
+    return xyzVector * 0.5f + 0.5f;
+}
+
+float3 DecodeColorAsSignedVector(float3 rgbColor)
+{
+    return rgbColor * 2.f - 1.f;
+}
 
 v2p_t VertexMain(vs_input_t input)
 {

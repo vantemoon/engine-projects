@@ -45,14 +45,14 @@ void* m_dxgiDebugModule = nullptr;
 
 
 //-----------------------------------------------------------------------------------------------
-struct LightingConstants
+struct PerFrameConstants
 {
-	float sunDirection[3];
-	float sunIntensity;
-	float ambientIntensity;
-	float padding[3] = { 0.f, 0.f, 0.f };
+	float m_time = 0.f;
+	int m_debugInt = 0;
+	float m_debugFloat = 0.f;
+	float m_padding = 0.f;
 };
-static const int k_lightingConstantsSlot = 1;
+static const int k_perFrameConstantsSlot = 1;
 
 
 //-----------------------------------------------------------------------------------------------
@@ -72,6 +72,17 @@ struct ModelConstants
 	float modelColor[4] = {};     // Model color (RGBA)
 };
 static const int k_modelConstantsSlot = 3;
+
+
+//-----------------------------------------------------------------------------------------------
+struct LightingConstants
+{
+	float sunDirection[3];
+	float sunIntensity;
+	float ambientIntensity;
+	float padding[3] = { 0.f, 0.f, 0.f };
+};
+static const int k_lightingConstantsSlot = 4;
 
 
 //-----------------------------------------------------------------------------------------------
@@ -174,6 +185,9 @@ void Renderer::Startup()
 
 	// Create lighting constant buffer
 	m_lightingCBO = CreateConstantBuffer( sizeof( LightingConstants ) );
+
+	// Create per-frame constant buffer
+	m_perFrameCBO = CreateConstantBuffer( sizeof( PerFrameConstants ) );
 
 	// Create rasterizer states for all rasterizer modes
 	D3D11_RASTERIZER_DESC rasterizerDesc = {};
@@ -415,6 +429,9 @@ void Renderer::Shutdown()
 
 	delete m_lightingCBO;
 	m_lightingCBO = nullptr;
+
+	delete m_perFrameCBO;
+	m_perFrameCBO = nullptr;
 
 	// Release device-related objects
 	DX_SAFE_RELEASE( m_swapChain );
@@ -1146,4 +1163,17 @@ void Renderer::SetLightingConstants( Vec3 const& sunDirection, float sunIntensit
 
 	CopyCPUToGPU( &lightingData, sizeof( LightingConstants ), m_lightingCBO );
 	BindConstantBuffer( k_lightingConstantsSlot, m_lightingCBO );
+}
+
+
+//------------------------------------------------------------------------------------------------
+void Renderer::SetPerFrameConstants( float time, int debugInt, float debugFloat )
+{
+	PerFrameConstants constants;
+	constants.m_time = time;
+	constants.m_debugInt = debugInt;
+	constants.m_debugFloat = debugFloat;
+
+	CopyCPUToGPU( &constants, sizeof( PerFrameConstants ), m_perFrameCBO );
+	BindConstantBuffer( k_perFrameConstantsSlot, m_perFrameCBO );
 }

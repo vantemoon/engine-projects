@@ -144,6 +144,7 @@ public:
 	
 	void SetModelConstants( Mat44 const& modelToWorldTransform = Mat44(), Rgba8 const& modelColor = Rgba8::WHITE );
 	void SetLightingConstants( Vec3 const& sunDirection, float sunIntensity, float ambientIntensity );
+	void SetPerFrameConstants( float time, int debugInt, float debugFloat );
 
 private:
 	Image* CreateImageFromFile( char const* imageFilePath );
@@ -174,6 +175,7 @@ protected:
 	ConstantBuffer* m_cameraCBO = nullptr;
 	ConstantBuffer* m_modelCBO = nullptr;
 	ConstantBuffer* m_lightingCBO = nullptr;
+	ConstantBuffer* m_perFrameCBO = nullptr;
 
 	ID3D11BlendState* m_blendState = nullptr;
 	BlendMode m_desiredBlendMode = BlendMode::ALPHA;
