@@ -899,11 +899,13 @@ void AddVertsForCylinderZ3D( std::vector<Vertex>& verts, Vec3 const& start, Vec3
 	float uHalf = 0.5f * ( UVs.m_maxs.x - UVs.m_mins.x );
 	float vHalf = 0.5f * ( UVs.m_maxs.y - UVs.m_mins.y );
 
-	Vec3 capTangent = lookAtLeftJ;
-	Vec3 topCapBitangent = lookAtUpK;
-	Vec3 bottomCapBitangent = -lookAtUpK;
-	Vec3 topCapNormal = lookAtForwardI;
-	Vec3 bottomCapNormal = -lookAtForwardI;
+	Vec3 topCapTangent = Vec3( 1.f, 0.f, 0.f );
+	Vec3 topCapBitangent = Vec3( 0.f, 1.f, 0.f );
+	Vec3 topCapNormal = Vec3( 0.f, 0.f, 1.f );
+
+	Vec3 bottomCapTangent = Vec3( 1.f, 0.f, 0.f );
+	Vec3 bottomCapBitangent = Vec3( 0.f, -1.f, 0.f );
+	Vec3 bottomCapNormal = Vec3( 0.f, 0.f, -1.f );
 
 	for ( int sliceIndex = 0; sliceIndex < numSides; ++sliceIndex )
 	{
@@ -936,7 +938,7 @@ void AddVertsForCylinderZ3D( std::vector<Vertex>& verts, Vec3 const& start, Vec3
 			start, bottomRight, bottomLeft,
 			color,
 			uvCenter, uvRight, uvLeft,
-			capTangent, bottomCapBitangent, bottomCapNormal
+			bottomCapTangent, bottomCapBitangent, bottomCapNormal
 		);
 
 		AddVertsForTriangle3DExplicit(
@@ -944,7 +946,7 @@ void AddVertsForCylinderZ3D( std::vector<Vertex>& verts, Vec3 const& start, Vec3
 			end, topLeft, topRight,
 			color,
 			uvCenter, uvLeft, uvRight,
-			capTangent, topCapBitangent, topCapNormal
+			topCapTangent, topCapBitangent, topCapNormal
 		);
 	}
 }
@@ -981,11 +983,13 @@ void AddVertsForIndexedCylinderZ3D( std::vector<Vertex>& verts, std::vector<unsi
 	float uHalf = 0.5f * ( UVs.m_maxs.x - UVs.m_mins.x );
 	float vHalf = 0.5f * ( UVs.m_maxs.y - UVs.m_mins.y );
 
-	Vec3 capTangent = lookAtLeftJ;
-	Vec3 topCapBitangent = lookAtUpK;
-	Vec3 bottomCapBitangent = -lookAtUpK;
-	Vec3 topCapNormal = lookAtForwardI;
-	Vec3 bottomCapNormal = -lookAtForwardI;
+	Vec3 topCapTangent = Vec3( 1.f, 0.f, 0.f );
+	Vec3 topCapBitangent = Vec3( 0.f, 1.f, 0.f );
+	Vec3 topCapNormal = Vec3( 0.f, 0.f, 1.f );
+
+	Vec3 bottomCapTangent = Vec3( 1.f, 0.f, 0.f );
+	Vec3 bottomCapBitangent = Vec3( 0.f, -1.f, 0.f );
+	Vec3 bottomCapNormal = Vec3( 0.f, 0.f, -1.f );
 
 	for ( int sliceIndex = 0; sliceIndex < numSides; ++sliceIndex )
 	{
@@ -1018,7 +1022,7 @@ void AddVertsForIndexedCylinderZ3D( std::vector<Vertex>& verts, std::vector<unsi
 			start, bottomRight, bottomLeft,
 			color,
 			uvCenter, uvRight, uvLeft,
-			capTangent, bottomCapBitangent, bottomCapNormal
+			bottomCapTangent, bottomCapBitangent, bottomCapNormal
 		);
 
 		AddVertsForIndexedTriangle3DExplicit(
@@ -1026,7 +1030,7 @@ void AddVertsForIndexedCylinderZ3D( std::vector<Vertex>& verts, std::vector<unsi
 			end, topLeft, topRight,
 			color,
 			uvCenter, uvLeft, uvRight,
-			capTangent, topCapBitangent, topCapNormal
+			topCapTangent, topCapBitangent, topCapNormal
 		);
 	}
 }
@@ -1129,9 +1133,9 @@ void AddVertsForCone3D( std::vector<Vertex>& verts, Vec3 const& start, Vec3 cons
 	float uHalf = 0.5f * ( UVs.m_maxs.x - UVs.m_mins.x );
 	float vHalf = 0.5f * ( UVs.m_maxs.y - UVs.m_mins.y );
 
-	Vec3 capTangent = lookAtLeftJ;
-	Vec3 bottomCapBitangent = -lookAtUpK;
-	Vec3 bottomCapNormal = -lookAtForwardI;
+	Vec3 bottomCapTangent = Vec3( 1.f, 0.f, 0.f );
+	Vec3 bottomCapBitangent = Vec3( 0.f, -1.f, 0.f );
+	Vec3 bottomCapNormal = Vec3( 0.f, 0.f, -1.f );
 
 	for ( int sliceIndex = 0; sliceIndex < numSlices; ++sliceIndex )
 	{
@@ -1156,7 +1160,7 @@ void AddVertsForCone3D( std::vector<Vertex>& verts, Vec3 const& start, Vec3 cons
 		Vec2 uvRight( uCenter + uHalf * CosDegrees( degreesB ), vCenter + vHalf * SinDegrees( degreesB ) );
 		Vec2 uvCenter( uCenter, vCenter );
 
-		AddVertsForTriangle3DExplicit( verts, start, baseRight, baseLeft, color, uvCenter, uvRight, uvLeft, capTangent, bottomCapBitangent, bottomCapNormal );
+		AddVertsForTriangle3DExplicit( verts, start, baseRight, baseLeft, color, uvCenter, uvRight, uvLeft, bottomCapTangent, bottomCapBitangent, bottomCapNormal );
 	}
 }
 

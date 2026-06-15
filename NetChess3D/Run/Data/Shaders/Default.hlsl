@@ -105,7 +105,6 @@ v2p_t VertexMain(vs_input_t input)
     v2p.v_worldSpaceTangent = worldSpaceTangent;
     v2p.v_worldSpaceBitangent = worldSpaceBitangent;
     v2p.v_worldSpaceNormal = worldSpaceNormal;
-    
 
     return v2p;
 }

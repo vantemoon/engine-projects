@@ -158,6 +158,21 @@ void ChessPieceDefinition::CopyWhiteGeometryToBlackGeometry( ChessPieceDefinitio
 {
 	definition.m_blackVerts = definition.m_whiteVerts;
 	definition.m_blackIndices = definition.m_whiteIndices;
+
+	for ( Vertex& vert : definition.m_blackVerts )
+	{
+		vert.m_position.x = -vert.m_position.x;
+		vert.m_position.y = -vert.m_position.y;
+
+		vert.m_tangent.x = -vert.m_tangent.x;
+		vert.m_tangent.y = -vert.m_tangent.y;
+
+		vert.m_bitangent.x = -vert.m_bitangent.x;
+		vert.m_bitangent.y = -vert.m_bitangent.y;
+
+		vert.m_normal.x = -vert.m_normal.x;
+		vert.m_normal.y = -vert.m_normal.y;
+	}
 }
 
 
@@ -173,14 +188,14 @@ void ChessPieceDefinition::CopyDefinitionToGPU( ChessPieceDefinition& definition
 
 	Renderer* renderer = g_engine->m_renderer;
 
-	definition.m_whiteIndexCount = static_cast< unsigned int >( definition.m_whiteIndices.size() );
-	definition.m_blackIndexCount = static_cast< unsigned int >( definition.m_blackIndices.size() );
+	definition.m_whiteIndexCount = static_cast<unsigned int>( definition.m_whiteIndices.size() );
+	definition.m_blackIndexCount = static_cast<unsigned int>( definition.m_blackIndices.size() );
 
-	unsigned int whiteVertexBufferSize = static_cast< unsigned int >( definition.m_whiteVerts.size() * sizeof( Vertex ) );
-	unsigned int blackVertexBufferSize = static_cast< unsigned int >( definition.m_blackVerts.size() * sizeof( Vertex ) );
+	unsigned int whiteVertexBufferSize = static_cast<unsigned int>( definition.m_whiteVerts.size() * sizeof( Vertex ) );
+	unsigned int blackVertexBufferSize = static_cast<unsigned int>( definition.m_blackVerts.size() * sizeof( Vertex ) );
 
-	unsigned int whiteIndexBufferSize = static_cast< unsigned int >( definition.m_whiteIndices.size() * sizeof( unsigned int ) );
-	unsigned int blackIndexBufferSize = static_cast< unsigned int >( definition.m_blackIndices.size() * sizeof( unsigned int ) );
+	unsigned int whiteIndexBufferSize = static_cast<unsigned int>( definition.m_whiteIndices.size() * sizeof( unsigned int ) );
+	unsigned int blackIndexBufferSize = static_cast<unsigned int>( definition.m_blackIndices.size() * sizeof( unsigned int ) );
 
 	definition.m_whiteVBO = renderer->CreateVertexBuffer( whiteVertexBufferSize, sizeof( Vertex ) );
 	definition.m_blackVBO = renderer->CreateVertexBuffer( blackVertexBufferSize, sizeof( Vertex ) );
