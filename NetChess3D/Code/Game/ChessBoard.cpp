@@ -137,7 +137,7 @@ void ChessBoard::Render() const
 				Vec3( maxX, maxY, boardTopZ ),
 				Vec3( minX, maxY, boardTopZ ),
 				squareColor,
-				AABB2( Vec2( minX, minY ), Vec2( maxX, maxY ) )
+				AABB2::ZERO_TO_ONE
 			);
 		}
 	}
@@ -149,7 +149,7 @@ void ChessBoard::Render() const
 		Vec3( boardSize + marginSize, -marginSize, boardBottomZ ),
 		Vec3( -marginSize, -marginSize, boardBottomZ ),
 		frameColor,
-		AABB2( Vec2( 0.f, 0.f ), Vec2( 1.f, 1.f ) )
+		AABB2::ZERO_TO_ONE
 	);
 
 	AddVertsForQuad3D(
@@ -159,7 +159,7 @@ void ChessBoard::Render() const
 		Vec3( boardSize + marginSize, -marginSize, boardTopZ ),
 		Vec3( -marginSize, -marginSize, boardTopZ ),
 		frameColor,
-		AABB2( Vec2( 0.f, 0.f ), Vec2( 1.f, 1.f ) )
+		AABB2::ZERO_TO_ONE
 	);
 
 	AddVertsForQuad3D(
@@ -169,7 +169,7 @@ void ChessBoard::Render() const
 		Vec3( -marginSize, boardSize + marginSize, boardTopZ ),
 		Vec3( boardSize + marginSize, boardSize + marginSize, boardTopZ ),
 		frameColor,
-		AABB2( Vec2( 0.f, 0.f ), Vec2( 1.f, 1.f ) )
+		AABB2::ZERO_TO_ONE
 	);
 
 	AddVertsForQuad3D(
@@ -179,7 +179,7 @@ void ChessBoard::Render() const
 		Vec3( -marginSize, -marginSize, boardTopZ ),
 		Vec3( -marginSize, boardSize + marginSize, boardTopZ ),
 		frameColor,
-		AABB2( Vec2( 0.f, 0.f ), Vec2( 1.f, 1.f ) )
+		AABB2::ZERO_TO_ONE
 	);
 
 	AddVertsForQuad3D(
@@ -189,7 +189,7 @@ void ChessBoard::Render() const
 		Vec3( boardSize + marginSize, boardSize + marginSize, boardTopZ ),
 		Vec3( boardSize + marginSize, -marginSize, boardTopZ ),
 		frameColor,
-		AABB2( Vec2( 0.f, 0.f ), Vec2( 1.f, 1.f ) )
+		AABB2::ZERO_TO_ONE
 	);
 
 	Texture* boardDiffuseTexture = renderer->CreateOrGetTextureFromFile( "Data/Images/oak_diffuse.png" );
