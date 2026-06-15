@@ -289,6 +289,9 @@ void AddVertsForTriangle3D( std::vector<Vertex>& verts, Vec3 const& ccw0, Vec3 c
 		float r = 1.f / determinant;
 		tangent = ( edge1 * deltaUV2.y - edge2 * deltaUV1.y ) * r;
 		bitangent = ( edge2 * deltaUV1.x - edge1 * deltaUV2.x ) * r;
+
+		tangent = tangent.GetNormalized();
+		bitangent = bitangent.GetNormalized();
 	}
 	else
 	{
@@ -324,6 +327,9 @@ void AddVertsForIndexedTriangle3D( std::vector<Vertex>& verts, std::vector<unsig
 		float r = 1.f / determinant;
 		tangent = ( edge1 * deltaUV2.y - edge2 * deltaUV1.y ) * r;
 		bitangent = ( edge2 * deltaUV1.x - edge1 * deltaUV2.x ) * r;
+
+		tangent = tangent.GetNormalized();
+		bitangent = bitangent.GetNormalized();
 	}
 	else
 	{
@@ -370,6 +376,9 @@ void AddVertsForQuad3D( std::vector<Vertex>& verts,
 		float r = 1.f / determinant;
 		tangent = ( edge1 * deltaUV2.y - edge2 * deltaUV1.y ) * r;
 		bitangent = ( edge2 * deltaUV1.x - edge1 * deltaUV2.x ) * r;
+
+		tangent = tangent.GetNormalized();
+		bitangent = bitangent.GetNormalized();
 	}
 	else
 	{
@@ -413,6 +422,9 @@ void AddVertsForIndexedQuad3D( std::vector<Vertex>& verts, std::vector<unsigned 
 		float r = 1.f / determinant;
 		tangent = ( edge1 * deltaUV2.y - edge2 * deltaUV1.y ) * r;
 		bitangent = ( edge2 * deltaUV1.x - edge1 * deltaUV2.x ) * r;
+
+		tangent = tangent.GetNormalized();
+		bitangent = bitangent.GetNormalized();
 	}
 	else
 	{

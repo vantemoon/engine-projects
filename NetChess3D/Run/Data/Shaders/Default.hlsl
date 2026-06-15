@@ -81,18 +81,24 @@ v2p_t VertexMain(vs_input_t input)
 }
 
 Texture2D diffuseTexture : register(t0);
+Texture2D normalTexture : register(t1);
+
 SamplerState diffuseSampler : register(s0);
+SamplerState normalSampler : register(s1);
 
 float4 PixelMain(v2p_t input) : SV_Target0
 {
-    float4 textureColor = diffuseTexture.Sample(diffuseSampler, input.v_uv);
+    float4 diffuseTexel = diffuseTexture.Sample(diffuseSampler, input.v_uv);
+    float4 normalTexel = normalTexture.Sample(normalSampler, input.v_uv);
+    
     float4 vertexColor = input.v_color;
     float4 modelTint = u_modelTint;
 
-    float4 diffuseColor = textureColor * vertexColor * modelTint;
+    float4 diffuseColor = diffuseTexel * vertexColor * modelTint;
 
     clip(diffuseColor.a - 0.01f);
 
+    float3 tangentSpaceNormal = normalize(DecodeColorAsSignedVector(normalTexel.rgb));
     float3 worldNormal = normalize(input.v_worldSpaceNormal);
 
     float3 pixelToLightDirection = normalize(-u_sunDirection);

@@ -574,6 +574,28 @@ void Renderer::BindTexture( Texture* texture )
 
 
 //------------------------------------------------------------------------------------------------
+void Renderer::BindTexture( int slot, Texture* texture )
+{
+	if ( texture )
+	{
+		m_deviceContext->PSSetShaderResources( slot, 1, &texture->m_shaderResourceView );
+	}
+	else
+	{
+		m_deviceContext->PSSetShaderResources( slot, 1, &m_defaultTexture->m_shaderResourceView );
+	}
+}
+
+
+//------------------------------------------------------------------------------------------------
+void Renderer::BindSampler( int slot, SamplerMode samplerMode )
+{
+	ID3D11SamplerState* samplerState = m_samplerStates[( int ) samplerMode];
+	m_deviceContext->PSSetSamplers( slot, 1, &samplerState );
+}
+
+
+//------------------------------------------------------------------------------------------------
 void Renderer::SetBlendMode( BlendMode blendMode )
 {
 	m_desiredBlendMode = blendMode;

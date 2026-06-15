@@ -113,6 +113,8 @@ public:
 	void DrawVertexArray( std::vector<Vertex> const& verts );
 	void DrawVertexArray( int numVertexes, Vertex const* vertexes );
 	void BindTexture( Texture* texture );
+	void BindTexture( int slot, Texture* texture );
+	void BindSampler( int slot, SamplerMode samplerMode );
 	void SetBlendMode( BlendMode mode );
 	void SetSamplerMode( SamplerMode mode );
 	void SetRasterizerMode( RasterizerMode mode );
